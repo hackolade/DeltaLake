@@ -1,0 +1,510 @@
+/*
+* Copyright © 2016-2019 by IntegrIT S.A. dba Hackolade.  All rights reserved.
+*
+* The copyright to the computer software herein is the property of IntegrIT S.A.
+* The software may be used and/or copied only with the written permission of 
+* IntegrIT S.A. or in accordance with the terms and conditions stipulated in 
+* the agreement/contract under which the software has been supplied. 
+
+
+In order to define custom properties for any object's properties pane, you may copy/paste from the following,
+making sure that you maintain a proper JSON format.
+
+			{
+				"propertyName": "Simple text",
+				"propertyKeyword": "simpletextProp",
+				"propertyType": "text",
+				"sampleGen": "&containerName|&entityName|&random|<value>"
+			},
+			{
+				"propertyName": "Text area",
+				"propertyKeyword": "textareaProp",
+				"propertyTooltip": "Popup for multi-line text entry",
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			{
+				"propertyName": "Dropdown selection",
+				"propertyKeyword": "dropdownProp",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"Option 1",
+					"Option 2",
+					"Option 3",
+					"Option 4"
+				]
+			},
+			{
+				"propertyName": "Numeric",
+				"propertyKeyword": "numericProp",
+				"propertyValidate": true,
+				"propertyType": "numeric",
+				"valueType": "number",
+				"allowNegative": false,
+				"sampleGen": "&containerName|&entityName|&random|<value>"
+			},
+			{
+				"propertyName": "Checkbox",
+				"propertyKeyword": "checkboxProp",
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Group",
+				"propertyType": "group",
+				"propertyKeyword": "grpProp",
+				"propertyTooltip": "",
+				"structure": [
+					{
+						"propertyName": "Simple Grp Text",
+						"propertyKeyword": "simpleGrpText",
+						"propertyTooltip": "",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Group Number",
+						"propertyKeyword": "grpNumber",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"allowNegative": false
+					}
+				]
+			},
+// “groupInput” can have the following states - 0 items, 1 item, and many items.
+// “blockInput” has only 2 states - 0 items or 1 item. 
+// This gives us an easy way to represent it as an object and not as an array internally which is beneficial for processing 
+// and forward-engineering in particular.
+			{
+				"propertyName": "Block",
+				"propertyType": "block",
+				"propertyKeyword": "grpProp",
+				"propertyTooltip": "",
+				"structure": [
+					{
+						"propertyName": "Simple Grp Text",
+						"propertyKeyword": "simpleGrpText",
+						"propertyTooltip": "",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Group Number",
+						"propertyKeyword": "grpNumber",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"allowNegative": false
+					}
+				]
+			},
+			{
+				"propertyName": "Field List",
+				"propertyKeyword": "keyList",
+				"propertyType": "fieldList",
+				"template": "orderedList"
+			}, 
+			{
+				"propertyName": "List with attribute",
+				"propertyKeyword": "keyListOrder",
+				"propertyType": "fieldList",
+				"template": "orderedList",
+				"attributeList": [
+					"ascending",
+					"descending"
+				]
+			}
+
+*/
+
+[
+	{
+		"lowerTab": "Details",
+		"structure": [
+			{
+				"propertyName": "Technical name",
+				"propertyKeyword": "code",
+				"propertyType": "text"
+			},
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			{
+				"propertyName": "Temporary",
+				"propertyKeyword": "temporaryTable",
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "External",
+				"propertyKeyword": "externalTable",
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Stored as",
+				"propertyKeyword": "storedAsTable",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"delta",
+					"textfile",
+					"sequencefile",
+					"ORC",
+					"Parquet",
+					"Avro",
+					"RCfile",
+					"JSONfile",
+					"by",
+					"input/output format"
+				]
+			},
+			{
+				"propertyName": "Row format",
+				"propertyKeyword": "rowFormat",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"",
+					"delimited",
+					"SerDe"
+				],
+				"dependency": {
+					"key": "storedAsTable",
+					"value": "textfile"
+				}
+			},
+			{
+				"propertyName": "Fields terminated by",
+				"propertyKeyword": "fieldsTerminatedBy",
+				"propertyType": "text",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"key": "rowFormat",
+							"value": "delimited"
+						},
+						{
+							"key": "storedAsTable",
+							"value": "textfile"
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Fields escaped by",
+				"propertyKeyword": "fieldsescapedBy",
+				"propertyType": "text",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"key": "rowFormat",
+							"value": "delimited"
+						},
+						{
+							"key": "storedAsTable",
+							"value": "textfile"
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Coll items termin by",
+				"propertyKeyword": "collectionItemsTerminatedBy",
+				"propertyType": "text",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"key": "rowFormat",
+							"value": "delimited"
+						},
+						{
+							"key": "storedAsTable",
+							"value": "textfile"
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Map keys termin by",
+				"propertyKeyword": "mapKeysTerminatedBy",
+				"propertyType": "text",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"key": "rowFormat",
+							"value": "delimited"
+						},
+						{
+							"key": "storedAsTable",
+							"value": "textfile"
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Lines terminated by",
+				"propertyKeyword": "linesTerminatedBy",
+				"propertyType": "text",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"key": "rowFormat",
+							"value": "delimited"
+						},
+						{
+							"key": "storedAsTable",
+							"value": "textfile"
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Null defined as",
+				"propertyKeyword": "nullDefinedAs",
+				"propertyType": "text",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"key": "rowFormat",
+							"value": "delimited"
+						},
+						{
+							"key": "storedAsTable",
+							"value": "textfile"
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "SerDe Library",
+				"propertyKeyword": "serDeLibrary",
+				"propertyType": "text",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"key": "rowFormat",
+							"value": "SerDe"
+						},
+						{
+							"key": "storedAsTable",
+							"value": "textfile"
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "SerDe Properties",
+				"propertyKeyword": "serDeProperties",
+				"propertyTooltip": "SerDe Properties",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false,
+				"valueType": "string",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"key": "rowFormat",
+							"value": "SerDe"
+						},
+						{
+							"key": "storedAsTable",
+							"value": "textfile"
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "SerDe Library",
+				"propertyKeyword": "serDeLibrary",
+				"propertyType": "text",
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "storedAsTable",
+							"value": "input/output format"
+						},
+						{
+							"key": "storedAsTable",
+							"value": "by"
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Input fmt classname",
+				"propertyKeyword": "inputFormatClassname",
+				"propertyType": "text",
+				"dependency": {
+					"key": "storedAsTable",
+					"value": "input/output format"
+				}
+			},
+			{
+				"propertyName": "Output fmt classname",
+				"propertyKeyword": "outputFormatClassname",
+				"propertyType": "text",
+				"dependency": {
+					"key": "storedAsTable",
+					"value": "input/output format"
+				}
+			},
+			{
+				"propertyName": "Partition key",
+				"propertyKeyword": "compositePartitionKey",
+				"propertyType": "primaryKeySetter",
+				"abbr": "pk"
+			}, 
+			{
+				"propertyName": "Disable No Validate",
+				"propertyKeyword": "disableNoValidate",
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Clustering key",
+				"propertyKeyword": "compositeClusteringKey",
+				"propertyType": "primaryKeySetter",
+				"abbr": "ck"
+			},
+			{
+				"propertyName": "Sorted by",
+				"propertyKeyword": "sortedByKey",
+				"propertyType": "fieldList",
+				"template": "orderedList",
+				"attributeList": [
+					{ "name": "ascending", "abbr": "\u2191" },
+					{ "name": "descending", "abbr": "\u2193" }
+				]
+			},
+			{
+				"propertyName": "Number of buckets",
+				"propertyKeyword": "numBuckets",
+				"propertyType": "numeric",
+				"valueType": "number",
+				"allowNegative": false
+			},
+			{
+				"propertyName": "Skewed by",
+				"propertyKeyword": "skewedby",
+				"propertyType": "fieldList",
+				"template": "orderedList"
+			},
+			{
+				"propertyName": "Skewed on",
+				"propertyKeyword": "skewedOn",
+				"propertyType": "text"
+			},
+			{
+				"propertyName": "Skew stored as directories",
+				"propertyKeyword": "skewStoredAsDir",
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Location",
+				"propertyKeyword": "location",
+				"propertyType": "text"
+			},
+			{
+				"propertyName": "Table properties",
+				"propertyKeyword": "tableProperties",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false,
+				"valueType": "string"
+			},
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		],
+		"columnsRatio": [4.1, 5]
+	},
+	{
+		"lowerTab": "Secondary Indexes",
+		"structure": [{
+			"propertyName": "Secondary Index",
+			"propertyType": "group",
+			"propertyKeyword": "SecIndxs",
+			"propertyTooltip": "",
+			"structure": [
+				{
+					"propertyName": "Name",
+					"propertyKeyword": "name",
+					"propertyTooltip": "",
+					"propertyType": "text",
+					"defaultValue": "New Secondary Index"
+				},
+				{
+					"propertyName": "Key",
+					"propertyKeyword": "SecIndxKey",
+					"propertyType": "fieldList",
+					"template": "orderedList"
+				},
+				{
+					"propertyName": "Id",
+					"propertyKeyword": "SecIndxID",
+					"propertyTooltip": "Secondary Index ID",
+					"propertyType": "text"
+				},
+				{
+					"propertyName": "Index handler",
+					"propertyKeyword": "SecIndxHandler",
+					"propertyTooltip": "Class name of index handler",
+					"propertyType": "text",
+					"defaultValue": "org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler"
+				},
+				{
+					"propertyName": "With deferred rebuild",
+					"propertyKeyword": "SecIndxWithDeferredRebuild",
+					"propertyTooltip": "With deferred rebuild",
+					"propertyType": "checkbox",
+					"defaultValue": true
+				},
+				{
+					"propertyName": "Index properties",
+					"propertyKeyword": "SecIndxProperties",
+					"propertyTooltip": "Index properties",
+					"propertyType": "details",
+					"template": "textarea",
+					"markdown": false
+				},
+				{
+					"propertyName": "Index table",
+					"propertyKeyword": "SecIndxTable",
+					"propertyTooltip": "IN TABLE statement",
+					"propertyType": "details",
+					"template": "textarea",
+					"markdown": false
+				},
+				{
+					"propertyName": "Description",
+					"propertyKeyword": "SecIndxDescription",
+					"propertyTooltip": "description",
+					"propertyType": "details",
+					"template": "textarea"
+				},
+				{
+					"propertyName": "Comments",
+					"propertyKeyword": "SecIndxComments",
+					"propertyTooltip": "comments",
+					"propertyType": "details",
+					"template": "textarea"
+				}
+			]
+		}]
+	}
+]

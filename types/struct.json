@@ -1,0 +1,18 @@
+{
+	"name": "struct",
+	"erdAbbreviation": "<struct>",
+	"dtdAbbreviation": "{...}",
+	"parentType": "document",
+	"useSample": true,
+	"defaultValues": {
+		"subtype": "struct<str>",
+		"keyType": "string",
+		"dependencies": [],
+		"primaryKey": false,
+		"properties": [],
+		"minProperties": "",
+		"maxProperties": "",
+		"additionalProperties": false
+	},
+	"hiddenOnEntity": "view"
+}

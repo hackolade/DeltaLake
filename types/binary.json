@@ -1,0 +1,17 @@
+{
+	"name": "binary",
+	"erdAbbreviation": "<bin>",
+	"dtdAbbreviation": "{bin}",
+	"parentType": "binary",
+	"useSample": false,
+	"jsonType": {
+		"order": 2
+	},
+	"defaultValues": {
+		"primaryKey": false
+	},
+	"descriptor": {
+		"mode": "binary"
+	},
+	"hiddenOnEntity": "view"
+}

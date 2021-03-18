@@ -1,0 +1,378 @@
+/*
+* Copyright © 2016-2019 by IntegrIT S.A. dba Hackolade.  All rights reserved.
+*
+* The copyright to the computer software herein is the property of IntegrIT S.A.
+* The software may be used and/or copied only with the written permission of 
+* IntegrIT S.A. or in accordance with the terms and conditions stipulated in 
+* the agreement/contract under which the software has been supplied. 
+
+
+In order to define custom properties for any object's properties pane, you may copy/paste from the following,
+making sure that you maintain a proper JSON format.
+
+			{
+				"propertyName": "Simple text",
+				"propertyKeyword": "simpletextProp",
+				"propertyType": "text",
+				"sampleGen": "&containerName|&entityName|&random|<value>"
+			},
+			{
+				"propertyName": "Text area",
+				"propertyKeyword": "textareaProp",
+				"propertyTooltip": "Popup for multi-line text entry",
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			{
+				"propertyName": "Dropdown selection",
+				"propertyKeyword": "dropdownProp",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"Option 1",
+					"Option 2",
+					"Option 3",
+					"Option 4"
+				]
+			},
+			{
+				"propertyName": "Numeric",
+				"propertyKeyword": "numericProp",
+				"propertyValidate": true,
+				"propertyType": "numeric",
+				"valueType": "number",
+				"allowNegative": false,
+				"sampleGen": "&containerName|&entityName|&random|<value>"
+			},
+			{
+				"propertyName": "Checkbox",
+				"propertyKeyword": "checkboxProp",
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Group",
+				"propertyKeyword": "grpProp",
+				"propertyType": "group",
+				"propertyTooltip": "",
+				"structure": [
+					{
+						"propertyName": "Simple Grp Text",
+						"propertyKeyword": "simpleGrpText",
+						"propertyTooltip": "",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Group Number",
+						"propertyKeyword": "grpNumber",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"allowNegative": false
+					}
+				]
+			},
+// “groupInput” can have the following states - 0 items, 1 item, and many items.
+// “blockInput” has only 2 states - 0 items or 1 item. 
+// This gives us an easy way to represent it as an object and not as an array internally which is beneficial for processing 
+// and forward-engineering in particular.
+			{
+				"propertyName": "Block",
+				"propertyKeyword": "grpProp",
+				"propertyType": "block",
+				"propertyTooltip": "",
+				"structure": [
+					{
+						"propertyName": "Simple Grp Text",
+						"propertyKeyword": "simpleGrpText",
+						"propertyTooltip": "",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Group Number",
+						"propertyKeyword": "grpNumber",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"allowNegative": false
+					}
+				]
+			},
+			{
+				"propertyName": "Field List",
+				"propertyKeyword": "keyList",
+				"propertyType": "fieldList",
+				"template": "orderedList"
+			}, 
+			{
+				"propertyName": "List with attribute",
+				"propertyKeyword": "keyListOrder",
+				"propertyType": "fieldList",
+				"template": "orderedList",
+				"attributeList": [
+					"ascending",
+					"descending"
+				]
+			}
+
+*/
+
+[
+	{
+		"lowerTab": "Details",
+		"structure": [
+			{
+				"propertyName": "DB vendor",
+				"propertyKeyword": "dbVendor",
+				"shouldValidate": false,
+				"propertyTooltip": "DB vendor",
+				"propertyType": "select",
+				"options": [
+					"Delta Lake"
+				],
+				"disabledOption": true
+			},
+			{
+				"propertyName": "DB version",
+				"propertyKeyword": "dbVersion",
+				"shouldValidate": false,
+				"propertyTooltip": "DB version",
+				"propertyType": "select",
+				"options": [
+					"3.x"
+				],
+				"disabledOption": true
+			},
+			{
+				"propertyName": "Host",
+				"propertyKeyword": "host",
+				"shouldValidate": false,
+				"propertyTooltip": "Host",
+				"propertyType": "text"
+			},
+			{
+				"propertyName": "Port",
+				"propertyKeyword": "port",
+				"shouldValidate": false,
+				"propertyTooltip": "Port",
+				"propertyType": "numeric",
+				"valueType": "number",
+				"allowNegative": false
+			},
+			{
+				"propertyName": "Cluster name",
+				"propertyKeyword": "cluster_name",
+				"propertyTooltip": "Cluster name requested by the user. This doesn't have to be unique. If not specified at creation, the cluster name will be an empty string.",
+				"propertyType": "text"
+			},
+			{
+				"propertyName": "Autoscale",
+				"propertyKeyword": "autoscale",
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Min workers",
+				"propertyKeyword": "min_workers",
+				"propertyTooltip": "The minimum number of workers to which the cluster can scale down when underutilized. It is also the initial number of workers the cluster will have after creation.",
+				"propertyType": "numeric",
+				"valueType": "number",
+				"minValue": 0,
+				"step": 1,
+				"dependency": {
+					"type": "or",
+					"values": [{
+						"key": "autoscale",
+						"value": true
+					}]
+				}
+			},
+			{
+				"propertyName": "Max workers",
+				"propertyKeyword": "max_workers",
+				"propertyTooltip": "The maximum number of workers to which the cluster can scale up when overloaded. max_workers must be strictly greater than min_workers.",
+				"propertyType": "numeric",
+				"valueType": "number",
+				"minValue": 0,
+				"step": 1,
+				"dependency": {
+					"type": "or",
+					"values": [{
+						"key": "autoscale",
+						"value": true
+					}]
+				}
+			},			{
+				"propertyName": "Spark version",
+				"propertyKeyword": "spark_version",
+				"propertyTooltip": "The runtime version of the cluster. This field is required.",
+				"propertyType": "text"
+			},
+			{
+				"propertyName": "Spark conf",
+				"propertyKeyword": "spark_conf",
+				"propertyTooltip": "A JSON object containing a set of optional, user-specified Spark configuration key-value pairs. ",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			{
+				"propertyName": "Node type ID",
+				"propertyKeyword": "node_type_id",
+				"propertyTooltip": "This field encodes, through a single value, the resources available to each of the Spark nodes in this cluster. For example, the Spark nodes can be provisioned and optimized for memory or compute intensive workloads",
+				"propertyType": "text"
+			},
+			{
+				"propertyName": "Drive node type ID",
+				"propertyKeyword": "driver_node_type_id",
+				"propertyTooltip": "The node type of the Spark driver. This field is optional; if unset, the driver node type will be set as the same value as node_type_id defined above.",
+				"propertyType": "text"
+			},
+			{
+				"propertyName": "Custom tags",
+				"propertyKeyword": "custom_tags",
+				"propertyType": "group",
+				"propertyTooltip": "An object containing a set of tags for cluster resources. Databricks tags all cluster resources with these tags in addition to default_tags.",
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "customTagKey",
+						"propertyTooltip": "The key of the tag. The key length must be between 1 and 127 UTF-8 characters, inclusive",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "customtagvalue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters. ",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
+			{
+				"propertyName": "Autotermination (in minutes)",
+				"propertyKeyword": "autotermination_minutes",
+				"propertyTooltip": "Automatically terminates the cluster after it is inactive for this time in minutes. If not set, this cluster will not be automatically terminated. If specified, the threshold must be between 10 and 10000 minutes. You can also set this value to 0 to explicitly disable automatic termination.",
+				"propertyType": "numeric",
+				"valueType": "number",
+				"minValue": 10,
+				"maxValue": 10000,
+				"step": 1
+			},
+			{
+				"propertyName": "Enable elastic disk",
+				"propertyKeyword": "enable_elastic_disk",
+				"propertyTooltip": "Autoscaling Local Storage: when enabled, this cluster will dynamically acquire additional disk space when its Spark workers are running low on disk space. This feature requires specific AWS permissions to function correctly.",
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Instance pool ID",
+				"propertyKeyword": "instance_pool_id",
+				"propertyTooltip": "The node type of the Spark driver. This field is optional; if unset, the driver node type will be set as the same value as node_type_id defined above.",
+				"propertyType": "text"
+			},
+			{
+				"propertyName": "AWS attributes",
+				"propertyKeyword": "aws_attributes",
+				"propertyType": "block",
+				"propertyTooltip": "Attributes related to clusters running on Amazon Web Services. If not specified at cluster creation, a set of default values is used.",
+				"structure": [
+					{
+						"propertyName": "First on demand",
+						"propertyKeyword": "first_on_demand",
+						"propertyTooltip": "If this value is greater than 0, the cluster driver node will be placed on an on-demand instance. If this value is greater than or equal to the current cluster size, all nodes will be placed on on-demand instances. If this value is less than the current cluster size, first_on_demand nodes will be placed on on-demand instances and the remainder will be placed on availability instances. This value does not affect cluster size and cannot be mutated over the lifetime of a cluster.",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"allowNegative": false
+					},
+					{
+						"propertyName": "Availability",
+						"propertyKeyword": "availability",
+						"propertyTooltip": "Availability type used for all subsequent nodes past the first_on_demand ones. Note: If first_on_demand is zero, this availability type will be used for the entire cluster.",
+						"propertyType": "select",
+						"options": [
+							"ON_DEMAND",
+							"SPOT",
+							"SPOT_WITH_FALLBACK"
+						]
+					},
+					{
+						"propertyName": "Spot bid price percent",
+						"propertyKeyword": "spot_bid_price_percent",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"minValue": 0,
+						"maxValue": 100,
+						"step": 1,
+						"dependency": {
+							"type": "or",
+							"values": [{
+								"key": "availability",
+								"value": "SPOT"
+							}]
+						}
+					},
+					{
+						"propertyName": "Instance profile ARN",
+						"propertyKeyword": "instance_profile_arn",
+						"propertyTooltip": "Nodes for this cluster will only be placed on AWS instances with this instance profile. If omitted, nodes will be placed on instances without an instance profile. ",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Zone ID",
+						"propertyKeyword": "zone_id",
+						"propertyTooltip": "Identifier for the availability zone/datacenter in which the cluster resides.",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "EBS volume type",
+						"propertyKeyword": "EbsVolumeType",
+						"propertyTooltip": "The type of EBS volumes that will be launched with this cluster.",
+						"propertyType": "select",
+						"options": [
+							"GENERAL_PURPOSE_SSD",
+							"THROUGHPUT_OPTIMIZED_HDD"
+						]
+					},
+					{
+						"propertyName": "EBS volume count",
+						"propertyKeyword": "ebs_volume_count",
+						"propertyTooltip": "The number of volumes launched for each instance. You can choose up to 10 volumes. This feature is only enabled for supported node types.",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"minValue": 0,
+						"maxValue": 10,
+						"step": 1
+					},
+					{
+						"propertyName": "EBS volume size",
+						"propertyKeyword": "ebs_volume_size",
+						"propertyTooltip": "The size of each EBS volume (in GiB) launched for each instance. For general purpose SSD, this value must be within the range 100 - 4096. For throughput optimized HDD, this value must be within the range 500 - 4096.",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"minValue": 100,
+						"maxValue": 4096,
+						"step": 1
+					}
+				]
+			},
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "comments",
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		]
+	},
+	{
+		"lowerTab": "Relationships",
+		"structure": [
+			{
+				"propertyName": "Disable No Validate",
+				"propertyKeyword": "disableNoValidate",
+				"shouldValidate": false,
+				"propertyTooltip": "Disable No Validate",
+				"propertyType": "checkbox"
+			}
+		]
+	}
+]

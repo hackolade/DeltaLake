@@ -1,0 +1,57 @@
+{
+	"name": "map",
+	"erdAbbreviation": "<map>",
+	"dtdAbbreviation": "{...}",
+	"parentType": "document",
+	"useSample": true,
+	"defaultValues": {
+		"subtype": "map<str>",
+		"keyType": "string",
+		"dependencies": [],
+		"primaryKey": false,
+		"properties": [],
+		"minProperties": "",
+		"maxProperties": "",
+		"additionalProperties": false
+	},
+	"subtypes": {
+		"map<str>": {
+			"childValueType": "text"
+		},
+		"map<num>": {
+			"childValueType": "numeric"
+		},
+		"map<bool>": {
+			"childValueType": "bool"
+		},
+		"map<ts>": {
+			"childValueType": "timestamp"
+		},
+		"map<date>": {
+			"childValueType": "date"
+		},
+		"map<intrvl>": {
+			"childValueType": "interval"
+		},
+		"map<array>": {
+			"childValueType": "array"
+		},
+		"map<map>": {
+			"childValueType": "map"
+		},
+		"map<struct>": {
+			"childValueType": "struct"
+		},
+		"map<union>": {
+		}
+	},
+	"keyTypes": {
+		"text": {
+			"childValueName": "New column"
+		},
+		"numeric": {
+			"childValueName": "12345"
+		}
+	},
+	"hiddenOnEntity": "view"
+}

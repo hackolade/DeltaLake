@@ -1,0 +1,743 @@
+/*
+* Copyright © 2016-2019 by IntegrIT S.A. dba Hackolade.  All rights reserved.
+*
+* The copyright to the computer software herein is the property of IntegrIT S.A.
+* The software may be used and/or copied only with the written permission of 
+* IntegrIT S.A. or in accordance with the terms and conditions stipulated in 
+* the agreement/contract under which the software has been supplied. 
+
+
+In order to define custom properties for any object's properties pane, you may copy/paste from the following,
+making sure that you maintain a proper JSON format.
+
+			{
+				"propertyName": "Simple text",
+				"propertyKeyword": "simpletextProp",
+				"propertyType": "text",
+				"sampleGen": "&containerName|&entityName|&random|<value>"
+			},
+			{
+				"propertyName": "Text area",
+				"propertyKeyword": "textareaProp",
+				"propertyTooltip": "Popup for multi-line text entry",
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			{
+				"propertyName": "Dropdown selection",
+				"propertyKeyword": "dropdownProp",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"Option 1",
+					"Option 2",
+					"Option 3",
+					"Option 4"
+				]
+			},
+			{
+				"propertyName": "Numeric",
+				"propertyKeyword": "numericProp",
+				"propertyValidate": true,
+				"propertyType": "numeric",
+				"valueType": "number",
+				"allowNegative": false,
+				"sampleGen": "&containerName|&entityName|&random|<value>"
+			},
+			{
+				"propertyName": "Checkbox",
+				"propertyKeyword": "checkboxProp",
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Group",
+				"propertyType": "group",
+				"propertyKeyword": "grpProp",
+				"propertyTooltip": "",
+				"structure": [
+					{
+						"propertyName": "Simple Grp Text",
+						"propertyKeyword": "simpleGrpText",
+						"propertyTooltip": "",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Group Number",
+						"propertyKeyword": "grpNumber",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"allowNegative": false
+					}
+				]
+			},
+// “groupInput” can have the following states - 0 items, 1 item, and many items.
+// “blockInput” has only 2 states - 0 items or 1 item. 
+// This gives us an easy way to represent it as an object and not as an array internally which is beneficial for processing 
+// and forward-engineering in particular.
+			{
+				"propertyName": "Block",
+				"propertyType": "block",
+				"propertyKeyword": "grpProp",
+				"propertyTooltip": "",
+				"structure": [
+					{
+						"propertyName": "Simple Grp Text",
+						"propertyKeyword": "simpleGrpText",
+						"propertyTooltip": "",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Group Number",
+						"propertyKeyword": "grpNumber",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"allowNegative": false
+					}
+				]
+			},
+			{
+				"propertyName": "Field List",
+				"propertyKeyword": "keyList",
+				"propertyType": "fieldList",
+				"template": "orderedList"
+			}, 
+			{
+				"propertyName": "List with attribute",
+				"propertyKeyword": "keyListOrder",
+				"propertyType": "fieldList",
+				"template": "orderedList",
+				"attributeList": [
+					"ascending",
+					"descending"
+				]
+			}
+
+*/
+
+{
+	"lowerTab": "JsonDetails",
+	"structure": {
+		"text": [
+			"name",
+			"code",
+			"schemaId",
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			"type",
+			{
+				"propertyName": "Subtype",
+				"propertyKeyword": "mode",
+				"propertyType": "select",
+				"options": [
+					"string",
+					"varchar",
+					"char"
+				],
+				"data": "options",
+				"valueType": "string"
+			},
+			"format",
+			"pattern",
+			"minLength",
+			"maxLength",
+			"enum",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"primaryKey",
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "unique",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"default",
+			{
+				"propertyName": "Check",
+				"propertyKeyword": "check",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			"dependencies",
+			"foreignCollection",
+			"foreignField",
+			"relationshipType",
+			"sample",
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		],
+		"numeric": [
+			"name",
+			"code",
+			"schemaId",
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			"type",
+			{
+				"propertyName": "Subtype",
+				"propertyKeyword": "mode",
+				"propertyType": "select",
+				"options": [
+					"tinyint",
+					"smallint",
+					"int",
+					"bigint",
+					"float",
+					"double",
+					"decimal"
+				],
+				"data": "options",
+				"valueType": "string"
+			},
+			"minimum",
+			"exclusiveMinimum",
+			"maximum",
+			"exclusiveMaximum",
+			"multipleOf",
+			"divisibleBy",
+			{
+				"propertyName": "Precision",
+				"propertyKeyword": "precision",
+				"propertyType": "numeric",
+				"valueType": "number",
+				"allowNegative": false,
+				"dependency": {
+					"key": "mode",
+					"value": "decimal"
+				}
+			},
+			{
+				"propertyName": "Scale",
+				"propertyKeyword": "scale",
+				"propertyType": "numeric",
+				"valueType": "number",
+				"allowNegative": false,
+				"dependency": {
+					"key": "mode",
+					"value": "decimal"
+				}
+			},
+			"pattern",
+			"unit",
+			"enum",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"primaryKey",
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "unique",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"default",
+			{
+				"propertyName": "Check",
+				"propertyKeyword": "check",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			"dependencies",
+			"foreignCollection",
+			"foreignField",
+			"relationshipType",
+			"sample",
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		],
+		"bool": [
+			"name",
+			"code",
+			"schemaId",
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			"type",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"default",
+			{
+				"propertyName": "Check",
+				"propertyKeyword": "check",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			"dependencies",
+			"sample",
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		],
+		"binary": [
+			"name",
+			"code",
+			"sampleName",
+			"schemaId",
+			"refPath",
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			"type",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"primaryKey",
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "unique",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"default",
+			{
+				"propertyName": "Check",
+				"propertyKeyword": "check",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			"dependencies",
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		],
+		"___1": [],
+		"timestamp": [
+			"name",
+			"code",
+			"sampleName",
+			"schemaId",
+			"refPath",
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			"type",
+			"pattern",
+			"enum",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"primaryKey",
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "unique",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"default",
+			{
+				"propertyName": "Check",
+				"propertyKeyword": "check",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			"dependencies",
+			"sample",
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		],
+		"date": [
+			"name",
+			"code",
+			"sampleName",
+			"schemaId",
+			"refPath",
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			"type",
+			"pattern",
+			"enum",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"primaryKey",
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "unique",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"default",
+			{
+				"propertyName": "Check",
+				"propertyKeyword": "check",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			"dependencies",
+			"sample",
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		],
+		"interval": [
+			"name",
+			"code",
+			"sampleName",
+			"schemaId",
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			"type",
+			"pattern",
+			"enum",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"primaryKey",
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "unique",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"default",
+			{
+				"propertyName": "Check",
+				"propertyKeyword": "check",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			"dependencies",
+			"sample",
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		],
+		"___2": [],
+		"array": [
+			"name",
+			"code",
+			"sampleName",
+			"schemaId",
+			"refPath",
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			"type",
+			{
+				"propertyName": "Subtype",
+				"propertyKeyword": "subtype",
+				"propertyType": "select",
+				"options": [
+					"array<txt>",
+					"array<num>",
+					"array<ts>",
+					"array<date>",
+					"array<intrvl>",
+					"array<array>",
+					"array<map>",
+					"array<struct>",
+					"array<union>"
+				]
+			},
+			"minItems",
+			"maxItems",
+			"uniqueItems",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"primaryKey",
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "unique",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Check",
+				"propertyKeyword": "check",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			"dependencies",
+			"additionalItems",
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		],
+		"map": [
+			"name",
+			"code",
+			"sampleName",
+			"schemaId",
+			"refPath",
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			"type",
+			{
+				"propertyName": "Key type",
+				"propertyKeyword": "keyType",
+				"propertyType": "select",
+				"options": [
+					"",
+					"text",
+					"numeric"
+				]
+			},
+			{
+				"propertyName": "Key subtype",
+				"propertyKeyword": "keySubtype",
+				"propertyType": "select",
+				"options": [
+					"string",
+					"varchar",
+					"char"
+				],
+				"dependency": {
+					"key": "keyType",
+					"value": "text"
+				}
+			},
+			{
+				"propertyName": "Key subtype",
+				"propertyKeyword": "keySubtype",
+				"propertyType": "select",
+				"options": [
+					"tinyint",
+					"smallint",
+					"int",
+					"bigint",
+					"float",
+					"double",
+					"decimal"
+				],
+				"dependency": {
+					"key": "keyType",
+					"value": "numeric"
+				}
+			},
+			{
+				"propertyName": "Value type",
+				"propertyKeyword": "subtype",
+				"propertyType": "select",
+				"options": [
+					"map<txt>",
+					"map<num>",
+					"map<bool>",
+					"map<ts>",
+					"map<date>",
+					"map<intrvl>",
+					"map<array>",
+					"map<map>",
+					"map<struct>",
+					"map<union>"
+				]
+			},
+			"minProperties",
+			"maxProperties",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"primaryKey",
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "unique",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Check",
+				"propertyKeyword": "check",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			"dependencies",
+			"additionalProperties",
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		],
+		"struct": [
+			"name",
+			"code",
+			"sampleName",
+			"schemaId",
+			"refPath",
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			"type",
+			"dependencies",
+			"minProperties",
+			"maxProperties",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			"primaryKey",
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "unique",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Check",
+				"propertyKeyword": "check",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			"additionalProperties",
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		]
+	}
+} 

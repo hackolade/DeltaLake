@@ -1,0 +1,15 @@
+{
+	"name": "bool",
+	"erdAbbreviation": "<bool>",
+	"dtdAbbreviation": "{0/1}",
+	"parentType": "boolean",
+	"sample": true,
+	"useSample": true,
+	"defaultValues": {
+		"primaryKey": false,
+		"default": "",
+		"enum": [],
+		"sample": ""
+	},
+	"hiddenOnEntity": "view"
+}

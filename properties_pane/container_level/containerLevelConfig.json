@@ -1,0 +1,206 @@
+/*
+* Copyright © 2016-2019 by IntegrIT S.A. dba Hackolade.  All rights reserved.
+*
+* The copyright to the computer software herein is the property of IntegrIT S.A.
+* The software may be used and/or copied only with the written permission of 
+* IntegrIT S.A. or in accordance with the terms and conditions stipulated in 
+* the agreement/contract under which the software has been supplied. 
+
+
+In order to define custom properties for any object's properties pane, you may copy/paste from the following,
+making sure that you maintain a proper JSON format.
+
+			{
+				"propertyName": "Simple text",
+				"propertyKeyword": "simpletextProp",
+				"propertyType": "text",
+				"sampleGen": "&containerName|&entityName|&random|<value>"
+			},
+			{
+				"propertyName": "Text area",
+				"propertyKeyword": "textareaProp",
+				"propertyTooltip": "Popup for multi-line text entry",
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			{
+				"propertyName": "Dropdown selection",
+				"propertyKeyword": "dropdownProp",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"Option 1",
+					"Option 2",
+					"Option 3",
+					"Option 4"
+				]
+			},
+			{
+				"propertyName": "Numeric",
+				"propertyKeyword": "numericProp",
+				"propertyValidate": true,
+				"propertyType": "numeric",
+				"valueType": "number",
+				"allowNegative": false,
+				"sampleGen": "&containerName|&entityName|&random|<value>"
+			},
+			{
+				"propertyName": "Checkbox",
+				"propertyKeyword": "checkboxProp",
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Group",
+				"propertyType": "group",
+				"propertyKeyword": "grpProp",
+				"propertyTooltip": "",
+				"structure": [
+					{
+						"propertyName": "Simple Grp Text",
+						"propertyKeyword": "simpleGrpText",
+						"propertyTooltip": "",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Group Number",
+						"propertyKeyword": "grpNumber",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"allowNegative": false
+					}
+				]
+			},
+// “groupInput” can have the following states - 0 items, 1 item, and many items.
+// “blockInput” has only 2 states - 0 items or 1 item. 
+// This gives us an easy way to represent it as an object and not as an array internally which is beneficial for processing 
+// and forward-engineering in particular.
+			{
+				"propertyName": "Block",
+				"propertyType": "block",
+				"propertyKeyword": "grpProp",
+				"propertyTooltip": "",
+				"structure": [
+					{
+						"propertyName": "Simple Grp Text",
+						"propertyKeyword": "simpleGrpText",
+						"propertyTooltip": "",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Group Number",
+						"propertyKeyword": "grpNumber",
+						"propertyType": "numeric",
+						"valueType": "number",
+						"allowNegative": false
+					}
+				]
+			},
+			{
+				"propertyName": "Field List",
+				"propertyKeyword": "keyList",
+				"propertyType": "fieldList",
+				"template": "orderedList"
+			}, 
+			{
+				"propertyName": "List with attribute",
+				"propertyKeyword": "keyListOrder",
+				"propertyType": "fieldList",
+				"template": "orderedList",
+				"attributeList": [
+					"ascending",
+					"descending"
+				]
+			}
+
+*/
+
+[
+	{
+		"lowerTab": "Details",
+		"structure": [
+			{
+				"propertyName": "Technical name",
+				"propertyKeyword": "code",
+				"propertyType": "text"
+			},
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			}
+		],
+		"containerLevelKeys": []
+	},
+	{
+		"lowerTab": "Functions",
+		"structure": [{
+			"propertyName": "Functions",
+			"propertyType": "group",
+			"propertyKeyword": "UDFs",
+			"propertyTooltip": "Creates a temporary or permanent function. Temporary functions are scoped at a session level where as permanent functions are created in the persistent catalog and are made available to all sessions. The resources specified in the USING clause are made available to all executors when they are executed for the first time.",
+			"structure": [
+				{
+					"propertyName": "Name",
+					"propertyKeyword": "funcName",
+					"propertyTooltip": "A name of function to be created.",
+					"propertyType": "text"
+				},
+				{
+					"propertyName": "Or replace",
+					"propertyKeyword": "funcOrReplace",
+					"propertyType": "checkbox",
+					"propertyTooltip": "If specified, the resources for the function are reloaded. This is mainly useful to pick up any changes made to the implementation of the function. This parameter is mutually exclusive to IF NOT EXISTS and cannot be specified together."
+				},
+				{
+					"propertyName": "Temporary",
+					"propertyKeyword": "funcTemporary",
+					"propertyType": "checkbox",
+					"propertyTooltip": "Indicates the scope of function being created. When TEMPORARY is specified, the created function is valid and visible in the current session. No persistent entry is made in the catalog for these kind of functions."
+				},
+				{
+					"propertyName": "If not exist",
+					"propertyKeyword": "funcIfNotExist",
+					"propertyTooltip": "If specified, creates the function only when it does not exist. The creation of function succeeds (no error is thrown) if the specified function already exists in the system. This parameter is mutually exclusive to OR REPLACE and cannot be specified together.",
+					"defaultValue": true,
+					"propertyType": "checkbox"
+				},
+				{
+					"propertyName": "Class name",
+					"propertyKeyword": "funcClassName",
+					"propertyTooltip": "The name of the class that provides the implementation for function to be created. ",
+					"propertyType": "details",
+					"template": "textarea",
+					"markdown": false
+				},
+				{
+					"propertyName": "Resource locations",
+					"propertyKeyword": "funcResourceLocations",
+					"propertyTooltip": "The list of resources that contain the implementation of the function along with its dependencies.",
+					"propertyType": "details",
+					"template": "textarea",
+					"markdown": false
+				},
+				{
+					"propertyName": "Comments",
+					"propertyKeyword": "funcComments",
+					"propertyTooltip": "comments",
+					"addTimestampButton": false,
+					"propertyType": "details",
+					"template": "textarea"
+				}
+			]
+		}]
+	}
+]

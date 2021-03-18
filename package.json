@@ -1,0 +1,38 @@
+{
+	"name": "DeltaLake",
+	"version": "0.0.1",
+	"versionDate": "2021-03-15",
+	"author": "hackolade",
+	"engines": {
+		"hackolade": "4.3.12",
+		"hackoladePlugin": "1.2.0"
+	},
+	"contributes": {
+		"target": {
+			"applicationTarget": "DeltaLake",
+			"title": "Delta Lake on Databricks",
+			"versions": [
+				"3.x"
+			]
+		},
+		"features": {
+            "views": {
+                "enabled": true,
+                "viewLevel": "model",
+                "disablePipelines": true
+            },
+			"nestedCollections": false,
+			"disablePatternField": false,
+			"enableForwardEngineering": true,
+			"disableMultipleTypes": false,
+			"enableReverseEngineering": true,
+			"disableChoices": false,
+			"enableJsonType": true,
+			"relationships": {
+                "compositeRelationships": true                
+			},
+			"FEScriptCommentsSupported": ["2.x", "3.x"]
+		}
+	},
+	"description": "Hackolade plugin for Delta Lake on Databricks"
+}

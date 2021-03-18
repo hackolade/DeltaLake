@@ -1,0 +1,45 @@
+{
+	"name": "array",
+	"erdAbbreviation": "<arr>",
+	"dtdAbbreviation": "[...]",
+	"parentType": "array",
+	"useSample": true,
+	"defaultValues": {
+		"subtype": "array<txt>",
+		"properties": [],
+		"primaryKey": false,
+		"additionalItems": true,
+		"minItems": "",
+		"maxItems": "",
+		"uniqueItems": false
+	},
+	"subtypes": {
+		"array<str>": {
+			"childValueType": "text"
+		},
+		"array<num>": {
+			"childValueType": "numeric"
+		},
+		"array<ts>": {
+			"childValueType": "timestamp"
+		},
+		"array<date>": {
+			"childValueType": "date"
+		},
+		"array<intrvl>": {
+			"childValueType": "interval"
+		},
+		"array<array>": {
+			"childValueType": "array"
+		},
+		"array<map>": {
+			"childValueType": "map"
+		},
+		"array<struct>": {
+			"childValueType": "struct"
+		},
+		"array<union>": {
+		}
+	},
+	"hiddenOnEntity": "view"
+}

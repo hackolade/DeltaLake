@@ -1,0 +1,25 @@
+{
+	"name": "interval",
+	"erdAbbreviation": "<intrvl>",
+	"dtdAbbreviation": "{intrvl}",
+	"parentType": "string",
+	"useSample": true,
+	"sample": "2018-01T15 to 2018-04T15",
+	"defaultValues": {
+		"schemaId": "",
+		"description": "",
+		"required": false,
+		"primaryKey": false,
+		"static": false,
+		"default": "",
+		"enum": [],
+		"sample":"",
+		"pattern": "",
+		"comments":"",
+		"format": ""
+	},
+	"descriptor": [{
+		"format": "PnYnMnDTnHnMnS"
+	}],
+	"hiddenOnEntity": "view"
+}

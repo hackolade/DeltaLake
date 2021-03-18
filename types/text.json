@@ -1,0 +1,45 @@
+{
+	"name": "text",
+	"erdAbbreviation": "<txt>",
+	"dtdAbbreviation": "{ABC}",
+	"parentType": "string",
+	"useSample": true,
+	"jsonType": {
+		"order": 1,
+		"name": "string"
+	},
+	"default": true,
+	"defaultValues": {
+		"primaryKey": false,
+		"relationshipType": "",
+		"parentRelationship": "",
+		"childRelationships": [],
+		"foreignCollection": "",
+		"foreignField": [],
+		"default": "",
+		"minLength": "",
+		"maxLength": "",
+		"pattern": "",
+		"enum": [],
+		"sample":"",
+		"comments":"",
+		"mode": "string"
+	},
+	"descriptor": [{
+		"schema": {
+			"format": "time"
+		},
+		"format": "hh:mm:ss"
+	}, {
+		"schema": {
+			"format": "time"
+		},
+		"format": "hh:mm:ss.nnn"
+	}, {
+		"schema": {
+			"format": "time"
+		},
+		"format": "hh:mm:ss.nnnnnn"
+	}],
+	"hiddenOnEntity": "view"
+}
