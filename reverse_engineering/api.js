@@ -4,166 +4,49 @@ const _ = require('lodash');
 const uuid = require('uuid');
 const async = require('async');
 const fs = require('fs');
-const thriftService = require('./thriftService/thriftService');
-const hiveHelper = require('./thriftService/hiveHelper');
 const entityLevelHelper = require('./entityLevelHelper');
-const TCLIService = require('./TCLIService/Thrift_0.9.3_Hive_2.1.1/TCLIService');
-const TCLIServiceTypes = require('./TCLIService/Thrift_0.9.3_Hive_2.1.1/TCLIService_types');
 const logHelper = require('./logHelper');
-const mapJsonSchema = require('./thriftService/mapJsonSchema');
-const createKerberos = require('./thriftService/hackolade/createKerberos/createKerberos');
 
-const antlr4 = require('antlr4');
-const HiveLexer = require('./parser/HiveLexer.js');
-const HiveParser = require('./parser/HiveParser.js');
-const hqlToCollectionsVisitor = require('./hqlToCollectionsVisitor.js');
-const commandsService = require('./commandsService');
-const ExprErrorListener = require('./antlrErrorListener');
+const fetchRequestHelper = require('./helpers/fetchRequestHelper')
+const deltaLakeHelper = require('./helpers/DeltaLakeHelper')
 
 module.exports = {
-	connect: function(connectionInfo, logger, cb, app){
-		if (connectionInfo.path && (connectionInfo.path || '').charAt(0) !== '/') {
-			connectionInfo.path = '/' + connectionInfo.path;
-		}
 
-		const kerberos = () => createKerberos(app, connectionInfo, logger);
-
-		connectionInfo.isHTTPS = Boolean(
-			connectionInfo.mode === 'http' && (isSsl(connectionInfo.ssl) || connectionInfo.ssl === 'https')
-		); 
-
-		if (connectionInfo.ssl === 'https') {
-			const rootCas = require('ssl-root-cas/latest').inject();
-			if (connectionInfo.httpsCA) {
-				connectionInfo.httpsCA.split(',').filter(Boolean).forEach(
-					certPath => rootCas.addFile(certPath.trim())
-				);
-			}
-			require('https').globalAgent.options.ca = rootCas;
-		}
-
-		getSslCerts(connectionInfo, app)
-		.then((sslCerts) => {
-			if (isSsl(connectionInfo.ssl)) {
-				logger.log('info', 'SSL certificates successfully retrieved', 'Connection')
-			}
-
-			return thriftService.connect({
-				host: connectionInfo.host,
-				port: connectionInfo.port,
-				username: connectionInfo.user,
-				password: connectionInfo.password,
-				authMech: connectionInfo.authMechanism || 'PLAIN',
-				version: connectionInfo.version,
-				mode: connectionInfo.mode,
-				configuration: {
-					krb_host: connectionInfo.authMechanism === 'GSSAPI' ? connectionInfo.krb_host : undefined,
-					krb_service: connectionInfo.authMechanism === 'GSSAPI' ? connectionInfo.krb_service : undefined
-				},
-				options: Object.assign({}, {
-					https: connectionInfo.isHTTPS,
-					path: connectionInfo.path,
-					ssl: isSsl(connectionInfo.ssl),
-					rejectUnauthorized: connectionInfo.disableRejectUnauthorized === true ? false : true,
-				}, sslCerts)
-			})()(TCLIService, TCLIServiceTypes, {
-				log: (message) => {
-					logger.log('info', { message }, 'Query info')
-				}
-			}, kerberos);
-		})
-		.then(({ cursor, session }) => {
-			cb(null, session, cursor);
-		}).catch(err => {
-			setTimeout(() => {
-				cb(err.message || err);
-			}, 1000);
-		});
-	},
-
-	disconnect: function(connectionInfo, cb){
+	disconnect: function (connectionInfo, cb) {
 		cb();
 	},
 
-	testConnection: function(connectionInfo, logger, cb, app){
-		logInfo('Test connection', connectionInfo, logger);
-		this.connect(connectionInfo, logger, (err) => {
-			if (err) {
-				logger.log('error', { message: err.message, stack: err.stack, error: err }, 'Connection failed');
-			}
-
-			return cb(err);
-		}, app);
+	testConnection: function (connectionInfo, logger, cb) {
+		logInfo('Test connection', connectionInfo, logger, logger);
+		this.getDbCollectionsNames(connectionInfo, logger, (err, res) => {
+			return cb(Boolean(err));
+		});
 	},
 
-	getDbCollectionsNames: function(connectionInfo, logger, cb, app) {
+	getDbCollectionsNames: async function (connectionInfo, logger, cb) {
 		logInfo('Retrieving databases and tables information', connectionInfo, logger);
-		
-		const { includeSystemCollection, dbName } = connectionInfo;
+		try {
+			const dbNames = await fetchRequestHelper.fetchClusterDatabaseNames(connectionInfo);
+			const dbCollectionsNames = await Promise.all(dbNames.map(dbName => deltaLakeHelper.getDatabaseCollectionNames(connectionInfo,dbName)));
 
-		this.connect(connectionInfo, logger, (err, session, cursor) => {
-			if (err) {
-				logger.log('error', err, 'Connection failed');
-
-				return cb(err);
-			}
-			const exec = cursor.asyncExecute.bind(null, session.sessionHandle);
-			const execWithResult = getExecutorWithResult(cursor, exec);
-			const getTables = getExecutorWithResult(cursor, cursor.getTables.bind(null, session.sessionHandle));
-			const getDbNames = () => {
-				if (dbName) {
-					return Promise.resolve([dbName]);
-				}
-
-				return execWithResult('show databases').then(databases => databases.map(d => d.database_name));
-			};
-
-			getDbNames()
-				.then(databases => {
-					async.mapSeries(databases, (dbName, next) => {
-						const tableTypes = [ "TABLE", "MATERIALIZED_VIEW", "VIEW", "GLOBAL TEMPORARY", "TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM" ];
-						if (includeSystemCollection) {
-							tableTypes.push("SYSTEM TABLE");
-						}
-						getTables(dbName, tableTypes)
-							.then(tables => {
-								return tables.reduce(({ dbCollections, views }, table) => {
-									if (['MATERIALIZED_VIEW', 'VIEW'].includes(table.TABLE_TYPE)) {
-										return { dbCollections, views: [ ...views, table.TABLE_NAME] };
-									}
-
-									return { views, dbCollections: [ ...dbCollections, table.TABLE_NAME] };
-								}, { dbCollections: [], views: [] });
-							})
-							.then(({ views, dbCollections }) => {
-								next(null, {
-									isEmpty: !Boolean(dbCollections.length),
-									dbName,
-									dbCollections,
-									views,
-								})
-							})
-							.catch(err => next(err))
-					}, (err, result) => {
-						if (err) {
-							logger.log('error', { message: err.message, stack: err.stack, error: err }, 'Retrieving databases and tables information');
-						}
-
-						setTimeout(() => {
-							cb(err, result);
-						}, 1000);
-					});
-				});
-		}, app);
+			cb(null, dbCollectionsNames);
+		} catch (err) {
+			logger.log(
+				'error',
+				{ message: err.message, stack: err.stack, error: err },
+				'Retrieving databases and tables names'
+			);
+			cb({ message: err.message, stack: err.stack });
+		}
 	},
 
-	getDbCollectionsData: function(data, logger, cb, app){
+	getDbCollectionsData: function (data, logger, cb) {
 		logger.log('info', data, 'Retrieving schema', data.hiddenKeys);
 		const progress = (message) => {
 			logger.log('info', message, 'Retrieving schema', data.hiddenKeys);
 			logger.progress(message);
 		};
-
+		debugger
 		const tables = data.collectionData.collections;
 		const databases = data.collectionData.dataBaseNames;
 		const pagination = data.pagination;
@@ -171,211 +54,211 @@ module.exports = {
 		let modelData = null;
 		const recordSamplingSettings = data.recordSamplingSettings;
 		const fieldInference = data.fieldInference;
-	
-		this.connect(data, logger, async (err, session, cursor) => {
-			if (err) {
-				logger.log('error', err, 'Retrieving schema');
-				return cb(err);
-			}
 
-			try {
-				const exec = cursor.asyncExecute.bind(null, session.sessionHandle);
-				const query = getExecutorWithResult(cursor, exec);
-				const plans = await query('SHOW RESOURCE PLANS');
-				const resourcePlans = await Promise.all(plans.map(async plan => {
-					const resourcePlanData = await query(`SHOW RESOURCE PLAN ${plan.rp_name}`);
+		// this.connect(data, logger, async (err, session, cursor) => {
+		// 	if (err) {
+		// 		logger.log('error', err, 'Retrieving schema');
+		// 		return cb(err);
+		// 	}
 
-					return { name: plan.rp_name, ...parseResourcePlan(resourcePlanData) };
-				}));
-				modelData = { resourcePlans };
-			} catch (err) {}
-			async.mapSeries(databases, (dbName, nextDb) => {
-				const exec = cursor.asyncExecute.bind(null, session.sessionHandle);
-				const query = getExecutorWithResult(cursor, exec);
-				const getPrimaryKeys = getExecutorWithResult(
-					cursor,
-					cursor.getPrimaryKeys.bind(null, session.sessionHandle)
-				);
-				const tableNames = tables[dbName] || [];
-				exec(`use ${dbName}`)
-					.then(() => query(`describe database ${dbName}`))
-					.then((databaseInfo) => {
-						async.mapSeries(tableNames, (tableName, nextTable) => {
-							progress({ message: 'Start sampling data', containerName: dbName, entityName: tableName });
-							const isView = tableName.slice(-4) === ' (v)';
-							if (isView) {
-								const viewName = tableName.slice(0, -4)
-								return query(`describe extended ${viewName}`).then(viewData => {
-									const { schema, additionalDescription } = viewData.reduce((data, item) => {
-										const { schema, isSchemaParsingFinished, additionalDescription } = data;
-										if (!item.col_name || item.col_name === 'Detailed Table Information') {
-											const originalDdl = item.data_type.split('viewOriginalText:')[1] || '';
-											return { ...data, isSchemaParsingFinished: true, additionalDescription: originalDdl};
-										}
-										if (isSchemaParsingFinished) {
-											return { ...data, additionalDescription: `${additionalDescription} ${item.col_name}`};
-										}
-				
-										return { ...data, schema: {
-											...schema,
-											[item.col_name]: { comment: item.comment }
-										}};
-									}, { schema: {}, isSchemaParsingFinished: false, additionalDescription: '' });
+		// 	try {
+		// 		const exec = cursor.asyncExecute.bind(null, session.sessionHandle);
+		// 		const query = getExecutorWithResult(cursor, exec);
+		// 		const plans = await query('SHOW RESOURCE PLANS');
+		// 		const resourcePlans = await Promise.all(plans.map(async plan => {
+		// 			const resourcePlanData = await query(`SHOW RESOURCE PLAN ${plan.rp_name}`);
 
-									const metaInfoRegex = /(.*?)(, viewExpandedText:|, tableType:|, rewriteEnabled:)/;
-									
-									const isMaterialized = additionalDescription.includes('tableType:MATERIALIZED_VIEW');
-									const selectStatement = (metaInfoRegex.exec(additionalDescription)[1] || additionalDescription);
+		// 			return { name: plan.rp_name, ...parseResourcePlan(resourcePlanData) };
+		// 		}));
+		// 		modelData = { resourcePlans };
+		// 	} catch (err) {}
+		// 	async.mapSeries(databases, (dbName, nextDb) => {
+		// 		const exec = cursor.asyncExecute.bind(null, session.sessionHandle);
+		// 		const query = getExecutorWithResult(cursor, exec);
+		// 		const getPrimaryKeys = getExecutorWithResult(
+		// 			cursor,
+		// 			cursor.getPrimaryKeys.bind(null, session.sessionHandle)
+		// 		);
+		// 		const tableNames = tables[dbName] || [];
+		// 		exec(`use ${dbName}`)
+		// 			.then(() => query(`describe database ${dbName}`))
+		// 			.then((databaseInfo) => {
+		// 				async.mapSeries(tableNames, (tableName, nextTable) => {
+		// 					progress({ message: 'Start sampling data', containerName: dbName, entityName: tableName });
+		// 					const isView = tableName.slice(-4) === ' (v)';
+		// 					if (isView) {
+		// 						const viewName = tableName.slice(0, -4)
+		// 						return query(`describe extended ${viewName}`).then(viewData => {
+		// 							const { schema, additionalDescription } = viewData.reduce((data, item) => {
+		// 								const { schema, isSchemaParsingFinished, additionalDescription } = data;
+		// 								if (!item.col_name || item.col_name === 'Detailed Table Information') {
+		// 									const originalDdl = item.data_type.split('viewOriginalText:')[1] || '';
+		// 									return { ...data, isSchemaParsingFinished: true, additionalDescription: originalDdl};
+		// 								}
+		// 								if (isSchemaParsingFinished) {
+		// 									return { ...data, additionalDescription: `${additionalDescription} ${item.col_name}`};
+		// 								}
 
-									const viewPackage = {
-										dbName,
-										entityLevel: {},
-										views: [{
-											name: viewName,
-											data: {
-												materialized: isMaterialized
-											},
-											ddl: {
-												script: `CREATE VIEW ${viewName} AS ${selectStatement};`,
-												type: 'teradata'
-											}
-										}],
-										emptyBucket: false,
-										bucketInfo: {
-										}
-									};
-									return nextTable(null, { documentPackage: viewPackage, relationships: [] });
-								}).catch(err => {
-									nextTable(null, { documentPackage: false, relationships: [] })
-								});
-							}
+		// 								return { ...data, schema: {
+		// 									...schema,
+		// 									[item.col_name]: { comment: item.comment }
+		// 								}};
+		// 							}, { schema: {}, isSchemaParsingFinished: false, additionalDescription: '' });
 
-							getLimitByCount(recordSamplingSettings, query.bind(null, `select count(*) as count from ${tableName}`))
-								.then(countDocuments => {
-									progress({ message: 'Start getting data from database', containerName: dbName, entityName: tableName });
+		// 							const metaInfoRegex = /(.*?)(, viewExpandedText:|, tableType:|, rewriteEnabled:)/;
 
-									return getDataByPagination(pagination, countDocuments, (limit, offset, next) => {
-										retrieveData(query, tableName, limit, offset).then(data => {
-												progress({ message: `${limit * (offset + 1)}/${countDocuments}`, containerName: dbName, entityName: tableName });
-												next(null, data);
-											}, err => next(err));
-									});
-								})
-								.then(documents => documents || [])
-								.then((documents) => {
-									progress({ message: `Data fetched successfully`, containerName: dbName, entityName: tableName });									
+		// 							const isMaterialized = additionalDescription.includes('tableType:MATERIALIZED_VIEW');
+		// 							const selectStatement = (metaInfoRegex.exec(additionalDescription)[1] || additionalDescription);
 
-									const documentPackage = {
-										dbName,
-										collectionName: tableName,
-										documents: filterNullValues(documents),
-										indexes: [],
-										bucketIndexes: [],
-										views: [],
-										validation: false,
-										emptyBucket: false,
-										containerLevelKeys: [],
-										bucketInfo: {
-											description: _.get(databaseInfo, '[0].comment', '')
-										}
-									};
+		// 							const viewPackage = {
+		// 								dbName,
+		// 								entityLevel: {},
+		// 								views: [{
+		// 									name: viewName,
+		// 									data: {
+		// 										materialized: isMaterialized
+		// 									},
+		// 									ddl: {
+		// 										script: `CREATE VIEW ${viewName} AS ${selectStatement};`,
+		// 										type: 'teradata'
+		// 									}
+		// 								}],
+		// 								emptyBucket: false,
+		// 								bucketInfo: {
+		// 								}
+		// 							};
+		// 							return nextTable(null, { documentPackage: viewPackage, relationships: [] });
+		// 						}).catch(err => {
+		// 							nextTable(null, { documentPackage: false, relationships: [] })
+		// 						});
+		// 					}
 
-									if (fieldInference.active === 'field') {
-										documentPackage.documentTemplate = _.cloneDeep(documents[0]);
-									}
+		// 					getLimitByCount(recordSamplingSettings, query.bind(null, `select count(*) as count from ${tableName}`))
+		// 						.then(countDocuments => {
+		// 							progress({ message: 'Start getting data from database', containerName: dbName, entityName: tableName });
 
-									return documentPackage;
-								})
-								.then((documentPackage) => {
-									progress({ message: `Start creating schema`, containerName: dbName, entityName: tableName });
+		// 							return getDataByPagination(pagination, countDocuments, (limit, offset, next) => {
+		// 								retrieveData(query, tableName, limit, offset).then(data => {
+		// 										progress({ message: `${limit * (offset + 1)}/${countDocuments}`, containerName: dbName, entityName: tableName });
+		// 										next(null, data);
+		// 									}, err => next(err));
+		// 							});
+		// 						})
+		// 						.then(documents => documents || [])
+		// 						.then((documents) => {
+		// 							progress({ message: `Data fetched successfully`, containerName: dbName, entityName: tableName });									
 
-									return allChain(
-										() => query(`describe formatted ${tableName}`),
-										() => query(`describe extended ${tableName}`),
-										() => exec(`select * from ${tableName} limit 1`).then(cursor.getSchema)
-									).then(([formattedTable, extendedTable, tableSchema]) => {
-										const tableInfo = hiveHelper
-											.getFormattedTable(
-												...cursor.getTCLIService(),
-												cursor.getCurrentProtocol()
-											)(formattedTable);
-										const extendedTableInfo = hiveHelper.getDetailInfoFromExtendedTable(extendedTable);
-										const sample = documentPackage.documents[0];
-										documentPackage.entityLevel = entityLevelHelper.getEntityLevelData(tableName, tableInfo, extendedTableInfo);
-										const { columnToConstraints, notNullColumns } = hiveHelper.getTableColumnsConstraints(extendedTable);
-										return {
-											jsonSchema: hiveHelper.getJsonSchemaCreator(...cursor.getTCLIService(), tableInfo)({ columns: extendedTable, tableColumnsConstraints: columnToConstraints, tableSchema, sample, notNullColumns }),
-											relationships: convertForeignKeysToRelationships(dbName, tableName, tableInfo.foreignKeys || [], data.appVersion)
-										};
-									}).then(({ jsonSchema, relationships }) => {
-										progress({ message: `Schema successfully created`, containerName: dbName, entityName: tableName });
-										
-										return getPrimaryKeys(dbName, tableName)
-											.then(keys => {
-												keys.forEach(key => {
-													jsonSchema.properties[key.COLUMN_NAME].primaryKey = true;
-												});
+		// 							const documentPackage = {
+		// 								dbName,
+		// 								collectionName: tableName,
+		// 								documents: filterNullValues(documents),
+		// 								indexes: [],
+		// 								bucketIndexes: [],
+		// 								views: [],
+		// 								validation: false,
+		// 								emptyBucket: false,
+		// 								containerLevelKeys: [],
+		// 								bucketInfo: {
+		// 									description: _.get(databaseInfo, '[0].comment', '')
+		// 								}
+		// 							};
 
-												return jsonSchema;
-											})
-											.then(jsonSchema => {
-												progress({ message: `Primary keys successfully retrieved`, containerName: dbName, entityName: tableName });
+		// 							if (fieldInference.active === 'field') {
+		// 								documentPackage.documentTemplate = _.cloneDeep(documents[0]);
+		// 							}
 
-												return ({ jsonSchema, relationships });
-											})
-											.catch(err => {
-												return Promise.resolve({ jsonSchema, relationships });
-											});
-									}).then(({ jsonSchema, relationships }) => {
-										return query(`show indexes on ${tableName}`)
-											.then(result => {
-												return getIndexes(result);
-											})
-											.then(indexes => {
-												progress({ message: `Indexes successfully retrieved`, containerName: dbName, entityName: tableName });
-												
-												documentPackage.entityLevel.SecIndxs = indexes;
+		// 							return documentPackage;
+		// 						})
+		// 						.then((documentPackage) => {
+		// 							progress({ message: `Start creating schema`, containerName: dbName, entityName: tableName });
 
-												return { jsonSchema, relationships };
-											})
-											.catch(err => ({ jsonSchema, relationships }));
-									}).then(({ jsonSchema, relationships }) => {
-										if (jsonSchema) {
-											documentPackage.validation = { jsonSchema };
-										}
+		// 							return allChain(
+		// 								() => query(`describe formatted ${tableName}`),
+		// 								() => query(`describe extended ${tableName}`),
+		// 								() => exec(`select * from ${tableName} limit 1`).then(cursor.getSchema)
+		// 							).then(([formattedTable, extendedTable, tableSchema]) => {
+		// 								const tableInfo = hiveHelper
+		// 									.getFormattedTable(
+		// 										...cursor.getTCLIService(),
+		// 										cursor.getCurrentProtocol()
+		// 									)(formattedTable);
+		// 								const extendedTableInfo = hiveHelper.getDetailInfoFromExtendedTable(extendedTable);
+		// 								const sample = documentPackage.documents[0];
+		// 								documentPackage.entityLevel = entityLevelHelper.getEntityLevelData(tableName, tableInfo, extendedTableInfo);
+		// 								const { columnToConstraints, notNullColumns } = hiveHelper.getTableColumnsConstraints(extendedTable);
+		// 								return {
+		// 									jsonSchema: hiveHelper.getJsonSchemaCreator(...cursor.getTCLIService(), tableInfo)({ columns: extendedTable, tableColumnsConstraints: columnToConstraints, tableSchema, sample, notNullColumns }),
+		// 									relationships: convertForeignKeysToRelationships(dbName, tableName, tableInfo.foreignKeys || [], data.appVersion)
+		// 								};
+		// 							}).then(({ jsonSchema, relationships }) => {
+		// 								progress({ message: `Schema successfully created`, containerName: dbName, entityName: tableName });
 
-										return {
-											documentPackage,
-											relationships
-										};
-									});
-								})
-								.then((data) => {
-									nextTable(null, data);
-								})
-								.catch(err => {
-									nextTable(err)
-								});
-						}, (err, data) => {
-							if (err) {
-								nextDb(err);
-							} else {
-								nextDb(err, expandPackages(data));
-							}
-						});
-					});
-			}, (err, data) => {
-				if (err) {
-					logger.log('error', { message: err.message, stack: err.stack, error: err }, 'Retrieving databases and tables information');
+		// 								return getPrimaryKeys(dbName, tableName)
+		// 									.then(keys => {
+		// 										keys.forEach(key => {
+		// 											jsonSchema.properties[key.COLUMN_NAME].primaryKey = true;
+		// 										});
 
-					setTimeout(() => {
-						cb(err);
-					}, 1000);
-				} else {
-					cb(err, ...expandFinalPackages(modelData, data));
-				}
-			});
-		}, app);
+		// 										return jsonSchema;
+		// 									})
+		// 									.then(jsonSchema => {
+		// 										progress({ message: `Primary keys successfully retrieved`, containerName: dbName, entityName: tableName });
+
+		// 										return ({ jsonSchema, relationships });
+		// 									})
+		// 									.catch(err => {
+		// 										return Promise.resolve({ jsonSchema, relationships });
+		// 									});
+		// 							}).then(({ jsonSchema, relationships }) => {
+		// 								return query(`show indexes on ${tableName}`)
+		// 									.then(result => {
+		// 										return getIndexes(result);
+		// 									})
+		// 									.then(indexes => {
+		// 										progress({ message: `Indexes successfully retrieved`, containerName: dbName, entityName: tableName });
+
+		// 										documentPackage.entityLevel.SecIndxs = indexes;
+
+		// 										return { jsonSchema, relationships };
+		// 									})
+		// 									.catch(err => ({ jsonSchema, relationships }));
+		// 							}).then(({ jsonSchema, relationships }) => {
+		// 								if (jsonSchema) {
+		// 									documentPackage.validation = { jsonSchema };
+		// 								}
+
+		// 								return {
+		// 									documentPackage,
+		// 									relationships
+		// 								};
+		// 							});
+		// 						})
+		// 						.then((data) => {
+		// 							nextTable(null, data);
+		// 						})
+		// 						.catch(err => {
+		// 							nextTable(err)
+		// 						});
+		// 				}, (err, data) => {
+		// 					if (err) {
+		// 						nextDb(err);
+		// 					} else {
+		// 						nextDb(err, expandPackages(data));
+		// 					}
+		// 				});
+		// 			});
+		// 	}, (err, data) => {
+		// 		if (err) {
+		// 			logger.log('error', { message: err.message, stack: err.stack, error: err }, 'Retrieving databases and tables information');
+
+		// 			setTimeout(() => {
+		// 				cb(err);
+		// 			}, 1000);
+		// 		} else {
+		// 			cb(err, ...expandFinalPackages(modelData, data));
+		// 		}
+		// 	});
+		// }, app);
 	},
 
 	adaptJsonSchema(data, logger, callback, app) {
@@ -397,7 +280,7 @@ module.exports = {
 					return schema;
 				}
 			});
-		
+
 			callback(null, {
 				...data,
 				jsonSchema: JSON.stringify(result)
@@ -413,32 +296,7 @@ module.exports = {
 	},
 
 	reFromFile: async (data, logger, callback) => {
-		try {
-			const input = await handleFileData(data.filePath);
-			const chars = new antlr4.InputStream(input);
-			const lexer = new HiveLexer.HiveLexer(chars);
-
-			const tokens = new antlr4.CommonTokenStream(lexer);
-			const parser = new HiveParser.HiveParser(tokens);
-			parser.removeErrorListeners();
-			parser.addErrorListener(new ExprErrorListener());
-
-			const tree = parser.statements();
-
-			const hqlToCollectionsGenerator = new hqlToCollectionsVisitor();
-
-			const commands = tree.accept(hqlToCollectionsGenerator);
-			const { result, info, relationships } = commandsService.convertCommandsToReDocs(
-                _.flatten(commands).filter(Boolean),
-                input
-            );
-			callback(null, result, info, relationships, 'multipleSchema');
-		} catch(err) {
-			const { error, title, name } = err;
-			const handledError = handleErrorObject(error || err, title || name);
-			logger.log('error', handledError, title);
-			callback(handledError);
-		}
+		callback(null);
 	},
 };
 
@@ -453,7 +311,7 @@ const filterNullValues = (doc) => {
 	if (Array.isArray(doc)) {
 		return doc.filter(value => value !== null).map(filterNullValues);
 	} else if (doc && typeof doc === 'object') {
-		return Object.entries(doc).filter(([ key, value ]) => value !== null).reduce((result, [ key, value ]) => {
+		return Object.entries(doc).filter(([key, value]) => value !== null).reduce((result, [key, value]) => {
 			return {
 				...result,
 				[key]: filterNullValues(value),
@@ -514,7 +372,7 @@ const getLimitByCount = (recordSamplingSettings, getCount) => new Promise((resol
 	getCount().then((data) => {
 		const count = data[0].count;
 		const limit = Math.ceil((count * Number(recordSamplingSettings.relative.value)) / 100);
-	
+
 		resolve(limit);
 	}).catch(reject);
 });
@@ -561,23 +419,23 @@ const allChain = (...promises) => {
 			return next();
 		});
 	}, Promise.resolve())
-	.then(data => {
-		result.push(data);
+		.then(data => {
+			result.push(data);
 
-		return result;
-	});
+			return result;
+		});
 };
 
 const getExecutorWithResult = (cursor, handler) => {
 	const resultParser = hiveHelper.getResultParser(...cursor.getTCLIService());
-	
+
 	return (...args) => {
 		return handler(...args).then(resp => {
 			return allChain(
 				() => cursor.fetchResult(resp),
 				() => cursor.getSchema(resp)
 			);
-		}).then(([ resultResp, schemaResp ]) => {
+		}).then(([resultResp, schemaResp]) => {
 			return resultParser(schemaResp, resultResp)
 		});
 	};
@@ -585,7 +443,7 @@ const getExecutorWithResult = (cursor, handler) => {
 
 const convertForeignKeysToRelationships = (childDbName, childCollection, foreignKeys, appVersion) => {
 	let preparedForeignKeys = foreignKeys;
-	
+
 	if (appVersion) {
 		preparedForeignKeys = mergeCompositeForeignKeys(foreignKeys);
 	}
@@ -632,7 +490,7 @@ const getIndexes = (indexesFromDb) => {
 		if (!idxType) {
 			return 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler';
 		}
-		
+
 		if (idxType === 'compact') {
 			return 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler';
 		}
@@ -682,7 +540,7 @@ const getKeystoreCertificates = (options, app) => new Promise((resolve, reject) 
 		const ca = caText;
 		const cert = caText;
 		const key = store.getPrivateKey(options.alias);
-	
+
 		return resolve({
 			cert,
 			key,
@@ -712,7 +570,7 @@ const parseMapping = line => {
 	if (!data) {
 		return;
 	}
-	const [ all, mappingType, name ] = data;
+	const [all, mappingType, name] = data;
 
 	return {
 		name,
@@ -725,7 +583,7 @@ const parseTrigger = line => {
 	if (!data) {
 		return;
 	}
-	const [ all, name, condition, action ] = data;
+	const [all, name, condition, action] = data;
 
 	return {
 		name,
@@ -739,7 +597,7 @@ const parseLlapEntityProperties = line => {
 	if (!data) {
 		return;
 	}
-	const [ all, name, options ] = line.match(/(.*)\[([^\[]*)\]$/mi);
+	const [all, name, options] = line.match(/(.*)\[([^\[]*)\]$/mi);
 	const properties = Object.fromEntries(
 		options.split(',')
 			.map(keyValue => keyValue.split('='))
@@ -751,7 +609,7 @@ const parseLlapEntityProperties = line => {
 				return [key, isNaN(value) ? _.toLower(value) : Number(value)];
 			})
 			.filter(Boolean)
-		);
+	);
 
 	return {
 		name,
@@ -832,10 +690,10 @@ const parseResourcePlanEntities = lines => lines.reduce((result, lineData) => {
 		currentPool,
 		triggers
 	};
-}, { triggers: {}, pools: {}});
+}, { triggers: {}, pools: {} });
 
 const parseResourcePlan = planData => {
-	const [ resourcePlan, ...propertiesLines ] = planData;
+	const [resourcePlan, ...propertiesLines] = planData;
 	const properties = parseLlapEntityProperties(resourcePlan.line);
 	const entities = parseResourcePlanEntities(propertiesLines);
 	const resourcePlanProperties = properties.parallelism ? { parallelism: properties.parallelism } : {};
@@ -856,7 +714,7 @@ const handleFileData = filePath => {
 	return new Promise((resolve, reject) => {
 
 		fs.readFile(filePath, 'utf-8', (err, content) => {
-			if(err) {
+			if (err) {
 				reject(err);
 			} else {
 				resolve(content);
@@ -868,5 +726,5 @@ const handleFileData = filePath => {
 const handleErrorObject = (error, title) => {
 	const errorProperties = Object.getOwnPropertyNames(error).reduce((accumulator, key) => ({ ...accumulator, [key]: error[key] }), {});
 
-	return { title , ...errorProperties };
+	return { title, ...errorProperties };
 };

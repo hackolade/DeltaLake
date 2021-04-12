@@ -1,16 +1,11 @@
 [
-    {
-        "type": "file",
-        "menu_label": "HQL File",
-        "name": "hql",
-        "extensions": ["hql"]
-    },
 	{
 		"errors": {
-			"NO_DATABASES": "There is no databases in the Hive instance",
-			"WRONG_CONNECTION": "Can not connect to the Hive instance"
+			"NO_DATABASES": "There is no databases in the Delta Lake instance",
+			"WRONG_CONNECTION": "Can not connect to the Delta Lake instance"
 		},
 		"excludeDocKind": ["id"],
-		"connectionList": [ "name", "host", "port" ]
+		"connectionList": ["name", "host", "provider","version"],
+		"widestColumn": "host"
 	}
 ]
