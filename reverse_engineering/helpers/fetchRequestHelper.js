@@ -24,6 +24,23 @@ const fetchCreateStatementRequest = (query, connectionInfo) => {
 		});
 }
 
+const fetchClusterProperties = async (connectionInfo) =>{
+	const query = connectionInfo.host + `/api/2.0/clusters/get?cluster_id=${connectionInfo.clusterId}`;
+	const options = getRequestOptions(connectionInfo)
+	return await fetch(query, options)
+	.then(response => {
+		if (response.ok) {
+			return response.text()
+		}
+		throw {
+			message: response.statusText, code: response.status, description: body
+		};
+	})
+	.then(body => {
+		return JSON.parse(body);
+	})
+}
+
 const fetchClusterDatabaseNames = async (connectionInfo) => {
 	const getDatabasesNamesCommand = "var values = sqlContext.sql(\"SHOW DATABASES\").select(\"databaseName\").collect().map(_(0)).toList"
 	return await getDFColumnValues(connectionInfo, getDatabasesNamesCommand);
@@ -189,5 +206,6 @@ module.exports = {
 	fetchCreateStatementRequest,
 	fetchClusterDatabaseNames,
 	fetchDatabaseTablesNames,
-	fetchDatabaseViewsNames
+	fetchDatabaseViewsNames,
+	fetchClusterProperties
 };
