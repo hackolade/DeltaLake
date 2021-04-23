@@ -147,7 +147,7 @@ const getViewDataFromDDl = statement => {
 		code: parsedViewData.identifier,
 		viewOrReplace: parsedViewData.orReplace,
 		viewIfNotExist: parsedViewData.ifNotExists,
-		viewTemporary: true,//parsedViewData.temporary,
+		viewTemporary: parsedViewData.temporary,
 		description: parsedViewData.comment,
 		selectStatement: parsedViewData.selectStatement,
 		tableProperties: parsedViewData.tblPropertiesout

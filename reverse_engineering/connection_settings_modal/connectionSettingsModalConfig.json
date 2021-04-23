@@ -9,45 +9,13 @@
 				"inputPlaceholder": "Name"
 			},
 			{
-				"inputLabel": "Databricks workspace URL",
+				"inputLabel": "Workspace URL",
 				"inputKeyword": "host",
 				"inputType": "text",
-				"inputPlaceholder": "https://7589527446217078.8.gcp.databricks.com",
+				"inputPlaceholder": "",
 				"description": "",
 				"validation": {
 					"regex": "([^\\s])"
-				},
-				"dependency": {
-					"key": "provider",
-					"value": "Databricks runtime"
-				}
-			},
-			{
-				"inputLabel": "Databricks workspace URL",
-				"inputKeyword": "host",
-				"inputType": "text",
-				"inputPlaceholder": "https://adb-5238801315411836.16.azuredatabricks.net",
-				"description": "",
-				"validation": {
-					"regex": "([^\\s])"
-				},
-				"dependency": {
-					"key": "provider",
-					"value": "Azure Databricks"
-				}
-			},
-			{
-				"inputLabel": "Databricks workspace URL",
-				"inputKeyword": "host",
-				"inputType": "text",
-				"inputPlaceholder": "https://7589527446217078.8.aws.databricks.com",
-				"description": "",
-				"validation": {
-					"regex": "([^\\s])"
-				},
-				"dependency": {
-					"key": "provider",
-					"value": "Databricks on AWS"
 				}
 			},
 			{
@@ -81,7 +49,7 @@
 		"lowerTab": "Authentication",
 		"structure": [
 			{
-				"inputLabel": "Personal access token",
+				"inputLabel": "Databricks personal access token",
 				"inputKeyword": "accessToken",
 				"inputType": "text",
 				"inputPlaceholder": "access token"
