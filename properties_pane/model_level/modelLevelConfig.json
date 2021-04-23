@@ -306,6 +306,9 @@ making sure that you maintain a proper JSON format.
 							"values": [{
 								"key": "availability",
 								"value": "SPOT"
+							},{
+								"key": "availability",
+								"value": "SPOT_WITH_FALLBACK"
 							}]
 						}
 					},

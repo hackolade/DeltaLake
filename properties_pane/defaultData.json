@@ -11,7 +11,8 @@
 	"collection": {
 		"collectionName": "New table",
 		"collectionUsers": [],
-		"collation": {}
+		"collation": {},
+		"tableIfNotExists": true
 	},
 	"field": {
 		"name": "New column"
@@ -32,6 +33,7 @@
 	},
 	"user": {},
 	"view": {
+		"viewIfNotExist": true,
 		"viewOn": "",
 		"pipeline": ""
 	},
