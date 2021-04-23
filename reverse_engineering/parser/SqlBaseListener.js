@@ -2144,12 +2144,30 @@ SqlBaseListener.prototype.exitColPosition = function(ctx) {
 };
 
 
-// Enter a parse tree produced by SqlBaseParser#complexDataType.
-SqlBaseListener.prototype.enterComplexDataType = function(ctx) {
+// Enter a parse tree produced by SqlBaseParser#arrayDataType.
+SqlBaseListener.prototype.enterArrayDataType = function(ctx) {
 };
 
-// Exit a parse tree produced by SqlBaseParser#complexDataType.
-SqlBaseListener.prototype.exitComplexDataType = function(ctx) {
+// Exit a parse tree produced by SqlBaseParser#arrayDataType.
+SqlBaseListener.prototype.exitArrayDataType = function(ctx) {
+};
+
+
+// Enter a parse tree produced by SqlBaseParser#mapDataType.
+SqlBaseListener.prototype.enterMapDataType = function(ctx) {
+};
+
+// Exit a parse tree produced by SqlBaseParser#mapDataType.
+SqlBaseListener.prototype.exitMapDataType = function(ctx) {
+};
+
+
+// Enter a parse tree produced by SqlBaseParser#structDataType.
+SqlBaseListener.prototype.enterStructDataType = function(ctx) {
+};
+
+// Exit a parse tree produced by SqlBaseParser#structDataType.
+SqlBaseListener.prototype.exitStructDataType = function(ctx) {
 };
 
 

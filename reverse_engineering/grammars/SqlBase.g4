@@ -186,7 +186,7 @@ statement
         (commentSpec |
          (PARTITIONED ON identifierList) |
          (TBLPROPERTIES tablePropertyList))*
-        AS query                                                       #createView
+        AS selectStmt=query                                                       #createView
     | CREATE (OR REPLACE)? GLOBAL? TEMPORARY VIEW
         tableIdentifier ('(' colTypeList ')')? tableProvider
         (OPTIONS tablePropertyList)?                                   #createTempViewUsing
@@ -323,11 +323,11 @@ skewSpec
     ;
 
 locationSpec
-    : LOCATION STRING
+    : LOCATION location=STRING
     ;
 
 commentSpec
-    : COMMENT STRING
+    : COMMENT comment=STRING
     ;
 
 query
@@ -888,9 +888,9 @@ colPosition
     ;
 
 dataType
-    : complex=ARRAY '<' dataType '>'                            #complexDataType
-    | complex=MAP '<' dataType ',' dataType '>'                 #complexDataType
-    | complex=STRUCT ('<' complexColTypeList? '>' | NEQ)        #complexDataType
+    : complex=ARRAY '<' dataType '>'                            #arrayDataType
+    | complex=MAP '<' key=dataType ',' val=dataType '>'         #mapDataType
+    | complex=STRUCT ('<' complexColTypeList? '>' | NEQ)        #structDataType
     | identifier ('(' INTEGER_VALUE (',' INTEGER_VALUE)* ')')?  #primitiveDataType
     ;
 
@@ -1836,7 +1836,7 @@ fragment DIGIT
     ;
 
 fragment LETTER
-    : [A-Z]
+    : [A-Za-z]
     ;
 
 SIMPLE_COMMENT

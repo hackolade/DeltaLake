@@ -2373,23 +2373,6 @@ function SqlBaseParser (input) {
     this.literalNames = literalNames;
     this.symbolicNames = symbolicNames;
 
-	  /**
-	   * When false, INTERSECT is given the greater precedence over the other set
-	   * operations (UNION, EXCEPT and MINUS) as per the SQL standard.
-	   */
-	  public boolean legacy_setops_precedence_enabled = false;
-
-	  /**
-	   * When false, a literal with an exponent would be converted into
-	   * double type rather than decimal type.
-	   */
-	  public boolean legacy_exponent_literal_as_decimal_enabled = false;
-
-	  /**
-	   * When true, the behavior of keywords follows ANSI SQL standard.
-	   */
-	  public boolean SQL_standard_keyword_behavior = false;
-
     return this;
 }
 
@@ -6158,6 +6141,7 @@ SetTableSerDeContext.prototype.accept = function(visitor) {
 
 function CreateViewContext(parser, ctx) {
 	StatementContext.call(this, parser);
+    this.selectStmt = null; // QueryContext;
     StatementContext.prototype.copyFrom.call(this, ctx);
     return this;
 }
@@ -8563,7 +8547,7 @@ SqlBaseParser.prototype.statement = function() {
             this.state = 688;
             this.match(SqlBaseParser.AS);
             this.state = 689;
-            this.query();
+            localctx.selectStmt = this.query();
             break;
 
         case 35:
@@ -11120,6 +11104,7 @@ function LocationSpecContext(parser, parent, invokingState) {
 	antlr4.ParserRuleContext.call(this, parent, invokingState);
     this.parser = parser;
     this.ruleIndex = SqlBaseParser.RULE_locationSpec;
+    this.location = null; // Token
     return this;
 }
 
@@ -11168,7 +11153,7 @@ SqlBaseParser.prototype.locationSpec = function() {
         this.state = 1273;
         this.match(SqlBaseParser.LOCATION);
         this.state = 1274;
-        this.match(SqlBaseParser.STRING);
+        localctx.location = this.match(SqlBaseParser.STRING);
     } catch (re) {
     	if(re instanceof antlr4.error.RecognitionException) {
 	        localctx.exception = re;
@@ -11193,6 +11178,7 @@ function CommentSpecContext(parser, parent, invokingState) {
 	antlr4.ParserRuleContext.call(this, parent, invokingState);
     this.parser = parser;
     this.ruleIndex = SqlBaseParser.RULE_commentSpec;
+    this.comment = null; // Token
     return this;
 }
 
@@ -11241,7 +11227,7 @@ SqlBaseParser.prototype.commentSpec = function() {
         this.state = 1276;
         this.match(SqlBaseParser.COMMENT);
         this.state = 1277;
-        this.match(SqlBaseParser.STRING);
+        localctx.comment = this.match(SqlBaseParser.STRING);
     } catch (re) {
     	if(re instanceof antlr4.error.RecognitionException) {
 	        localctx.exception = re;
@@ -14896,8 +14882,8 @@ SqlBaseParser.prototype.queryTerm = function(_p) {
                         throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 3)");
                     }
                     this.state = 1626;
-                    if (!( legacy_setops_precedence_enabled)) {
-                        throw new antlr4.error.FailedPredicateException(this, "legacy_setops_precedence_enabled");
+                    if (!( false)) {
+                        throw new antlr4.error.FailedPredicateException(this, "false");
                     }
                     this.state = 1627;
                     localctx.operator = this._input.LT(1);
@@ -14930,8 +14916,8 @@ SqlBaseParser.prototype.queryTerm = function(_p) {
                         throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 2)");
                     }
                     this.state = 1633;
-                    if (!( !legacy_setops_precedence_enabled)) {
-                        throw new antlr4.error.FailedPredicateException(this, "!legacy_setops_precedence_enabled");
+                    if (!( !false)) {
+                        throw new antlr4.error.FailedPredicateException(this, "!false");
                     }
                     this.state = 1634;
                     localctx.operator = this.match(SqlBaseParser.INTERSECT);
@@ -14956,8 +14942,8 @@ SqlBaseParser.prototype.queryTerm = function(_p) {
                         throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 1)");
                     }
                     this.state = 1640;
-                    if (!( !legacy_setops_precedence_enabled)) {
-                        throw new antlr4.error.FailedPredicateException(this, "!legacy_setops_precedence_enabled");
+                    if (!( !false)) {
+                        throw new antlr4.error.FailedPredicateException(this, "!false");
                     }
                     this.state = 1641;
                     localctx.operator = this._input.LT(1);
@@ -26400,23 +26386,33 @@ DataTypeContext.prototype.copyFrom = function(ctx) {
 };
 
 
-function ComplexDataTypeContext(parser, ctx) {
+function MapDataTypeContext(parser, ctx) {
 	DataTypeContext.call(this, parser);
     this.complex = null; // Token;
+    this.key = null; // DataTypeContext;
+    this.val = null; // DataTypeContext;
     DataTypeContext.prototype.copyFrom.call(this, ctx);
     return this;
 }
 
-ComplexDataTypeContext.prototype = Object.create(DataTypeContext.prototype);
-ComplexDataTypeContext.prototype.constructor = ComplexDataTypeContext;
+MapDataTypeContext.prototype = Object.create(DataTypeContext.prototype);
+MapDataTypeContext.prototype.constructor = MapDataTypeContext;
 
-SqlBaseParser.ComplexDataTypeContext = ComplexDataTypeContext;
+SqlBaseParser.MapDataTypeContext = MapDataTypeContext;
 
-ComplexDataTypeContext.prototype.LT = function() {
+MapDataTypeContext.prototype.LT = function() {
     return this.getToken(SqlBaseParser.LT, 0);
 };
 
-ComplexDataTypeContext.prototype.dataType = function(i) {
+MapDataTypeContext.prototype.GT = function() {
+    return this.getToken(SqlBaseParser.GT, 0);
+};
+
+MapDataTypeContext.prototype.MAP = function() {
+    return this.getToken(SqlBaseParser.MAP, 0);
+};
+
+MapDataTypeContext.prototype.dataType = function(i) {
     if(i===undefined) {
         i = null;
     }
@@ -26426,45 +26422,121 @@ ComplexDataTypeContext.prototype.dataType = function(i) {
         return this.getTypedRuleContext(DataTypeContext,i);
     }
 };
-
-ComplexDataTypeContext.prototype.GT = function() {
-    return this.getToken(SqlBaseParser.GT, 0);
+MapDataTypeContext.prototype.enterRule = function(listener) {
+    if(listener instanceof SqlBaseListener ) {
+        listener.enterMapDataType(this);
+	}
 };
 
-ComplexDataTypeContext.prototype.ARRAY = function() {
-    return this.getToken(SqlBaseParser.ARRAY, 0);
+MapDataTypeContext.prototype.exitRule = function(listener) {
+    if(listener instanceof SqlBaseListener ) {
+        listener.exitMapDataType(this);
+	}
 };
 
-ComplexDataTypeContext.prototype.MAP = function() {
-    return this.getToken(SqlBaseParser.MAP, 0);
+MapDataTypeContext.prototype.accept = function(visitor) {
+    if ( visitor instanceof SqlBaseVisitor ) {
+        return visitor.visitMapDataType(this);
+    } else {
+        return visitor.visitChildren(this);
+    }
 };
 
-ComplexDataTypeContext.prototype.STRUCT = function() {
+
+function StructDataTypeContext(parser, ctx) {
+	DataTypeContext.call(this, parser);
+    this.complex = null; // Token;
+    DataTypeContext.prototype.copyFrom.call(this, ctx);
+    return this;
+}
+
+StructDataTypeContext.prototype = Object.create(DataTypeContext.prototype);
+StructDataTypeContext.prototype.constructor = StructDataTypeContext;
+
+SqlBaseParser.StructDataTypeContext = StructDataTypeContext;
+
+StructDataTypeContext.prototype.STRUCT = function() {
     return this.getToken(SqlBaseParser.STRUCT, 0);
 };
 
-ComplexDataTypeContext.prototype.NEQ = function() {
+StructDataTypeContext.prototype.LT = function() {
+    return this.getToken(SqlBaseParser.LT, 0);
+};
+
+StructDataTypeContext.prototype.GT = function() {
+    return this.getToken(SqlBaseParser.GT, 0);
+};
+
+StructDataTypeContext.prototype.NEQ = function() {
     return this.getToken(SqlBaseParser.NEQ, 0);
 };
 
-ComplexDataTypeContext.prototype.complexColTypeList = function() {
+StructDataTypeContext.prototype.complexColTypeList = function() {
     return this.getTypedRuleContext(ComplexColTypeListContext,0);
 };
-ComplexDataTypeContext.prototype.enterRule = function(listener) {
+StructDataTypeContext.prototype.enterRule = function(listener) {
     if(listener instanceof SqlBaseListener ) {
-        listener.enterComplexDataType(this);
+        listener.enterStructDataType(this);
 	}
 };
 
-ComplexDataTypeContext.prototype.exitRule = function(listener) {
+StructDataTypeContext.prototype.exitRule = function(listener) {
     if(listener instanceof SqlBaseListener ) {
-        listener.exitComplexDataType(this);
+        listener.exitStructDataType(this);
 	}
 };
 
-ComplexDataTypeContext.prototype.accept = function(visitor) {
+StructDataTypeContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
-        return visitor.visitComplexDataType(this);
+        return visitor.visitStructDataType(this);
+    } else {
+        return visitor.visitChildren(this);
+    }
+};
+
+
+function ArrayDataTypeContext(parser, ctx) {
+	DataTypeContext.call(this, parser);
+    this.complex = null; // Token;
+    DataTypeContext.prototype.copyFrom.call(this, ctx);
+    return this;
+}
+
+ArrayDataTypeContext.prototype = Object.create(DataTypeContext.prototype);
+ArrayDataTypeContext.prototype.constructor = ArrayDataTypeContext;
+
+SqlBaseParser.ArrayDataTypeContext = ArrayDataTypeContext;
+
+ArrayDataTypeContext.prototype.LT = function() {
+    return this.getToken(SqlBaseParser.LT, 0);
+};
+
+ArrayDataTypeContext.prototype.dataType = function() {
+    return this.getTypedRuleContext(DataTypeContext,0);
+};
+
+ArrayDataTypeContext.prototype.GT = function() {
+    return this.getToken(SqlBaseParser.GT, 0);
+};
+
+ArrayDataTypeContext.prototype.ARRAY = function() {
+    return this.getToken(SqlBaseParser.ARRAY, 0);
+};
+ArrayDataTypeContext.prototype.enterRule = function(listener) {
+    if(listener instanceof SqlBaseListener ) {
+        listener.enterArrayDataType(this);
+	}
+};
+
+ArrayDataTypeContext.prototype.exitRule = function(listener) {
+    if(listener instanceof SqlBaseListener ) {
+        listener.exitArrayDataType(this);
+	}
+};
+
+ArrayDataTypeContext.prototype.accept = function(visitor) {
+    if ( visitor instanceof SqlBaseVisitor ) {
+        return visitor.visitArrayDataType(this);
     } else {
         return visitor.visitChildren(this);
     }
@@ -26532,7 +26604,7 @@ SqlBaseParser.prototype.dataType = function() {
         var la_ = this._interp.adaptivePredict(this._input,360,this._ctx);
         switch(la_) {
         case 1:
-            localctx = new ComplexDataTypeContext(this, localctx);
+            localctx = new ArrayDataTypeContext(this, localctx);
             this.enterOuterAlt(localctx, 1);
             this.state = 2780;
             localctx.complex = this.match(SqlBaseParser.ARRAY);
@@ -26545,24 +26617,24 @@ SqlBaseParser.prototype.dataType = function() {
             break;
 
         case 2:
-            localctx = new ComplexDataTypeContext(this, localctx);
+            localctx = new MapDataTypeContext(this, localctx);
             this.enterOuterAlt(localctx, 2);
             this.state = 2785;
             localctx.complex = this.match(SqlBaseParser.MAP);
             this.state = 2786;
             this.match(SqlBaseParser.LT);
             this.state = 2787;
-            this.dataType();
+            localctx.key = this.dataType();
             this.state = 2788;
             this.match(SqlBaseParser.T__3);
             this.state = 2789;
-            this.dataType();
+            localctx.val = this.dataType();
             this.state = 2790;
             this.match(SqlBaseParser.GT);
             break;
 
         case 3:
-            localctx = new ComplexDataTypeContext(this, localctx);
+            localctx = new StructDataTypeContext(this, localctx);
             this.enterOuterAlt(localctx, 3);
             this.state = 2792;
             localctx.complex = this.match(SqlBaseParser.STRUCT);
@@ -28662,8 +28734,8 @@ SqlBaseParser.prototype.identifier = function() {
         case 2:
             this.enterOuterAlt(localctx, 2);
             this.state = 2999;
-            if (!( !SQL_standard_keyword_behavior)) {
-                throw new antlr4.error.FailedPredicateException(this, "!SQL_standard_keyword_behavior");
+            if (!( !false)) {
+                throw new antlr4.error.FailedPredicateException(this, "!false");
             }
             this.state = 3000;
             this.strictNonReserved();
@@ -28815,8 +28887,8 @@ SqlBaseParser.prototype.strictIdentifier = function() {
             localctx = new UnquotedIdentifierContext(this, localctx);
             this.enterOuterAlt(localctx, 3);
             this.state = 3005;
-            if (!( SQL_standard_keyword_behavior)) {
-                throw new antlr4.error.FailedPredicateException(this, "SQL_standard_keyword_behavior");
+            if (!( false)) {
+                throw new antlr4.error.FailedPredicateException(this, "false");
             }
             this.state = 3006;
             this.ansiNonReserved();
@@ -28826,8 +28898,8 @@ SqlBaseParser.prototype.strictIdentifier = function() {
             localctx = new UnquotedIdentifierContext(this, localctx);
             this.enterOuterAlt(localctx, 4);
             this.state = 3007;
-            if (!( !SQL_standard_keyword_behavior)) {
-                throw new antlr4.error.FailedPredicateException(this, "!SQL_standard_keyword_behavior");
+            if (!( !false)) {
+                throw new antlr4.error.FailedPredicateException(this, "!false");
             }
             this.state = 3008;
             this.nonReserved();
@@ -29349,8 +29421,8 @@ SqlBaseParser.prototype.number = function() {
             localctx = new ExponentLiteralContext(this, localctx);
             this.enterOuterAlt(localctx, 1);
             this.state = 3013;
-            if (!( !legacy_exponent_literal_as_decimal_enabled)) {
-                throw new antlr4.error.FailedPredicateException(this, "!legacy_exponent_literal_as_decimal_enabled");
+            if (!( !false)) {
+                throw new antlr4.error.FailedPredicateException(this, "!false");
             }
             this.state = 3015;
             this._errHandler.sync(this);
@@ -29368,8 +29440,8 @@ SqlBaseParser.prototype.number = function() {
             localctx = new DecimalLiteralContext(this, localctx);
             this.enterOuterAlt(localctx, 2);
             this.state = 3018;
-            if (!( !legacy_exponent_literal_as_decimal_enabled)) {
-                throw new antlr4.error.FailedPredicateException(this, "!legacy_exponent_literal_as_decimal_enabled");
+            if (!( !false)) {
+                throw new antlr4.error.FailedPredicateException(this, "!false");
             }
             this.state = 3020;
             this._errHandler.sync(this);
@@ -29387,8 +29459,8 @@ SqlBaseParser.prototype.number = function() {
             localctx = new LegacyDecimalLiteralContext(this, localctx);
             this.enterOuterAlt(localctx, 3);
             this.state = 3023;
-            if (!( legacy_exponent_literal_as_decimal_enabled)) {
-                throw new antlr4.error.FailedPredicateException(this, "legacy_exponent_literal_as_decimal_enabled");
+            if (!( false)) {
+                throw new antlr4.error.FailedPredicateException(this, "false");
             }
             this.state = 3025;
             this._errHandler.sync(this);
@@ -31645,15 +31717,15 @@ SqlBaseParser.prototype.queryTerm_sempred = function(localctx, predIndex) {
 		case 0:
 			return this.precpred(this._ctx, 3);
 		case 1:
-			return legacy_setops_precedence_enabled;
+			return false;
 		case 2:
 			return this.precpred(this._ctx, 2);
 		case 3:
-			return !legacy_setops_precedence_enabled;
+			return !false;
 		case 4:
 			return this.precpred(this._ctx, 1);
 		case 5:
-			return !legacy_setops_precedence_enabled;
+			return !false;
 		default:
 			throw "No predicate with index:" + predIndex;
 	}
@@ -31703,7 +31775,7 @@ SqlBaseParser.prototype.primaryExpression_sempred = function(localctx, predIndex
 SqlBaseParser.prototype.identifier_sempred = function(localctx, predIndex) {
 	switch(predIndex) {
 		case 16:
-			return !SQL_standard_keyword_behavior;
+			return !false;
 		default:
 			throw "No predicate with index:" + predIndex;
 	}
@@ -31712,9 +31784,9 @@ SqlBaseParser.prototype.identifier_sempred = function(localctx, predIndex) {
 SqlBaseParser.prototype.strictIdentifier_sempred = function(localctx, predIndex) {
 	switch(predIndex) {
 		case 17:
-			return SQL_standard_keyword_behavior;
+			return false;
 		case 18:
-			return !SQL_standard_keyword_behavior;
+			return !false;
 		default:
 			throw "No predicate with index:" + predIndex;
 	}
@@ -31723,11 +31795,11 @@ SqlBaseParser.prototype.strictIdentifier_sempred = function(localctx, predIndex)
 SqlBaseParser.prototype.number_sempred = function(localctx, predIndex) {
 	switch(predIndex) {
 		case 19:
-			return !legacy_exponent_literal_as_decimal_enabled;
+			return !false;
 		case 20:
-			return !legacy_exponent_literal_as_decimal_enabled;
+			return !false;
 		case 21:
-			return legacy_exponent_literal_as_decimal_enabled;
+			return false;
 		default:
 			throw "No predicate with index:" + predIndex;
 	}

@@ -1434,8 +1434,20 @@ SqlBaseVisitor.prototype.visitColPosition = function(ctx) {
 };
 
 
-// Visit a parse tree produced by SqlBaseParser#complexDataType.
-SqlBaseVisitor.prototype.visitComplexDataType = function(ctx) {
+// Visit a parse tree produced by SqlBaseParser#arrayDataType.
+SqlBaseVisitor.prototype.visitArrayDataType = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by SqlBaseParser#mapDataType.
+SqlBaseVisitor.prototype.visitMapDataType = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by SqlBaseParser#structDataType.
+SqlBaseVisitor.prototype.visitStructDataType = function(ctx) {
   return this.visitChildren(ctx);
 };
 

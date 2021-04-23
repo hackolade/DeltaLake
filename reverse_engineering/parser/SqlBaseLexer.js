@@ -431,7 +431,7 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\u0247\u0125\u0249\u0126\u024b\u0127\u024d\u0002\u024f\u0002\u0251\u0002",
     "\u0253\u0002\u0255\u0128\u0257\u0129\u0259\u012a\u025b\u012b\u0003\u0002",
     "\n\u0004\u0002))^^\u0004\u0002$$^^\u0003\u0002bb\u0004\u0002--//\u0003",
-    "\u00022;\u0003\u0002C\\\u0004\u0002\f\f\u000f\u000f\u0005\u0002\u000b",
+    "\u00022;\u0004\u0002C\\c|\u0004\u0002\f\f\u000f\u000f\u0005\u0002\u000b",
     "\f\u000f\u000f\"\"\u0002\u0af4\u0002\u0003\u0003\u0002\u0002\u0002\u0002",
     "\u0005\u0003\u0002\u0002\u0002\u0002\u0007\u0003\u0002\u0002\u0002\u0002",
     "\t\u0003\u0002\u0002\u0002\u0002\u000b\u0003\u0002\u0002\u0002\u0002",
@@ -2363,8 +2363,8 @@ SqlBaseLexer.prototype.grammarFileName = "SqlBase.g4";
    * by a space. 34.E2 is a valid decimal token because it is followed by symbol '+'
    * which is not a digit or letter or underscore.
    */
-  public boolean isValidDecimal() {
-    int nextChar = _input.LA(1);
+   function isValidDecimal() {
+    const nextChar = _input.LA(1);
     if (nextChar >= 'A' && nextChar <= 'Z' || nextChar >= '0' && nextChar <= '9' ||
       nextChar == '_') {
       return false;
@@ -2380,8 +2380,8 @@ SqlBaseLexer.prototype.grammarFileName = "SqlBase.g4";
    *
    * Returns true if the next character is '+'.
    */
-  public boolean isHint() {
-    int nextChar = _input.LA(1);
+  function isHint() {
+    const nextChar = _input.LA(1);
     if (nextChar == '+') {
       return true;
     } else {
