@@ -1,7 +1,6 @@
 'use strict';
 
 const _ = require('lodash');
-const uuid = require('uuid');
 const async = require('async');
 const fs = require('fs');
 const entityLevelHelper = require('./entityLevelHelper');
@@ -21,8 +20,8 @@ module.exports = {
 		try {
 			logInfo('Test connection', connectionInfo, logger, logger);
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
-			if(!clusterState.isRunning){
-			 cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`})
+			if (!clusterState.isRunning) {
+				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}` })
 			}
 			cb()
 		} catch (err) {
@@ -40,8 +39,8 @@ module.exports = {
 		try {
 
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
-			if(!clusterState.isRunning){
-				cb({ message: `Cluster is unavailable. Cluster state: ${clusterProperties.state}`})
+			if (!clusterState.isRunning) {
+				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}` })
 			}
 
 			connectionData = {
@@ -66,232 +65,83 @@ module.exports = {
 	getDbCollectionsData: async (data, logger, cb) => {
 		logger.log('info', data, 'Retrieving schema', data.hiddenKeys);
 
-		const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
-		if(!clusterState.isRunning){
-			cb({ message: `Cluster is unavailable. Cluster state: ${clusterProperties.state}`})
-		}
-
 		const progress = (message) => {
 			logger.log('info', message, 'Retrieving schema', data.hiddenKeys);
 			logger.progress(message);
 		};
+
 		try {
+			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
+			if (!clusterState.isRunning) {
+				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}` })
+			}
+			const collections = data.collectionData.collections;
+			const dataBaseNames = data.collectionData.dataBaseNames;
 			const modelData = await deltaLakeHelper.getModelData(connectionData);
-			debugger
-			// const tables = data.collectionData.collections;
-			// const databases = data.collectionData.dataBaseNames;
-			// const pagination = data.pagination;
-			// const includeEmptyCollection = data.includeEmptyCollection;
-			// const recordSamplingSettings = data.recordSamplingSettings;
-			// const fieldInference = data.fieldInference;
+			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
+				const packages = await packagesPromise;
+				const entities = deltaLakeHelper.splitTableAndViewNames(collections[dbName]);
+				const containerData = await deltaLakeHelper.getContainerData(connectionData, dbName);
+				const tablesPackages = entities.tables.map(async (tableName) => {
+					progress({ message: 'Start getting data from table', containerName: dbName, entityName: tableName });
+					const ddl = await await deltaLakeHelper.getTableCreateStatement(connectionData, dbName, tableName);
 
-			// this.connect(data, logger, async (err, session, cursor) => {
-			// 	if (err) {
-			// 		logger.log('error', err, 'Retrieving schema');
-			// 		return cb(err);
-			// 	}
+					const tableData = deltaLakeHelper.getTableDataFromDDl(ddl);
+					progress({ message: 'Data retrieved successfully', containerName: dbName, entityName: tableName });
+					return {
+						dbName: dbName,
+						collectionName: tableName,
+						entityLevel: tableData.propertiesPane,
+						documents: [],
+						views: [],
+						emptyBucket: false,
+						validation: {
+							jsonSchema: { properties: tableData.properties }
+						},
+						bucketInfo: {
+							...containerData
+						}
+					};
+				})
 
-			// 	try {
-			// 		const exec = cursor.asyncExecute.bind(null, session.sessionHandle);
-			// 		const query = getExecutorWithResult(cursor, exec);
-			// 		const plans = await query('SHOW RESOURCE PLANS');
-			// 		const resourcePlans = await Promise.all(plans.map(async plan => {
-			// 			const resourcePlanData = await query(`SHOW RESOURCE PLAN ${plan.rp_name}`);
+				const views = await Promise.all(entities.views.map(async viewName => {
+					progress({ message: 'Start getting data from view', containerName: dbName, entityName: viewName });
+					const ddl = await deltaLakeHelper.getTableCreateStatement(connectionData, dbName, viewName);
 
-			// 			return { name: plan.rp_name, ...parseResourcePlan(resourcePlanData) };
-			// 		}));
-			// 		modelData = { resourcePlans };
-			// 	} catch (err) {}
-			// 	async.mapSeries(databases, (dbName, nextDb) => {
-			// 		const exec = cursor.asyncExecute.bind(null, session.sessionHandle);
-			// 		const query = getExecutorWithResult(cursor, exec);
-			// 		const getPrimaryKeys = getExecutorWithResult(
-			// 			cursor,
-			// 			cursor.getPrimaryKeys.bind(null, session.sessionHandle)
-			// 		);
-			// 		const tableNames = tables[dbName] || [];
-			// 		exec(`use ${dbName}`)
-			// 			.then(() => query(`describe database ${dbName}`))
-			// 			.then((databaseInfo) => {
-			// 				async.mapSeries(tableNames, (tableName, nextTable) => {
-			// 					progress({ message: 'Start sampling data', containerName: dbName, entityName: tableName });
-			// 					const isView = tableName.slice(-4) === ' (v)';
-			// 					if (isView) {
-			// 						const viewName = tableName.slice(0, -4)
-			// 						return query(`describe extended ${viewName}`).then(viewData => {
-			// 							const { schema, additionalDescription } = viewData.reduce((data, item) => {
-			// 								const { schema, isSchemaParsingFinished, additionalDescription } = data;
-			// 								if (!item.col_name || item.col_name === 'Detailed Table Information') {
-			// 									const originalDdl = item.data_type.split('viewOriginalText:')[1] || '';
-			// 									return { ...data, isSchemaParsingFinished: true, additionalDescription: originalDdl};
-			// 								}
-			// 								if (isSchemaParsingFinished) {
-			// 									return { ...data, additionalDescription: `${additionalDescription} ${item.col_name}`};
-			// 								}
+					const viewData = deltaLakeHelper.getViewDataFromDDl(ddl);
+					
+					progress({ message: 'Data retrieved successfully', containerName: dbName, entityName: viewName });
 
-			// 								return { ...data, schema: {
-			// 									...schema,
-			// 									[item.col_name]: { comment: item.comment }
-			// 								}};
-			// 							}, { schema: {}, isSchemaParsingFinished: false, additionalDescription: '' });
+					return {
+						name: viewName,
+						viewData: viewData,
+						ddl: {
+							script: `CREATE VIEW \`${viewData.code}\` AS ${viewData.selectStatement}`,
+							type: 'postgres'
+						}
+					};
+				}));
 
-			// 							const metaInfoRegex = /(.*?)(, viewExpandedText:|, tableType:|, rewriteEnabled:)/;
+				if (_.isEmpty(views)) {
+					return [...packages, ...tablesPackages];
+				}
 
-			// 							const isMaterialized = additionalDescription.includes('tableType:MATERIALIZED_VIEW');
-			// 							const selectStatement = (metaInfoRegex.exec(additionalDescription)[1] || additionalDescription);
+				const viewPackage = Promise.resolve({
+					dbName: dbName,
+					entityLevel: {},
+					views,
+					emptyBucket: false,
+					bucketInfo: {
+						...containerData
+					}
+				});
 
-			// 							const viewPackage = {
-			// 								dbName,
-			// 								entityLevel: {},
-			// 								views: [{
-			// 									name: viewName,
-			// 									data: {
-			// 										materialized: isMaterialized
-			// 									},
-			// 									ddl: {
-			// 										script: `CREATE VIEW ${viewName} AS ${selectStatement};`,
-			// 										type: 'teradata'
-			// 									}
-			// 								}],
-			// 								emptyBucket: false,
-			// 								bucketInfo: {
-			// 								}
-			// 							};
-			// 							return nextTable(null, { documentPackage: viewPackage, relationships: [] });
-			// 						}).catch(err => {
-			// 							nextTable(null, { documentPackage: false, relationships: [] })
-			// 						});
-			// 					}
-
-			// 					getLimitByCount(recordSamplingSettings, query.bind(null, `select count(*) as count from ${tableName}`))
-			// 						.then(countDocuments => {
-			// 							progress({ message: 'Start getting data from database', containerName: dbName, entityName: tableName });
-
-			// 							return getDataByPagination(pagination, countDocuments, (limit, offset, next) => {
-			// 								retrieveData(query, tableName, limit, offset).then(data => {
-			// 										progress({ message: `${limit * (offset + 1)}/${countDocuments}`, containerName: dbName, entityName: tableName });
-			// 										next(null, data);
-			// 									}, err => next(err));
-			// 							});
-			// 						})
-			// 						.then(documents => documents || [])
-			// 						.then((documents) => {
-			// 							progress({ message: `Data fetched successfully`, containerName: dbName, entityName: tableName });									
-
-			// 							const documentPackage = {
-			// 								dbName,
-			// 								collectionName: tableName,
-			// 								documents: filterNullValues(documents),
-			// 								indexes: [],
-			// 								bucketIndexes: [],
-			// 								views: [],
-			// 								validation: false,
-			// 								emptyBucket: false,
-			// 								containerLevelKeys: [],
-			// 								bucketInfo: {
-			// 									description: _.get(databaseInfo, '[0].comment', '')
-			// 								}
-			// 							};
-
-			// 							if (fieldInference.active === 'field') {
-			// 								documentPackage.documentTemplate = _.cloneDeep(documents[0]);
-			// 							}
-
-			// 							return documentPackage;
-			// 						})
-			// 						.then((documentPackage) => {
-			// 							progress({ message: `Start creating schema`, containerName: dbName, entityName: tableName });
-
-			// 							return allChain(
-			// 								() => query(`describe formatted ${tableName}`),
-			// 								() => query(`describe extended ${tableName}`),
-			// 								() => exec(`select * from ${tableName} limit 1`).then(cursor.getSchema)
-			// 							).then(([formattedTable, extendedTable, tableSchema]) => {
-			// 								const tableInfo = hiveHelper
-			// 									.getFormattedTable(
-			// 										...cursor.getTCLIService(),
-			// 										cursor.getCurrentProtocol()
-			// 									)(formattedTable);
-			// 								const extendedTableInfo = hiveHelper.getDetailInfoFromExtendedTable(extendedTable);
-			// 								const sample = documentPackage.documents[0];
-			// 								documentPackage.entityLevel = entityLevelHelper.getEntityLevelData(tableName, tableInfo, extendedTableInfo);
-			// 								const { columnToConstraints, notNullColumns } = hiveHelper.getTableColumnsConstraints(extendedTable);
-			// 								return {
-			// 									jsonSchema: hiveHelper.getJsonSchemaCreator(...cursor.getTCLIService(), tableInfo)({ columns: extendedTable, tableColumnsConstraints: columnToConstraints, tableSchema, sample, notNullColumns }),
-			// 									relationships: convertForeignKeysToRelationships(dbName, tableName, tableInfo.foreignKeys || [], data.appVersion)
-			// 								};
-			// 							}).then(({ jsonSchema, relationships }) => {
-			// 								progress({ message: `Schema successfully created`, containerName: dbName, entityName: tableName });
-
-			// 								return getPrimaryKeys(dbName, tableName)
-			// 									.then(keys => {
-			// 										keys.forEach(key => {
-			// 											jsonSchema.properties[key.COLUMN_NAME].primaryKey = true;
-			// 										});
-
-			// 										return jsonSchema;
-			// 									})
-			// 									.then(jsonSchema => {
-			// 										progress({ message: `Primary keys successfully retrieved`, containerName: dbName, entityName: tableName });
-
-			// 										return ({ jsonSchema, relationships });
-			// 									})
-			// 									.catch(err => {
-			// 										return Promise.resolve({ jsonSchema, relationships });
-			// 									});
-			// 							}).then(({ jsonSchema, relationships }) => {
-			// 								return query(`show indexes on ${tableName}`)
-			// 									.then(result => {
-			// 										return getIndexes(result);
-			// 									})
-			// 									.then(indexes => {
-			// 										progress({ message: `Indexes successfully retrieved`, containerName: dbName, entityName: tableName });
-
-			// 										documentPackage.entityLevel.SecIndxs = indexes;
-
-			// 										return { jsonSchema, relationships };
-			// 									})
-			// 									.catch(err => ({ jsonSchema, relationships }));
-			// 							}).then(({ jsonSchema, relationships }) => {
-			// 								if (jsonSchema) {
-			// 									documentPackage.validation = { jsonSchema };
-			// 								}
-
-			// 								return {
-			// 									documentPackage,
-			// 									relationships
-			// 								};
-			// 							});
-			// 						})
-			// 						.then((data) => {
-			// 							nextTable(null, data);
-			// 						})
-			// 						.catch(err => {
-			// 							nextTable(err)
-			// 						});
-			// 				}, (err, data) => {
-			// 					if (err) {
-			// 						nextDb(err);
-			// 					} else {
-			// 						nextDb(err, expandPackages(data));
-			// 					}
-			// 				});
-			// 			});
-			// 	}, (err, data) => {
-			// 		if (err) {
-			// 			logger.log('error', { message: err.message, stack: err.stack, error: err }, 'Retrieving databases and tables information');
-
-			// 			setTimeout(() => {
-			// 				cb(err);
-			// 			}, 1000);
-			// 		} else {
-			// 			cb(err, ...expandFinalPackages(modelData, data));
-			// 		}
-			// 	});
-			// }, app);
-			cb(null, [], modelData);
-		} catch (e) {
-			debugger
+				return [...packages, ...tablesPackages, viewPackage];
+			}, Promise.resolve([]))
+			const packages = await Promise.all(entitiesPromises);
+			cb(null, packages, modelData);
+		} catch (err) {
+			handleError(logger, err, cb);
 		}
 	},
 
@@ -305,8 +155,8 @@ const logInfo = (step, connectionInfo, logger) => {
 	logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
 };
 
-const handleErrorObject = (error, title) => {
-	const errorProperties = Object.getOwnPropertyNames(error).reduce((accumulator, key) => ({ ...accumulator, [key]: error[key] }), {});
-
-	return { title, ...errorProperties };
+const handleError = (logger, error, cb) => {
+	const message = _.isString(error) ? error : _.get(error, 'message', 'Reverse Engineering error')
+	logger.log('error', { error }, 'Reverse Engineering error');
+	cb(message);
 };
