@@ -3,42 +3,31 @@ const fetch = require('node-fetch');
 const _ = require('lodash')
 
 
-const fetchCreateStatementRequest = (query, connectionInfo) => {
-	let options = this.getRequestOptions(connectionInfo);
-	let response;
-	return fetch(query, options)
-		.then(response => {
-			return response.text();
-		})
-		.then(body => {
-			body = JSON.parse(body);
+const fetchCreateStatementRequest = async (command, connectionInfo) => {
+	const result = await executeCommand(connectionInfo, command);
 
-			if (!response.ok) {
-				throw {
-					message: response.statusText, code: response.status, description: body
-				};
-			}
-			return body;
-		}).catch(err => {
-			debugger
-		});
+	const statementExtractionRegex = /stmt: String = "(.+)"/gm;
+	const resultWithoutNewLineSymb = result.replaceAll(/[\n\r]/g, " ");
+	const entityCreateStatement = statementExtractionRegex.exec(resultWithoutNewLineSymb);
+
+	return _.get(entityCreateStatement, '1', '')
 }
 
-const fetchClusterProperties = async (connectionInfo) =>{
+const fetchClusterProperties = async (connectionInfo) => {
 	const query = connectionInfo.host + `/api/2.0/clusters/get?cluster_id=${connectionInfo.clusterId}`;
 	const options = getRequestOptions(connectionInfo)
 	return await fetch(query, options)
-	.then(response => {
-		if (response.ok) {
-			return response.text()
-		}
-		throw {
-			message: response.statusText, code: response.status, description: body
-		};
-	})
-	.then(body => {
-		return JSON.parse(body);
-	})
+		.then(response => {
+			if (response.ok) {
+				return response.text()
+			}
+			throw {
+				message: response.statusText, code: response.status, description: body
+			};
+		})
+		.then(body => {
+			return JSON.parse(body);
+		})
 }
 
 const fetchClusterDatabaseNames = async (connectionInfo) => {
@@ -47,15 +36,27 @@ const fetchClusterDatabaseNames = async (connectionInfo) => {
 }
 
 const fetchDatabaseTablesNames = async (connectionInfo, dbName) => {
-	const getDatabasesNamesCommand = `var values = sqlContext.sql(\"SHOW TABLES FROM ${dbName}\").select(\"tableName\").collect().map(_(0)).toList`
-	return await getDFColumnValues(connectionInfo, getDatabasesNamesCommand);
+	const getTablesNamesCommand = `var values = sqlContext.sql(\"SHOW TABLES FROM ${dbName}\").select(\"tableName\").collect().map(_(0)).toList`
+	return await getDFColumnValues(connectionInfo, getTablesNamesCommand);
+}
+
+const fetchFunctionNames = async (connectionInfo) => {
+	const getFunctionsNamesCommand = `var values = sqlContext.sql(\"SHOW USER FUNCTIONS\").select(\"function\").collect().map(_(0)).toList`
+	return await getDFColumnValues(connectionInfo, getFunctionsNamesCommand);
+}
+
+const getFunctionClass = async (connectionInfo, funcName) => {
+	const getFunctionsClassCommand = `var clas = sqlContext.sql(\"DESCRIBE FUNCTION ${funcName}\").select(\"function_desc\").collect().map(_(0)).toList(1)`
+	const result = await executeCommand(connectionInfo, getFunctionsClassCommand);
+	const valuesExtractionRegex = /clas: Any = Class: (.*)/gm;
+	return _.get(valuesExtractionRegex.exec(result), '1', '');
 }
 
 const fetchDatabaseViewsNames = async (connectionInfo, dbName) => {
-	const getDatabasesNamesCommand = `var values = sqlContext.sql(\"SHOW VIEWS FROM ${dbName}\").select(\"viewName\").collect().map(_(0)).toList`
-	return await getDFColumnValues(connectionInfo, getDatabasesNamesCommand);
+	const getViiewsNamesCommand = `var values = sqlContext.sql(\"SHOW VIEWS FROM ${dbName}\").select(\"viewName\").collect().map(_(0)).toList`
+	return await getDFColumnValues(connectionInfo, getViiewsNamesCommand);
 }
- 
+
 const getRequestOptions = (connectionInfo) => {
 	const headers = {
 		'Authorization': 'Bearer ' + connectionInfo.accessToken
@@ -126,14 +127,13 @@ const destroyContext = (connectionInfo, contextId) => {
 		});
 }
 
-const executeCommand = (connectionInfo, command, cb) => {
+const executeCommand = (connectionInfo, command) => {
 
 	let activeContextId;
 
 	return createContext(connectionInfo)
 		.then(contextId => {
 			activeContextId = contextId;
-
 			const query = connectionInfo.host + '/api/1.2/commands/execute';
 			const body = JSON.stringify({
 				language: "scala",
@@ -207,5 +207,7 @@ module.exports = {
 	fetchClusterDatabaseNames,
 	fetchDatabaseTablesNames,
 	fetchDatabaseViewsNames,
-	fetchClusterProperties
+	fetchClusterProperties,
+	getFunctionClass,
+	fetchFunctionNames
 };
