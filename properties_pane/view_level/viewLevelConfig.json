@@ -119,19 +119,30 @@ making sure that you maintain a proper JSON format.
 		"lowerTab": "Details",
 		"structure": [
 			{
-				"propertyName": "Materialized",
-				"propertyKeyword": "materialized",
-				"shouldValidate": false,
-				"propertyTooltip": "is Materialized View",
-				"propertyType": "checkbox"
-			},
-			{
 				"propertyName": "Select Statement",
 				"propertyKeyword": "selectStatement",
 				"propertyType": "details",
 				"propertyTooltip": "select statement",
 				"template": "textarea",
 				"markdown": false
+			},				{
+				"propertyName": "Or replace",
+				"propertyKeyword": "viewOrReplace",
+				"propertyType": "checkbox",
+				"propertyTooltip": "If specified, the resources for the view are reloaded. This is mainly useful to pick up any changes made to the implementation of the view. This parameter is mutually exclusive to IF NOT EXISTS and cannot be specified together."
+			},
+			{
+				"propertyName": "Temporary",
+				"propertyKeyword": "viewTemporary",
+				"propertyType": "checkbox",
+				"propertyTooltip": "Indicates the scope of view being created. When TEMPORARY is specified, the created view is valid and visible in the current session. No persistent entry is made in the catalog for these kind of functions."
+			},
+			{
+				"propertyName": "If not exist",
+				"propertyKeyword": "viewIfNotExist",
+				"propertyTooltip": "If specified, creates the view only when it does not exist. The creation of view succeeds (no error is thrown) if the specified view already exists in the system. This parameter is mutually exclusive to OR REPLACE and cannot be specified together.",
+				"defaultValue": true,
+				"propertyType": "checkbox"
 			},
 			{
 				"propertyName": "Comments",
@@ -149,7 +160,7 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
-			},
+			},			
 			{
 				"propertyKeyword": "pipeline",
 				"hidden": true

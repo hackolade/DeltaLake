@@ -136,7 +136,9 @@ making sure that you maintain a proper JSON format.
 				"propertyTooltip": "DB version",
 				"propertyType": "select",
 				"options": [
-					"3.x"
+					"Runtime 6",
+					"Runtime 7",
+					"Runtime 8"
 				],
 				"disabledOption": true
 			},
@@ -306,6 +308,9 @@ making sure that you maintain a proper JSON format.
 							"values": [{
 								"key": "availability",
 								"value": "SPOT"
+							},{
+								"key": "availability",
+								"value": "SPOT_WITH_FALLBACK"
 							}]
 						}
 					},
