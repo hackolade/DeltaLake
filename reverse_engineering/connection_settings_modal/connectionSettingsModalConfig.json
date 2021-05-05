@@ -9,24 +9,24 @@
 				"inputPlaceholder": "Name"
 			},
 			{
-				"inputLabel": "Host",
+				"inputLabel": "Workspace URL",
 				"inputKeyword": "host",
 				"inputType": "text",
-				"inputPlaceholder": "Host",
+				"inputPlaceholder": "",
 				"description": "",
 				"validation": {
 					"regex": "([^\\s])"
 				}
 			},
 			{
-				"inputLabel": "Port",
-				"inputKeyword": "port",
-				"inputType": "text",
-				"inputPlaceholder": "Port",
-				"description": "",
-				"validation": {
-					"regex": "([^\\s])"
-				}
+				"inputLabel": "Cloud provider",
+				"inputKeyword": "provider",
+				"inputType": "select",
+				"options": [
+					{ "value": "Databricks on AWS", "label": "Databricks on AWS" },
+					{ "value": "Azure Databricks", "label": "Azure Databricks" },
+					{ "value": "Databricks runtime", "label": "Databricks runtime" }
+				]
 			},
 			{
 				"inputLabel": "Delta Lake version",
@@ -39,222 +39,20 @@
 				]
 			},
 			{
-				"inputLabel": "Database name",
-				"inputKeyword": "dbName",
+				"inputLabel": "Cluster id",
+				"inputKeyword": "clusterId",
 				"inputType": "text",
-				"inputPlaceholder": "",
-				"description": "Optionally specify database name to limit scope of discovery"
+				"inputPlaceholder": ""
 			}
 		]
 	}, {
 		"lowerTab": "Authentication",
 		"structure": [
 			{
-				"inputLabel": "Authentication type",
-				"inputKeyword": "authMechanism",
-				"inputType": "select",
-				"options": [{
-					"label": "None (Plain SASL)",
-					"value": "PLAIN"
-				},	{
-					"label": "NoSASL",
-					"value": "NOSASL"
-				}, 	{
-					"label": "LDAP",
-					"value": "LDAP"
-				},  {
-					"label": "Kerberos",
-					"value": "GSSAPI"
-				}]
-			},
-			{
-				"inputLabel": "User Name",
-				"inputKeyword": "user",
+				"inputLabel": "Databricks personal access token",
+				"inputKeyword": "accessToken",
 				"inputType": "text",
-				"inputPlaceholder": "<USERNAME>@<REALM>",
-				"dependency": {
-					"key": "authMechanism",
-					"value": "GSSAPI"
-				}
-			},
-			{
-				"inputLabel": "User name",
-				"inputKeyword": "user",
-				"inputType": "text",
-				"inputPlaceholder": "Username",
-				"dependency": {
-					"key": "authMechanism",
-					"value": ["NOSASL", "PLAIN", "LDAP", ""]
-				}
-			},
-			{
-				"inputLabel": "Password",
-				"inputKeyword": "password",
-				"inputType": "password",
-				"isHiddenKey": true
-			},
-			{
-				"inputLabel": "Service name",
-				"inputKeyword": "krb_service",
-				"inputType": "text",
-				"inputPlaceholder": "<service name, e.g.; hive>",
-				"dependency": {
-					"key": "authMechanism",
-					"value": "GSSAPI"
-				}
-			},
-			{
-				"inputLabel": "Kerberos host",
-				"inputKeyword": "krb_host",
-				"inputType": "text",
-				"inputPlaceholder": "<fully qualified domain name>",
-				"dependency": {
-					"key": "authMechanism",
-					"value": "GSSAPI"
-				}
-			},
-			{
-				"inputLabel": "Keytab file",
-				"inputKeyword": "keytab",
-				"inputType": "file",
-				"extensions": ["*"],
-				"inputTooltip": "Allowed only in HTTP Transport mode",
-				"dependency": {
-					"key": "authMechanism",
-					"value": "GSSAPI"
-				}
-			}
-		]	
-	}, {
-		"lowerTab": "Options",
-		"structure": [
-			{
-				"inputLabel": "Transport mode",
-				"inputKeyword": "mode",
-				"inputType": "select",
-				"options": [
-					{ "value": "binary", "label": "binary" },
-					{ "value": "http", "label": "http" }
-				]
-			},
-			{
-				"inputLabel": "HTTP path",
-				"inputKeyword": "path",
-				"inputType": "text",
-				"inputPlaceholder": "hive2",
-				"dependency": {
-					"key": "mode",
-					"value": "http"
-				}
-			}
-		]	
-	},
-	{
-		"lowerTab": "SSL",
-		"structure": [
-			{
-				"inputLabel": "SSL Type",
-				"inputKeyword": "ssl",
-				"inputType": "select",
-				"options": [{
-					"label": "None",
-					"value": false
-				}, {
-					"label": "HTTPs",
-					"value": "https"
-				}, {
-					"label": "Java Keystore",
-					"value": "jks"
-				}, {
-					"label": "Certificates",
-					"value": true
-				}]
-			},
-			{
-				"inputLabel": "Certificate Authority",
-				"inputKeyword": "sslCaFile",
-				"inputType": "file",
-				"inputPlaceholder": "Certificate Authority",
-				"extensions": ["pem", "crt", "key"],
-				"dependency": {
-					"key": "ssl",
-					"value": [true, "true"]
-				}
-			},
-			{
-				"inputLabel": "Client Certificate",
-				"inputKeyword": "sslCertFile",
-				"inputType": "file",
-				"inputPlaceholder": "Client Certificate",
-				"extensions": ["pem", "crt", "key"],
-				"dependency": {
-					"key": "ssl",
-					"value": [true, "true"]
-				}
-			},
-			{
-				"inputLabel": "Client Private Key",
-				"inputKeyword": "sslKeyFile",
-				"inputType": "file",
-				"inputPlaceholder": "Client Private Key",
-				"extensions": ["pem", "crt", "key"],
-				"dependency": {
-					"key": "ssl",
-					"value": [true, "true"]
-				}
-			},
-			{
-				"inputLabel": "Keystore",
-				"inputKeyword": "keystore",
-				"inputType": "file",
-				"inputPlaceholder": "Keystore path and filename",
-				"extensions": ["*"],
-				"dependency": {
-					"key": "ssl",
-					"value": "jks"
-				}
-			},
-			{
-				"inputLabel": "Keystore password",
-				"inputKeyword": "keystorepass",
-				"inputType": "password",
-				"isHiddenKey": true,
-				"dependency": {
-					"key": "ssl",
-					"value": "jks"
-				}
-			},
-/*			{
-				"inputLabel": "Disable Reject Unauthorized",
-				"inputKeyword": "disableRejectUnauthorized",
-				"inputType": "checkbox",
-				"dependency": {
-					"key": "ssl",
-					"value": "https"
-				}
-			},
-*/
-			{
-				"inputLabel": "Alias Name",
-				"inputKeyword": "alias",
-				"inputType": "text",
-				"isHiddenKey": true,
-				"dependency": {
-					"key": "ssl",
-					"value": "jks"
-				}
-			},
-			{
-				"inputLabel": "Certificate Authority",
-				"inputKeyword": "httpsCA",
-				"inputPlaceholder": "ca.crt",
-				"description": "Issued Certificate Authority",
-				"inputType": "file",
-				"extensions": ["*"],
-				"dependency": {
-					"key": "ssl",
-					"value": "https"
-				}
+				"inputPlaceholder": "access token"
 			}
 		]	
 	}

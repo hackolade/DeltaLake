@@ -61,7 +61,7 @@ module.exports = {
 			logger.log(
 				'error',
 				{ message: e.message, stack: e.stack },
-				'Hive Forward-Engineering Error'
+				'DeltaLake Forward-Engineering Error'
 			);
 
 			setTimeout(() => {

@@ -168,11 +168,17 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			
 			"dependencies",
 			"foreignCollection",
 			"foreignField",
 			"relationshipType",
 			"sample",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"propertyType": "checkbox"
+			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -270,6 +276,11 @@ making sure that you maintain a proper JSON format.
 			"relationshipType",
 			"sample",
 			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"propertyType": "checkbox"
+			},
+			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
 				"shouldValidate": false,
@@ -308,6 +319,11 @@ making sure that you maintain a proper JSON format.
 			},
 			"dependencies",
 			"sample",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"propertyType": "checkbox"
+			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -355,6 +371,11 @@ making sure that you maintain a proper JSON format.
 				"markdown": false
 			},
 			"dependencies",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"propertyType": "checkbox"
+			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -407,6 +428,11 @@ making sure that you maintain a proper JSON format.
 			"dependencies",
 			"sample",
 			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"propertyType": "checkbox"
+			},
+			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
 				"shouldValidate": false,
@@ -457,6 +483,11 @@ making sure that you maintain a proper JSON format.
 			"dependencies",
 			"sample",
 			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"propertyType": "checkbox"
+			},
+			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
 				"shouldValidate": false,
@@ -505,6 +536,11 @@ making sure that you maintain a proper JSON format.
 			},
 			"dependencies",
 			"sample",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"propertyType": "checkbox"
+			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -572,6 +608,11 @@ making sure that you maintain a proper JSON format.
 			},
 			"dependencies",
 			"additionalItems",
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"propertyType": "checkbox"
+			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
