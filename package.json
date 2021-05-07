@@ -1,10 +1,10 @@
 {
 	"name": "DeltaLake",
-	"version": "0.0.1",
-	"versionDate": "2021-03-15",
+	"version": "0.0.2",
+	"versionDate": "2021-04-25",
 	"author": "hackolade",
 	"engines": {
-		"hackolade": "4.3.12",
+		"hackolade": "4.3.17",
 		"hackoladePlugin": "1.2.0"
 	},
 	"contributes": {
@@ -12,7 +12,9 @@
 			"applicationTarget": "DeltaLake",
 			"title": "Delta Lake on Databricks",
 			"versions": [
-				"3.x"
+				"Runtime 6",
+				"Runtime 7",
+				"Runtime 8"
 			]
 		},
 		"features": {
