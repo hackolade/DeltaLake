@@ -29,6 +29,7 @@ const getDatabaseCollectionNames = async (connectionInfo, dbName) => {
 const getModelData = async (connectionInfo) => {
 	const clusterProperties = await fetchRequestHelper.fetchClusterProperties(connectionInfo);
 	return {
+		dbVersion: `Runtime ${clusterProperties.spark_version[0]}`,
 		modelName: clusterProperties.cluster_name,
 		author: clusterProperties.creator_user_name,
 		host: connectionInfo.host,
