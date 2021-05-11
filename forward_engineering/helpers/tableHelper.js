@@ -9,7 +9,7 @@ let _;
 const setDependencies = ({ lodash }) => _ = lodash;
 
 const getCreateStatement = ({
-	dbName, tableName, isTemporary, isExternal, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys, 
+	dbName, tableName, isTemporary, isExternal, using, likeStatement, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
 	clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
 	isActivated
 }) => {
@@ -18,6 +18,60 @@ const getCreateStatement = ({
 	const tempExtStatement = ' ' + [temporary, external].filter(d => d).map(item => item + ' ').join('');
 	const fullTableName = dbName ? `${dbName}.${tableName}` : tableName;
 
+	if (using && likeStatement) {
+		return getCreateLikeStatement({
+			tempExtStatement, fullTableName, using, likeStatement, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
+			clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
+			isActivated
+		})
+	}
+
+	if (using) {
+		return getCreateUsingStatement({
+			tempExtStatement, fullTableName, using, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
+			clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
+			isActivated
+		})
+	}
+
+	return getCreateHiveStatement({
+		tempExtStatement, fullTableName, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
+		clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
+		isActivated
+	});
+};
+
+const getCreateUsingStatement = ({
+	tempExtStatement, fullTableName, using, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
+	clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
+	isActivated
+}) => {
+	return buildStatement(`CREATE${tempExtStatement}TABLE IF NOT EXISTS ${fullTableName} (`, isActivated)
+		(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))
+		(primaryKeyStatement, primaryKeyStatement)
+		(foreignKeyStatement, foreignKeyStatement)
+		(true, ')')
+		(using, `USING ${using}`)// TODO: add options support
+		(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)
+		(clusteredKeys, `CLUSTERED BY (${clusteredKeys})`)
+		(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)
+		(numBuckets && clusteredKeys, `INTO ${numBuckets} BUCKETS`)
+		(skewedStatement, skewedStatement)
+		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
+		(storedAsStatement, storedAsStatement)
+		(location, `LOCATION '${location}'`)
+		(comment, `COMMENT '${comment}'`)
+		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
+		(selectStatement, `AS ${selectStatement}`)
+		(true, ';')
+		();
+}
+
+const getCreateHiveStatement = ({
+	tempExtStatement, fullTableName, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
+	clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
+	isActivated
+}) => {
 	return buildStatement(`CREATE${tempExtStatement}TABLE IF NOT EXISTS ${fullTableName} (`, isActivated)
 		(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))
 		(primaryKeyStatement, primaryKeyStatement)
@@ -31,16 +85,34 @@ const getCreateStatement = ({
 		(skewedStatement, skewedStatement)
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
 		(storedAsStatement, storedAsStatement)
-		(location, `LOCATION "${location}"`)
+		(location, `LOCATION '${location}'`)
 		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
 		(selectStatement, `AS ${selectStatement}`)
 		(true, ';')
 		();
-};
+}
+
+const getCreateLikeStatement = ({
+	tempExtStatement, fullTableName, using, columnStatement, primaryKeyStatement, foreignKeyStatement,
+	rowFormatStatement, storedAsStatement, location, tableProperties, isActivated
+}) => {
+	return buildStatement(`CREATE${tempExtStatement}TABLE IF NOT EXISTS ${fullTableName} (`, isActivated)
+		(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))
+		(primaryKeyStatement, primaryKeyStatement)
+		(foreignKeyStatement, foreignKeyStatement)
+		(true, ')')
+		(using, `USING '${using}'`)// TODO: add options support
+		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
+		(storedAsStatement, storedAsStatement)
+		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
+		(location, `LOCATION '${location}'`)
+		(true, ';')
+		();
+}
 
 const getPrimaryKeyStatement = (keysNames, deactivatedColumnNames, isParentItemActivated) => {
 	const getStatement = keys => `PRIMARY KEY (${keys}) DISABLE NOVALIDATE`;
-	
+
 	if (!Array.isArray(keysNames) || !keysNames.length) {
 		return '';
 	}
@@ -68,7 +140,7 @@ const getClusteringKeys = (clusteredKeys, deactivatedColumnNames, isParentItemAc
 
 const getSortedKeys = (sortedKeys, deactivatedColumnNames, isParentItemActivated) => {
 	const getSortKeysStatement = keys => keys.map(sortedKey => `${sortedKey.name} ${sortedKey.type}`).join(', ');
-	
+
 	if (!Array.isArray(sortedKeys) || !sortedKeys.length) {
 		return '';
 	}
@@ -117,7 +189,7 @@ const removePartitions = (columns, partitions) => {
 
 const getSkewedKeyStatement = (skewedKeys, skewedOn, asDirectories, deactivatedColumnNames, isParentItemActivated) => {
 	const getStatement = (keysString) => `SKEWED BY (${keysString}) ON ${skewedOn} ${asDirectories ? 'STORED AS DIRECTORIES' : ''}`;
-	
+
 	if (!Array.isArray(skewedKeys) || !skewedKeys.length) {
 		return '';
 	}
@@ -149,10 +221,16 @@ const getRowFormat = (tableData) => {
 			();
 	} else if (tableData.rowFormat === 'SerDe') {
 		return buildStatement(`SERDE '${tableData.serDeLibrary}'`)
-			(tableData.serDeProperties, `WITH SERDEPROPERTIES ${tableData.serDeProperties}`)
+			(tableData.serDeProperties, `WITH SERDEPROPERTIES (${tableData.serDeProperties})`)
 			();
 	}
 };
+
+const getLikeStatement = (like) => {
+	if (!like) {
+		return;
+	}
+}
 
 const getStoredAsStatement = (tableData) => {
 	if (!tableData.storedAsTable) {
@@ -163,16 +241,12 @@ const getStoredAsStatement = (tableData) => {
 		return `STORED AS INPUTFORMAT '${tableData.inputFormatClassname}' OUTPUTFORMAT '${tableData.outputFormatClassname}'`;
 	}
 
-	if (tableData.storedAsTable === 'by') {
-		return `STORED BY '${tableData.serDeLibrary}'`;
-	}
-
 	return `STORED AS ${tableData.storedAsTable.toUpperCase()}`;
 };
 
 const getTableStatement = (containerData, entityData, jsonSchema, definitions, foreignKeyStatement, areColumnConstraintsAvailable, areForeignPrimaryKeyConstraintsAvailable) => {
 	setDependencies(dependencies);
-	
+
 	const dbName = replaceSpaceWithUnderscore(getName(getTab(0, containerData)));
 	const tableData = getTab(0, entityData);
 	const container = getTab(0, containerData);
@@ -186,13 +260,15 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, f
 		tableName,
 		isTemporary: tableData.temporaryTable,
 		isExternal: tableData.externalTable,
+		using: tableData.using,
+		likeStatement: getLikeStatement(tableData.like),
 		columnStatement: getColumnsStatement(removePartitions(columns, keyNames.compositePartitionKey), isTableActivated),
 		primaryKeyStatement: areForeignPrimaryKeyConstraintsAvailable ? getPrimaryKeyStatement(keyNames.primaryKeys, deactivatedColumnNames, isTableActivated) : null,
 		foreignKeyStatement: areForeignPrimaryKeyConstraintsAvailable ? foreignKeyStatement : null,
 		comment: tableData.description,
 		partitionedByKeys: getPartitionKeyStatement(getPartitionsKeys(columns, keyNames.compositePartitionKey, isTableActivated)),
 		clusteredKeys: getClusteringKeys(keyNames.compositeClusteringKey, deactivatedColumnNames, isTableActivated),
-		sortedKeys: getSortedKeys(keyNames.sortedByKey, deactivatedColumnNames, isTableActivated), 
+		sortedKeys: getSortedKeys(keyNames.sortedByKey, deactivatedColumnNames, isTableActivated),
 		numBuckets: tableData.numBuckets,
 		skewedStatement: getSkewedKeyStatement(keyNames.skewedby, tableData.skewedOn, tableData.skewStoredAsDir, deactivatedColumnNames, isTableActivated),
 		rowFormatStatement: getRowFormat(tableData),
@@ -206,6 +282,40 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, f
 	return removeRedundantTrailingCommaFromStatement(tableStatement);
 };
 
+const getTableAlterStatements = (containerData, entityData, jsonSchema, definitions, foreignKeyStatement, areColumnConstraintsAvailable, areForeignPrimaryKeyConstraintsAvailable) => {
+	setDependencies(dependencies);
+	let tableStatements = []
+
+	const dbName = replaceSpaceWithUnderscore(getName(getTab(0, containerData)));
+	const tableData = getTab(0, entityData);
+	const container = getTab(0, containerData);
+	const isTableActivated = tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
+	const tableName = replaceSpaceWithUnderscore(getName(tableData));
+	const { columns, deactivatedColumnNames } = getColumns(jsonSchema, areColumnConstraintsAvailable, definitions);
+	const keyNames = keyHelper.getKeyNames(tableData, jsonSchema, definitions);
+	const fullTableName = dbName ? `${dbName}.${tableName}` : tableName;
+
+	if (columns) {
+		tableStatements.push(`ALTER TABLE ${fullTableName} ADD COLUMNS (${getColumnsStatement(removePartitions(columns, keyNames.compositePartitionKey), isTableActivated)});\n\n`)
+	}
+
+	if (tableData.tableProperties) {
+		tableStatements.push(`ALTER TABLE ${fullTableName} SET TBLPROPERTIES (${tableData.tableProperties});\n\n`)
+	}
+	if (tableData.serDeLibrary) {
+		tableStatements.push(`ALTER TABLE ${fullTableName} SET SERDE '${tableData.serDeLibrary}'${tableData.serDeProperties ? `WITH SERDEPROPERTIES (${tableData.serDeProperties})` : ''};\n\n`)
+	} else if (tableData.serDeProperties) {
+		tableStatements.push(`ALTER TABLE ${fullTableName} SET SERDEPROPERTIES (${tableData.serDeProperties});\n\n`)
+	}
+	if (tableData.location) {
+		tableStatements.push(`ALTER TABLE ${fullTableName} SET LOCATION '${tableData.location}';\n\n`)
+	}
+
+	return tableStatements;
+};
+
+
 module.exports = {
-	getTableStatement
+	getTableStatement,
+	getTableAlterStatements
 };

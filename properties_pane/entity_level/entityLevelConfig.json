@@ -148,21 +148,33 @@ making sure that you maintain a proper JSON format.
 				"propertyTooltip": "if the specified table already exists, the command should make no changes and return a message that the table exists, rather than terminating with an error. "
 			},
 			{
+				"propertyName": "Using",
+				"propertyKeyword": "using",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"delta",
+					"textfile",
+					"CSVfile",
+					"JSONfile",
+					"JDBC",
+					"Parquet",
+					"ORC",
+					"LIBSVM"
+				]
+			},
+			{
 				"propertyName": "Stored as",
 				"propertyKeyword": "storedAsTable",
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
 				"options": [
-					"delta",
 					"textfile",
 					"sequencefile",
 					"ORC",
 					"Parquet",
 					"Avro",
 					"RCfile",
-					"JSONfile",
-					"CSVfile",
-					"by",
 					"input/output format"
 				]
 			},
@@ -414,6 +426,15 @@ making sure that you maintain a proper JSON format.
 				"propertyName": "Skew stored as directories",
 				"propertyKeyword": "skewStoredAsDir",
 				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Like parent table",
+				"propertyKeyword": "like",
+				"propertyTooltip": "Specifies an existing table from which the new table automatically copies column names, data types, and NOT NULL constraints.",
+				"propertyType": "selecthashed",
+				"template": "entities",
+				"withEmptyOption": true,
+				"excludeCurrent": true
 			},
 			{
 				"propertyName": "Location",

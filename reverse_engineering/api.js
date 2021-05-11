@@ -2,8 +2,6 @@
 
 const _ = require('lodash');
 const async = require('async');
-const fs = require('fs');
-const entityLevelHelper = require('./entityLevelHelper');
 const logHelper = require('./logHelper');
 let connectionData = null;
 
@@ -143,11 +141,7 @@ module.exports = {
 		} catch (err) {
 			handleError(logger, err, cb);
 		}
-	},
-
-	reFromFile: async (data, logger, callback) => {
-		callback(null);
-	},
+	}
 };
 const logInfo = (step, connectionInfo, logger) => {
 	logger.clear();

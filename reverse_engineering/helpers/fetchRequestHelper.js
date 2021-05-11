@@ -3,6 +3,17 @@ const fetch = require('node-fetch');
 const _ = require('lodash')
 
 
+const fetchApplyToInstance = async (connectionInfo) => {
+	const scriptWithoutNewLineSymb = connectionInfo.script.replaceAll(/[\s]+/g, " ");
+	const eachEntityScript = scriptWithoutNewLineSymb.split(';').filter(script => script !=='');
+	for (let script of eachEntityScript) {
+		script = script.trim() + ';'
+		const command = `var stmt = sqlContext.sql("${script}")`;
+		await executeCommand(connectionInfo, command);
+	}
+	return result
+}
+
 const fetchCreateStatementRequest = async (command, connectionInfo) => {
 	const result = await executeCommand(connectionInfo, command);
 
@@ -183,6 +194,11 @@ const getCommandExecutionResult = (query, options) => {
 		.then(body => {
 			body = JSON.parse(body);
 			if (body.status === 'Finished' && body.results !== null) {
+				if(body.results.resultType === 'error'){
+					throw {
+						message: body.results.data, code: "", description: ""
+					};
+				}
 				return body.results.data;
 			}
 
@@ -209,5 +225,6 @@ module.exports = {
 	fetchDatabaseViewsNames,
 	fetchClusterProperties,
 	getFunctionClass,
-	fetchFunctionNames
+	fetchFunctionNames,
+	fetchApplyToInstance
 };
