@@ -155,6 +155,14 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "checkbox"
 			},
 			{
+				"propertyName": "Table properties",
+				"propertyKeyword": "tableProperties",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false,
+				"valueType": "string"
+			},
+			{
 				"propertyName": "Comments",
 				"propertyKeyword": "description",
 				"propertyTooltip": "comments",

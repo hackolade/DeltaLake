@@ -46,6 +46,7 @@ class Visitor extends SqlBaseVisitor {
 		const identifier = getName(ctx.multipartIdentifier());
 		return {
 			orReplace: this.visitFlagValue(ctx, 'REPLACE'),
+			global: this.visitFlagValue(ctx, 'GLOBAL'),
 			temporary: this.visitFlagValue(ctx, 'TEMPORARY'),
 			ifNotExists: this.visitFlagValue(ctx, 'EXISTS'),
 			identifier: identifier.split('.')[1],

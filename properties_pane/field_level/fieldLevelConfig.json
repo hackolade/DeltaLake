@@ -142,6 +142,21 @@ making sure that you maintain a proper JSON format.
 				"data": "options",
 				"valueType": "string"
 			},
+			{
+				"propertyName": "JSON Types",
+				"propertyKeyword": "subtype",
+				"propertyType": "select",
+				"options": [
+					{ "name": " ", "value": "string" },
+					{ "name": "object", "value": "object" },
+					{ "name": "array", "value": "array" }
+				],
+				"defaultValue": "string",
+				"dependency": {
+					"key": "mode",
+					"value": "string"
+				}
+			},
 			"format",
 			"pattern",
 			"minLength",

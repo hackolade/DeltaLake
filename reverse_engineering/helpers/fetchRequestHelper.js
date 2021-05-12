@@ -5,13 +5,54 @@ const _ = require('lodash')
 
 const fetchApplyToInstance = async (connectionInfo) => {
 	const scriptWithoutNewLineSymb = connectionInfo.script.replaceAll(/[\s]+/g, " ");
-	const eachEntityScript = scriptWithoutNewLineSymb.split(';').filter(script => script !=='');
+	const eachEntityScript = scriptWithoutNewLineSymb.split(';').filter(script => script !== '');
 	for (let script of eachEntityScript) {
 		script = script.trim() + ';'
 		const command = `var stmt = sqlContext.sql("${script}")`;
 		await executeCommand(connectionInfo, command);
 	}
-	return result
+}
+
+const fetchLimitByCount = async (connectionInfo, collectionName) => {
+	const command = `var stmt = sqlContext.sql("select count(*) as count from ${collectionName}").select(\"count\").collect()`;
+	return await executeCommand(connectionInfo, command);
+}
+
+const fetchDocumets = async (connectionInfo, dbName, collectionName, fields, limit) => {
+	const columnsToSelect = fields.map(field => field.name).join(', ');
+	const command = `import scala.util.parsing.json.JSONObject;
+						var rows = sqlContext.sql(\"SELECT ${columnsToSelect} FROM ${dbName}.${collectionName} LIMIT ${limit}\")
+							.map(row => JSONObject(row.getValuesMap(row.schema.fieldNames)).toString())
+							.collect()`;
+	const result = await executeCommand(connectionInfo, command);
+	const rowsExtractionRegex = /(rows: Array\[String\] = Array\((.+)\))/gm
+	const rowsJSON = _.get(rowsExtractionRegex.exec(result), '2', '')
+	const rows = JSON.parse(`[${rowsJSON}]`);
+	return rows;
+}
+
+const fetchDatabaseProperties = async (connectionInfo, dbName) => {
+	const command = `import scala.util.parsing.json.JSONObject;
+						var dbProperties = sqlContext.sql(\"DESCRIBE DATABASE EXTENDED ${dbName}\")
+							.map(row => JSONObject(row.getValuesMap(row.schema.fieldNames)).toString())
+							.collect()`;
+	const result = await executeCommand(connectionInfo, command);
+	const propertiesExtractionRegex = /(dbProperties: Array\[String\] = Array\((.+)\))/gm
+	const propertiesJSON = _.get(propertiesExtractionRegex.exec(result), '2', '')
+	const properties = JSON.parse(`[${propertiesJSON}]`);
+	const propertiesObject = properties.reduce((propertiesObject, property) => {
+		return { ...propertiesObject, [property.database_description_item]: property.database_description_value }
+	}, {});
+	const location = propertiesObject['Location'];
+	const description = propertiesObject['Comment'];
+
+	const dbPropertyItemsExtractionRegex = /\((.+)\)/gmi
+	let dbProperties = _.get(dbPropertyItemsExtractionRegex.exec(propertiesObject['Properties']), '1', '').split('), ')
+	.map(item => item.replaceAll(/[\(\)]/gmi,'')).map(propertyPair => `'${propertyPair.split(',')[0]}' = '${propertyPair.split(',')[1]}'`).join(', ');
+	if(!_.isEmpty(dbProperties)){
+		dbProperties = `(${dbProperties})`
+	}
+	return {location, description, dbProperties};
 }
 
 const fetchCreateStatementRequest = async (command, connectionInfo) => {
@@ -194,9 +235,9 @@ const getCommandExecutionResult = (query, options) => {
 		.then(body => {
 			body = JSON.parse(body);
 			if (body.status === 'Finished' && body.results !== null) {
-				if(body.results.resultType === 'error'){
+				if (body.results.resultType === 'error') {
 					throw {
-						message: body.results.data, code: "", description: ""
+						message: body.results.data || body.results.cause, code: "", description: ""
 					};
 				}
 				return body.results.data;
@@ -226,5 +267,8 @@ module.exports = {
 	fetchClusterProperties,
 	getFunctionClass,
 	fetchFunctionNames,
-	fetchApplyToInstance
+	fetchApplyToInstance,
+	fetchLimitByCount,
+	fetchDocumets,
+	fetchDatabaseProperties
 };
