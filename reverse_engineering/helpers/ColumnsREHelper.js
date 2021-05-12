@@ -1,5 +1,3 @@
-const _ = require('lodash');
-
 const convertType = (type) => {
     switch (type) {
 
@@ -41,7 +39,7 @@ const getMapSubtypeByValue = (val) => {
 
 const handleType = type => {
     const convertedType = convertType(type)
-    if (_.isString(type)) {
+    if (typeof type === 'string') {
         switch (convertedType) {
             case 'tinyint':
             case 'smallint':
