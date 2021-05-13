@@ -1,6 +1,6 @@
 'use strict'
 const fetch = require('node-fetch');
-const _ = require('lodash')
+const { dependencies } = require('../appDependencies');
 
 
 const fetchApplyToInstance = async (connectionInfo) => {
@@ -62,7 +62,7 @@ const fetchCreateStatementRequest = async (command, connectionInfo) => {
 	const resultWithoutNewLineSymb = result.replaceAll(/[\n\r]/g, " ");
 	const entityCreateStatement = statementExtractionRegex.exec(resultWithoutNewLineSymb);
 
-	return _.get(entityCreateStatement, '1', '')
+	return dependencies.lodash.get(entityCreateStatement, '1', '')
 }
 
 const fetchClusterProperties = async (connectionInfo) => {
@@ -101,7 +101,7 @@ const getFunctionClass = async (connectionInfo, funcName) => {
 	const getFunctionsClassCommand = `var clas = sqlContext.sql(\"DESCRIBE FUNCTION ${funcName}\").select(\"function_desc\").collect().map(_(0)).toList(1)`
 	const result = await executeCommand(connectionInfo, getFunctionsClassCommand);
 	const valuesExtractionRegex = /clas: Any = Class: (.*)/gm;
-	return _.get(valuesExtractionRegex.exec(result), '1', '');
+	return dependencies.lodash.get(valuesExtractionRegex.exec(result), '1', '');
 }
 
 const fetchDatabaseViewsNames = async (connectionInfo, dbName) => {
@@ -253,6 +253,7 @@ const getCommandExecutionResult = (query, options) => {
 }
 
 const getDFColumnValues = async (connectionInfo, command) => {
+	const _ = dependencies.lodash;
 	const result = await executeCommand(connectionInfo, command);
 	const valuesExtractionRegex = /values: List\[Any\] = List\((.+)\)/gm;
 	const values = _.get(valuesExtractionRegex.exec(result), '1', '')
