@@ -1,11 +1,11 @@
 'use strict';
 
-const _ = require('lodash');
 const logHelper = require('./logHelper');
 let connectionData = null;
 
 const fetchRequestHelper = require('./helpers/fetchRequestHelper')
-const deltaLakeHelper = require('./helpers/DeltaLakeHelper')
+const deltaLakeHelper = require('./helpers/DeltaLakeHelper');
+const { setDependencies, dependencies } = require('./appDependencies');
 
 module.exports = {
 
@@ -13,8 +13,9 @@ module.exports = {
 		cb();
 	},
 
-	testConnection: async (connectionInfo, logger, cb) => {
+	testConnection: async (connectionInfo, logger, cb, app) => {
 		try {
+			setDependencies(app);
 			logInfo('Test connection RE', connectionInfo, logger, logger);
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
 			if (!clusterState.isRunning) {
@@ -31,10 +32,10 @@ module.exports = {
 		}
 	},
 
-	getDbCollectionsNames: async (connectionInfo, logger, cb) => {
+	getDbCollectionsNames: async (connectionInfo, logger, cb, app) => {
 		logInfo('Retrieving databases and tables information', connectionInfo, logger);
 		try {
-
+			setDependencies(app);
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}` })
@@ -59,7 +60,7 @@ module.exports = {
 		}
 	},
 
-	getDbCollectionsData: async (data, logger, cb) => {
+	getDbCollectionsData: async (data, logger, cb, app) => {
 		logger.log('info', data, 'Retrieving schema', data.hiddenKeys);
 
 		const progress = (message) => {
@@ -69,6 +70,7 @@ module.exports = {
 
 		try {
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
+			setDependencies(app);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}` })
 			}
@@ -128,7 +130,7 @@ module.exports = {
 					};
 				}));
 
-				if (_.isEmpty(views)) {
+				if (dependencies.lodash.isEmpty(views)) {
 					return [...packages, ...tablesPackages];
 				}
 
@@ -167,7 +169,7 @@ const logInfo = (step, connectionInfo, logger) => {
 };
 
 const handleError = (logger, error, cb) => {
-	const message = _.isString(error) ? error : _.get(error, 'message', 'Reverse Engineering error')
+	const message = dependencies.lodash.isString(error) ? error : dependencies.lodash.get(error, 'message', 'Reverse Engineering error')
 	logger.log('error', { error }, 'Reverse Engineering error');
 	cb(message);
 };
