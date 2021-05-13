@@ -16,11 +16,7 @@ module.exports = {
 	testConnection: async (connectionInfo, logger, cb, app) => {
 		try {
 			setDependencies(app);
-<<<<<<< HEAD
 			logInfo('Test connection RE', connectionInfo, logger, logger);
-=======
-			logInfo('Test connection', connectionInfo, logger, logger);
->>>>>>> 549645ebe12841ecc05505abab7dbbc709e115a1
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}` })
@@ -40,10 +36,6 @@ module.exports = {
 		logInfo('Retrieving databases and tables information', connectionInfo, logger);
 		try {
 			setDependencies(app);
-<<<<<<< HEAD
-=======
-
->>>>>>> 549645ebe12841ecc05505abab7dbbc709e115a1
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}` })
