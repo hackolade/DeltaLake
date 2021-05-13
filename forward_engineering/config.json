@@ -2,16 +2,10 @@
 	"extension": "hql",
 	"filterName": "Hive Query Language",
 	"namePrefix": "DeltaLake",
-	"hasUpdateScript": false,
+	"hasUpdateScript": true,
 	"level": {
 		"entity": true,
 		"container": true
 	},
-	"additionalOptions": [
-		{
-			"id": "minify",
-			"value": false,
-			"name": "Minify"
-		}
-	]
+	"applyScriptToInstance": true
 }

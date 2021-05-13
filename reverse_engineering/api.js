@@ -16,7 +16,7 @@ module.exports = {
 	testConnection: async (connectionInfo, logger, cb, app) => {
 		try {
 			setDependencies(app);
-			logInfo('Test connection', connectionInfo, logger, logger);
+			logInfo('Test connection RE', connectionInfo, logger, logger);
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}` })
@@ -26,7 +26,7 @@ module.exports = {
 			logger.log(
 				'error',
 				{ message: err.message, stack: err.stack, error: err },
-				'Test connection'
+				'Test connection RE'
 			);
 			cb({ message: err.message, stack: err.stack });
 		}
@@ -36,7 +36,6 @@ module.exports = {
 		logInfo('Retrieving databases and tables information', connectionInfo, logger);
 		try {
 			setDependencies(app);
-
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}` })
@@ -72,6 +71,7 @@ module.exports = {
 		try {
 			setDependencies(app);
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
+			setDependencies(app);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}` })
 			}
@@ -85,14 +85,21 @@ module.exports = {
 				const tablesPackages = entities.tables.map(async (tableName) => {
 					progress({ message: 'Start getting data from table', containerName: dbName, entityName: tableName });
 					const ddl = await await deltaLakeHelper.getTableCreateStatement(connectionData, dbName, tableName);
-
 					const tableData = deltaLakeHelper.getTableDataFromDDl(ddl);
+					const columnsOfTypeString = tableData.properties.filter(property => property.mode=== 'string');
+					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
+					let documents = [];
+					if(hasColumnsOfTypeString){
+						const limitByCount = await deltaLakeHelper.fetchLimitByCount(connectionData, tableName);
+						documents = await fetchRequestHelper.fetchDocumets(connectionData,dbName,tableName,columnsOfTypeString,  getLimit(limitByCount, data.recordSamplingSettings));
+					}
+						
 					progress({ message: 'Data retrieved successfully', containerName: dbName, entityName: tableName });
 					return {
 						dbName: dbName,
 						collectionName: tableName,
 						entityLevel: tableData.propertiesPane,
-						documents: [],
+						documents,
 						views: [],
 						emptyBucket: false,
 						validation: {
@@ -103,7 +110,6 @@ module.exports = {
 						}
 					};
 				})
-
 				const views = await Promise.all(entities.views.map(async viewName => {
 					progress({ message: 'Start getting data from view', containerName: dbName, entityName: viewName });
 					const ddl = await deltaLakeHelper.getTableCreateStatement(connectionData, dbName, viewName);
@@ -114,7 +120,10 @@ module.exports = {
 
 					return {
 						name: viewName,
-						viewData: viewData,
+						data:{
+							...viewData,
+							selectStatement: viewData.selectStatement,
+						},
 						ddl: {
 							script: `CREATE VIEW \`${viewData.code}\` AS ${viewData.selectStatement}`,
 							type: 'postgres'
@@ -143,12 +152,17 @@ module.exports = {
 		} catch (err) {
 			handleError(logger, err, cb);
 		}
-	},
-
-	reFromFile: async (data, logger, callback) => {
-		callback(null);
-	},
+	}
 };
+
+const getLimit = (count, recordSamplingSettings) => {
+	const per = recordSamplingSettings.relative.value;
+	const size = (recordSamplingSettings.active === 'absolute')
+		? recordSamplingSettings.absolute.value
+		: Math.round(count / 100 * per);
+	return size;
+};
+
 const logInfo = (step, connectionInfo, logger) => {
 	logger.clear();
 	logger.log('info', logHelper.getSystemInfo(connectionInfo.appVersion), step);

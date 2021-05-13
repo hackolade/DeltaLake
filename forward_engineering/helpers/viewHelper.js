@@ -48,9 +48,14 @@ const getFromStatement = (collectionRefsDefinitionsMap, columns) => {
 const retrivePropertyFromConfig = (config, tab, propertyName, defaultValue = "") => ((config || [])[tab] || {})[propertyName] || defaultValue;
 
 const retrieveContainerName = (containerConfig) => retrivePropertyFromConfig(
-		containerConfig, 0, "code", 
-		retrivePropertyFromConfig(containerConfig, 0, "name", "")	
-	);
+	containerConfig, 0, "code",
+	retrivePropertyFromConfig(containerConfig, 0, "name", "")
+);
+
+const replaceSpaceWithUnderscore = (name = '') => {
+	return name.replace(/\s/g, '_');
+}
+
 module.exports = {
 	getViewScript({
 		schema,
@@ -58,31 +63,64 @@ module.exports = {
 		containerData,
 		collectionRefsDefinitionsMap,
 	}) {
+		GLOBAL
 		setDependencies(dependencies);
 		let script = [];
 		const columns = schema.properties || {};
 		const view = _.first(viewData) || {};
-		
-		const bucketName = prepareName(retrieveContainerName(containerData));
-		const viewName = prepareName(view.code || view.name);
-		const isMaterialized = schema.materialized;
+
+		const bucketName = replaceSpaceWithUnderscore(prepareName(retrieveContainerName(containerData)));
+		const viewName = replaceSpaceWithUnderscore(prepareName(view.code || view.name));
+		const isGlobal = schema.viewGlobal && schema.viewTemporary;
+		const isTemporary = schema.viewTemporary;
+		const orReplace = schema.viewOrReplace
 		const fromStatement = getFromStatement(collectionRefsDefinitionsMap, columns);
 		const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
-		const createStatement = `CREATE ${isMaterialized ? 'MATERIALIZED' : ''} VIEW IF NOT EXISTS ${name}`;
-
+		const createStatement = `CREATE ${orReplace ? 'OR REPLACE ' : ''}${isGlobal ? 'GLOBAL ' : ''}${isTemporary ? 'TEMPORARY ' : ''}VIEW IF NOT EXISTS ${name}`;
+		const comment = schema.description;
 		script.push(createStatement);
-
 		if (schema.selectStatement) {
-			return createStatement + ' ' + schema.selectStatement + ';\n\n';
+			return createStatement + `${comment ? ' COMMENT \'' + comment + '\'' : ''} AS ${schema.selectStatement};\n\n`;
 		}
-		if (!columns) {
-			script.push(`AS SELECT * ${fromStatement};`);
-		} else {
+
+		if (_.isEmpty(columns)) {
+			return;
+		}
+
+		if (comment) {
+			script.push(`COMMENT '${comment}'`);
+		}
+
+		if (!_.isEmpty(columns)) {
 			const columnsNames = getColumnNames(collectionRefsDefinitionsMap, columns);
 			script.push(`AS SELECT ${columnsNames.join(', ')}`);
 			script.push(fromStatement);
 		}
-		
+
 		return script.join('\n  ') + ';\n\n\n\n\n'
+	},
+
+	getViewAlterScripts({
+		schema,
+		viewData,
+		containerData,
+		collectionRefsDefinitionsMap,
+	}) {
+		setDependencies(dependencies);
+		const view = _.first(viewData) || {};
+		const bucketName = replaceSpaceWithUnderscore(prepareName(retrieveContainerName(containerData)));
+		const viewName = replaceSpaceWithUnderscore(prepareName(view.code || view.name));
+		const columns = schema.properties || {};
+		const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
+		const fromStatement = getFromStatement(collectionRefsDefinitionsMap, columns);
+		let viewScripts = []
+		if (schema.selectStatement) {
+			viewScripts.push(`ALTER VIEW ${name} AS ${schema.selectStatement};\n\n`);
+		} else if (!_.isEmpty(columns)) {
+			const columnsNames = getColumnNames(collectionRefsDefinitionsMap, columns);
+			viewScripts.push(`ALTER VIEW ${name} AS SELECT ${columnsNames} ${fromStatement};\n\n`);
+		}
+		return viewScripts;
 	}
+
 };

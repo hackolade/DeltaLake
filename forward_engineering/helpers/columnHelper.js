@@ -1,6 +1,6 @@
 'use strict'
 
-const { buildStatement, getName, getTab, indentString, getTypeDescriptor, prepareName, commentDeactivatedStatements } = require('./generalHelper');
+const { replaceSpaceWithUnderscore, getName, getTypeDescriptor, prepareName, commentDeactivatedStatements } = require('./generalHelper');
 
 const getStructChild = (name, type, comment) => `${prepareName(name)}: ${type}` + (comment ? ` COMMENT '${comment}'` : '');
 
@@ -328,7 +328,7 @@ const getColumnStatement = ({ name, type, comment, constraints, isActivated, isP
 	const commentStatement = comment ? ` COMMENT '${comment}'` : '';
 	const constraintsStaitment = constraints ? getColumnConstraintsStaitment(constraints) : '';
 	const isColumnActivated = isParentActivated ? isActivated : true;
-	return commentDeactivatedStatements(`${name} ${type}${constraintsStaitment}${commentStatement}`, isColumnActivated);
+	return commentDeactivatedStatements(`${replaceSpaceWithUnderscore(name)} ${type}${constraintsStaitment}${commentStatement}`, isColumnActivated);
 };
 
 const getColumnsStatement = (columns, isParentActivated) => {
@@ -338,7 +338,7 @@ const getColumnsStatement = (columns, isParentActivated) => {
 			columns[name],
 			{ name, isParentActivated }
 		))
-	}).join(',\n');
+	}).join(', ');
 };
 
 const getColumnConstraintsStaitment = ({ notNull, unique, check, defaultValue }) => {

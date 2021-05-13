@@ -29,6 +29,7 @@ const getDatabaseCollectionNames = async (connectionInfo, dbName) => {
 const getModelData = async (connectionInfo) => {
 	const clusterProperties = await fetchRequestHelper.fetchClusterProperties(connectionInfo);
 	return {
+		dbVersion: `Runtime ${clusterProperties.spark_version[0]}`,
 		modelName: clusterProperties.cluster_name,
 		author: clusterProperties.creator_user_name,
 		host: connectionInfo.host,
@@ -48,11 +49,11 @@ const getModelData = async (connectionInfo) => {
 }
 
 const getContainerData = async (connectionInfo, dbName) => {
-	const functionNames = await getFunctions(connectionInfo, dbName);
-	const funcNamesGroupedByDB = functionNames.map(func => ({ dbName: func.split('.')[0], funcName: func.split('.')[1] }))
-		.filter(func => func.funcName).filter(func => func.dbName === dbName)
+	const containerProperties = await fetchRequestHelper.fetchDatabaseProperties(connectionInfo, dbName)
 	return {
-		UDFs: await Promise.all(funcNamesGroupedByDB.map(async func => ({ funcName: func.funcName, funcClassName: await fetchRequestHelper.getFunctionClass(connectionInfo, `${func.dbName}.${func.funcName}`) })))
+		description:containerProperties.description,
+		dbProperties:containerProperties.dbProperties,
+		location: containerProperties.location
 	}
 }
 
@@ -72,8 +73,8 @@ const getTableProvider = (provider) => {
 			return 'RCfile';
 		case 'jsonfile':
 			return 'JSONfile';
-			case 'csv':
-				return 'CSVfile';
+		case 'csv':
+			return 'CSVfile';
 		default: return provider?.toLowerCase()
 	}
 }
@@ -142,16 +143,23 @@ const getViewDataFromDDl = statement => {
 	if (!dependencies.lodash.isEmpty(parsedViewData.selectStatement)) {
 		parsedViewData.selectStatement = statement.substring(parsedViewData.selectStatement.select.start, parsedViewData.selectStatement.select.stop)
 	}
-
 	return {
 		code: parsedViewData.identifier,
+		global: parsedViewData.global,
 		viewOrReplace: parsedViewData.orReplace,
 		viewIfNotExist: parsedViewData.ifNotExists,
 		viewTemporary: parsedViewData.temporary,
 		description: parsedViewData.comment,
 		selectStatement: parsedViewData.selectStatement,
-		tableProperties: parsedViewData.tblPropertiesout
+		tableProperties: parsedViewData.tblProperties
 	}
+}
+
+const fetchLimitByCount = async (connectionInfo, collectionName) => {
+	const countResult = await fetchRequestHelper.fetchLimitByCount(connectionInfo, collectionName);
+	const countExtractionRegex = /stmt: Array\[org.apache.spark.sql.Row\] = Array\(\[(\d+)\]\)/gm;
+	const numberOfRows = dependencies.lodash.get(countExtractionRegex.exec(countResult), '1', '')
+	return numberOfRows;
 }
 
 
@@ -190,5 +198,6 @@ module.exports = {
 	splitTableAndViewNames,
 	getContainerData,
 	getTableDataFromDDl,
-	getViewDataFromDDl
+	getViewDataFromDDl,
+	fetchLimitByCount
 };

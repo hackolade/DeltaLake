@@ -6,7 +6,11 @@
 	"useSample": true,
 	"jsonType": {
 		"order": 1,
-		"name": "string"
+		"jsonRoot": true,
+		"source": {
+			"key": "mode",
+			"value": "string"
+		}
 	},
 	"default": true,
 	"defaultValues": {
@@ -21,25 +25,56 @@
 		"maxLength": "",
 		"pattern": "",
 		"enum": [],
-		"sample":"",
-		"comments":"",
+		"sample": "",
+		"comments": "",
 		"mode": "string"
 	},
-	"descriptor": [{
-		"schema": {
-			"format": "time"
+	"descriptor": [
+		{
+			"schema": {
+				"format": "time"
+			},
+			"format": "hh:mm:ss"
 		},
-		"format": "hh:mm:ss"
-	}, {
-		"schema": {
-			"format": "time"
+		{
+			"schema": {
+				"format": "time"
+			},
+			"format": "hh:mm:ss.nnn"
 		},
-		"format": "hh:mm:ss.nnn"
-	}, {
-		"schema": {
-			"format": "time"
+		{
+			"schema": {
+				"format": "time"
+			},
+			"format": "hh:mm:ss.nnnnnn"
+		}
+	],
+	"subtypes": {
+		"object": {
+			"parentType": "jsonObject",
+			"childValueType": [
+				"jsonString",
+				"jsonNumber",
+				"jsonObject",
+				"jsonArray",
+				"jsonBoolean",
+				"jsonNull"
+			]
 		},
-		"format": "hh:mm:ss.nnnnnn"
-	}],
+		"array": {
+			"parentType": "jsonArray",
+			"childValueType": [
+				"jsonString",
+				"jsonNumber",
+				"jsonObject",
+				"jsonArray",
+				"jsonBoolean",
+				"jsonNull"
+			]
+		},
+		"string": {
+			"parentType": "string"
+		}
+	},
 	"hiddenOnEntity": "view"
 }
