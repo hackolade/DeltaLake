@@ -1,3 +1,4 @@
+const { dependencies } = require('./appDependencies');
 const {
     set,
     findEntityIndex,
@@ -8,8 +9,6 @@ const {
     findViewIndex,
     merge,
 } = require('./helpers/commandsHelper');
-
-const _ = require('lodash');
 
 const CREATE_COLLECTION_COMMAND = 'createCollection';
 const REMOVE_COLLECTION_COMMAND = 'removeCollection';
@@ -50,7 +49,7 @@ const convertCommandsToEntities = (commands, originalScript) => {
 
             const bucket = statementData.bucketName || entitiesData.currentBucket;
 
-            if (_.keys(COMMANDS_ACTION_MAP).includes(command)) {
+            if (dependencies.lodash.keys(COMMANDS_ACTION_MAP).includes(command)) {
                 return COMMANDS_ACTION_MAP[command](entitiesData, bucket, statementData, originalScript);
             }
 
@@ -183,7 +182,7 @@ const updateField = (entitiesData, bucket, statementData) => {
     }
 
     const entity = entities[index];
-    const field = _.get(entity, 'schema.properties' , {})[statementData.name];
+    const field = dependencies.lodash.get(entity, 'schema.properties' , {})[statementData.name];
     if(!field) {
         return entitiesData; 
     }
@@ -349,6 +348,8 @@ const addRelationship = (entitiesData, bucket, statementData) => {
 };
 
 const updateProperties = (properties, statementData) => {
+    const _ = dependencies.lodash;
+
     return _.fromPairs(
         _.keys(properties).map((columnName) => {
             if (!statementData.fields.includes(columnName)) {
@@ -418,7 +419,7 @@ const addToResourcePlan = (entitiesData, bucket, statementData) => {
 
     const updatedResourcePlan = {
         ...resourcePlans[resourcePlanIndex],
-        [identifier + 's']: _.get(resourcePlans, `${resourcePlanIndex}.${identifier + 's'}`, []).concat(
+        [identifier + 's']: dependencies.lodash.get(resourcePlans, `${resourcePlanIndex}.${identifier + 's'}`, []).concat(
             statementData[identifier]
         ),
     };
@@ -442,7 +443,7 @@ const addMapping = (entitiesData, bucket, statementData) => {
     }
 
     const planPools = resourcePlans[resourceIndex].pools || [];
-    const poolIndex = _.findIndex(planPools, ({ name }) => name === statementData.poolName);
+    const poolIndex = dependencies.lodash.findIndex(planPools, ({ name }) => name === statementData.poolName);
     if (poolIndex < 0) {
         return entitiesData;
     }
@@ -638,7 +639,7 @@ const removeMapping = (entitiesData, bucket, statementData) => {
     }
 
     const planPools = resourcePlans[resourceIndex].pools || [];
-    const poolIndex = _.findIndex(planPools, ({ mappings }) =>
+    const poolIndex = dependencies.lodash.findIndex(planPools, ({ mappings }) =>
         (mappings || []).find(({ name }) => name === statementData.name)
     );
     if (poolIndex < 0) {
@@ -679,11 +680,11 @@ const updateEntityLevelData = (entitiesData, bucket, statementData) => {
 }
 
 const getResourcePlanIndex = (resourcePlans, resourceName) => {
-    return _.findIndex(resourcePlans, (plan) => plan.name === resourceName);
+    return dependencies.lodash.findIndex(resourcePlans, (plan) => plan.name === resourceName);
 };
 
 const addMappingToPoolByIndex = (pools, poolIndex, mapping) => {
-    return { ...pools[poolIndex], mappings: _.get(pools[poolIndex], 'mappings', []).concat(mapping) };
+    return { ...pools[poolIndex], mappings: dependencies.lodash.get(pools[poolIndex], 'mappings', []).concat(mapping) };
 };
 
 const removeMappingFromPool = (pools, poolIndex, mappingName) => {
@@ -691,6 +692,7 @@ const removeMappingFromPool = (pools, poolIndex, mappingName) => {
 };
 
 const getResourcePlanAndItemIndexes = (resourcePlans, statementData, identifier) => {
+    const _ = dependencies.lodash;
     const resourcePlanIndex = getResourcePlanIndex(resourcePlans, statementData.resourceName);
     const items = _.get(resourcePlans, `${resourcePlanIndex}.${identifier + 's'}`, []);
     const itemIndex = _.findIndex(items, ({ name }) => name === statementData[identifier]);
