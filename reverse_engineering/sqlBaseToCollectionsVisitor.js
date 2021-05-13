@@ -1,5 +1,5 @@
 const { SqlBaseVisitor } = require('./parser/SqlBaseVisitor');
-const _ = require('lodash')
+const { dependencies } = require('./appDependencies');
 
 class Visitor extends SqlBaseVisitor {
 	visitSingleStatement(ctx) {
@@ -269,7 +269,7 @@ const getLabelValue = (context, label) => {
 }
 
 const getName = context => {
-	if (!context || _.isEmpty(context)) {
+	if (!context || dependencies.lodash.isEmpty(context)) {
 		return '';
 	}
 	return removeQuotes(context.getText());

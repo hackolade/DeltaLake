@@ -69,6 +69,7 @@ module.exports = {
 		};
 
 		try {
+			setDependencies(app);
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
 			setDependencies(app);
 			if (!clusterState.isRunning) {

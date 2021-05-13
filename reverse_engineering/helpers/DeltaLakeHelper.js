@@ -1,12 +1,12 @@
 'use strict'
 const fetchRequestHelper = require('./fetchRequestHelper')
-const _ = require('lodash')
 const SqlBaseLexer = require('../parser/SqlBaseLexer')
 const SqlBaseParser = require('../parser/SqlBaseParser')
 const SqlBaseToCollectionVisitor = require('../sqlBaseToCollectionsVisitor')
 const ExprErrorListener = require('../antlrErrorListener');
 const columnREHelper = require('./ColumnsREHelper')
 const antlr4 = require('antlr4');
+const { dependencies } = require('../appDependencies')
 
 const getDatabaseCollectionNames = async (connectionInfo, dbName) => {
 
@@ -21,7 +21,7 @@ const getDatabaseCollectionNames = async (connectionInfo, dbName) => {
 	return {
 		dbName,
 		dbCollections: dbEntitiesNames,
-		isEmpty: _.isEmpty(dbEntitiesNames),
+		isEmpty: dependencies.lodash.isEmpty(dbEntitiesNames),
 	};
 
 }
@@ -91,7 +91,7 @@ const getTableDataFromDDl = (statement) => {
 	const tree = parser.singleStatement();
 	const sqlBaseToCollectionVisitor = new SqlBaseToCollectionVisitor();
 	let parsedTableData = tree.accept(sqlBaseToCollectionVisitor);
-	if (!_.isEmpty(parsedTableData.query)) {
+	if (!dependencies.lodash.isEmpty(parsedTableData.query)) {
 		parsedTableData.query = statement.substring(parsedTableData.query.select.start, parsedTableData.query.select.stop)
 	}
 	const properties = parsedTableData.colList.map(column => columnREHelper.reverseTableColumn(column));
@@ -140,7 +140,7 @@ const getViewDataFromDDl = statement => {
 
 	const sqlBaseToCOllectionVisitor = new SqlBaseToCollectionVisitor();
 	let parsedViewData = tree.accept(sqlBaseToCOllectionVisitor);
-	if (!_.isEmpty(parsedViewData.selectStatement)) {
+	if (!dependencies.lodash.isEmpty(parsedViewData.selectStatement)) {
 		parsedViewData.selectStatement = statement.substring(parsedViewData.selectStatement.select.start, parsedViewData.selectStatement.select.stop)
 	}
 	return {
@@ -183,7 +183,7 @@ const getTableCreateStatement = async (connectionInfo, dbName, entityName) => {
 }
 
 const splitTableAndViewNames = names => {
-	const namesByCategory = _.partition(names, isView);
+	const namesByCategory = dependencies.lodash.partition(names, isView);
 
 	return { views: namesByCategory[0].map(name => name.slice(0, -4)), tables: namesByCategory[1] };
 };
