@@ -8,11 +8,11 @@ const { getViewScript, getViewAlterScripts } = require('./helpers/viewHelper');
 const { prepareName, replaceSpaceWithUnderscore, getName, getTab } = require('./helpers/generalHelper');
 const foreignKeyHelper = require('./helpers/foreignKeyHelper');
 let _;
-const sqlFormatter = require('sql-formatter');
-
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const deltaLakeHelper = require('../reverse_engineering/helpers/DeltaLakeHelper')
 const logHelper = require('../reverse_engineering/logHelper');
+
+const setAppDependencies = ({ lodash }) => _ = lodash;
 
 module.exports = {
 	generateScript(data, logger, callback, app) {
@@ -32,7 +32,7 @@ module.exports = {
 				'1'
 			);
 			const needMinify = (
-				_.get(data, 'options.additionalOptions', []).find(
+				dependencies.lodash.get(data, 'options.additionalOptions', []).find(
 					(option) => option.id === 'minify'
 				) || {}
 			).value;
@@ -116,7 +116,7 @@ module.exports = {
 				'1'
 			);
 			const needMinify = (
-				_.get(data, 'options.additionalOptions', []).find(
+				dependencies.lodash.get(data, 'options.additionalOptions', []).find(
 					(option) => option.id === 'minify'
 				) || {}
 			).value;
@@ -146,7 +146,7 @@ module.exports = {
 				}
 			})
 
-			viewsScripts = viewsScripts.filter(script => !_.isEmpty(script));
+			viewsScripts = viewsScripts.filter(script => !dependencies.lodash.isEmpty(script));
 
 			const foreignKeyHashTable = foreignKeyHelper.getForeignKeyHashTable(
 				data.relationships,
@@ -315,4 +315,3 @@ const logInfo = (step, connectionInfo, logger) => {
 	logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
 };
 
-const setAppDependencies = ({ lodash }) => _ = lodash;

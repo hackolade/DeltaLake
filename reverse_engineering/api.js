@@ -87,7 +87,7 @@ module.exports = {
 					const ddl = await await deltaLakeHelper.getTableCreateStatement(connectionData, dbName, tableName);
 					const tableData = deltaLakeHelper.getTableDataFromDDl(ddl);
 					const columnsOfTypeString = tableData.properties.filter(property => property.mode=== 'string');
-					const hasColumnsOfTypeString = !_.isEmpty(columnsOfTypeString)
+					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
 					let documents = [];
 					if(hasColumnsOfTypeString){
 						const limitByCount = await deltaLakeHelper.fetchLimitByCount(connectionData, tableName);

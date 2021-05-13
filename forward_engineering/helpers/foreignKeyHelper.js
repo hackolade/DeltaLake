@@ -42,11 +42,11 @@ const getForeignKeyHashTable = (relationships, entities, entityData, jsonSchemas
 		const groupKey = parentTableName + constraintName;
 		const childFieldActivated = relationship.childField.reduce((isActivated, field) => {
             const fieldData = getItemByPath(field.slice(1), jsonSchemas[relationship.childCollection]);
-            return isActivated && _.get(fieldData, 'isActivated');
+            return isActivated && dependencies.lodash.get(fieldData, 'isActivated');
         }, true);
         const parentFieldActivated = relationship.parentField.reduce((isActivated, field) => {
 			const fieldData = getItemByPath(field.slice(1), jsonSchemas[relationship.parentCollection]);
-			return isActivated && _.get(fieldData, 'isActivated');
+			return isActivated && dependencies.lodash.get(fieldData, 'isActivated');
         }, true);
 
 		if (!hashTable[relationship.childCollection][groupKey]) {
@@ -63,8 +63,8 @@ const getForeignKeyHashTable = (relationships, entities, entityData, jsonSchemas
             childColumn: getPreparedForeignColumns(relationship.childField, idToNameHashTable),
             isActivated:
                 isContainerActivated &&
-                _.get(parentTableData, 'isActivated') &&
-                _.get(childTableData, 'isActivated') &&
+                dependencies.lodash.get(parentTableData, 'isActivated') &&
+                dependencies.lodash.get(childTableData, 'isActivated') &&
                 childFieldActivated &&
                 parentFieldActivated,
         });

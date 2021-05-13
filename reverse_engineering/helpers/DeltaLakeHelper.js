@@ -158,7 +158,7 @@ const getViewDataFromDDl = statement => {
 const fetchLimitByCount = async (connectionInfo, collectionName) => {
 	const countResult = await fetchRequestHelper.fetchLimitByCount(connectionInfo, collectionName);
 	const countExtractionRegex = /stmt: Array\[org.apache.spark.sql.Row\] = Array\(\[(\d+)\]\)/gm;
-	const numberOfRows = _.get(countExtractionRegex.exec(countResult), '1', '')
+	const numberOfRows = dependencies.lodash.get(countExtractionRegex.exec(countResult), '1', '')
 	return numberOfRows;
 }
 

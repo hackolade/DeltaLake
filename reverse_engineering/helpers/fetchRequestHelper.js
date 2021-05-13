@@ -26,7 +26,7 @@ const fetchDocumets = async (connectionInfo, dbName, collectionName, fields, lim
 							.collect()`;
 	const result = await executeCommand(connectionInfo, command);
 	const rowsExtractionRegex = /(rows: Array\[String\] = Array\((.+)\))/gm
-	const rowsJSON = _.get(rowsExtractionRegex.exec(result), '2', '')
+	const rowsJSON = dependencies.lodash.get(rowsExtractionRegex.exec(result), '2', '')
 	const rows = JSON.parse(`[${rowsJSON}]`);
 	return rows;
 }
@@ -38,7 +38,7 @@ const fetchDatabaseProperties = async (connectionInfo, dbName) => {
 							.collect()`;
 	const result = await executeCommand(connectionInfo, command);
 	const propertiesExtractionRegex = /(dbProperties: Array\[String\] = Array\((.+)\))/gm
-	const propertiesJSON = _.get(propertiesExtractionRegex.exec(result), '2', '')
+	const propertiesJSON = dependencies.lodash.get(propertiesExtractionRegex.exec(result), '2', '')
 	const properties = JSON.parse(`[${propertiesJSON}]`);
 	const propertiesObject = properties.reduce((propertiesObject, property) => {
 		return { ...propertiesObject, [property.database_description_item]: property.database_description_value }
@@ -47,9 +47,9 @@ const fetchDatabaseProperties = async (connectionInfo, dbName) => {
 	const description = propertiesObject['Comment'];
 
 	const dbPropertyItemsExtractionRegex = /\((.+)\)/gmi
-	let dbProperties = _.get(dbPropertyItemsExtractionRegex.exec(propertiesObject['Properties']), '1', '').split('), ')
+	let dbProperties = dependencies.lodash.get(dbPropertyItemsExtractionRegex.exec(propertiesObject['Properties']), '1', '').split('), ')
 	.map(item => item.replaceAll(/[\(\)]/gmi,'')).map(propertyPair => `'${propertyPair.split(',')[0]}' = '${propertyPair.split(',')[1]}'`).join(', ');
-	if(!_.isEmpty(dbProperties)){
+	if(!dependencies.lodash.isEmpty(dbProperties)){
 		dbProperties = `(${dbProperties})`
 	}
 	return {location, description, dbProperties};
@@ -256,8 +256,8 @@ const getDFColumnValues = async (connectionInfo, command) => {
 	const _ = dependencies.lodash;
 	const result = await executeCommand(connectionInfo, command);
 	const valuesExtractionRegex = /values: List\[Any\] = List\((.+)\)/gm;
-	const values = _.get(valuesExtractionRegex.exec(result), '1', '')
-	return _.isEmpty(values) ? [] : values.split(", ");
+	const values = dependencies.lodash.get(valuesExtractionRegex.exec(result), '1', '')
+	return dependencies.lodash.isEmpty(values) ? [] : values.split(", ");
 }
 
 module.exports = {
