@@ -1,6 +1,12 @@
 'use strict'
 const fetch = require('node-fetch');
 const { dependencies } = require('../appDependencies');
+let activeContext;
+
+const destroyActiveContext = () => {
+	destroyContext(activeContext.connectionInfo, activeContext.id)
+	activeContext = undefined;
+}
 
 
 const fetchApplyToInstance = async (connectionInfo) => {
@@ -48,11 +54,11 @@ const fetchDatabaseProperties = async (connectionInfo, dbName) => {
 
 	const dbPropertyItemsExtractionRegex = /\((.+)\)/gmi
 	let dbProperties = dependencies.lodash.get(dbPropertyItemsExtractionRegex.exec(propertiesObject['Properties']), '1', '').split('), ')
-	.map(item => item.replaceAll(/[\(\)]/gmi,'')).map(propertyPair => `'${propertyPair.split(',')[0]}' = '${propertyPair.split(',')[1]}'`).join(', ');
-	if(!dependencies.lodash.isEmpty(dbProperties)){
+		.map(item => item.replaceAll(/[\(\)]/gmi, '')).map(propertyPair => `'${propertyPair.split(',')[0]}' = '${propertyPair.split(',')[1]}'`).join(', ');
+	if (!dependencies.lodash.isEmpty(dbProperties)) {
 		dbProperties = `(${dbProperties})`
 	}
-	return {location, description, dbProperties};
+	return { location, description, dbProperties };
 }
 
 const fetchCreateStatementRequest = async (command, connectionInfo) => {
@@ -134,7 +140,9 @@ const postRequestOptions = (connectionInfo, body) => {
 };
 
 const createContext = (connectionInfo) => {
-
+	if (activeContext) {
+		return Promise.resolve(activeContext.id);
+	}
 	const query = connectionInfo.host + '/api/1.2/contexts/create'
 	const body = JSON.stringify({
 		"language": "scala",
@@ -153,29 +161,32 @@ const createContext = (connectionInfo) => {
 		})
 		.then(body => {
 			body = JSON.parse(body);
-			return body.id;
+			activeContext = {
+				id: body.id,
+				connectionInfo
+			}
+			return activeContext.id;
 		})
 }
 
 const destroyContext = (connectionInfo, contextId) => {
-	const query = '' + '/api/1.2/contexts/destroy'
+	const query = connectionInfo.host + '/api/1.2/contexts/destroy'
 	const body = JSON.stringify({
 		"contextId": contextId,
 		"clusterId": connectionInfo.clusterId
 	});
 	const options = postRequestOptions(connectionInfo, body);
 	return fetch(query, options)
-		.then(response => response.text())
-		.then(body => {
-			body = JSON.parse(body);
-
+		.then(response => {
 			if (response.ok) {
-				return body;
+				return response.text()
 			}
-
 			throw {
 				message: response.statusText, code: response.status, description: body
 			};
+		})
+		.then(body => {
+			body = JSON.parse(body);
 		});
 }
 
@@ -271,5 +282,6 @@ module.exports = {
 	fetchApplyToInstance,
 	fetchLimitByCount,
 	fetchDocumets,
-	fetchDatabaseProperties
+	fetchDatabaseProperties,
+	destroyActiveContext
 };

@@ -10,6 +10,7 @@ const { setDependencies, dependencies } = require('./appDependencies');
 module.exports = {
 
 	disconnect: function (connectionInfo, cb) {
+		fetchRequestHelper.destroyActiveContext();
 		cb();
 	},
 
@@ -40,7 +41,6 @@ module.exports = {
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}` })
 			}
-
 			connectionData = {
 				host: connectionInfo.host,
 				clusterId: connectionInfo.clusterId,
@@ -86,14 +86,14 @@ module.exports = {
 					progress({ message: 'Start getting data from table', containerName: dbName, entityName: tableName });
 					const ddl = await await deltaLakeHelper.getTableCreateStatement(connectionData, dbName, tableName);
 					const tableData = deltaLakeHelper.getTableDataFromDDl(ddl);
-					const columnsOfTypeString = tableData.properties.filter(property => property.mode=== 'string');
+					const columnsOfTypeString = tableData.properties.filter(property => property.mode === 'string');
 					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
 					let documents = [];
-					if(hasColumnsOfTypeString){
+					if (hasColumnsOfTypeString) {
 						const limitByCount = await deltaLakeHelper.fetchLimitByCount(connectionData, tableName);
-						documents = await fetchRequestHelper.fetchDocumets(connectionData,dbName,tableName,columnsOfTypeString,  getLimit(limitByCount, data.recordSamplingSettings));
+						documents = await fetchRequestHelper.fetchDocumets(connectionData, dbName, tableName, columnsOfTypeString, getLimit(limitByCount, data.recordSamplingSettings));
 					}
-						
+
 					progress({ message: 'Data retrieved successfully', containerName: dbName, entityName: tableName });
 					return {
 						dbName: dbName,
@@ -115,12 +115,12 @@ module.exports = {
 					const ddl = await deltaLakeHelper.getTableCreateStatement(connectionData, dbName, viewName);
 
 					const viewData = deltaLakeHelper.getViewDataFromDDl(ddl);
-					
+
 					progress({ message: 'Data retrieved successfully', containerName: dbName, entityName: viewName });
 
 					return {
 						name: viewName,
-						data:{
+						data: {
 							...viewData,
 							selectStatement: viewData.selectStatement,
 						},
@@ -148,6 +148,7 @@ module.exports = {
 				return [...packages, ...tablesPackages, viewPackage];
 			}, Promise.resolve([]))
 			const packages = await Promise.all(entitiesPromises);
+			fetchRequestHelper.destroyActiveContext();
 			cb(null, packages, modelData);
 		} catch (err) {
 			handleError(logger, err, cb);
