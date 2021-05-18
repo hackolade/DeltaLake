@@ -139,8 +139,7 @@ making sure that you maintain a proper JSON format.
 					"Runtime 6",
 					"Runtime 7",
 					"Runtime 8"
-				],
-				"disabledOption": true
+				]
 			},
 			{
 				"propertyName": "Host",

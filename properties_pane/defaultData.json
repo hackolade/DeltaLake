@@ -1,7 +1,7 @@
 {
 	"model": {
 		"modelName": "New model",
-		"dbVersion": "Runtime 7",
+		"dbVersion": "Runtime 8",
 		"dbVendor": "Delta Lake"
 	},
 	"container": {
