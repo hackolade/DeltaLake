@@ -13,6 +13,7 @@ const deltaLakeHelper = require('../reverse_engineering/helpers/DeltaLakeHelper'
 const logHelper = require('../reverse_engineering/logHelper');
 
 const setAppDependencies = ({ lodash }) => _ = lodash;
+const sqlFormatter = require('sql-formatter');
 
 module.exports = {
 	generateScript(data, logger, callback, app) {
@@ -265,7 +266,7 @@ module.exports = {
 
 const buildScript = (needMinify) => (...statements) => {
 	const script = statements.filter((statement) => statement).join('\n\n');
-	return script;
+	return sqlFormatter.format(script, { indent: '    ' });
 };
 
 const parseEntities = (entities, serializedItems) => {
