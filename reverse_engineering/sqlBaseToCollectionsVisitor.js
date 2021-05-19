@@ -1,4 +1,4 @@
-const { SqlBaseVisitor } = require('./parser/SqlBaseVisitor');
+const { SqlBaseVisitor } = require('./parser/SQLBase/SqlBaseVisitor');
 const { dependencies } = require('./appDependencies');
 
 class Visitor extends SqlBaseVisitor {

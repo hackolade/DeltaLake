@@ -1,7 +1,7 @@
 'use strict'
 const fetchRequestHelper = require('./fetchRequestHelper')
-const SqlBaseLexer = require('../parser/SqlBaseLexer')
-const SqlBaseParser = require('../parser/SqlBaseParser')
+const SqlBaseLexer = require('../parser/SQLBase/SqlBaseLexer')
+const SqlBaseParser = require('../parser/SQLBase/SqlBaseParser')
 const SqlBaseToCollectionVisitor = require('../sqlBaseToCollectionsVisitor')
 const ExprErrorListener = require('../antlrErrorListener');
 const columnREHelper = require('./ColumnsREHelper')

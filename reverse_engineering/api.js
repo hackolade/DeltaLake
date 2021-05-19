@@ -6,6 +6,13 @@ let connectionData = null;
 const fetchRequestHelper = require('./helpers/fetchRequestHelper')
 const deltaLakeHelper = require('./helpers/DeltaLakeHelper');
 const { setDependencies, dependencies } = require('./appDependencies');
+const fs = require('fs');
+const antlr4 = require('antlr4');
+const HiveLexer = require('./parser/Hive/HiveLexer.js');
+const HiveParser = require('./parser/Hive/HiveParser.js');
+const hqlToCollectionsVisitor = require('./hqlToCollectionsVisitor.js');
+const commandsService = require('./commandsService');
+const ExprErrorListener = require('./antlrErrorListener');
 
 module.exports = {
 
@@ -153,7 +160,49 @@ module.exports = {
 		} catch (err) {
 			handleError(logger, err, cb);
 		}
-	}
+	},
+	reFromFile: async (data, logger, callback, app) => {
+		try {
+			setDependencies(app);
+			const input = await handleFileData(data.filePath);
+			const chars = new antlr4.InputStream(input);
+			const lexer = new HiveLexer.HiveLexer(chars);
+
+			const tokens = new antlr4.CommonTokenStream(lexer);
+			const parser = new HiveParser.HiveParser(tokens);
+			parser.removeErrorListeners();
+			parser.addErrorListener(new ExprErrorListener());
+
+			const tree = parser.statements();
+
+			const hqlToCollectionsGenerator = new hqlToCollectionsVisitor();
+
+			const commands = tree.accept(hqlToCollectionsGenerator);
+			const { result, info, relationships } = commandsService.convertCommandsToReDocs(
+                dependencies.lodash.flatten(commands).filter(Boolean),
+                input
+            );
+			callback(null, result, info, relationships, 'multipleSchema');
+		} catch(err) {
+			const { error, title, name } = err;
+			const handledError = handleErrorObject(error || err, title || name);
+			logger.log('error', handledError, title);
+			callback(handledError);
+		}
+	},
+};
+
+const handleFileData = filePath => {
+	return new Promise((resolve, reject) => {
+
+		fs.readFile(filePath, 'utf-8', (err, content) => {
+			if(err) {
+				reject(err);
+			} else {
+				resolve(content);
+			}
+		});
+	});
 };
 
 const getLimit = (count, recordSamplingSettings) => {
