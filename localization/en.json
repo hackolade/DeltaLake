@@ -133,7 +133,7 @@
 	"MONGODB_SCRIPT_WARNING_MESSAGE": "This view is not associated to a type (viewOn property).",
 	"TYPE": {},
 	"CENTRAL_PANE___TAB_MODEL_DEFINITIONS": "User-Defined Types",
-	"CENTRAL_PANE___FE_SCRIPT": "HiveQL Script",
+	"CENTRAL_PANE___FE_SCRIPT": "Delta Lake script",
 	"MODAL_WINDOW___FE_SCRIPT_OPTION_UPDATE": "Alter",
 	"MODAL_WINDOW___FE_SCRIPT_OPTION_CREATE": "Create",
 	"CONTEXT_MENU___ADD_MODEL_REFERENCE": "User-Defined Type",
