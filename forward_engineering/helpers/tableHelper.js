@@ -36,8 +36,7 @@ const getCreateStatement = ({
 
 	return getCreateHiveStatement({
 		tempExtStatement, fullTableName, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
-		clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
-		isActivated
+		rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement, isActivated
 	});
 };
 
@@ -48,16 +47,12 @@ const getCreateUsingStatement = ({
 }) => {
 	return buildStatement(`CREATE${tempExtStatement}TABLE IF NOT EXISTS ${fullTableName} (`, isActivated)
 		(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))
-		(primaryKeyStatement, primaryKeyStatement)
-		(foreignKeyStatement, foreignKeyStatement)
 		(true, ')')
-		(using, `USING ${using}`)// TODO: add options support
+		(using, `USING ${using}`)
 		(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)
 		(clusteredKeys, `CLUSTERED BY (${clusteredKeys})`)
 		(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)
 		(numBuckets && clusteredKeys, `INTO ${numBuckets} BUCKETS`)
-		(skewedStatement, skewedStatement)
-		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
 		(storedAsStatement, storedAsStatement)
 		(location, `LOCATION '${location}'`)
 		(comment, `COMMENT '${comment}'`)
@@ -69,8 +64,7 @@ const getCreateUsingStatement = ({
 
 const getCreateHiveStatement = ({
 	tempExtStatement, fullTableName, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
-	clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
-	isActivated
+	rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement, isActivated
 }) => {
 	return buildStatement(`CREATE${tempExtStatement}TABLE IF NOT EXISTS ${fullTableName} (`, isActivated)
 		(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))
@@ -79,10 +73,6 @@ const getCreateHiveStatement = ({
 		(true, ')')
 		(comment, `COMMENT '${comment}'`)
 		(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)
-		(clusteredKeys, `CLUSTERED BY (${clusteredKeys})`)
-		(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)
-		(numBuckets && clusteredKeys, `INTO ${numBuckets} BUCKETS`)
-		(skewedStatement, skewedStatement)
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
 		(storedAsStatement, storedAsStatement)
 		(location, `LOCATION '${location}'`)
@@ -101,7 +91,7 @@ const getCreateLikeStatement = ({
 		(primaryKeyStatement, primaryKeyStatement)
 		(foreignKeyStatement, foreignKeyStatement)
 		(true, ')')
-		(using, `USING '${using}'`)// TODO: add options support
+		(using, `USING '${using}'`)
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
 		(storedAsStatement, storedAsStatement)
 		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
@@ -109,23 +99,6 @@ const getCreateLikeStatement = ({
 		(true, ';')
 		();
 }
-
-const getPrimaryKeyStatement = (keysNames, deactivatedColumnNames, isParentItemActivated) => {
-	const getStatement = keys => `PRIMARY KEY (${keys}) DISABLE NOVALIDATE`;
-
-	if (!Array.isArray(keysNames) || !keysNames.length) {
-		return '';
-	}
-	if (!isParentItemActivated) {
-		return getStatement(keysNames.join(', '));
-	}
-
-	const { isAllKeysDeactivated, keysString } = commentDeactivatedInlineKeys(keysNames, deactivatedColumnNames);
-	if (isAllKeysDeactivated) {
-		return '-- ' + getStatement(keysString);
-	}
-	return getStatement(keysString);
-};
 
 const getClusteringKeys = (clusteredKeys, deactivatedColumnNames, isParentItemActivated) => {
 	if (!Array.isArray(clusteredKeys) || !clusteredKeys.length) {
@@ -263,8 +236,6 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, f
 		using: tableData.using,
 		likeStatement: getLikeStatement(tableData.like),
 		columnStatement: getColumnsStatement(removePartitions(columns, keyNames.compositePartitionKey), isTableActivated),
-		primaryKeyStatement: areForeignPrimaryKeyConstraintsAvailable ? getPrimaryKeyStatement(keyNames.primaryKeys, deactivatedColumnNames, isTableActivated) : null,
-		foreignKeyStatement: areForeignPrimaryKeyConstraintsAvailable ? foreignKeyStatement : null,
 		comment: tableData.description,
 		partitionedByKeys: getPartitionKeyStatement(getPartitionsKeys(columns, keyNames.compositePartitionKey, isTableActivated)),
 		clusteredKeys: getClusteringKeys(keyNames.compositeClusteringKey, deactivatedColumnNames, isTableActivated),

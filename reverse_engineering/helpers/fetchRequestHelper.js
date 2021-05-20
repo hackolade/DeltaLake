@@ -9,11 +9,16 @@ const destroyActiveContext = () => {
 }
 
 
-const fetchApplyToInstance = async (connectionInfo) => {
+const fetchApplyToInstance = async (connectionInfo,logger) => {
 	const scriptWithoutNewLineSymb = connectionInfo.script.replaceAll(/[\s]+/g, " ");
 	const eachEntityScript = scriptWithoutNewLineSymb.split(';').filter(script => script !== '');
+	const progress = (message) => {
+		logger.log('info', message, 'Applying to instande');
+		logger.progress(message);
+	};
 	for (let script of eachEntityScript) {
-		script = script.trim() + ';'
+		script = script.trim() + ';';
+		progress({ message: `Applying script: \n ${script}`});
 		const command = `var stmt = sqlContext.sql("${script}")`;
 		await executeCommand(connectionInfo, command);
 	}

@@ -350,7 +350,7 @@ const getColumnConstraintsStaitment = ({ notNull, unique, check, defaultValue })
 	].filter(Boolean);
 	const constraintsStaitment = constraints.join(' ');
 
-	return constraintsStaitment ? ` ${constraintsStaitment} DISABLE NOVALIDATE` : '';
+	return constraintsStaitment ? ` ${constraintsStaitment}` : '';
 };
 
 module.exports = {

@@ -6,7 +6,6 @@ const { getTableStatement, getTableAlterStatements } = require('./helpers/tableH
 const { getIndexes } = require('./helpers/indexHelper');
 const { getViewScript, getViewAlterScripts } = require('./helpers/viewHelper');
 const { prepareName, replaceSpaceWithUnderscore, getName, getTab } = require('./helpers/generalHelper');
-const foreignKeyHelper = require('./helpers/foreignKeyHelper');
 let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const deltaLakeHelper = require('../reverse_engineering/helpers/DeltaLakeHelper')
@@ -149,16 +148,6 @@ module.exports = {
 
 			viewsScripts = viewsScripts.filter(script => !dependencies.lodash.isEmpty(script));
 
-			const foreignKeyHashTable = foreignKeyHelper.getForeignKeyHashTable(
-				data.relationships,
-				data.entities,
-				data.entityData,
-				jsonSchema,
-				internalDefinitions,
-				[modelDefinitions, externalDefinitions],
-				containerData[0] && containerData[0].isActivated
-			);
-
 			const entities = data.entities.reduce((result, entityId) => {
 				const args = [
 					containerData,
@@ -197,19 +186,12 @@ module.exports = {
 				]);
 			}, []);
 
-			const foreignKeys = getForeignKeys(
-				data,
-				foreignKeyHashTable,
-				areForeignPrimaryKeyConstraintsAvailable
-			);
-
 			callback(
 				null,
 				buildScript(needMinify)(
 					databaseStatement,
 					...entities,
-					...viewsScripts,
-					foreignKeys
+					...viewsScripts
 				)
 			);
 		} catch (e) {
@@ -229,7 +211,7 @@ module.exports = {
 		logger.clear();
 		logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
 		try {
-			await fetchRequestHelper.fetchApplyToInstance(connectionInfo)
+			await fetchRequestHelper.fetchApplyToInstance(connectionInfo,logger)
 			cb()
 		} catch (err) {
 			logger.log(
@@ -279,35 +261,6 @@ const parseEntities = (entities, serializedItems) => {
 			return result;
 		}
 	}, {});
-};
-
-const getForeignKeys = (
-	data,
-	foreignKeyHashTable,
-	areForeignPrimaryKeyConstraintsAvailable
-) => {
-	if (!areForeignPrimaryKeyConstraintsAvailable) {
-		return null;
-	}
-
-	const dbName = replaceSpaceWithUnderscore(getName(getTab(0, data.containerData)));
-
-	const foreignKeysStatements = data.entities
-		.reduce((result, entityId) => {
-			const foreignKeyStatement = foreignKeyHelper.getForeignKeyStatementsByHashItem(
-				foreignKeyHashTable[entityId] || {}
-			);
-
-			if (foreignKeyStatement) {
-				foreignKeyStatement;
-				return [...result, foreignKeyStatement];
-			}
-
-			return result;
-		}, [])
-		.join('\n');
-
-	return foreignKeysStatements ? `\nUSE ${dbName};${foreignKeysStatements}` : '';
 };
 
 const logInfo = (step, connectionInfo, logger) => {
