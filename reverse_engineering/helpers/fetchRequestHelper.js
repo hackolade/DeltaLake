@@ -9,7 +9,7 @@ const destroyActiveContext = () => {
 }
 
 
-const fetchApplyToInstance = async (connectionInfo,logger) => {
+const fetchApplyToInstance = async (connectionInfo, logger) => {
 	const scriptWithoutNewLineSymb = connectionInfo.script.replaceAll(/[\s]+/g, " ");
 	const eachEntityScript = scriptWithoutNewLineSymb.split(';').filter(script => script !== '');
 	const progress = (message) => {
@@ -18,7 +18,7 @@ const fetchApplyToInstance = async (connectionInfo,logger) => {
 	};
 	for (let script of eachEntityScript) {
 		script = script.trim() + ';';
-		progress({ message: `Applying script: \n ${script}`});
+		progress({ message: `Applying script: \n ${script}` });
 		const command = `var stmt = sqlContext.sql("${script}")`;
 		await executeCommand(connectionInfo, command);
 	}
@@ -52,12 +52,15 @@ const fetchDatabaseProperties = async (connectionInfo, dbName) => {
 	const description = propertiesObject['Comment'];
 
 	const dbPropertyItemsExtractionRegex = /\((.+)\)/gmi
-	let dbProperties = dependencies.lodash.get(dbPropertyItemsExtractionRegex.exec(propertiesObject['Properties']), '1', '').split('), ')
-		.map(item => item.replaceAll(/[\(\)]/gmi, '')).map(propertyPair => `'${propertyPair.split(',')[0]}' = '${propertyPair.split(',')[1]}'`).join(', ');
-	if (!dependencies.lodash.isEmpty(dbProperties)) {
-		dbProperties = `(${dbProperties})`
+	if (propertiesObject['Properties'] !== '') {
+		let dbProperties = dependencies.lodash.get(dbPropertyItemsExtractionRegex.exec(propertiesObject['Properties']), '1', '').split('), ')
+			.map(item => item.replaceAll(/[\(\)]/gmi, '')).map(propertyPair => `'${propertyPair.split(',')[0]}' = '${propertyPair.split(',')[1]}'`).join(', ');
+		if (!dependencies.lodash.isEmpty(dbProperties)) {
+			dbProperties = `(${dbProperties})`
+		}
+		return { location, description, dbProperties };
 	}
-	return { location, description, dbProperties };
+	return { location, description, dbProperties: '' };
 }
 
 const fetchLimitByCount = async (connectionInfo, collectionName) => {

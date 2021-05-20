@@ -11,12 +11,14 @@ class Visitor extends SqlBaseVisitor {
 		const colList = this.visitIfExists(ctx, 'colTypeList');
 		const tableClauses = this.visit(ctx.createTableClauses());
 		const querySelectProperties = this.visitIfExists(ctx, 'query');
-		const tableProvider = this.visitIfExists(ctx, 'tableProvider')||tableClauses.createFileFormat?.serDeLibrary;
+		const using = this.visitIfExists(ctx, 'tableProvider');
+		const tableProvider = tableClauses.createFileFormat?.serDeLibrary;
 		return {
 			isExternal: tableHeader.isExternal,
 			isTemporary: tableHeader.isTemporary,
 			tableName: tableHeader.tableName,
 			colList,
+			using,
 			tableProvider,
 			bucketsNum: tableClauses.bucketSpec?.bucketsNum,
 			clusteredBy: tableClauses.bucketSpec?.clusteredBy,

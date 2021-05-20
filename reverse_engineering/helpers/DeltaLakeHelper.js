@@ -75,6 +75,8 @@ const getTableProvider = (provider) => {
 			return 'JSONfile';
 		case 'csv':
 			return 'CSVfile';
+		case 'libsvm':
+			return 'LIBSVM'
 		default: return provider?.toLowerCase()
 	}
 }
@@ -101,6 +103,7 @@ const getTableDataFromDDl = (statement) => {
 			code: parsedTableData.table,
 			temporaryTable: parsedTableData.isTemporary,
 			externalTable: parsedTableData.isExternal,
+			using: getTableProvider(parsedTableData.using),
 			storedAsTable: getTableProvider(parsedTableData.tableProvider),
 			rowFormat: parsedTableData.rowFormat,
 			fieldsTerminatedBy: parsedTableData.fieldsTerminatedBy,
