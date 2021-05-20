@@ -14,6 +14,7 @@ const logHelper = require('../reverse_engineering/logHelper');
 const setAppDependencies = ({ lodash }) => _ = lodash;
 const sqlFormatter = require('sql-formatter');
 
+
 module.exports = {
 	generateScript(data, logger, callback, app) {
 		try {
@@ -122,6 +123,31 @@ module.exports = {
 			).value;
 
 			let viewsScripts = [];
+
+			data.views.map(viewId => {
+				const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
+				if (data.isUpdateScript) {
+					const viewAlterScripts = getViewAlterScripts({
+						schema: viewSchema,
+						viewData: data.viewData[viewId],
+						containerData: data.containerData,
+						collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
+						isKeyspaceActivated: true
+					})
+					viewsScripts = [...viewsScripts, ...viewAlterScripts];
+				} else {
+					const viewScript = getViewScript({
+						schema: viewSchema,
+						viewData: data.viewData[viewId],
+						containerData: data.containerData,
+						collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
+						isKeyspaceActivated: true
+					})
+					viewsScripts.push(viewScript);
+				}
+			})
+
+			viewsScripts = viewsScripts.filter(script => !dependencies.lodash.isEmpty(script));
 
 			data.views.map(viewId => {
 				const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
@@ -262,7 +288,6 @@ const parseEntities = (entities, serializedItems) => {
 		}
 	}, {});
 };
-
 const logInfo = (step, connectionInfo, logger) => {
 	logger.clear();
 	logger.log('info', logHelper.getSystemInfo(connectionInfo.appVersion), step);

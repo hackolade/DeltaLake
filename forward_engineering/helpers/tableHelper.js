@@ -53,7 +53,6 @@ const getCreateUsingStatement = ({
 		(clusteredKeys, `CLUSTERED BY (${clusteredKeys})`)
 		(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)
 		(numBuckets && clusteredKeys, `INTO ${numBuckets} BUCKETS`)
-		(storedAsStatement, storedAsStatement)
 		(location, `LOCATION '${location}'`)
 		(comment, `COMMENT '${comment}'`)
 		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
