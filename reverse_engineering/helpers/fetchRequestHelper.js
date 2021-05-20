@@ -23,12 +23,6 @@ const fetchApplyToInstance = async (connectionInfo,logger) => {
 		await executeCommand(connectionInfo, command);
 	}
 }
-
-const fetchLimitByCount = async (connectionInfo, collectionName) => {
-	const command = `var stmt = sqlContext.sql("select count(*) as count from ${collectionName}").select(\"count\").collect()`;
-	return await executeCommand(connectionInfo, command);
-}
-
 const fetchDocumets = async (connectionInfo, dbName, collectionName, fields, limit) => {
 	const columnsToSelect = fields.map(field => field.name).join(', ');
 	const command = `import scala.util.parsing.json.JSONObject;
@@ -64,6 +58,11 @@ const fetchDatabaseProperties = async (connectionInfo, dbName) => {
 		dbProperties = `(${dbProperties})`
 	}
 	return { location, description, dbProperties };
+}
+
+const fetchLimitByCount = async (connectionInfo, collectionName) => {
+	const command = `var stmt = sqlContext.sql("select count(*) as count from ${collectionName}").select(\"count\").collect()`;
+	return await executeCommand(connectionInfo, command);
 }
 
 const fetchCreateStatementRequest = async (command, connectionInfo) => {

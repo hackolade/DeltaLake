@@ -100,7 +100,6 @@ module.exports = {
 						const limitByCount = await deltaLakeHelper.fetchLimitByCount(connectionData, tableName);
 						documents = await fetchRequestHelper.fetchDocumets(connectionData, dbName, tableName, columnsOfTypeString, getLimit(limitByCount, data.recordSamplingSettings));
 					}
-
 					progress({ message: 'Data retrieved successfully', containerName: dbName, entityName: tableName });
 					return {
 						dbName: dbName,
