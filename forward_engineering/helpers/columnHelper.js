@@ -343,10 +343,7 @@ const getColumnsStatement = (columns, isParentActivated) => {
 
 const getColumnConstraintsStaitment = ({ notNull, unique, check, defaultValue }) => {
 	const constraints = [
-		(notNull && !unique) ? 'NOT NULL' : '',
-		unique ? 'UNIQUE' : '',
-		defaultValue ? `DEFAULT ${defaultValue}` : '',
-		check ? `CHECK ${check}` : ''
+		(notNull && !unique) ? 'NOT NULL' : ''	
 	].filter(Boolean);
 	const constraintsStaitment = constraints.join(' ');
 
