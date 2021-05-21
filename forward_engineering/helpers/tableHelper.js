@@ -250,7 +250,7 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, a
 
 	const constraintsStatements = Object.keys(columns).map(colName =>({colName:colName.replaceAll('`',''),...columns[colName]})).filter(column => column.constraints.check).map(column => `ALTER TABLE ${tableName} ADD CONSTRAINT \`${column.colName}_constraint\` CHECK (${column.constraints.check})`).join(';\n')
 	if(!_.isEmpty(constraintsStatements)){
-		tableStatement = tableStatement + `USE ${dbName};\n\n`+constraintsStatements;
+		tableStatement = tableStatement + `USE ${dbName};\n\n`+constraintsStatements+';\n';
 	}
 	return removeRedundantTrailingCommaFromStatement(tableStatement);
 };
