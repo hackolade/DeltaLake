@@ -216,7 +216,7 @@ const getStoredAsStatement = (tableData) => {
 	return `STORED AS ${tableData.storedAsTable.toUpperCase()}`;
 };
 
-const getTableStatement = (containerData, entityData, jsonSchema, definitions, foreignKeyStatement, areColumnConstraintsAvailable, areForeignPrimaryKeyConstraintsAvailable) => {
+const getTableStatement = (containerData, entityData, jsonSchema, definitions, areColumnConstraintsAvailable) => {
 	setDependencies(dependencies);
 
 	const dbName = replaceSpaceWithUnderscore(getName(getTab(0, containerData)));
@@ -226,8 +226,7 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, f
 	const tableName = replaceSpaceWithUnderscore(getName(tableData));
 	const { columns, deactivatedColumnNames } = getColumns(jsonSchema, areColumnConstraintsAvailable, definitions);
 	const keyNames = keyHelper.getKeyNames(tableData, jsonSchema, definitions);
-
-	const tableStatement = getCreateStatement({
+	let tableStatement = getCreateStatement({
 		dbName,
 		tableName,
 		isTemporary: tableData.temporaryTable,
@@ -249,6 +248,10 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, f
 		isActivated: isTableActivated,
 	});
 
+	const constraintsStatements = Object.keys(columns).map(colName =>({colName:colName.replaceAll('`',''),...columns[colName]})).filter(column => column.constraints.check).map(column => `ALTER TABLE ${tableName} ADD CONSTRAINT \`${column.colName}_constraint\` CHECK (${column.constraints.check})`).join(';\n')
+	if(!_.isEmpty(constraintsStatements)){
+		tableStatement = tableStatement + `USE ${dbName};\n\n`+constraintsStatements;
+	}
 	return removeRedundantTrailingCommaFromStatement(tableStatement);
 };
 

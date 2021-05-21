@@ -124,6 +124,8 @@ module.exports = {
 
 			let viewsScripts = [];
 
+	
+
 			data.views.map(viewId => {
 				const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
 				if (data.isUpdateScript) {
@@ -184,6 +186,7 @@ module.exports = {
 						modelDefinitions,
 						externalDefinitions,
 					],
+					true
 				];
 
 				let tableStatements = [];
@@ -237,7 +240,7 @@ module.exports = {
 		logger.clear();
 		logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
 		try {
-			await fetchRequestHelper.fetchApplyToInstance(connectionInfo,logger)
+			await fetchRequestHelper.fetchApplyToInstance(connectionInfo, logger)
 			cb()
 		} catch (err) {
 			logger.log(
@@ -268,8 +271,6 @@ module.exports = {
 		}
 	}
 };
-
-
 
 
 const buildScript = (needMinify) => (...statements) => {
