@@ -36,6 +36,15 @@ const fetchDocumets = async (connectionInfo, dbName, collectionName, fields, lim
 	return rows;
 }
 
+const fetchTableCheckConstraints = async (connectionInfo, dbName, tableName) => {
+	const command = `var values = sqlContext.sql(\"DESCRIBE DETAIL ${dbName}.${tableName}\").select(\"properties\").map(row => JSONObject(row.getValuesMap(row.schema.fieldNames)).toString())
+	.collect()`
+	const result = await executeCommand(connectionInfo, command);
+	const valuesExtractionRegex = /values: Array\[String\] = Array\(\{"properties" : Map\((.*)\)\}\)/gm;
+	const checkConstraintsValue = dependencies.lodash.get(valuesExtractionRegex.exec(result), '1', '')
+	return checkConstraintsValue.split(',').map(constraintStatement => constraintStatement.split(' -> ')[1]).join(' and ')
+}
+
 const fetchDatabaseProperties = async (connectionInfo, dbName) => {
 	const command = `import scala.util.parsing.json.JSONObject;
 						var dbProperties = sqlContext.sql(\"DESCRIBE DATABASE EXTENDED ${dbName}\")
@@ -290,5 +299,6 @@ module.exports = {
 	fetchLimitByCount,
 	fetchDocumets,
 	fetchDatabaseProperties,
-	destroyActiveContext
+	destroyActiveContext,
+	fetchTableCheckConstraints
 };
