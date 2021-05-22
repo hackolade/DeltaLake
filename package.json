@@ -36,5 +36,5 @@
 			"FEScriptCommentsSupported": ["2.x", "3.x"]
 		}
 	},
-	"description": "Hackolade plugin for Delta Lake on Databricks"
+	"description": "Hackolade plugin for Delta Lake on Databricks, including Azure Databricks, and Databricks on AWS"
 }

@@ -12,7 +12,7 @@
 				"inputLabel": "Workspace URL",
 				"inputKeyword": "host",
 				"inputType": "text",
-				"inputPlaceholder": "",
+				"inputPlaceholder": "https://<databricks-instance>",
 				"description": "",
 				"validation": {
 					"regex": "([^\\s])"
@@ -42,7 +42,7 @@
 				"inputLabel": "Cluster id",
 				"inputKeyword": "clusterId",
 				"inputType": "text",
-				"inputPlaceholder": ""
+				"inputPlaceholder": "<cluster-id>"
 			}
 		]
 	}, {
