@@ -238,7 +238,7 @@ module.exports = {
 
 	async applyToInstance(connectionInfo, logger, cb, app) {
 		logger.clear();
-		logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
+		logInfo('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
 		try {
 			await fetchRequestHelper.fetchApplyToInstance(connectionInfo, logger)
 			cb()
@@ -291,7 +291,7 @@ const parseEntities = (entities, serializedItems) => {
 };
 const logInfo = (step, connectionInfo, logger) => {
 	logger.clear();
-	logger.log('info', logHelper.getSystemInfo(connectionInfo.appVersion), step);
+	logger.log('info', logHelper.getSystemInfo(connectionInfo), step);
 	logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
 };
 

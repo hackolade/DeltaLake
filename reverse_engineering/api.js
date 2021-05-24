@@ -216,7 +216,7 @@ const getLimit = (count, recordSamplingSettings) => {
 
 const logInfo = (step, connectionInfo, logger) => {
 	logger.clear();
-	logger.log('info', logHelper.getSystemInfo(connectionInfo.appVersion), step);
+	logger.log('info', logHelper.getSystemInfo(connectionInfo), step);
 	logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
 };
 

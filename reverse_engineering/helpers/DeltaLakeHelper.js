@@ -168,7 +168,7 @@ const fetchLimitByCount = async (connectionInfo, collectionName) => {
 
 const requiredClusterState = async (connectionInfo, logInfo, logger) => {
 	const clusterProperties = await fetchRequestHelper.fetchClusterProperties(connectionInfo);
-	logInfo('Retrieving databases and tables information', 'Cluster status: ' + clusterProperties.state, logger, logger);
+	logger.log('Retrieving databases and tables information', 'Cluster status: ' + clusterProperties.state);
 	return {
 		isRunning: clusterProperties.state === 'RUNNING',
 		state: clusterProperties.state

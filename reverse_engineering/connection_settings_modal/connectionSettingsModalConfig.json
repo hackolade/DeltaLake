@@ -25,6 +25,7 @@
 				"options": [
 					{ "value": "Databricks on AWS", "label": "Databricks on AWS" },
 					{ "value": "Azure Databricks", "label": "Azure Databricks" },
+					{ "value": "Databricks on GCP", "label": "Databricks runtime on GCP" },
 					{ "value": "Databricks runtime", "label": "Databricks runtime" }
 				]
 			},
@@ -51,8 +52,9 @@
 			{
 				"inputLabel": "Databricks personal access token",
 				"inputKeyword": "accessToken",
-				"inputType": "text",
-				"inputPlaceholder": "access token"
+				"inputType": "password",
+				"inputPlaceholder": "access token",
+				"isHiddenKey": true
 			}
 		]	
 	}
