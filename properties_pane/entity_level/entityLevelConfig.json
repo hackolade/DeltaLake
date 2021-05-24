@@ -462,73 +462,23 @@ making sure that you maintain a proper JSON format.
 		"columnsRatio": [4.1, 5]
 	},
 	{
-		"lowerTab": "Secondary Indexes",
+		"lowerTab": "Bloom Filter Indexes",
 		"structure": [{
-			"propertyName": "Secondary Index",
+			"propertyName": "Bloom Filter Index",
 			"propertyType": "group",
-			"propertyKeyword": "SecIndxs",
+			"propertyKeyword": "BloomIndxs",
 			"propertyTooltip": "",
 			"structure": [
 				{
-					"propertyName": "Name",
-					"propertyKeyword": "name",
-					"propertyTooltip": "",
-					"propertyType": "text",
-					"defaultValue": "New Secondary Index"
-				},
-				{
-					"propertyName": "Key",
-					"propertyKeyword": "SecIndxKey",
+					"propertyName": "Column",
+					"propertyKeyword": "forColumn",
 					"propertyType": "fieldList",
 					"template": "orderedList"
 				},
 				{
-					"propertyName": "Id",
-					"propertyKeyword": "SecIndxID",
-					"propertyTooltip": "Secondary Index ID",
-					"propertyType": "text"
-				},
-				{
-					"propertyName": "Index handler",
-					"propertyKeyword": "SecIndxHandler",
-					"propertyTooltip": "Class name of index handler",
-					"propertyType": "text",
-					"defaultValue": "org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler"
-				},
-				{
-					"propertyName": "With deferred rebuild",
-					"propertyKeyword": "SecIndxWithDeferredRebuild",
-					"propertyTooltip": "With deferred rebuild",
-					"propertyType": "checkbox",
-					"defaultValue": true
-				},
-				{
-					"propertyName": "Index properties",
-					"propertyKeyword": "SecIndxProperties",
-					"propertyTooltip": "Index properties",
-					"propertyType": "details",
-					"template": "textarea",
-					"markdown": false
-				},
-				{
-					"propertyName": "Index table",
-					"propertyKeyword": "SecIndxTable",
-					"propertyTooltip": "IN TABLE statement",
-					"propertyType": "details",
-					"template": "textarea",
-					"markdown": false
-				},
-				{
-					"propertyName": "Description",
-					"propertyKeyword": "SecIndxDescription",
-					"propertyTooltip": "description",
-					"propertyType": "details",
-					"template": "textarea"
-				},
-				{
-					"propertyName": "Comments",
-					"propertyKeyword": "SecIndxComments",
-					"propertyTooltip": "comments",
+					"propertyName": "Options",
+					"propertyKeyword": "options",
+					"propertyTooltip": "options",
 					"propertyType": "details",
 					"template": "textarea"
 				}
