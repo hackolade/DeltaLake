@@ -23,7 +23,7 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 		script = script.trim() + ';';
 		progress({ message: `Applying script: \n ${script}` });
 		const command = `var stmt = sqlContext.sql("${script}")`;
-		await executeCommand(connectionInfo, command);
+		await Promise.race([executeCommand(connectionInfo, command), new Promise((_r, rej) => setTimeout(() => {throw new Error("Timeout exceeded for script\n" + script);}, 120000))])
 	}
 }
 const fetchDocumets = async (connectionInfo, dbName, collectionName, fields, limit) => {
