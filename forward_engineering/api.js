@@ -238,7 +238,7 @@ module.exports = {
 
 	async applyToInstance(connectionInfo, logger, cb, app) {
 		logger.clear();
-		logInfo('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
+		logInfo('info', connectionInfo, logger);
 		try {
 			await fetchRequestHelper.fetchApplyToInstance(connectionInfo, logger)
 			cb()
@@ -255,7 +255,7 @@ module.exports = {
 
 	async testConnection(connectionInfo, logger, cb) {
 		try {
-			logInfo('Test connection FE', connectionInfo, logger, logger);
+			logInfo('Test connection FE', connectionInfo, logger);
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}` })
