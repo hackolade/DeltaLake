@@ -23,9 +23,18 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 		script = script.trim() + ';';
 		progress({ message: `Applying script: \n ${script}` });
 		const command = `var stmt = sqlContext.sql("${script}")`;
-		await Promise.race([executeCommand(connectionInfo, command), new Promise((_r, rej) => setTimeout(() => {throw new Error("Timeout exceeded for script\n" + script);}, 120000))])
+		await Promise.race([executeCommand(connectionInfo, command), new Promise((_r, rej) => setTimeout(() => {throw new Error("Timeout exceeded for script\n" + script);}, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
 	}
 }
+
+const fetchBloomFilteredColumns = async (connectionInfo, dbName, collectionName) => {
+	const command = `val res = spark.table(\"${dbName}.${collectionName}\").schema.filter(field => field.metadata.toString() != "{}").map(field => field.name)`;
+	const result = await executeCommand(connectionInfo, command);
+	const columnsExtractionRegex = /res: Seq\[String\] = List\((.+)\)/gm
+	const columnsString = dependencies.lodash.get(columnsExtractionRegex.exec(result), '1', '')
+	return columnsString.split(', ')
+}
+
 const fetchDocumets = async (connectionInfo, dbName, collectionName, fields, limit) => {
 	const columnsToSelect = fields.map(field => field.name).join(', ');
 	const command = `import scala.util.parsing.json.JSONObject;
@@ -303,5 +312,6 @@ module.exports = {
 	fetchDocumets,
 	fetchDatabaseProperties,
 	destroyActiveContext,
+	fetchBloomFilteredColumns,
 	fetchTableCheckConstraints
 };

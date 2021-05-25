@@ -91,10 +91,9 @@ module.exports = {
 				const containerData = await deltaLakeHelper.getContainerData(connectionData, dbName);
 				const tablesPackages = entities.tables.map(async (tableName) => {
 					progress({ message: 'Start getting data from table', containerName: dbName, entityName: tableName });
-					const ddl = await await deltaLakeHelper.getTableCreateStatement(connectionData, dbName, tableName);
-					const tableData = deltaLakeHelper.getTableDataFromDDl(ddl);
-					const tableCheckConstraints = await fetchRequestHelper.fetchTableCheckConstraints(connectionData,dbName, tableName)
-					tableData.properties[0]['check'] = tableCheckConstraints;
+					const ddl = await deltaLakeHelper.getTableCreateStatement(connectionData, dbName, tableName);
+					const tableData = await deltaLakeHelper.getTableData(connectionData,dbName,tableName,ddl)
+
 					const columnsOfTypeString = tableData.properties.filter(property => property.mode === 'string');
 					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
 					let documents = [];

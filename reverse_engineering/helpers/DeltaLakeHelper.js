@@ -8,6 +8,17 @@ const columnREHelper = require('./ColumnsREHelper')
 const antlr4 = require('antlr4');
 const { dependencies } = require('../appDependencies')
 
+const getTableData = async(connectionData, dbName, tableName, ddl) => {
+	let tableData = getTableDataFromDDl(ddl);
+	const tableCheckConstraints = await fetchRequestHelper.fetchTableCheckConstraints(connectionData,dbName, tableName)
+	tableData.properties[0]['check'] = tableCheckConstraints;
+	const indexedByColumns = await fetchRequestHelper.fetchBloomFilteredColumns(connectionData, dbName, tableName)
+	if(!dependencies.lodash.isEmpty(indexedByColumns)){
+		return Object.assign(tableData, {"propertiesPane":{...tableData.propertiesPane,"BloomIndxs":[{forColumns:indexedByColumns}]}});
+	}
+	return tableData;
+}
+
 const getDatabaseCollectionNames = async (connectionInfo, dbName) => {
 
 	const dbTablesAndViewsNames = await fetchRequestHelper.fetchDatabaseTablesNames(connectionInfo, dbName);
@@ -202,5 +213,6 @@ module.exports = {
 	getContainerData,
 	getTableDataFromDDl,
 	getViewDataFromDDl,
-	fetchLimitByCount
+	fetchLimitByCount,
+	getTableData
 };
