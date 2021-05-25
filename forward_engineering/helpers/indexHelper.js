@@ -54,8 +54,8 @@ const getIndexes = (containerData, entityData, jsonSchema, definitions) => {
 	const tableData = getTab(0, entityData);
 	const indexesData = getTab(1, entityData).BloomIndxs || [];
 	const tableName = replaceSpaceWithUnderscore(getName(tableData));
-	return indexesData
-		.map((indexData) => {
+	return indexesData.filter(indexData => !_.isEmpty(indexData.forColumns))
+		.map(indexData => {
 			const { columns, isIndexActivated = true } = getIndexKeys(
 				indexData.forColumns,
 				jsonSchema,

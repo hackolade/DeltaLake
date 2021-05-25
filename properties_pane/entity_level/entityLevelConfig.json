@@ -470,8 +470,8 @@ making sure that you maintain a proper JSON format.
 			"propertyTooltip": "",
 			"structure": [
 				{
-					"propertyName": "Column",
-					"propertyKeyword": "forColumn",
+					"propertyName": "Columns",
+					"propertyKeyword": "forColumns",
 					"propertyType": "fieldList",
 					"template": "orderedList"
 				},
