@@ -84,8 +84,8 @@ const fetchDatabaseProperties = async (connectionInfo, dbName) => {
 	return { location, description, dbProperties: '' };
 }
 
-const fetchLimitByCount = async (connectionInfo, collectionName) => {
-	const command = `var stmt = sqlContext.sql("select count(*) as count from ${collectionName}").select(\"count\").collect()`;
+const fetchLimitByCount = async (connectionInfo, collectionName, dbName) => {
+	const command = `var stmt = sqlContext.sql("select count(*) as count from ${dbName||"default"}.${collectionName}").select(\"count\").collect()`;
 	return await executeCommand(connectionInfo, command);
 }
 
