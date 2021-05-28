@@ -11,7 +11,7 @@ const setDependencies = ({ lodash }) => _ = lodash;
 const getIndexStatement = ({
 	tableName, dbName, columns, options, isActivated
 }) => {
-	return buildStatement(`--Indexes couldn't be applied to an instance automatically. You can copy and execute it in the Databricks workspace notebook.\nCREATE BLOOMFILTER INDEX ON TABLE ${dbName}.${tableName} FOR COLUMNS (${columns})`, isActivated)
+	return buildStatement(`CREATE BLOOMFILTER INDEX ON TABLE ${dbName}.${tableName} FOR COLUMNS (${columns})`, isActivated)
 		(options, `OPTIONS (${options})`)
 		(true, ';')
 		();
