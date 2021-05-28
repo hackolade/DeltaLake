@@ -17,10 +17,6 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 		logger.progress(message);
 	};
 	for (let script of eachEntityScript) {
-		if(script.trim().startsWith('--')){
-			continue;
-		}
-		script = script.trim() + ';';
 		progress({ message: `Applying script: \n ${script}` });
 		const command = `var stmt = sqlContext.sql("${script}")`;
 		await Promise.race([executeCommand(connectionInfo, command), new Promise((_r, rej) => setTimeout(() => {throw new Error("Timeout exceeded for script\n" + script);}, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
