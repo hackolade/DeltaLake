@@ -94,7 +94,8 @@ module.exports = {
 					const ddl = await deltaLakeHelper.getEntityCreateStatement(connectionData, dbName, tableName);
 					let tableData = {}
 					try {
-						tableData = await deltaLakeHelper.getTableData(connectionData,dbName,tableName,ddl);
+						const tableColumnsNullableMap = await fetchRequestHelper.fetchColumnsNullableMap(connectionData,tableName,dbName)
+						tableData = await deltaLakeHelper.getTableData(connectionData,dbName,tableName,ddl, tableColumnsNullableMap);
 					} catch (e){
 						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
 						return {};
