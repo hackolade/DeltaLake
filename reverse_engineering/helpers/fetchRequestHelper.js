@@ -19,16 +19,46 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 	for (let script of eachEntityScript) {
 		progress({ message: `Applying script: \n ${script}` });
 		const command = `var stmt = sqlContext.sql("${script}")`;
-		await Promise.race([executeCommand(connectionInfo, command), new Promise((_r, rej) => setTimeout(() => {throw new Error("Timeout exceeded for script\n" + script);}, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
+		await Promise.race([executeCommand(connectionInfo, command), new Promise((_r, rej) => setTimeout(() => { throw new Error("Timeout exceeded for script\n" + script); }, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
 	}
 }
 
-const fetchBloomFilteredColumns = async (connectionInfo, dbName, collectionName) => {
-	const command = `val res = spark.table(\"${dbName}.${collectionName}\").schema.filter(field => field.metadata.toString() != "{}").map(field => field.name)`;
-	const result = await executeCommand(connectionInfo, command);
-	const columnsExtractionRegex = /res: Seq\[String\] = List\((.+)\)/gm
-	const columnsString = dependencies.lodash.get(columnsExtractionRegex.exec(result), '1', '')
-	return columnsString.split(', ')
+const fetchBloomFilteredIndexes = async (connectionInfo, dbName, collectionName) => {
+	try {
+		const command = `class Column(var col_name: String, var metadata: org.apache.spark.sql.types.Metadata) {
+			override def toString() : String = {
+			  return col_name +" : " + metadata+"|";
+		  }
+	  };
+	  spark.table("${dbName}.${collectionName}").schema.map(field => (new Column(field.name, field.metadata)).toString())`;
+		const result = await executeCommand(connectionInfo, command);
+		const mapExtractionRegex = /List\((.+)\)/gm
+		const nullableMapString = dependencies.lodash.get(mapExtractionRegex.exec(result), '1', '')
+		const columnsIndexOptions = nullableMapString.replaceAll(' ', '').replaceAll('|,', '$').replaceAll('|', '').replaceAll(':{', '%{').split('$').reduce((map, columnNulable) => {
+			const columnName = columnNulable.split('%')[0];
+			const metadataString = columnNulable.split('%')[1];
+			if (metadataString === '{}') {
+				return map;
+			}
+			const metadataMap = JSON.parse(metadataString);
+			const columnIndexOptions = Object.keys(metadataMap).map(metaKey => `${metaKey.slice(18)} = ${metadataMap[metaKey]}`).join(', ');
+			return { ...map, [columnName]: columnIndexOptions }
+		}, {})
+		const columnsByIndexOptions = Object.keys(columnsIndexOptions).reduce((indexes, column) => {
+			const options = columnsIndexOptions[column]
+			if(indexes[options]){
+				return {...indexes, [options]:[...indexes[options],column]}
+			}
+			return {...indexes, [options]:[column]}
+		}, {})
+		const indexes = Object.keys(columnsByIndexOptions).map(options => ({
+			forColumns: columnsByIndexOptions[options],
+			options
+		}))
+		return indexes;
+	} catch (e) {
+		return [];
+	}
 }
 
 const fetchDocumets = async (connectionInfo, dbName, collectionName, fields, limit) => {
@@ -43,10 +73,29 @@ const fetchDocumets = async (connectionInfo, dbName, collectionName, fields, lim
 		const rowsJSON = dependencies.lodash.get(rowsExtractionRegex.exec(result), '2', '')
 		const rows = JSON.parse(`[${rowsJSON}]`);
 		return rows;
-	} catch (ex) {
+	} catch (e) {
 		return [];
 	}
 
+}
+
+const fetchColumnsNullableMap = async (connectionInfo, collectionName, dbName) => {
+	try {
+		const command = `class Column(var col_name: String, var nullable: Boolean) { override def toString() : String = { return col_name + ":" + nullable;  };  };
+	  		val res = spark.table(\"${dbName}.${collectionName}\").schema.fields.map(field => (new Column(field.name, field.nullable)).toString());`;
+		const result = await executeCommand(connectionInfo, command);
+		const mapExtractionRegex = /Array\((.+)\)/gm
+		const nullableMapString = dependencies.lodash.get(mapExtractionRegex.exec(result), '1', '')
+		const nullableMap = nullableMapString.replaceAll(' ', '').split(',').reduce((map, columnNulable) => {
+			const splitColumnNullable = columnNulable.split(':')
+			const columnName = splitColumnNullable[0];
+			const isNullable = splitColumnNullable[1] === 'true';
+			return { ...map, [columnName]: isNullable }
+		}, {})
+		return nullableMap
+	} catch (e) {
+		return {};
+	}
 }
 
 const fetchTableCheckConstraints = async (connectionInfo, dbName, tableName) => {
@@ -86,7 +135,7 @@ const fetchDatabaseProperties = async (connectionInfo, dbName) => {
 }
 
 const fetchLimitByCount = async (connectionInfo, collectionName, dbName) => {
-	const command = `var stmt = sqlContext.sql("select count(*) as count from ${dbName||"default"}.${collectionName}").select(\"count\").collect()`;
+	const command = `var stmt = sqlContext.sql("select count(*) as count from ${dbName || "default"}.${collectionName}").select(\"count\").collect()`;
 	return await executeCommand(connectionInfo, command);
 }
 
@@ -313,6 +362,7 @@ module.exports = {
 	fetchDocumets,
 	fetchDatabaseProperties,
 	destroyActiveContext,
-	fetchBloomFilteredColumns,
-	fetchTableCheckConstraints
+	fetchBloomFilteredIndexes,
+	fetchTableCheckConstraints,
+	fetchColumnsNullableMap
 };

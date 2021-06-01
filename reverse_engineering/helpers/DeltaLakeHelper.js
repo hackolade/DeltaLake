@@ -8,13 +8,16 @@ const columnREHelper = require('./ColumnsREHelper')
 const antlr4 = require('antlr4');
 const { dependencies } = require('../appDependencies')
 
-const getTableData = async(connectionData, dbName, tableName, ddl) => {
+const getTableData = async(connectionData, dbName, tableName, ddl, tableColumnsNullableMap) => {
 	let tableData = getTableDataFromDDl(ddl);
 	const tableCheckConstraints = await fetchRequestHelper.fetchTableCheckConstraints(connectionData,dbName, tableName)
 	tableData.properties[0]['check'] = tableCheckConstraints;
-	const indexedByColumns = await fetchRequestHelper.fetchBloomFilteredColumns(connectionData, dbName, tableName)
-	if(!dependencies.lodash.isEmpty(indexedByColumns)){
-		return Object.assign(tableData, {"propertiesPane":{...tableData.propertiesPane,"BloomIndxs":[{forColumns:indexedByColumns}]}});
+	const indexes = await fetchRequestHelper.fetchBloomFilteredIndexes(connectionData, dbName, tableName)
+
+	const tablePropertiesWithNotNullConstraints = [...tableData.properties].map(property => ({...property, required: !tableColumnsNullableMap[property.name]}))
+	tableData = {...tableData, properties: tablePropertiesWithNotNullConstraints};
+	if(!dependencies.lodash.isEmpty(indexes)){
+		return Object.assign(tableData, {"propertiesPane":{...tableData.propertiesPane,"BloomIndxs":indexes}});
 	}
 	return tableData;
 }
