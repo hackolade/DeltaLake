@@ -191,7 +191,7 @@ const convertCustomTags = (custom_tags) =>
 		return [...tags, { customTagKey: tagKey, customtagvalue: custom_tags[tagKey] }]
 	}, []);
 
-const getTableCreateStatement = async (connectionInfo, dbName, entityName) => {
+const getEntityCreateStatement = async (connectionInfo, dbName, entityName) => {
 	const query = "var stmt = sqlContext.sql(\"SHOW CREATE TABLE `" + dbName + "`.`" + entityName + "`\").select(\"createtab_stmt\").first.getString(0)";
 	return await fetchRequestHelper.fetchCreateStatementRequest(query, connectionInfo);
 }
@@ -208,7 +208,7 @@ module.exports = {
 	getDatabaseCollectionNames,
 	getModelData,
 	requiredClusterState,
-	getTableCreateStatement,
+	getEntityCreateStatement,
 	splitTableAndViewNames,
 	getContainerData,
 	getTableDataFromDDl,

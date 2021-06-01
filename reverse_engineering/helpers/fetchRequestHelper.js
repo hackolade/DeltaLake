@@ -32,16 +32,21 @@ const fetchBloomFilteredColumns = async (connectionInfo, dbName, collectionName)
 }
 
 const fetchDocumets = async (connectionInfo, dbName, collectionName, fields, limit) => {
-	const columnsToSelect = fields.map(field => field.name).join(', ');
-	const command = `import scala.util.parsing.json.JSONObject;
-						var rows = sqlContext.sql(\"SELECT ${columnsToSelect} FROM ${dbName}.${collectionName} LIMIT ${limit}\")
-							.map(row => JSONObject(row.getValuesMap(row.schema.fieldNames)).toString())
-							.collect()`;
-	const result = await executeCommand(connectionInfo, command);
-	const rowsExtractionRegex = /(rows: Array\[String\] = Array\((.+)\))/gm
-	const rowsJSON = dependencies.lodash.get(rowsExtractionRegex.exec(result), '2', '')
-	const rows = JSON.parse(`[${rowsJSON}]`);
-	return rows;
+	try {
+		const columnsToSelect = fields.map(field => field.name).join(', ');
+		const command = `import scala.util.parsing.json.JSONObject;
+							var rows = sqlContext.sql(\"SELECT ${columnsToSelect} FROM ${dbName}.${collectionName} LIMIT ${limit}\")
+								.map(row => JSONObject(row.getValuesMap(row.schema.fieldNames)).toString())
+								.collect()`;
+		const result = await executeCommand(connectionInfo, command);
+		const rowsExtractionRegex = /(rows: Array\[String\] = Array\((.+)\))/gm
+		const rowsJSON = dependencies.lodash.get(rowsExtractionRegex.exec(result), '2', '')
+		const rows = JSON.parse(`[${rowsJSON}]`);
+		return rows;
+	} catch (ex) {
+		return [];
+	}
+
 }
 
 const fetchTableCheckConstraints = async (connectionInfo, dbName, tableName) => {

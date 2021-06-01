@@ -91,8 +91,14 @@ module.exports = {
 				const containerData = await deltaLakeHelper.getContainerData(connectionData, dbName);
 				const tablesPackages = entities.tables.map(async (tableName) => {
 					progress({ message: 'Start getting data from table', containerName: dbName, entityName: tableName });
-					const ddl = await deltaLakeHelper.getTableCreateStatement(connectionData, dbName, tableName);
-					const tableData = await deltaLakeHelper.getTableData(connectionData,dbName,tableName,ddl)
+					const ddl = await deltaLakeHelper.getEntityCreateStatement(connectionData, dbName, tableName);
+					let tableData = {}
+					try {
+						tableData = await deltaLakeHelper.getTableData(connectionData,dbName,tableName,ddl);
+					} catch (e){
+						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
+						return {};
+					}
 
 					const columnsOfTypeString = tableData.properties.filter(property => property.mode === 'string');
 					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
@@ -119,9 +125,16 @@ module.exports = {
 				})
 				const views = await Promise.all(entities.views.map(async viewName => {
 					progress({ message: 'Start getting data from view', containerName: dbName, entityName: viewName });
-					const ddl = await deltaLakeHelper.getTableCreateStatement(connectionData, dbName, viewName);
+					const ddl = await deltaLakeHelper.getEntityCreateStatement(connectionData, dbName, viewName);
 
-					const viewData = deltaLakeHelper.getViewDataFromDDl(ddl);
+					let viewData = {};
+
+					try {
+						viewData = deltaLakeHelper.getViewDataFromDDl(ddl);
+					} catch (e){
+						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
+						return {};
+					}
 
 					progress({ message: 'Data retrieved successfully', containerName: dbName, entityName: viewName });
 
@@ -138,7 +151,7 @@ module.exports = {
 					};
 				}));
 
-				if (dependencies.lodash.isEmpty(views)) {
+				if (dependencies.lodash.isEmpty(views.filter(view => !dependencies.lodash.isEmpty(view)))) {
 					return [...packages, ...tablesPackages];
 				}
 
@@ -155,8 +168,9 @@ module.exports = {
 				return [...packages, ...tablesPackages, viewPackage];
 			}, Promise.resolve([]))
 			const packages = await Promise.all(entitiesPromises);
-			fetchRequestHelper.destroyActiveContext();
-			cb(null, packages, modelData);
+			const notEmptyPackages = packages.filter(entity => !dependencies.lodash.isEmpty(entity))
+			fetchRequestHelper.destroyActiveContext(); 
+			cb(null, notEmptyPackages, modelData);
 		} catch (err) {
 			handleError(logger, err, cb);
 		}
