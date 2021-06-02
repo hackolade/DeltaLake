@@ -86,7 +86,7 @@ const handleType = type => {
 
 const reverseTableColumn = column => {
     return {
-        ...handleType(column.colType), name: column.colName, comments: column.colComment, required: column.isNotNull
+        ...handleType(column.colType), name: column.colName, comments: column.colComment
     }
 }
 

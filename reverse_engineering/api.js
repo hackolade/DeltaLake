@@ -117,7 +117,7 @@ module.exports = {
 						views: [],
 						emptyBucket: false,
 						validation: {
-							jsonSchema: { properties: tableData.properties }
+							jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns }
 						},
 						bucketInfo: {
 							...containerData

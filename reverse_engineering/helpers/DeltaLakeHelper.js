@@ -14,8 +14,10 @@ const getTableData = async(connectionData, dbName, tableName, ddl, tableColumnsN
 	tableData.properties[0]['check'] = tableCheckConstraints;
 	const indexes = await fetchRequestHelper.fetchBloomFilteredIndexes(connectionData, dbName, tableName)
 
-	const tablePropertiesWithNotNullConstraints = [...tableData.properties].map(property => ({...property, required: !tableColumnsNullableMap[property.name]}))
-	tableData = {...tableData, properties: tablePropertiesWithNotNullConstraints};
+	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({...property, required: !tableColumnsNullableMap[property.name]}))
+	const tableSchema = tablePropertiesWithNotNullConstraints.reduce((schema, property) => ({...schema, [property.name]: property}),{})
+	const requiredColumns = tablePropertiesWithNotNullConstraints.filter(column => column.required).map(column => column.name);
+	tableData = {...tableData, properties: tablePropertiesWithNotNullConstraints, schema: tableSchema, requiredColumns};
 	if(!dependencies.lodash.isEmpty(indexes)){
 		return Object.assign(tableData, {"propertiesPane":{...tableData.propertiesPane,"BloomIndxs":indexes}});
 	}
