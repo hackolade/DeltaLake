@@ -113,10 +113,8 @@ const getTableDataFromDDl = (statement) => {
 		parsedTableData.query = statement.substring(parsedTableData.query.select.start, parsedTableData.query.select.stop)
 	}
 	const properties = parsedTableData.colList.map(column => columnREHelper.reverseTableColumn(column));
-	const schema = parsedTableData.colList.reduce((properties, column) => ({...properties, [column.colName]:columnREHelper.reverseTableColumn(column)}),{});
 	return {
 		properties,
-		schema,
 		propertiesPane: {
 			code: parsedTableData.table,
 			temporaryTable: parsedTableData.isTemporary,
