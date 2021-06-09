@@ -9,57 +9,6 @@
 				"inputPlaceholder": "Name"
 			},
 			{
-				"inputLabel": "Workspace URL",
-				"inputKeyword": "host",
-				"inputType": "text",
-				"inputPlaceholder": "https://adb-0000000000000000.00.azuredatabricks.net",
-				"description": "",
-				"validation": {
-					"regex": "([^\\s])"
-				},
-				"dependency": {
-					"key": "provider",
-					"value": "Azure Databricks"
-				}
-			},
-			{
-				"inputLabel": "Workspace URL",
-				"inputKeyword": "host",
-				"inputType": "text",
-				"inputPlaceholder": "https://adb-0000000000000000.00.gcp.databriks.com",
-				"description": "",
-				"validation": {
-					"regex": "([^\\s])"
-				},
-				"dependency": {
-					"key": "provider",
-					"value": "Databricks on GCP"
-				}
-			},
-			{
-				"inputLabel": "Workspace URL",
-				"inputKeyword": "host",
-				"inputType": "text",
-				"inputPlaceholder": "https://adb-0000000000000000.00.cloud.databriks.com",
-				"description": "",
-				"validation": {
-					"regex": "([^\\s])"
-				},
-				"dependency": {
-					"type": "or",
-					"values": [
-						{
-							"key": "provider",
-							"value": "Databricks on AWS"
-						},
-						{
-							"key": "provider",
-							"value": "Databricks runtime"
-						}
-					]
-				}
-			},
-			{
 				"inputLabel": "Cloud provider",
 				"inputKeyword": "provider",
 				"inputType": "select",
@@ -87,6 +36,57 @@
 				],
 				"validation": {
 					"regex": "([^\\s])"
+				}
+			},
+			{
+				"inputLabel": "Workspace URL",
+				"inputKeyword": "host",
+				"inputType": "text",
+				"inputPlaceholder": "https://<databricks-instance>.azuredatabricks.net",
+				"description": "",
+				"validation": {
+					"regex": "([^\\s])"
+				},
+				"dependency": {
+					"key": "provider",
+					"value": "Azure Databricks"
+				}
+			},
+			{
+				"inputLabel": "Workspace URL",
+				"inputKeyword": "host",
+				"inputType": "text",
+				"inputPlaceholder": "https://<databricks-instance>.gcp.databricks.com",
+				"description": "",
+				"validation": {
+					"regex": "([^\\s])"
+				},
+				"dependency": {
+					"key": "provider",
+					"value": "Databricks on GCP"
+				}
+			},
+			{
+				"inputLabel": "Workspace URL",
+				"inputKeyword": "host",
+				"inputType": "text",
+				"inputPlaceholder": "https://<databricks-instance>.cloud.databricks.com",
+				"description": "",
+				"validation": {
+					"regex": "([^\\s])"
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "provider",
+							"value": "Databricks on AWS"
+						},
+						{
+							"key": "provider",
+							"value": "Databricks runtime"
+						}
+					]
 				}
 			},
 			{
