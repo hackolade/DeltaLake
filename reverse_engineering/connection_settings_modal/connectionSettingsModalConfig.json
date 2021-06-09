@@ -12,10 +12,51 @@
 				"inputLabel": "Workspace URL",
 				"inputKeyword": "host",
 				"inputType": "text",
-				"inputPlaceholder": "https://<databricks-instance>",
+				"inputPlaceholder": "https://adb-0000000000000000.00.azuredatabricks.net",
 				"description": "",
 				"validation": {
 					"regex": "([^\\s])"
+				},
+				"dependency": {
+					"key": "provider",
+					"value": "Azure Databricks"
+				}
+			},
+			{
+				"inputLabel": "Workspace URL",
+				"inputKeyword": "host",
+				"inputType": "text",
+				"inputPlaceholder": "https://adb-0000000000000000.00.gcp.databriks.com",
+				"description": "",
+				"validation": {
+					"regex": "([^\\s])"
+				},
+				"dependency": {
+					"key": "provider",
+					"value": "Databricks on GCP"
+				}
+			},
+			{
+				"inputLabel": "Workspace URL",
+				"inputKeyword": "host",
+				"inputType": "text",
+				"inputPlaceholder": "https://adb-0000000000000000.00.cloud.databriks.com",
+				"description": "",
+				"validation": {
+					"regex": "([^\\s])"
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "provider",
+							"value": "Databricks on AWS"
+						},
+						{
+							"key": "provider",
+							"value": "Databricks runtime"
+						}
+					]
 				}
 			},
 			{
@@ -23,30 +64,62 @@
 				"inputKeyword": "provider",
 				"inputType": "select",
 				"options": [
-					{ "value": "Databricks on AWS", "label": "Databricks on AWS" },
-					{ "value": "Azure Databricks", "label": "Azure Databricks" },
-					{ "value": "Databricks on GCP", "label": "Databricks runtime on GCP" },
-					{ "value": "Databricks runtime", "label": "Databricks runtime" }
-				]
+					{
+						"value": "",
+						"label": ""
+					},
+					{
+						"value": "Databricks on AWS",
+						"label": "Databricks on AWS"
+					},
+					{
+						"value": "Azure Databricks",
+						"label": "Azure Databricks"
+					},
+					{
+						"value": "Databricks on GCP",
+						"label": "Databricks runtime on GCP"
+					},
+					{
+						"value": "Databricks runtime",
+						"label": "Databricks runtime"
+					}
+				],
+				"validation": {
+					"regex": "([^\\s])"
+				}
 			},
 			{
 				"inputLabel": "Delta Lake version",
 				"inputKeyword": "version",
 				"inputType": "select",
 				"options": [
-					{ "value": "3.x", "label": "3.x" },
-					{ "value": "2.x", "label": "2.x" },
-					{ "value": "1.x", "label": "1.x" }
+					{
+						"value": "3.x",
+						"label": "3.x"
+					},
+					{
+						"value": "2.x",
+						"label": "2.x"
+					},
+					{
+						"value": "1.x",
+						"label": "1.x"
+					}
 				]
 			},
 			{
 				"inputLabel": "Cluster id",
 				"inputKeyword": "clusterId",
 				"inputType": "text",
-				"inputPlaceholder": "<cluster-id>"
+				"inputPlaceholder": "<cluster-id>",
+				"validation": {
+					"regex": "([^\\s])"
+				}
 			}
 		]
-	}, {
+	},
+	{
 		"lowerTab": "Authentication",
 		"structure": [
 			{
@@ -54,8 +127,11 @@
 				"inputKeyword": "accessToken",
 				"inputType": "password",
 				"inputPlaceholder": "access token",
-				"isHiddenKey": true
+				"isHiddenKey": true,
+				"validation": {
+					"regex": "([^\\s])"
+				}
 			}
-		]	
+		]
 	}
 ]
