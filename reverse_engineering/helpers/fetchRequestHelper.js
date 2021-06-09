@@ -46,10 +46,10 @@ const fetchBloomFilteredIndexes = async (connectionInfo, dbName, collectionName)
 		}, {})
 		const columnsByIndexOptions = Object.keys(columnsIndexOptions).reduce((indexes, column) => {
 			const options = columnsIndexOptions[column]
-			if(indexes[options]){
-				return {...indexes, [options]:[...indexes[options],column]}
+			if (indexes[options]) {
+				return { ...indexes, [options]: [...indexes[options], column] }
 			}
-			return {...indexes, [options]:[column]}
+			return { ...indexes, [options]: [column] }
 		}, {})
 		const indexes = Object.keys(columnsByIndexOptions).map(options => ({
 			forColumns: columnsByIndexOptions[options],
@@ -115,7 +115,12 @@ const fetchDatabaseProperties = async (connectionInfo, dbName) => {
 	const result = await executeCommand(connectionInfo, command);
 	const propertiesExtractionRegex = /(dbProperties: Array\[String\] = Array\((.+)\))/gm
 	const propertiesJSON = dependencies.lodash.get(propertiesExtractionRegex.exec(result), '2', '')
-	const properties = JSON.parse(`[${propertiesJSON}]`);
+	let properties;
+	try {
+		properties = JSON.parse(`[${propertiesJSON}]`);
+	} catch (e) {
+		properties = [];
+	}
 	const propertiesObject = properties.reduce((propertiesObject, property) => {
 		return { ...propertiesObject, [property.database_description_item]: property.database_description_value }
 	}, {});
@@ -162,7 +167,13 @@ const fetchClusterProperties = async (connectionInfo) => {
 			};
 		})
 		.then(body => {
-			return JSON.parse(body);
+			try{
+				return JSON.parse(body);
+			} catch (e) {
+				throw {
+					message: e.message, code: "", description: 'body: '+body
+				};
+			}
 		})
 }
 
