@@ -84,7 +84,7 @@ module.exports = {
 			}
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
-			const modelData = await deltaLakeHelper.getModelData(connectionData);
+			const modelData = await deltaLakeHelper.getModelData(connectionData, logger);
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const packages = await packagesPromise;
 				const entities = deltaLakeHelper.splitTableAndViewNames(collections[dbName]);

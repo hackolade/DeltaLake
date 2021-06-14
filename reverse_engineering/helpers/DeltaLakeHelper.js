@@ -8,18 +8,18 @@ const columnREHelper = require('./ColumnsREHelper')
 const antlr4 = require('antlr4');
 const { dependencies } = require('../appDependencies')
 
-const getTableData = async(connectionData, dbName, tableName, ddl, tableColumnsNullableMap) => {
+const getTableData = async (connectionData, dbName, tableName, ddl, tableColumnsNullableMap) => {
 	let tableData = getTableDataFromDDl(ddl);
-	const tableCheckConstraints = await fetchRequestHelper.fetchTableCheckConstraints(connectionData,dbName, tableName)
+	const tableCheckConstraints = await fetchRequestHelper.fetchTableCheckConstraints(connectionData, dbName, tableName)
 	tableData.properties[0]['check'] = tableCheckConstraints;
 	const indexes = await fetchRequestHelper.fetchBloomFilteredIndexes(connectionData, dbName, tableName)
 
-	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({...property, required: !tableColumnsNullableMap[property.name]}))
-	const tableSchema = tablePropertiesWithNotNullConstraints.reduce((schema, property) => ({...schema, [property.name]: property}),{})
+	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: !tableColumnsNullableMap[property.name] }))
+	const tableSchema = tablePropertiesWithNotNullConstraints.reduce((schema, property) => ({ ...schema, [property.name]: property }), {})
 	const requiredColumns = tablePropertiesWithNotNullConstraints.filter(column => column.required).map(column => column.name);
-	tableData = {...tableData, properties: tablePropertiesWithNotNullConstraints, schema: tableSchema, requiredColumns};
-	if(!dependencies.lodash.isEmpty(indexes)){
-		return Object.assign(tableData, {"propertiesPane":{...tableData.propertiesPane,"BloomIndxs":indexes}});
+	tableData = { ...tableData, properties: tablePropertiesWithNotNullConstraints, schema: tableSchema, requiredColumns };
+	if (!dependencies.lodash.isEmpty(indexes)) {
+		return Object.assign(tableData, { "propertiesPane": { ...tableData.propertiesPane, "BloomIndxs": indexes } });
 	}
 	return tableData;
 }
@@ -42,7 +42,7 @@ const getDatabaseCollectionNames = async (connectionInfo, dbName) => {
 
 }
 
-const getModelData = async (connectionInfo) => {
+const getModelData = async (connectionInfo, logger) => {
 	const clusterProperties = await fetchRequestHelper.fetchClusterProperties(connectionInfo);
 	return {
 		dbVersion: `Runtime ${clusterProperties.spark_version[0]}`,
@@ -57,7 +57,7 @@ const getModelData = async (connectionInfo) => {
 		spark_conf: JSON.stringify(clusterProperties.spark_conf),
 		node_type_id: clusterProperties.node_type_id,
 		driver_node_type_id: clusterProperties.driver_node_type_id,
-		custom_tags: convertCustomTags(clusterProperties.custom_tags),
+		custom_tags: convertCustomTags(clusterProperties.custom_tags, logger),
 		autotermination_minutes: clusterProperties.autotermination_minutes,
 		enable_elastic_disk: clusterProperties.enable_elastic_disk,
 		aws_attributes: clusterProperties.aws_attributes
@@ -67,8 +67,8 @@ const getModelData = async (connectionInfo) => {
 const getContainerData = async (connectionInfo, dbName) => {
 	const containerProperties = await fetchRequestHelper.fetchDatabaseProperties(connectionInfo, dbName)
 	return {
-		description:containerProperties.description,
-		dbProperties:containerProperties.dbProperties,
+		description: containerProperties.description,
+		dbProperties: containerProperties.dbProperties,
 		location: containerProperties.location
 	}
 }
@@ -191,10 +191,18 @@ const requiredClusterState = async (connectionInfo, logInfo, logger) => {
 	}
 }
 
-const convertCustomTags = (custom_tags) =>
-	Object.keys(custom_tags).reduce((tags, tagKey) => {
-		return [...tags, { customTagKey: tagKey, customtagvalue: custom_tags[tagKey] }]
-	}, []);
+const convertCustomTags = (custom_tags, logger) => {
+	try {
+		return Object.keys(custom_tags).reduce((tags, tagKey) => {
+			return [...tags, { customTagKey: tagKey, customtagvalue: custom_tags[tagKey] }]
+		}, []);
+	} catch (e) {
+		logger.log('error', custom_tags, 'Error converting custom tags');
+		return []
+	}
+}
+
+
 
 const getEntityCreateStatement = async (connectionInfo, dbName, entityName) => {
 	const query = "var stmt = sqlContext.sql(\"SHOW CREATE TABLE `" + dbName + "`.`" + entityName + "`\").select(\"createtab_stmt\").first.getString(0)";
