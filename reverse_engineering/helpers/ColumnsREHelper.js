@@ -1,56 +1,66 @@
-const convertType = (type) => {
-    switch (type) {
-
-        case 'array<tinyint>':
-        case 'array<smallint>':
-        case 'array<int>':
-        case 'array<bigint>':
-        case 'array<float>':
-        case 'array<array>':
-        case 'array<decimal>': return 'array<num>';
-
-        case 'array<char>':
-        case 'array<varchar>':
-        case 'array<string>': return 'array<txt>';
-        default: return type;
-    }
-}
-
-const getMapSubtypeByValue = (val) => {
-    switch (val) {
-        case 'tinyint':
-        case 'smallint':
-        case 'int':
-        case 'bigint':
-        case 'float':
-        case 'double':
-        case 'decimal': return 'map<num>';
-        case 'char':
-        case 'varchar':
-        case 'string': return 'map<txt>';
-        case 'boolean': return 'map<bool>';
-        case 'date': return 'map<date>';
-        case 'timestamp': return 'map<ts>';
-        case 'interval': return 'map<intrvl>';
-        default: return 'map<txt>';
-    }
-}
-
-
-const handleType = type => {
-    const convertedType = convertType(type)
-    if (typeof type === 'string') {
-        switch (convertedType) {
+const handleSubtype = (childType, parentType) => {
+    if (typeof childType === 'string') {
+        switch (childType) {
             case 'tinyint':
             case 'smallint':
             case 'int':
             case 'bigint':
             case 'float':
             case 'double':
-            case 'decimal': return { type: 'numeric', mode: convertedType };
+            case 'decimal': return `${parentType}<num>`;
             case 'char':
             case 'varchar':
-            case 'string': return { type: 'text', mode: convertedType };
+            case 'string': return `${parentType}<txt>`;
+            case 'boolean': return `${parentType}<bool>`;
+            case 'date': return `${parentType}<date>`;
+            case 'timestamp': return `${parentType}<ts>`;
+            case 'interval': return `${parentType}<intrvl>`;
+            default: return `${parentType}<txt>`;
+        }
+    }
+    if (childType.type === 'array') {
+        return {
+            subtype: `${parentType}<array>`,
+            properties: [
+                handleType(childType)
+            ]
+        }
+    }
+    if (childType.type === 'map') {
+        return {
+            subtype: `${parentType}<map>`,
+            properties: [
+                handleType(childType)
+            ]
+        }
+    }
+    if (childType.type === 'struct') {
+        return {
+            subtype: `${parentType}<struct>`,
+            properties: [
+                handleType(childType)
+            ]
+        }
+    }
+}
+
+
+const handleType = type => {
+    if (typeof type === 'string') {
+        switch (type) {
+            case 'tinyint':
+            case 'smallint':
+            case 'int':
+            case 'bigint':
+            case 'float':
+            case 'double':
+            case 'decimal': return { type: 'numeric', mode: type };
+            case 'char':
+            case 'varchar':
+            case 'string': return { type: 'text', mode: type };
+            case 'timestamp': return { type: 'timestamp' };
+            case 'date': return { type: 'date' };
+            case 'interval': return { type: 'interval' };
             case 'array<txt>':
             case 'array<num>':
             case 'array<ts>':
@@ -60,8 +70,14 @@ const handleType = type => {
             case 'array<map>':
             case 'array<struct>':
             case 'array<union>':
-            case 'array': return { type: 'array', sybtype: convertedType };
-            default: return { type: 'text'};
+            case 'array': return { type: 'array', sybtype: type };
+            default: return { type: 'text' };
+        }
+    }
+    if (type.type === "array") {
+        return {
+            type: 'array',
+            ...handleSubtype(type.elements, 'array')
         }
     }
     if (type.type === "struct") {
@@ -76,9 +92,9 @@ const handleType = type => {
         return {
             type: "document",
             childType: "map",
-            subtype: getMapSubtypeByValue(type.val),
             keyType: handledType.type,
-            keySubtype: handledType.mode
+            keySubtype: handledType.mode,
+            ...handleSubtype(type.val, 'map')
         }
     }
 

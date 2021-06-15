@@ -105,7 +105,7 @@ class Visitor extends SqlBaseVisitor {
 		return {
 			type: "map",
 			key: this.visit(ctx.key),
-			val:this.visit(ctx.val),
+			val: this.visit(ctx.val),
 		}
 
 	}
@@ -117,19 +117,22 @@ class Visitor extends SqlBaseVisitor {
 		}
 	}
 
-	visitArrayDataType(ctx){
-		return getName(ctx).toLowerCase();
+	visitArrayDataType(ctx) {
+		return {
+			type: "array",
+			elements: this.visit(ctx.dataType()),
+		}
 	}
 
-	visitPrimitiveDataType(ctx){
+	visitPrimitiveDataType(ctx) {
 		return getName(ctx.identifier()).toLowerCase();
 	}
 
-	visitComplexColTypeList(ctx){
+	visitComplexColTypeList(ctx) {
 		return this.visit(ctx.complexColType())
 	}
 
-	visitComplexColType(ctx){
+	visitComplexColType(ctx) {
 		return {
 			colName: getName(ctx.identifier()),
 			colType: this.visit(ctx.dataType()),

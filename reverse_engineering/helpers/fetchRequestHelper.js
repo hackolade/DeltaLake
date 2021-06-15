@@ -23,6 +23,19 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 	}
 }
 
+const isBloomFilteredOption = optionName => {
+	switch (optionName) {
+		case 'delta.bloomFilter.fpp':
+		case 'delta.bloomFilter.numItems':
+		case 'delta.bloomFilter.enabled':
+		case 'delta.bloomFilter.maxExpectedFpp':
+			return true;
+		default:
+			return false;
+	}
+
+}
+
 const fetchBloomFilteredIndexes = async (connectionInfo, dbName, collectionName) => {
 	try {
 		const command = `class Column(var col_name: String, var metadata: org.apache.spark.sql.types.Metadata) {
@@ -37,11 +50,11 @@ const fetchBloomFilteredIndexes = async (connectionInfo, dbName, collectionName)
 		const columnsIndexOptions = nullableMapString.replaceAll(' ', '').replaceAll('|,', '$').replaceAll('|', '').replaceAll(':{', '%{').split('$').reduce((map, columnNulable) => {
 			const columnName = columnNulable.split('%')[0];
 			const metadataString = columnNulable.split('%')[1];
-			if (metadataString === '{}') {
+			const metadataMap = JSON.parse(metadataString);
+			const columnIndexOptions = Object.keys(metadataMap).filter(isBloomFilteredOption).map(metaKey => `${metaKey.slice(18)} = ${metadataMap[metaKey]}`).join(', ');
+			if (columnIndexOptions === '') {
 				return map;
 			}
-			const metadataMap = JSON.parse(metadataString);
-			const columnIndexOptions = Object.keys(metadataMap).map(metaKey => `${metaKey.slice(18)} = ${metadataMap[metaKey]}`).join(', ');
 			return { ...map, [columnName]: columnIndexOptions }
 		}, {})
 		const columnsByIndexOptions = Object.keys(columnsIndexOptions).reduce((indexes, column) => {
@@ -167,11 +180,11 @@ const fetchClusterProperties = async (connectionInfo) => {
 			};
 		})
 		.then(body => {
-			try{
+			try {
 				return JSON.parse(body);
 			} catch (e) {
 				throw {
-					message: e.message, code: "", description: 'body: '+body
+					message: e.message, code: "", description: 'body: ' + body
 				};
 			}
 		})
