@@ -27,7 +27,7 @@ module.exports = {
 			logInfo('Test connection RE', connectionInfo, logger, logger);
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
 			if (!clusterState.isRunning) {
-				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}` })
+				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`, type: 'simpleError' })
 			}
 			cb()
 		} catch (err) {
@@ -46,7 +46,7 @@ module.exports = {
 			setDependencies(app);
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
 			if (!clusterState.isRunning) {
-				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}` })
+				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
 			}
 			connectionData = {
 				host: connectionInfo.host,
@@ -80,7 +80,7 @@ module.exports = {
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
 			setDependencies(app);
 			if (!clusterState.isRunning) {
-				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}` })
+				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
 			}
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;

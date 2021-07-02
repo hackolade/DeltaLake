@@ -258,7 +258,7 @@ module.exports = {
 			logInfo('Test connection FE', connectionInfo, logger);
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
 			if (!clusterState.isRunning) {
-				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}` })
+				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`, type: 'simpleError' })
 			}
 			cb()
 		} catch (err) {
