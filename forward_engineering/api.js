@@ -5,7 +5,7 @@ const { getDatabaseStatement, getDatabaseAlterStatement } = require('./helpers/d
 const { getTableStatement, getTableAlterStatements } = require('./helpers/tableHelper');
 const { getIndexes } = require('./helpers/indexHelper');
 const { getViewScript, getViewAlterScripts } = require('./helpers/viewHelper');
-const { prepareName, replaceSpaceWithUnderscore, getName, getTab } = require('./helpers/generalHelper');
+const { getCleanedUrl } = require('./helpers/generalHelper');
 let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const deltaLakeHelper = require('../reverse_engineering/helpers/DeltaLakeHelper')
@@ -239,8 +239,17 @@ module.exports = {
 	async applyToInstance(connectionInfo, logger, cb, app) {
 		logger.clear();
 		logInfo('info', connectionInfo, logger);
+
+		const connectionData = {
+			host: getCleanedUrl(connectionInfo.host),
+			clusterId: connectionInfo.clusterId,
+			accessToken: connectionInfo.accessToken,
+			applyToInstanceQueryRequestTimeout: connectionInfo.applyToInstanceQueryRequestTimeout,
+			script: connectionInfo.script
+		}
+
 		try {
-			await fetchRequestHelper.fetchApplyToInstance(connectionInfo, logger)
+			await fetchRequestHelper.fetchApplyToInstance(connectionData, logger)
 			cb()
 		} catch (err) {
 			logger.log(
@@ -256,7 +265,14 @@ module.exports = {
 	async testConnection(connectionInfo, logger, cb) {
 		try {
 			logInfo('Test connection FE', connectionInfo, logger);
-			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
+
+			const connectionData = {
+				host: getCleanedUrl(connectionInfo.host),
+				clusterId: connectionInfo.clusterId,
+				accessToken: connectionInfo.accessToken
+			}
+
+			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`, type: 'simpleError' })
 			}

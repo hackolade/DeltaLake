@@ -13,6 +13,7 @@ const HiveParser = require('./parser/Hive/HiveParser.js');
 const hqlToCollectionsVisitor = require('./hqlToCollectionsVisitor.js');
 const commandsService = require('./commandsService');
 const ExprErrorListener = require('./antlrErrorListener');
+const {getCleanedUrl} = require('../forward_engineering/helpers/generalHelper')
 
 module.exports = {
 
@@ -24,8 +25,15 @@ module.exports = {
 	testConnection: async (connectionInfo, logger, cb, app) => {
 		try {
 			setDependencies(app);
+
+			connectionData = {
+				host: getCleanedUrl(connectionInfo.host),
+				clusterId: connectionInfo.clusterId,
+				accessToken: connectionInfo.accessToken
+			}
+
 			logInfo('Test connection RE', connectionInfo, logger, logger);
-			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
+			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`, type: 'simpleError' })
 			}
@@ -44,17 +52,20 @@ module.exports = {
 		logInfo('Retrieving databases and tables information', connectionInfo, logger);
 		try {
 			setDependencies(app);
-			const clusterState = await deltaLakeHelper.requiredClusterState(connectionInfo, logInfo, logger);
-			if (!clusterState.isRunning) {
-				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
-			}
+
 			connectionData = {
-				host: connectionInfo.host,
+				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
 				accessToken: connectionInfo.accessToken
 			}
-			const dbNames = await fetchRequestHelper.fetchClusterDatabaseNames(connectionInfo);
-			const dbCollectionsNames = await Promise.all(dbNames.map(dbName => deltaLakeHelper.getDatabaseCollectionNames(connectionInfo, dbName)));
+
+			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
+			if (!clusterState.isRunning) {
+				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
+			}
+			
+			const dbNames = await fetchRequestHelper.fetchClusterDatabaseNames(connectionData);
+			const dbCollectionsNames = await Promise.all(dbNames.map(dbName => deltaLakeHelper.getDatabaseCollectionNames(connectionData, dbName)));
 
 			cb(null, dbCollectionsNames);
 		} catch (err) {

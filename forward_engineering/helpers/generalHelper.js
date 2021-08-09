@@ -127,6 +127,14 @@ const removeRedundantTrailingCommaFromStatement = (statement) => {
 	return statement;
 } 
 
+const getCleanedUrl = url => {
+	if(url.endsWith('/')){
+		return url.slice(0,-1)
+	}
+	return url;
+}
+
+
 module.exports = {
 	buildStatement,
 	getName,
@@ -138,4 +146,5 @@ module.exports = {
 	commentDeactivatedStatements,
 	commentDeactivatedInlineKeys,
 	removeRedundantTrailingCommaFromStatement,
+	getCleanedUrl
 };

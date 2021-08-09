@@ -11,10 +11,12 @@ const handleSubtype = (childType, parentType) => {
             case 'char':
             case 'varchar':
             case 'string': return `${parentType}<txt>`;
+            case 'binary': return { type: 'binary', mode: type  };
             case 'boolean': return `${parentType}<bool>`;
             case 'date': return `${parentType}<date>`;
             case 'timestamp': return `${parentType}<ts>`;
             case 'interval': return `${parentType}<intrvl>`;
+            case 'union': return `${parentType}<union>`;
             default: return `${parentType}<txt>`;
         }
     }
@@ -58,19 +60,11 @@ const handleType = type => {
             case 'char':
             case 'varchar':
             case 'string': return { type: 'text', mode: type };
+            case 'boolean': return { type: 'bool' };
+            case 'binary': return { type: 'binary', mode: type  };
             case 'timestamp': return { type: 'timestamp' };
             case 'date': return { type: 'date' };
             case 'interval': return { type: 'interval' };
-            case 'array<txt>':
-            case 'array<num>':
-            case 'array<ts>':
-            case 'array<date>':
-            case 'array<intrvl>':
-            case 'array<array>':
-            case 'array<map>':
-            case 'array<struct>':
-            case 'array<union>':
-            case 'array': return { type: 'array', sybtype: type };
             default: return { type: 'text' };
         }
     }
