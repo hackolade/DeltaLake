@@ -89,7 +89,6 @@ module.exports = {
 		try {
 			setDependencies(app);
 			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
-			setDependencies(app);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
 			}
@@ -117,7 +116,7 @@ module.exports = {
 					let documents = [];
 					if (hasColumnsOfTypeString) {
 						const limitByCount = await deltaLakeHelper.fetchLimitByCount(connectionData, tableName,dbName);
-						documents = await fetchRequestHelper.fetchDocumets(connectionData, dbName, tableName, columnsOfTypeString, getLimit(limitByCount, data.recordSamplingSettings));
+						documents = await fetchRequestHelper.fetchDocuments(connectionData, dbName, tableName, columnsOfTypeString, getLimit(limitByCount, data.recordSamplingSettings));
 					}
 					progress({ message: 'Data retrieved successfully', containerName: dbName, entityName: tableName });
 					return {

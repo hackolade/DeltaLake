@@ -63,7 +63,6 @@ module.exports = {
 		containerData,
 		collectionRefsDefinitionsMap,
 	}) {
-		GLOBAL
 		setDependencies(dependencies);
 		let script = [];
 		const columns = schema.properties || {};

@@ -74,7 +74,7 @@ const fetchBloomFilteredIndexes = async (connectionInfo, dbName, collectionName)
 	}
 }
 
-const fetchDocumets = async (connectionInfo, dbName, collectionName, fields, limit) => {
+const fetchDocuments = async (connectionInfo, dbName, collectionName, fields, limit) => {
 	try {
 		const columnsToSelect = fields.map(field => field.name).join(', ');
 		const command = `import scala.util.parsing.json.JSONObject;
@@ -383,7 +383,7 @@ module.exports = {
 	fetchFunctionNames,
 	fetchApplyToInstance,
 	fetchLimitByCount,
-	fetchDocumets,
+	fetchDocuments,
 	fetchDatabaseProperties,
 	destroyActiveContext,
 	fetchBloomFilteredIndexes,
