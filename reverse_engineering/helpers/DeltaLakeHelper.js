@@ -8,38 +8,46 @@ const columnREHelper = require('./ColumnsREHelper')
 const antlr4 = require('antlr4');
 const { dependencies } = require('../appDependencies')
 
-const getTableData = async (connectionData, dbName, tableName, ddl, tableColumnsNullableMap) => {
+const getTableData = async (table ) => {
+	const {ddl, checkConstraints, nullableMap, indexes } = table;
 	let tableData = getTableDataFromDDl(ddl);
-	const tableCheckConstraints = await fetchRequestHelper.fetchTableCheckConstraints(connectionData, dbName, tableName)
-	tableData.properties[0]['check'] = tableCheckConstraints;
-	const indexes = await fetchRequestHelper.fetchBloomFilteredIndexes(connectionData, dbName, tableName)
-
-	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: !tableColumnsNullableMap[property.name] }))
+	tableData.properties[0]['check'] = checkConstraints;
+	const BloomIndxs = convertIndexes(indexes)
+	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: !nullableMap[property.name] }))
 	const tableSchema = tablePropertiesWithNotNullConstraints.reduce((schema, property) => ({ ...schema, [property.name]: property }), {})
 	const requiredColumns = tablePropertiesWithNotNullConstraints.filter(column => column.required).map(column => column.name);
-	tableData = { ...tableData, properties: tablePropertiesWithNotNullConstraints, schema: tableSchema, requiredColumns };
-	if (!dependencies.lodash.isEmpty(indexes)) {
-		return Object.assign(tableData, { "propertiesPane": { ...tableData.propertiesPane, "BloomIndxs": indexes } });
+	tableData = { 
+		...tableData, 
+		properties: tablePropertiesWithNotNullConstraints, 
+		schema: tableSchema, 
+		requiredColumns };
+	if (!dependencies.lodash.isEmpty(BloomIndxs)) {
+		return Object.assign(tableData, { "propertiesPane": { ...tableData.propertiesPane, BloomIndxs } });
 	}
 	return tableData;
 }
 
-const getDatabaseCollectionNames = async (connectionInfo, dbName) => {
+const convertIndexes = indexes => {
+	const indexMap = Object.keys(indexes)
+		.filter(columnName => !dependencies.lodash.isEmpty(indexes[columnName]))
+		.reduce((indexMap, columnName) => {
+			const indexObject = indexes[columnName];
+			const indexString = `fpp = ${indexObject['delta.bloomFilter.fpp']}, numItems = ${indexObject['delta.bloomFilter.numItems']}, maxExpectedFpp = ${indexObject['delta.bloomFilter.maxExpectedFpp']}, enabled = ${indexObject['delta.bloomFilter.enabled']}`
+			if (indexMap[indexString]) {
+				return { ...indexMap, [indexString]: [...indexMap[indexString], columnName] }
+			}
+			return { ...indexMap, [indexString]: [columnName] }
+		}, {});
+	return Object.keys(indexMap).map(options => ({options, forColumns: indexMap[options]}))
+}
 
-	const dbTablesAndViewsNames = await fetchRequestHelper.fetchDatabaseTablesNames(connectionInfo, dbName);
-	const dbViewsNames = await fetchRequestHelper.fetchDatabaseViewsNames(connectionInfo, dbName);
-
-	const dbTablesNames = dbTablesAndViewsNames.filter(name => !dbViewsNames.includes(name))
-	const markedViewNames = dbViewsNames.map(name => name + ' (v)')
-
-	const dbEntitiesNames = [...dbTablesNames, ...markedViewNames];
-
-	return {
-		dbName,
-		dbCollections: dbEntitiesNames,
-		isEmpty: dependencies.lodash.isEmpty(dbEntitiesNames),
-	};
-
+const getDatabaseCollectionNames = async (connectionInfo) => {
+	const parsedDatabaseData = await fetchRequestHelper.fetchClusterDatabaseTables(connectionInfo);
+	return parsedDatabaseData.map(item => ({
+		dbName: item.dbName,
+		dbCollections: item.dbCollections,
+		isEmpty: item.isEmpty
+	}));
 }
 
 const getModelData = async (connectionInfo, logger) => {
@@ -62,19 +70,6 @@ const getModelData = async (connectionInfo, logger) => {
 		enable_elastic_disk: clusterProperties.enable_elastic_disk,
 		aws_attributes: clusterProperties.aws_attributes
 	};
-}
-
-const getContainerData = async (connectionInfo, dbName) => {
-	const containerProperties = await fetchRequestHelper.fetchDatabaseProperties(connectionInfo, dbName)
-	return {
-		description: containerProperties.description,
-		dbProperties: containerProperties.dbProperties,
-		location: containerProperties.location
-	}
-}
-
-const getFunctions = async (connectionInfo, dbName) => {
-	return await fetchRequestHelper.fetchFunctionNames(connectionInfo)
 }
 
 const getTableProvider = (provider) => {
@@ -174,14 +169,6 @@ const getViewDataFromDDl = statement => {
 	}
 }
 
-const fetchLimitByCount = async (connectionInfo, collectionName, dbName) => {
-	const countResult = await fetchRequestHelper.fetchLimitByCount(connectionInfo, collectionName, dbName);
-	const countExtractionRegex = /stmt: Array\[org.apache.spark.sql.Row\] = Array\(\[(\d+)\]\)/gm;
-	const numberOfRows = dependencies.lodash.get(countExtractionRegex.exec(countResult), '1', '')
-	return numberOfRows;
-}
-
-
 const requiredClusterState = async (connectionInfo, logInfo, logger) => {
 	const clusterProperties = await fetchRequestHelper.fetchClusterProperties(connectionInfo);
 	logger.log('Retrieving databases and tables information', 'Cluster status: ' + clusterProperties.state);
@@ -202,13 +189,6 @@ const convertCustomTags = (custom_tags, logger) => {
 	}
 }
 
-
-
-const getEntityCreateStatement = async (connectionInfo, dbName, entityName) => {
-	const query = "var stmt = sqlContext.sql(\"SHOW CREATE TABLE `" + dbName + "`.`" + entityName + "`\").select(\"createtab_stmt\").first.getString(0)";
-	return await fetchRequestHelper.fetchCreateStatementRequest(query, connectionInfo);
-}
-
 const splitTableAndViewNames = names => {
 	const namesByCategory = dependencies.lodash.partition(names, isView);
 
@@ -217,15 +197,30 @@ const splitTableAndViewNames = names => {
 
 const isView = name => name.slice(-4) === ' (v)';
 
+const prepareNamesForInsertionIntoScalaCode = (databasesNames, collectionsNames) =>
+	databasesNames.reduce((entities, dbName) => {
+		const { tables, views } = splitTableAndViewNames(collectionsNames[dbName]);
+		const viewNames = views.map(viewName => `\"${viewName}\"`).join(', ');
+		const tableNames = tables.map(tableName => `\"${tableName}\"`).join(', ');
+
+		return {
+			viewNames: [...entities.viewNames, `\"${dbName}\" -> List(${viewNames})`],
+			tableNames: [...entities.tableNames, `\"${dbName}\" -> List(${tableNames})`]
+		}
+	}, { viewNames: [], tableNames: [] })
+
+const getClusterData = (connectionInfo, databasesNames, collectionsNames) => {
+	const { viewNames, tableNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
+	return fetchRequestHelper.fetchClusterData(connectionInfo, tableNames.join(', '), viewNames.join(', '));
+}
+
 module.exports = {
 	getDatabaseCollectionNames,
 	getModelData,
 	requiredClusterState,
-	getEntityCreateStatement,
 	splitTableAndViewNames,
-	getContainerData,
 	getTableDataFromDDl,
 	getViewDataFromDDl,
-	fetchLimitByCount,
-	getTableData
+	getTableData,
+	getClusterData
 };

@@ -1,6 +1,7 @@
 'use strict'
 const fetch = require('node-fetch');
 const { dependencies } = require('../appDependencies');
+const { getDatabasesTablesCode, getClusterData, getDocuments } = require('./ScalaGeneratorHelper')
 let activeContext;
 
 const destroyActiveContext = () => {
@@ -23,65 +24,18 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 	}
 }
 
-const isBloomFilteredOption = optionName => {
-	switch (optionName) {
-		case 'delta.bloomFilter.fpp':
-		case 'delta.bloomFilter.numItems':
-		case 'delta.bloomFilter.enabled':
-		case 'delta.bloomFilter.maxExpectedFpp':
-			return true;
-		default:
-			return false;
-	}
-
-}
-
-const fetchBloomFilteredIndexes = async (connectionInfo, dbName, collectionName) => {
-	try {
-		const command = `class Column(var col_name: String, var metadata: org.apache.spark.sql.types.Metadata) {
-			override def toString() : String = {
-			  return col_name +" : " + metadata+"|";
-		  }
-	  };
-	  spark.table("${dbName}.${collectionName}").schema.map(field => (new Column(field.name, field.metadata)).toString())`;
-		const result = await executeCommand(connectionInfo, command);
-		const mapExtractionRegex = /List\((.+)\)/gm
-		const nullableMapString = dependencies.lodash.get(mapExtractionRegex.exec(result), '1', '')
-		const columnsIndexOptions = nullableMapString.replaceAll(' ', '').replaceAll('|,', '$').replaceAll('|', '').replaceAll(':{', '%{').split('$').reduce((map, columnNulable) => {
-			const columnName = columnNulable.split('%')[0];
-			const metadataString = columnNulable.split('%')[1];
-			const metadataMap = JSON.parse(metadataString);
-			const columnIndexOptions = Object.keys(metadataMap).filter(isBloomFilteredOption).map(metaKey => `${metaKey.slice(18)} = ${metadataMap[metaKey]}`).join(', ');
-			if (columnIndexOptions === '') {
-				return map;
-			}
-			return { ...map, [columnName]: columnIndexOptions }
-		}, {})
-		const columnsByIndexOptions = Object.keys(columnsIndexOptions).reduce((indexes, column) => {
-			const options = columnsIndexOptions[column]
-			if (indexes[options]) {
-				return { ...indexes, [options]: [...indexes[options], column] }
-			}
-			return { ...indexes, [options]: [column] }
-		}, {})
-		const indexes = Object.keys(columnsByIndexOptions).map(options => ({
-			forColumns: columnsByIndexOptions[options],
-			options
-		}))
-		return indexes;
-	} catch (e) {
-		return [];
-	}
-}
-
-const fetchDocuments = async (connectionInfo, dbName, collectionName, fields, limit) => {
+const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, isAbsolute, percentage,	absoluteNumber }) => {
 	try {
 		const columnsToSelect = fields.map(field => field.name).join(', ');
-		const command = `import scala.util.parsing.json.JSONObject;
-							var rows = sqlContext.sql(\"SELECT ${columnsToSelect} FROM ${dbName}.${collectionName} LIMIT ${limit}\")
-								.map(row => JSONObject(row.getValuesMap(row.schema.fieldNames)).toString())
-								.collect()`;
-		const result = await executeCommand(connectionInfo, command);
+		const fetchDocumentsCommand = getDocuments({
+			dbName,
+			tableName,
+			isAbsolute,
+			percentage,
+			absoluteNumber,
+			columnsToSelect
+		})
+		const result = await executeCommand(connectionInfo, fetchDocumentsCommand);
 		const rowsExtractionRegex = /(rows: Array\[String\] = Array\((.+)\))/gm
 		const rowsJSON = dependencies.lodash.get(rowsExtractionRegex.exec(result), '2', '')
 		const rows = JSON.parse(`[${rowsJSON}]`);
@@ -89,82 +43,6 @@ const fetchDocuments = async (connectionInfo, dbName, collectionName, fields, li
 	} catch (e) {
 		return [];
 	}
-
-}
-
-const fetchColumnsNullableMap = async (connectionInfo, collectionName, dbName) => {
-	try {
-		const command = `class Column(var col_name: String, var nullable: Boolean) { override def toString() : String = { return col_name + ":" + nullable;  };  };
-	  		val res = spark.table(\"${dbName}.${collectionName}\").schema.fields.map(field => (new Column(field.name, field.nullable)).toString());`;
-		const result = await executeCommand(connectionInfo, command);
-		const mapExtractionRegex = /Array\((.+)\)/gm
-		const nullableMapString = dependencies.lodash.get(mapExtractionRegex.exec(result), '1', '')
-		const nullableMap = nullableMapString.replaceAll(' ', '').split(',').reduce((map, columnNulable) => {
-			const splitColumnNullable = columnNulable.split(':')
-			const columnName = splitColumnNullable[0];
-			const isNullable = splitColumnNullable[1] === 'true';
-			return { ...map, [columnName]: isNullable }
-		}, {})
-		return nullableMap
-	} catch (e) {
-		return {};
-	}
-}
-
-const fetchTableCheckConstraints = async (connectionInfo, dbName, tableName) => {
-	const command = `var values = sqlContext.sql(\"DESCRIBE DETAIL ${dbName}.${tableName}\").select(\"properties\").map(row => JSONObject(row.getValuesMap(row.schema.fieldNames)).toString())
-	.collect()`
-	const result = await executeCommand(connectionInfo, command);
-	const valuesExtractionRegex = /values: Array\[String\] = Array\(\{"properties" : Map\((.*)\)\}\)/gm;
-	const checkConstraintsValue = dependencies.lodash.get(valuesExtractionRegex.exec(result), '1', '')
-	return checkConstraintsValue.split(',').map(constraintStatement => constraintStatement.split(' -> ')[1]).join(' and ')
-}
-
-const fetchDatabaseProperties = async (connectionInfo, dbName) => {
-	const command = `import scala.util.parsing.json.JSONObject;
-						var dbProperties = sqlContext.sql(\"DESCRIBE DATABASE EXTENDED ${dbName}\")
-							.map(row => JSONObject(row.getValuesMap(row.schema.fieldNames)).toString())
-							.collect()`;
-	const result = await executeCommand(connectionInfo, command);
-	const propertiesExtractionRegex = /(dbProperties: Array\[String\] = Array\((.+)\))/gm
-	const propertiesJSON = dependencies.lodash.get(propertiesExtractionRegex.exec(result), '2', '')
-	let properties;
-	try {
-		properties = JSON.parse(`[${propertiesJSON}]`);
-	} catch (e) {
-		properties = [];
-	}
-	const propertiesObject = properties.reduce((propertiesObject, property) => {
-		return { ...propertiesObject, [property.database_description_item]: property.database_description_value }
-	}, {});
-	const location = propertiesObject['Location'];
-	const description = propertiesObject['Comment'];
-
-	const dbPropertyItemsExtractionRegex = /\((.+)\)/gmi
-	if (propertiesObject['Properties'] !== '') {
-		let dbProperties = dependencies.lodash.get(dbPropertyItemsExtractionRegex.exec(propertiesObject['Properties']), '1', '').split('), ')
-			.map(item => item.replaceAll(/[\(\)]/gmi, '')).map(propertyPair => `'${propertyPair.split(',')[0]}' = '${propertyPair.split(',')[1]}'`).join(', ');
-		if (!dependencies.lodash.isEmpty(dbProperties)) {
-			dbProperties = `(${dbProperties})`
-		}
-		return { location, description, dbProperties };
-	}
-	return { location, description, dbProperties: '' };
-}
-
-const fetchLimitByCount = async (connectionInfo, collectionName, dbName) => {
-	const command = `var stmt = sqlContext.sql("select count(*) as count from ${dbName || "default"}.${collectionName}").select(\"count\").collect()`;
-	return await executeCommand(connectionInfo, command);
-}
-
-const fetchCreateStatementRequest = async (command, connectionInfo) => {
-	const result = await executeCommand(connectionInfo, command);
-
-	const statementExtractionRegex = /stmt: String = "(.+)"/gm;
-	const resultWithoutNewLineSymb = result.replaceAll(/[\n\r]/g, " ");
-	const entityCreateStatement = statementExtractionRegex.exec(resultWithoutNewLineSymb);
-
-	return dependencies.lodash.get(entityCreateStatement, '1', '')
 }
 
 const fetchClusterProperties = async (connectionInfo) => {
@@ -190,31 +68,28 @@ const fetchClusterProperties = async (connectionInfo) => {
 		})
 }
 
-const fetchClusterDatabaseNames = async (connectionInfo) => {
-	const getDatabasesNamesCommand = "var values = sqlContext.sql(\"SHOW DATABASES\").select(\"databaseName\").collect().map(_(0)).toList"
-	return await getDFColumnValues(connectionInfo, getDatabasesNamesCommand);
+const fetchClusterDatabaseTables = async (connectionInfo) => {
+	const getDatabasesTablesCommand = getDatabasesTablesCode();
+	const result = await executeCommand(connectionInfo, getDatabasesTablesCommand);
+	const formatedResult = result.split('databasesTables: String = ')[1]
+		.replaceAll('\n', ' ')
+		.replaceAll('"{', '{')
+		.replaceAll('"[', '[')
+		.replaceAll('}"', '}')
+		.replaceAll(']"', ']');
+	return JSON.parse(formatedResult);
 }
 
-const fetchDatabaseTablesNames = async (connectionInfo, dbName) => {
-	const getTablesNamesCommand = `var values = sqlContext.sql(\"SHOW TABLES FROM ${dbName}\").select(\"tableName\").collect().map(_(0)).toList`
-	return await getDFColumnValues(connectionInfo, getTablesNamesCommand);
-}
-
-const fetchFunctionNames = async (connectionInfo) => {
-	const getFunctionsNamesCommand = `var values = sqlContext.sql(\"SHOW USER FUNCTIONS\").select(\"function\").collect().map(_(0)).toList`
-	return await getDFColumnValues(connectionInfo, getFunctionsNamesCommand);
-}
-
-const getFunctionClass = async (connectionInfo, funcName) => {
-	const getFunctionsClassCommand = `var clas = sqlContext.sql(\"DESCRIBE FUNCTION ${funcName}\").select(\"function_desc\").collect().map(_(0)).toList(1)`
-	const result = await executeCommand(connectionInfo, getFunctionsClassCommand);
-	const valuesExtractionRegex = /clas: Any = Class: (.*)/gm;
-	return dependencies.lodash.get(valuesExtractionRegex.exec(result), '1', '');
-}
-
-const fetchDatabaseViewsNames = async (connectionInfo, dbName) => {
-	const getViiewsNamesCommand = `var values = sqlContext.sql(\"SHOW VIEWS FROM ${dbName}\").select(\"viewName\").collect().map(_(0)).toList`
-	return await getDFColumnValues(connectionInfo, getViiewsNamesCommand);
+const fetchClusterData = async (connectionInfo, tablesNames, viewsNames) => {
+	const getClusterDataCommand = getClusterData(tablesNames, viewsNames);
+	const result = await executeCommand(connectionInfo, getClusterDataCommand);
+	const formatedResult = result.split('clusterData: String =')[1]
+		.replaceAll('\n', ' ')
+		.replaceAll('"{', '{')
+		.replaceAll('"[', '[')
+		.replaceAll('}"', '}')
+		.replaceAll(']"', ']');
+	return JSON.parse(formatedResult);
 }
 
 const getRequestOptions = (connectionInfo) => {
@@ -365,28 +240,11 @@ const getCommandExecutionResult = (query, options) => {
 		})
 }
 
-const getDFColumnValues = async (connectionInfo, command) => {
-	const _ = dependencies.lodash;
-	const result = await executeCommand(connectionInfo, command);
-	const valuesExtractionRegex = /values: List\[Any\] = List\((.+)\)/gm;
-	const values = dependencies.lodash.get(valuesExtractionRegex.exec(result), '1', '')
-	return dependencies.lodash.isEmpty(values) ? [] : values.split(", ");
-}
-
 module.exports = {
-	fetchCreateStatementRequest,
-	fetchClusterDatabaseNames,
-	fetchDatabaseTablesNames,
-	fetchDatabaseViewsNames,
 	fetchClusterProperties,
-	getFunctionClass,
-	fetchFunctionNames,
 	fetchApplyToInstance,
-	fetchLimitByCount,
 	fetchDocuments,
-	fetchDatabaseProperties,
 	destroyActiveContext,
-	fetchBloomFilteredIndexes,
-	fetchTableCheckConstraints,
-	fetchColumnsNullableMap
+	fetchClusterDatabaseTables,
+	fetchClusterData,
 };

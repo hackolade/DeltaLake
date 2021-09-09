@@ -13,7 +13,7 @@ const HiveParser = require('./parser/Hive/HiveParser.js');
 const hqlToCollectionsVisitor = require('./hqlToCollectionsVisitor.js');
 const commandsService = require('./commandsService');
 const ExprErrorListener = require('./antlrErrorListener');
-const {getCleanedUrl} = require('../forward_engineering/helpers/generalHelper')
+const { getCleanedUrl } = require('../forward_engineering/helpers/generalHelper')
 
 module.exports = {
 
@@ -59,16 +59,22 @@ module.exports = {
 				accessToken: connectionInfo.accessToken
 			}
 
-			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
-			if (!clusterState.isRunning) {
-				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
-			}
-			
-			const dbNames = await fetchRequestHelper.fetchClusterDatabaseNames(connectionData);
-			const dbCollectionsNames = await Promise.all(dbNames.map(dbName => deltaLakeHelper.getDatabaseCollectionNames(connectionData, dbName)));
+			const dbCollectionsNames = await deltaLakeHelper.getDatabaseCollectionNames(connectionData)
 
 			cb(null, dbCollectionsNames);
 		} catch (err) {
+
+			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
+			if (!clusterState.isRunning) {
+				logger.log(
+					'error',
+					{ message: err.message, stack: err.stack, error: err },
+					`Cluster is unavailable. Cluster state: ${clusterState.state}`
+				);
+				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
+				return;
+			}
+
 			logger.log(
 				'error',
 				{ message: err.message, stack: err.stack, error: err },
@@ -88,40 +94,43 @@ module.exports = {
 
 		try {
 			setDependencies(app);
-			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
-			if (!clusterState.isRunning) {
-				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
-			}
+
+			const modelData = await deltaLakeHelper.getModelData(connectionData, logger);
+
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
-			const modelData = await deltaLakeHelper.getModelData(connectionData, logger);
+			progress({ message: 'Start getting data from tables', containerName: 'databases', entityName: 'tables' });
+			const clusterData = await deltaLakeHelper.getClusterData(connectionData, dataBaseNames, collections)
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
+				const dbData = clusterData[dbName];
 				const packages = await packagesPromise;
-				const entities = deltaLakeHelper.splitTableAndViewNames(collections[dbName]);
-				const containerData = await deltaLakeHelper.getContainerData(connectionData, dbName);
-				const tablesPackages = entities.tables.map(async (tableName) => {
-					progress({ message: 'Start getting data from table', containerName: dbName, entityName: tableName });
-					const ddl = await deltaLakeHelper.getEntityCreateStatement(connectionData, dbName, tableName);
+				const tablesPackages = dbData.dbTables.map(async (table) => {
+					progress({ message: 'Start getting data from table', containerName: dbName, entityName: table.name });
 					let tableData = {}
 					try {
-						const tableColumnsNullableMap = await fetchRequestHelper.fetchColumnsNullableMap(connectionData,tableName,dbName)
-						tableData = await deltaLakeHelper.getTableData(connectionData,dbName,tableName,ddl, tableColumnsNullableMap);
-					} catch (e){
+						tableData = await deltaLakeHelper.getTableData(table);
+					} catch (e) {
 						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
 						return {};
 					}
-
 					const columnsOfTypeString = tableData.properties.filter(property => property.mode === 'string');
 					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
 					let documents = [];
 					if (hasColumnsOfTypeString) {
-						const limitByCount = await deltaLakeHelper.fetchLimitByCount(connectionData, tableName,dbName);
-						documents = await fetchRequestHelper.fetchDocuments(connectionData, dbName, tableName, columnsOfTypeString, getLimit(limitByCount, data.recordSamplingSettings));
+						documents = await fetchRequestHelper.fetchDocuments({
+							connectionInfo: connectionData,
+							dbName,
+							tableName: table.name,
+							fields: columnsOfTypeString,
+							isAbsolute: data.recordSamplingSettings.active === 'absolute',
+							percentage: data.recordSamplingSettings.relative.value,
+							absoluteNumber: data.recordSamplingSettings.absolute.value
+						});
 					}
-					progress({ message: 'Data retrieved successfully', containerName: dbName, entityName: tableName });
+					progress({ message: 'Table data retrieved successfully', containerName: dbName, entityName: table.name });
 					return {
-						dbName: dbName,
-						collectionName: tableName,
+						dbName,
+						collectionName: table.name,
 						entityLevel: tableData.propertiesPane,
 						documents,
 						views: [],
@@ -130,27 +139,33 @@ module.exports = {
 							jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns }
 						},
 						bucketInfo: {
-							...containerData
+							description: dbData.dbProperties.Comment,
+							dbProperties: dbData.dbProperties.Properties,
+							location: dbData.dbProperties.Location
 						}
 					};
 				})
-				const views = await Promise.all(entities.views.map(async viewName => {
-					progress({ message: 'Start getting data from view', containerName: dbName, entityName: viewName });
-					const ddl = await deltaLakeHelper.getEntityCreateStatement(connectionData, dbName, viewName);
+
+				if (dependencies.lodash.isEmpty(dbData.dbViews)) {
+					return [...packages, ...tablesPackages];
+				}
+
+				const views = dbData.dbViews.map(({ name, ddl }) => {
+					progress({ message: 'Start getting data from view', containerName: dbName, entityName: name });
 
 					let viewData = {};
 
 					try {
 						viewData = deltaLakeHelper.getViewDataFromDDl(ddl);
-					} catch (e){
+					} catch (e) {
 						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
 						return {};
 					}
 
-					progress({ message: 'Data retrieved successfully', containerName: dbName, entityName: viewName });
+					progress({ message: 'View data retrieved successfully', containerName: dbName, entityName: name });
 
 					return {
-						name: viewName,
+						name,
 						data: {
 							...viewData,
 							selectStatement: viewData.selectStatement,
@@ -160,11 +175,7 @@ module.exports = {
 							type: 'postgres'
 						}
 					};
-				}));
-
-				if (dependencies.lodash.isEmpty(views.filter(view => !dependencies.lodash.isEmpty(view)))) {
-					return [...packages, ...tablesPackages];
-				}
+				});
 
 				const viewPackage = Promise.resolve({
 					dbName: dbName,
@@ -172,17 +183,28 @@ module.exports = {
 					views,
 					emptyBucket: false,
 					bucketInfo: {
-						...containerData
+						description: dbData.dbProperties.Comment,
+						dbProperties: dbData.dbProperties.Properties,
+						location: dbData.dbProperties.Location
 					}
 				});
 
 				return [...packages, ...tablesPackages, viewPackage];
 			}, Promise.resolve([]))
 			const packages = await Promise.all(entitiesPromises);
-			const notEmptyPackages = packages.filter(entity => !dependencies.lodash.isEmpty(entity))
-			fetchRequestHelper.destroyActiveContext(); 
-			cb(null, notEmptyPackages, modelData);
+			fetchRequestHelper.destroyActiveContext();
+			cb(null, packages, modelData);
 		} catch (err) {
+			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
+			if (!clusterState.isRunning) {
+				logger.log(
+					'error',
+					{ message: err.message, stack: err.stack, error: err },
+					`Cluster is unavailable. Cluster state: ${clusterState.state}`
+				);
+				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
+				return;
+			}
 			handleError(logger, err, cb);
 		}
 	},
@@ -204,11 +226,11 @@ module.exports = {
 
 			const commands = tree.accept(hqlToCollectionsGenerator);
 			const { result, info, relationships } = commandsService.convertCommandsToReDocs(
-                dependencies.lodash.flatten(commands).filter(Boolean),
-                input
-            );
+				dependencies.lodash.flatten(commands).filter(Boolean),
+				input
+			);
 			callback(null, result, info, relationships, 'multipleSchema');
-		} catch(err) {
+		} catch (err) {
 			const { error, title, name } = err;
 			const handledError = handleErrorObject(error || err, title || name);
 			logger.log('error', handledError, title);
@@ -221,7 +243,7 @@ const handleFileData = filePath => {
 	return new Promise((resolve, reject) => {
 
 		fs.readFile(filePath, 'utf-8', (err, content) => {
-			if(err) {
+			if (err) {
 				reject(err);
 			} else {
 				resolve(content);
