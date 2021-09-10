@@ -99,13 +99,14 @@ module.exports = {
 
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
-			progress({ message: 'Start getting data from tables', containerName: 'databases', entityName: 'tables' });
+			progress({ message: 'Start getting data from entities', containerName: 'databases', entityName: 'entities' });
 			const clusterData = await deltaLakeHelper.getClusterData(connectionData, dataBaseNames, collections)
+			progress({ message: 'Entities data retrieved successfully', containerName: 'databases', entityName: 'entities' });
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];
 				const packages = await packagesPromise;
 				const tablesPackages = dbData.dbTables.map(async (table) => {
-					progress({ message: 'Start getting data from table', containerName: dbName, entityName: table.name });
+					progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
 					let tableData = {}
 					try {
 						tableData = await deltaLakeHelper.getTableData(table);
@@ -117,6 +118,7 @@ module.exports = {
 					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
 					let documents = [];
 					if (hasColumnsOfTypeString) {
+						progress({ message: 'Start getting documents from table', containerName: 'databases', entityName: table.name });
 						documents = await fetchRequestHelper.fetchDocuments({
 							connectionInfo: connectionData,
 							dbName,
@@ -126,8 +128,9 @@ module.exports = {
 							percentage: data.recordSamplingSettings.relative.value,
 							absoluteNumber: data.recordSamplingSettings.absolute.value
 						});
+						progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name  });
 					}
-					progress({ message: 'Table data retrieved successfully', containerName: dbName, entityName: table.name });
+					progress({ message: 'Table data processed successfully', containerName: dbName, entityName: table.name });
 					return {
 						dbName,
 						collectionName: table.name,
@@ -151,7 +154,7 @@ module.exports = {
 				}
 
 				const views = dbData.dbViews.map(({ name, ddl }) => {
-					progress({ message: 'Start getting data from view', containerName: dbName, entityName: name });
+					progress({ message: 'Start processing data from view', containerName: dbName, entityName: name });
 
 					let viewData = {};
 
@@ -162,7 +165,7 @@ module.exports = {
 						return {};
 					}
 
-					progress({ message: 'View data retrieved successfully', containerName: dbName, entityName: name });
+					progress({ message: 'View data processed successfully', containerName: dbName, entityName: name });
 
 					return {
 						name,
