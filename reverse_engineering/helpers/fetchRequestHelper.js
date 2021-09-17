@@ -80,8 +80,8 @@ const fetchClusterDatabaseTables = async (connectionInfo) => {
 	return JSON.parse(formatedResult);
 }
 
-const fetchClusterData = async (connectionInfo, tablesNames, viewsNames) => {
-	const getClusterDataCommand = getClusterData(tablesNames, viewsNames);
+const fetchClusterData = async (connectionInfo, tablesNames, viewsNames, databasesNames) => {
+	const getClusterDataCommand = getClusterData(tablesNames, viewsNames, databasesNames);
 	const result = await executeCommand(connectionInfo, getClusterDataCommand);
 	const formatedResult = result.split('clusterData: String =')[1]
 		.replaceAll('\n', ' ')

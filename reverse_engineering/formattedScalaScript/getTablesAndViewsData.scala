@@ -23,13 +23,13 @@ class Entity(
   };
 };
 
-val databasesNames: List[String] = List("default", "speeeed");
+val databasesNames: List[String] = List("default", "speeeed"); //db names must be replaced with names selected by user 
 
 val databasesTablesNames: Map[String, List[String]] =
-  Map("default" -> List("bloom_test"), "speeeed" -> List());
+  Map("default" -> List("bloom_test"), "speeeed" -> List());//table names must be replaced with names selected by user 
 
 val databasesViewsNames: Map[String, List[String]] =
-  Map("default" -> List("experienced_employee"), "speeeed" -> List());
+  Map("default" -> List("experienced_employee"), "speeeed" -> List());//view names must be replaced with names selected by user 
 
 val clusterData = databasesNames
   .map(dbName => {

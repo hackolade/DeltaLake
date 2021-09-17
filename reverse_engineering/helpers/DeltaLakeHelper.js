@@ -205,13 +205,14 @@ const prepareNamesForInsertionIntoScalaCode = (databasesNames, collectionsNames)
 
 		return {
 			viewNames: [...entities.viewNames, `\"${dbName}\" -> List(${viewNames})`],
-			tableNames: [...entities.tableNames, `\"${dbName}\" -> List(${tableNames})`]
+			tableNames: [...entities.tableNames, `\"${dbName}\" -> List(${tableNames})`],
+			dbNames: databasesNames.map(name => `\"${name}\"`)
 		}
 	}, { viewNames: [], tableNames: [] })
 
 const getClusterData = (connectionInfo, databasesNames, collectionsNames) => {
-	const { viewNames, tableNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
-	return fetchRequestHelper.fetchClusterData(connectionInfo, tableNames.join(', '), viewNames.join(', '));
+	const { viewNames, tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
+	return fetchRequestHelper.fetchClusterData(connectionInfo, tableNames.join(', '), viewNames.join(', '), dbNames.join(', '));
 }
 
 module.exports = {

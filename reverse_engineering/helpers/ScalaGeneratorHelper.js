@@ -30,7 +30,7 @@ var databasesTables = databaseNames
   })
   .mkString(\"[\", \", \", \"]\");`
 
-const getClusterData = (tablesNames, viewsNames) => `import scala.util.parsing.json.JSONObject;
+const getClusterData = (tablesNames, viewsNames, databasesNames) => `import scala.util.parsing.json.JSONObject;
 
 class Database(
     var name: String,
@@ -55,7 +55,7 @@ class Entity(
   };
 };
 
-val databasesNames: List[String] = List(\"default\", \"speeeed\");
+val databasesNames: List[String] = List(${databasesNames});
 
 val databasesTablesNames: Map[String, List[String]] =
   Map(${tablesNames});
