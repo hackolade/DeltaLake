@@ -9,8 +9,10 @@ const antlr4 = require('antlr4');
 const { dependencies } = require('../appDependencies')
 
 const getTableData = async (table ) => {
+	const DoubleQuotesReplacement = "?№%"
 	const {ddl, checkConstraints, nullableMap, indexes } = table;
-	let tableData = getTableDataFromDDl(ddl);
+
+	let tableData = getTableDataFromDDl(ddl.replaceAll(DoubleQuotesReplacement, `"`));
 	tableData.properties[0]['check'] = checkConstraints;
 	const BloomIndxs = convertIndexes(indexes)
 	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: !nullableMap[property.name] }))
@@ -134,7 +136,7 @@ const getTableDataFromDDl = (statement) => {
 			skewedby: parsedTableData.skewedBy?.map(key => ({ name: key })),
 			skewedOn: parsedTableData.skewedOn,
 			location: parsedTableData.location,
-			tableProperties: parsedTableData.tableProperties,
+			tableProperties: statement.slice(parsedTableData.tableProperties[0].start+1, parsedTableData.tableProperties[0].stop),
 			comments: parsedTableData.commentSpec,
 		}
 	}

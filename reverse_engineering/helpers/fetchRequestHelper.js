@@ -71,25 +71,28 @@ const fetchClusterProperties = async (connectionInfo) => {
 const fetchClusterDatabaseTables = async (connectionInfo) => {
 	const getDatabasesTablesCommand = getDatabasesTablesCode();
 	const result = await executeCommand(connectionInfo, getDatabasesTablesCommand);
-	const formatedResult = result.split('databasesTables: String = ')[1]
+	const formattedResult = result.split('databasesTables: String = ')[1]
 		.replaceAll('\n', ' ')
 		.replaceAll('"{', '{')
 		.replaceAll('"[', '[')
 		.replaceAll('}"', '}')
 		.replaceAll(']"', ']');
-	return JSON.parse(formatedResult);
+
+	return JSON.parse(formattedResult);
 }
 
 const fetchClusterData = async (connectionInfo, tablesNames, viewsNames, databasesNames) => {
 	const getClusterDataCommand = getClusterData(tablesNames, viewsNames, databasesNames);
 	const result = await executeCommand(connectionInfo, getClusterDataCommand);
-	const formatedResult = result.split('clusterData: String =')[1]
+	const formattedResult = result.split('clusterData: String =')[1]
 		.replaceAll('\n', ' ')
+		.replaceAll('\\n', '')
 		.replaceAll('"{', '{')
 		.replaceAll('"[', '[')
 		.replaceAll('}"', '}')
+		.replaceAll('\\"', '"')
 		.replaceAll(']"', ']');
-	return JSON.parse(formatedResult);
+	return JSON.parse(formattedResult);
 }
 
 const getRequestOptions = (connectionInfo) => {

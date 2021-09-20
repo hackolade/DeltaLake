@@ -55,6 +55,8 @@ val clusterData = databasesNames
           .first
           .getString(0);
 
+        val formattedDDL = ddl.replace('"', "?№%");
+
         val checkConstraints = sqlContext
           .sql("DESCRIBE DETAIL " + dbName + "." + tableName)
           .select("properties")
@@ -82,7 +84,7 @@ val clusterData = databasesNames
           .mkString("{", ", ", "}");
         new Entity(
           tableName,
-          ddl,
+          formattedDDL,
           checkConstraints,
           nullableMap,
           bloomFilteredIndexes
@@ -97,10 +99,11 @@ val clusterData = databasesNames
           .select("createtab_stmt")
           .first
           .getString(0);
-        "{\"name\":\"" + viewName + "\", \"ddl\":\"" + ddl + "\"}"
+        val formattedDDL = ddl.replace('"', "?№%");
+        "{\"name\":\"" + viewName + "\", \"ddl\":\"" + formattedDDL + "\"}"
       })
       .mkString("[", ", ", "]");
-
+      
     (new Database(dbName, dbProperties, dbTables, dbViews)).toString();
   })
   .mkString("{", ", ", "}");
