@@ -10,10 +10,9 @@ const { dependencies } = require('../appDependencies')
 
 const getTableData = async (table ) => {
 	const DoubleQuotesReplacement = "?№%"
-	const {ddl, checkConstraints, nullableMap, indexes } = table;
+	const {ddl, nullableMap, indexes } = table;
 
 	let tableData = getTableDataFromDDl(ddl.replaceAll(DoubleQuotesReplacement, `"`));
-	tableData.properties[0]['check'] = checkConstraints;
 	const BloomIndxs = convertIndexes(indexes)
 	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: !nullableMap[property.name] }))
 	const tableSchema = tablePropertiesWithNotNullConstraints.reduce((schema, property) => ({ ...schema, [property.name]: property }), {})

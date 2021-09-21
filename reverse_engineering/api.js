@@ -152,7 +152,7 @@ module.exports = {
 				if (dependencies.lodash.isEmpty(dbData.dbViews)) {
 					return [...packages, ...tablesPackages];
 				}
-
+				const DoubleQuotesReplacement = "?№%"
 				const views = dbData.dbViews.map(({ name, ddl }) => {
 					progress({ message: 'Start processing data from view', containerName: dbName, entityName: name });
 
@@ -171,10 +171,10 @@ module.exports = {
 						name,
 						data: {
 							...viewData,
-							selectStatement: viewData.selectStatement,
+							selectStatement: viewData.selectStatement.replaceAll(DoubleQuotesReplacement, '"'),
 						},
 						ddl: {
-							script: `CREATE VIEW \`${viewData.code}\` AS ${viewData.selectStatement}`,
+							script: `CREATE VIEW \`${viewData.code}\` AS ${viewData.selectStatement.replaceAll(DoubleQuotesReplacement, '"')}`,
 							type: 'postgres'
 						}
 					};
@@ -253,14 +253,6 @@ const handleFileData = filePath => {
 			}
 		});
 	});
-};
-
-const getLimit = (count, recordSamplingSettings) => {
-	const per = recordSamplingSettings.relative.value;
-	const size = (recordSamplingSettings.active === 'absolute')
-		? recordSamplingSettings.absolute.value
-		: Math.round(count / 100 * per);
-	return size;
 };
 
 const logInfo = (step, connectionInfo, logger) => {

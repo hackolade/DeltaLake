@@ -14,12 +14,11 @@ class Database(
 class Entity(
     var name: String,
     var ddl: String,
-    var checkConstraints: String,
     var nullableMap: String,
     var indexes: String
 ) {
   override def toString(): String = {
-    return "{\"name\":\"" + name + "\", \"ddl\":\"" + ddl + "\", \"checkConstraints\":\"" + checkConstraints + "\", \"nullableMap\":\"" + nullableMap + "\", \"indexes\":\"" + indexes + "\"}"
+    return "{\"name\":\"" + name + "\", \"ddl\":\"" + ddl + "\", \"nullableMap\":\"" + nullableMap + "\", \"indexes\":\"" + indexes + "\"}"
   };
 };
 
@@ -55,20 +54,7 @@ val clusterData = databasesNames
           .first
           .getString(0);
 
-        val formattedDDL = ddl.replace('"', "?№%");
-
-        val checkConstraints = sqlContext
-          .sql("DESCRIBE DETAIL " + dbName + "." + tableName)
-          .select("properties")
-          .map(row =>
-            JSONObject(
-              row
-                .getValuesMap(row.schema.fieldNames)
-                .get("properties")
-                .getOrElse(Map())
-            ).toString()
-          )
-          .collect()(0);
+        val formattedDDL = ddl.replaceAll('"', "?№%");
 
         val nullableMap = spark
           .table(dbName + "." + tableName)
@@ -85,7 +71,6 @@ val clusterData = databasesNames
         new Entity(
           tableName,
           formattedDDL,
-          checkConstraints,
           nullableMap,
           bloomFilteredIndexes
         );
@@ -99,7 +84,7 @@ val clusterData = databasesNames
           .select("createtab_stmt")
           .first
           .getString(0);
-        val formattedDDL = ddl.replace('"', "?№%");
+        val formattedDDL = ddl.replaceAll('"', "?№%");
         "{\"name\":\"" + viewName + "\", \"ddl\":\"" + formattedDDL + "\"}"
       })
       .mkString("[", ", ", "]");
