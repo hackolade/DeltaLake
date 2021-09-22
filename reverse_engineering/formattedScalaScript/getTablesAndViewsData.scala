@@ -3,22 +3,20 @@ import scala.util.parsing.json.JSONObject;
 class Database(
     var name: String,
     var dbProperties: String,
-    var dbTables: String,
-    var dbViews: String
+    var dbTables: String
 ) {
   override def toString(): String = {
-    return "\"" + name + "\": {\"dbTables\" : " + dbTables + "\", \"dbViews\" : " + dbViews + "\", \"dbProperties\" : " + dbProperties + "\"}"
+    return "\"" + name + "\": {\"dbTables\" : " + dbTables + "\", \"dbProperties\" : " + dbProperties + "\"}"
   };
 };
 
 class Entity(
     var name: String,
-    var ddl: String,
     var nullableMap: String,
     var indexes: String
 ) {
   override def toString(): String = {
-    return "{\"name\":\"" + name + "\", \"ddl\":\"" + ddl + "\", \"nullableMap\":\"" + nullableMap + "\", \"indexes\":\"" + indexes + "\"}"
+    return "{\"name\":\"" + name + "\", \"nullableMap\":\"" + nullableMap + "\", \"indexes\":\"" + indexes + "\"}"
   };
 };
 
@@ -26,9 +24,6 @@ val databasesNames: List[String] = List("default", "speeeed"); //db names must b
 
 val databasesTablesNames: Map[String, List[String]] =
   Map("default" -> List("bloom_test"), "speeeed" -> List());//table names must be replaced with names selected by user 
-
-val databasesViewsNames: Map[String, List[String]] =
-  Map("default" -> List("experienced_employee"), "speeeed" -> List());//view names must be replaced with names selected by user 
 
 val clusterData = databasesNames
   .map(dbName => {
@@ -44,18 +39,9 @@ val clusterData = databasesNames
       .mkString("{", ", ", "}");
 
     val dbTablesNames = databasesTablesNames.get(dbName).getOrElse(List())
-    val dbViewsNames = databasesViewsNames.get(dbName).getOrElse(List())
 
     val dbTables = dbTablesNames
       .map(tableName => {
-        val ddl = sqlContext
-          .sql("SHOW CREATE TABLE `" + dbName + "`.`" + tableName + "`")
-          .select("createtab_stmt")
-          .first
-          .getString(0);
-
-        val formattedDDL = ddl.replaceAll('"', "?№%");
-
         val nullableMap = spark
           .table(dbName + "." + tableName)
           .schema
@@ -70,25 +56,12 @@ val clusterData = databasesNames
           .mkString("{", ", ", "}");
         new Entity(
           tableName,
-          formattedDDL,
           nullableMap,
           bloomFilteredIndexes
         );
       })
       .mkString("[", ", ", "]");
-
-    val dbViews = dbViewsNames
-      .map(viewName => {
-        val ddl = sqlContext
-          .sql("SHOW CREATE TABLE `" + dbName + "`.`" + viewName + "`")
-          .select("createtab_stmt")
-          .first
-          .getString(0);
-        val formattedDDL = ddl.replaceAll('"', "?№%");
-        "{\"name\":\"" + viewName + "\", \"ddl\":\"" + formattedDDL + "\"}"
-      })
-      .mkString("[", ", ", "]");
       
-    (new Database(dbName, dbProperties, dbTables, dbViews)).toString();
+    (new Database(dbName, dbProperties, dbTables)).toString();
   })
   .mkString("{", ", ", "}");
