@@ -81,8 +81,8 @@ const fetchClusterDatabaseTables = async (connectionInfo) => {
 	return JSON.parse(formattedResult);
 }
 
-const fetchClusterData = async (connectionInfo, tablesNames, viewsNames, databasesNames) => {
-	const getClusterDataCommand = getClusterData(tablesNames, viewsNames, databasesNames);
+const fetchClusterData = async (connectionInfo, tablesNames, databasesNames) => {
+	const getClusterDataCommand = getClusterData(tablesNames, databasesNames);
 	const result = await executeCommand(connectionInfo, getClusterDataCommand);
 	const formattedResult = result.split('clusterData: String =')[1]
 		.replaceAll('\n', ' ')
@@ -93,6 +93,16 @@ const fetchClusterData = async (connectionInfo, tablesNames, viewsNames, databas
 		.replaceAll('\\"', '"')
 		.replaceAll(']"', ']');
 	return JSON.parse(formattedResult);
+}
+
+const fetchCreateStatementRequest = async (command, connectionInfo) => {
+	const result = await executeCommand(connectionInfo, command);
+
+	const statementExtractionRegex = /stmt: String = "(.+)"/gm;
+	const resultWithoutNewLineSymb = result.replaceAll(/[\n\r]/g, " ");
+	const entityCreateStatement = statementExtractionRegex.exec(resultWithoutNewLineSymb);
+
+	return dependencies.lodash.get(entityCreateStatement, '1', '')
 }
 
 const getRequestOptions = (connectionInfo) => {
@@ -250,4 +260,5 @@ module.exports = {
 	destroyActiveContext,
 	fetchClusterDatabaseTables,
 	fetchClusterData,
+	fetchCreateStatementRequest
 };

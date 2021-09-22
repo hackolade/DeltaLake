@@ -100,16 +100,23 @@ module.exports = {
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
 			progress({ message: 'Start getting data from entities', containerName: 'databases', entityName: 'entities' });
-			const clusterData = await deltaLakeHelper.getClusterData(connectionData, dataBaseNames, collections)
+			const clusterData = await deltaLakeHelper.getClusterData(connectionData, dataBaseNames, collections);
+			progress({ message: 'Start getting entities ddl', containerName: 'databases', entityName: 'entities' });
+			const entitiesDdl = await Promise.all(deltaLakeHelper.getEntitiesDDL(connectionData, dataBaseNames, collections));
+			const ddlByEntity = entitiesDdl.reduce((ddlByEntity, ddlObject) => {
+				const entityName = Object.keys(ddlObject)[0]
+				return { ...ddlByEntity, [entityName]: ddlObject[entityName] }
+			}, {})
 			progress({ message: 'Entities data retrieved successfully', containerName: 'databases', entityName: 'entities' });
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];
 				const packages = await packagesPromise;
 				const tablesPackages = dbData.dbTables.map(async (table) => {
+					const ddl = ddlByEntity[`${dbName}.${table.name}`]
 					progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
 					let tableData = {}
 					try {
-						tableData = await deltaLakeHelper.getTableData(table);
+						tableData = await deltaLakeHelper.getTableData({ ...table, ddl });
 					} catch (e) {
 						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
 						return {};
@@ -128,7 +135,7 @@ module.exports = {
 							percentage: data.recordSamplingSettings.relative.value,
 							absoluteNumber: data.recordSamplingSettings.absolute.value
 						});
-						progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name  });
+						progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name });
 					}
 					progress({ message: 'Table data processed successfully', containerName: dbName, entityName: table.name });
 					return {
@@ -149,13 +156,18 @@ module.exports = {
 					};
 				})
 
-				if (dependencies.lodash.isEmpty(dbData.dbViews)) {
+				const viewsNames = dataBaseNames.reduce((viewsNames, dbName) => {
+					const { views } = deltaLakeHelper.splitTableAndViewNames(collections[dbName]);	
+					return {...viewsNames, [dbName]: views}
+				}, {});
+
+				if (dependencies.lodash.isEmpty(viewsNames[dbName])) {
 					return [...packages, ...tablesPackages];
 				}
-				const DoubleQuotesReplacement = "?№%"
-				const views = dbData.dbViews.map(({ name, ddl }) => {
-					progress({ message: 'Start processing data from view', containerName: dbName, entityName: name });
 
+				const views = viewsNames[dbName].map((name) => {
+					progress({ message: 'Start processing data from view', containerName: dbName, entityName: name });
+					const ddl = ddlByEntity[`${dbName}.${name}`];
 					let viewData = {};
 
 					try {
@@ -171,10 +183,10 @@ module.exports = {
 						name,
 						data: {
 							...viewData,
-							selectStatement: viewData.selectStatement.replaceAll(DoubleQuotesReplacement, '"'),
+							selectStatement: viewData.selectStatement,
 						},
 						ddl: {
-							script: `CREATE VIEW \`${viewData.code}\` AS ${viewData.selectStatement.replaceAll(DoubleQuotesReplacement, '"')}`,
+							script: `CREATE VIEW \`${viewData.code}\` AS ${viewData.selectStatement}`,
 							type: 'postgres'
 						}
 					};

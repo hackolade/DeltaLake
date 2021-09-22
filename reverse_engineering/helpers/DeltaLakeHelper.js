@@ -8,24 +8,28 @@ const columnREHelper = require('./ColumnsREHelper')
 const antlr4 = require('antlr4');
 const { dependencies } = require('../appDependencies')
 
-const getTableData = async (table ) => {
-	const DoubleQuotesReplacement = "?№%"
-	const {ddl, nullableMap, indexes } = table;
-
-	let tableData = getTableDataFromDDl(ddl.replaceAll(DoubleQuotesReplacement, `"`));
+const getTableData = async (table) => {
+	const { ddl, nullableMap, indexes } = table;
+	let tableData = getTableDataFromDDl(ddl);
 	const BloomIndxs = convertIndexes(indexes)
 	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: !nullableMap[property.name] }))
 	const tableSchema = tablePropertiesWithNotNullConstraints.reduce((schema, property) => ({ ...schema, [property.name]: property }), {})
 	const requiredColumns = tablePropertiesWithNotNullConstraints.filter(column => column.required).map(column => column.name);
-	tableData = { 
-		...tableData, 
-		properties: tablePropertiesWithNotNullConstraints, 
-		schema: tableSchema, 
-		requiredColumns };
+	tableData = {
+		...tableData,
+		properties: tablePropertiesWithNotNullConstraints,
+		schema: tableSchema,
+		requiredColumns
+	};
 	if (!dependencies.lodash.isEmpty(BloomIndxs)) {
 		return Object.assign(tableData, { "propertiesPane": { ...tableData.propertiesPane, BloomIndxs } });
 	}
 	return tableData;
+}
+
+const getEntityCreateStatement = async (connectionInfo, dbName, entityName) => {
+	const query = "var stmt = sqlContext.sql(\"SHOW CREATE TABLE `" + dbName + "`.`" + entityName + "`\").select(\"createtab_stmt\").first.getString(0)";
+	return await fetchRequestHelper.fetchCreateStatementRequest(query, connectionInfo);
 }
 
 const convertIndexes = indexes => {
@@ -39,7 +43,7 @@ const convertIndexes = indexes => {
 			}
 			return { ...indexMap, [indexString]: [columnName] }
 		}, {});
-	return Object.keys(indexMap).map(options => ({options, forColumns: indexMap[options]}))
+	return Object.keys(indexMap).map(options => ({ options, forColumns: indexMap[options] }))
 }
 
 const getDatabaseCollectionNames = async (connectionInfo) => {
@@ -135,7 +139,7 @@ const getTableDataFromDDl = (statement) => {
 			skewedby: parsedTableData.skewedBy?.map(key => ({ name: key })),
 			skewedOn: parsedTableData.skewedOn,
 			location: parsedTableData.location,
-			tableProperties: statement.slice(parsedTableData.tableProperties[0].start+1, parsedTableData.tableProperties[0].stop),
+			tableProperties: statement.slice(parsedTableData.tableProperties[0].start + 1, parsedTableData.tableProperties[0].stop),
 			comments: parsedTableData.commentSpec,
 		}
 	}
@@ -200,20 +204,29 @@ const isView = name => name.slice(-4) === ' (v)';
 
 const prepareNamesForInsertionIntoScalaCode = (databasesNames, collectionsNames) =>
 	databasesNames.reduce((entities, dbName) => {
-		const { tables, views } = splitTableAndViewNames(collectionsNames[dbName]);
-		const viewNames = views.map(viewName => `\"${viewName}\"`).join(', ');
+		const { tables } = splitTableAndViewNames(collectionsNames[dbName]);
 		const tableNames = tables.map(tableName => `\"${tableName}\"`).join(', ');
 
 		return {
-			viewNames: [...entities.viewNames, `\"${dbName}\" -> List(${viewNames})`],
 			tableNames: [...entities.tableNames, `\"${dbName}\" -> List(${tableNames})`],
 			dbNames: databasesNames.map(name => `\"${name}\"`)
 		}
 	}, { viewNames: [], tableNames: [] })
 
 const getClusterData = (connectionInfo, databasesNames, collectionsNames) => {
-	const { viewNames, tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
-	return fetchRequestHelper.fetchClusterData(connectionInfo, tableNames.join(', '), viewNames.join(', '), dbNames.join(', '));
+	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
+	return fetchRequestHelper.fetchClusterData(connectionInfo, tableNames.join(', '), dbNames.join(', '));
+}
+
+const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames) => {
+	const entitiesNames = databasesNames.reduce((entitiesNames, dbName) => {
+		const { tables, views } = splitTableAndViewNames(collectionsNames[dbName]);
+		const viewNames = views.map(viewName => ({ dbName, name: viewName }));
+		const tableNames = tables.map(tableName => ({ dbName, name: tableName }));
+
+		return [...entitiesNames, ...viewNames, ...tableNames]
+	}, []);
+	return entitiesNames.map(async entity => ({ [`${entity.dbName}.${entity.name}`]: await getEntityCreateStatement(connectionInfo, entity.dbName, entity.name) }))
 }
 
 module.exports = {
@@ -224,5 +237,6 @@ module.exports = {
 	getTableDataFromDDl,
 	getViewDataFromDDl,
 	getTableData,
-	getClusterData
+	getClusterData,
+	getEntitiesDDL
 };

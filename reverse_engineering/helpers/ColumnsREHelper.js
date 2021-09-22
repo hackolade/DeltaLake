@@ -71,7 +71,7 @@ const handleType = type => {
     if (type.type === "array") {
         return {
             type: 'array',
-            ...handleSubtype(type.elements, 'array')
+            subtype: handleSubtype(type.elements, 'array')
         }
     }
     if (type.type === "struct") {
@@ -88,7 +88,7 @@ const handleType = type => {
             childType: "map",
             keyType: handledType.type,
             keySubtype: handledType.mode,
-            ...handleSubtype(type.val, 'map')
+            subtype: handleSubtype(type.val, 'map')
         }
     }
 
