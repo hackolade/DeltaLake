@@ -114,13 +114,7 @@ module.exports = {
 				const tablesPackages = dbData.dbTables.map(async (table) => {
 					const ddl = ddlByEntity[`${dbName}.${table.name}`]
 					progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
-					let tableData = {}
-					try {
-						tableData = await deltaLakeHelper.getTableData({ ...table, ddl });
-					} catch (e) {
-						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
-						return {};
-					}
+					let tableData  = await deltaLakeHelper.getTableData({ ...table, ddl },data, logger);
 					const columnsOfTypeString = tableData.properties.filter(property => property.mode === 'string');
 					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
 					let documents = [];

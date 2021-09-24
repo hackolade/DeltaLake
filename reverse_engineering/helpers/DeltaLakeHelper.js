@@ -8,11 +8,17 @@ const columnREHelper = require('./ColumnsREHelper')
 const antlr4 = require('antlr4');
 const { dependencies } = require('../appDependencies')
 
-const getTableData = async (table) => {
+const getTableData = async (table,data, logger) => {
 	const { ddl, nullableMap, indexes } = table;
-	let tableData = getTableDataFromDDl(ddl);
+	let tableData = {};
+	try {
+		tableData = getTableDataFromDDl(ddl);
+	} catch (e) {
+		logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
+		return {};
+	}
 	const BloomIndxs = convertIndexes(indexes)
-	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: !nullableMap[property.name] }))
+	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: nullableMap[property.name]!== 'true' }))
 	const tableSchema = tablePropertiesWithNotNullConstraints.reduce((schema, property) => ({ ...schema, [property.name]: property }), {})
 	const requiredColumns = tablePropertiesWithNotNullConstraints.filter(column => column.required).map(column => column.name);
 	tableData = {
@@ -113,6 +119,7 @@ const getTableDataFromDDl = (statement) => {
 		parsedTableData.query = statement.substring(parsedTableData.query.select.start, parsedTableData.query.select.stop)
 	}
 	const properties = parsedTableData.colList.map(column => columnREHelper.reverseTableColumn(column));
+	const tableProperties = parsedTableData.tableProperties[0] || {start:0, stop:0}
 	return {
 		properties,
 		propertiesPane: {
@@ -139,7 +146,7 @@ const getTableDataFromDDl = (statement) => {
 			skewedby: parsedTableData.skewedBy?.map(key => ({ name: key })),
 			skewedOn: parsedTableData.skewedOn,
 			location: parsedTableData.location,
-			tableProperties: statement.slice(parsedTableData.tableProperties[0].start + 1, parsedTableData.tableProperties[0].stop),
+			tableProperties: statement.slice(tableProperties.start + 1, tableProperties.stop),
 			comments: parsedTableData.commentSpec,
 		}
 	}
