@@ -7,5 +7,6 @@
 		"entity": true,
 		"container": true
 	},
-	"applyScriptToInstance": true
+	"applyScriptToInstance": true,
+	"mode": "sql"
 }

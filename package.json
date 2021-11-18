@@ -28,7 +28,7 @@
 			"enableForwardEngineering": true,
 			"disableMultipleTypes": false,
 			"enableReverseEngineering": true,
-			"disableChoices": false,
+			"disableChoices": true,
 			"enableJsonType": true,
 			"relationships": {
                 "compositeRelationships": true                
