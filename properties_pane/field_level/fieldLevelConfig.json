@@ -589,6 +589,7 @@ making sure that you maintain a proper JSON format.
 				"options": [
 					"array<txt>",
 					"array<num>",
+					"array<bin>",
 					"array<ts>",
 					"array<date>",
 					"array<intrvl>",
@@ -702,6 +703,7 @@ making sure that you maintain a proper JSON format.
 				"options": [
 					"map<txt>",
 					"map<num>",
+					"map<bin>",
 					"map<bool>",
 					"map<ts>",
 					"map<date>",

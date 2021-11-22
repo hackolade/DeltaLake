@@ -7,17 +7,17 @@ const handleSubtype = (childType, parentType) => {
             case 'bigint':
             case 'float':
             case 'double':
-            case 'decimal': return `${parentType}<num>`;
+            case 'decimal': return { subtype: `${parentType}<num>` };
             case 'char':
             case 'varchar':
-            case 'string': return `${parentType}<txt>`;
-            case 'binary': return { type: 'binary', mode: type  };
-            case 'boolean': return `${parentType}<bool>`;
-            case 'date': return `${parentType}<date>`;
-            case 'timestamp': return `${parentType}<ts>`;
-            case 'interval': return `${parentType}<intrvl>`;
-            case 'union': return `${parentType}<union>`;
-            default: return `${parentType}<txt>`;
+            case 'string': return { subtype: `${parentType}<txt>` };
+            case 'binary': return { subtype: `${parentType}<bin>` };
+            case 'boolean': return { subtype: `${parentType}<bool>` };
+            case 'date': return { subtype: `${parentType}<date>` };
+            case 'timestamp': return { subtype: `${parentType}<ts>` };
+            case 'interval': return { subtype: `${parentType}<intrvl>` };
+            case 'union': return { subtype: `${parentType}<union>` };
+            default: return { subtype: `${parentType}<txt>` };
         }
     }
     if (childType.type === 'array') {
@@ -44,6 +44,8 @@ const handleSubtype = (childType, parentType) => {
             ]
         }
     }
+
+    return {};
 }
 
 
@@ -61,7 +63,7 @@ const handleType = type => {
             case 'varchar':
             case 'string': return { type: 'text', mode: type };
             case 'boolean': return { type: 'bool' };
-            case 'binary': return { type: 'binary', mode: type  };
+            case 'binary': return { type: 'binary', mode: type };
             case 'timestamp': return { type: 'timestamp' };
             case 'date': return { type: 'date' };
             case 'interval': return { type: 'interval' };
@@ -71,7 +73,7 @@ const handleType = type => {
     if (type.type === "array") {
         return {
             type: 'array',
-            subtype: handleSubtype(type.elements, 'array')
+            ...handleSubtype(type.elements, 'array')
         }
     }
     if (type.type === "struct") {
@@ -82,13 +84,14 @@ const handleType = type => {
         }
     }
     if (type.type === "map") {
-        const handledType = handleType(type.key)
+        const handledType = handleType(type.key);
+
         return {
             type: "document",
             childType: "map",
             keyType: handledType.type,
             keySubtype: handledType.mode,
-            subtype: handleSubtype(type.val, 'map')
+            ...handleSubtype(type.val, 'map')
         }
     }
 

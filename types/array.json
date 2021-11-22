@@ -20,6 +20,9 @@
 		"array<num>": {
 			"childValueType": "numeric"
 		},
+		"array<bin>": {
+			"childValueType": "binary"
+		},
 		"array<ts>": {
 			"childValueType": "timestamp"
 		},
