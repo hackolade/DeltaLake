@@ -1,8 +1,15 @@
 'use strict'
 
-const { replaceSpaceWithUnderscore, getName, getTypeDescriptor, prepareName, commentDeactivatedStatements } = require('./generalHelper');
+const {
+	replaceSpaceWithUnderscore,
+	getName,
+	getTypeDescriptor,
+	prepareName,
+	commentDeactivatedStatements,
+	encodeStringLiteral,
+} = require('./generalHelper');
 
-const getStructChild = (name, type, comment) => `${prepareName(name)}: ${type}` + (comment ? ` COMMENT '${comment}'` : '');
+const getStructChild = (name, type, comment) => `${prepareName(name)}: ${type}` + (comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '');
 
 const getStructChildProperties = getTypeByProperty => property => {
 	const childProperties = Object.keys(property.properties || {});
@@ -325,7 +332,7 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 };
 
 const getColumnStatement = ({ name, type, comment, constraints, isActivated, isParentActivated }) => {
-	const commentStatement = comment ? ` COMMENT '${comment}'` : '';
+	const commentStatement = comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '';
 	const constraintsStaitment = constraints ? getColumnConstraintsStaitment(constraints) : '';
 	const isColumnActivated = isParentActivated ? isActivated : true;
 	return commentDeactivatedStatements(`${replaceSpaceWithUnderscore(name)} ${type}${constraintsStaitment}${commentStatement}`, isColumnActivated);

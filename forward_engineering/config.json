@@ -8,5 +8,5 @@
 		"container": true
 	},
 	"applyScriptToInstance": true,
-	"mode": "sql"
+	"mode": "mysql"
 }

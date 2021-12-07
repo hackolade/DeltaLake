@@ -1,6 +1,15 @@
 'use strict'
 
-const { buildStatement, getName, getTab, indentString, replaceSpaceWithUnderscore, commentDeactivatedInlineKeys, removeRedundantTrailingCommaFromStatement } = require('./generalHelper');
+const {
+	buildStatement,
+	getName,
+	getTab,
+	indentString,
+	replaceSpaceWithUnderscore,
+	commentDeactivatedInlineKeys,
+	removeRedundantTrailingCommaFromStatement,
+	encodeStringLiteral
+} = require('./generalHelper');
 const { getColumnsStatement, getColumnStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const { dependencies } = require('./appDependencies');
@@ -54,7 +63,7 @@ const getCreateUsingStatement = ({
 		(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)
 		(numBuckets && clusteredKeys, `INTO ${numBuckets} BUCKETS`)
 		(location, `LOCATION '${location}'`)
-		(comment, `COMMENT '${comment}'`)
+		(comment, `COMMENT '${encodeStringLiteral(comment)}'`)
 		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
 		(selectStatement, `AS ${selectStatement}`)
 		(true, ';')
@@ -70,7 +79,7 @@ const getCreateHiveStatement = ({
 		(primaryKeyStatement, primaryKeyStatement)
 		(foreignKeyStatement, foreignKeyStatement)
 		(true, ')')
-		(comment, `COMMENT '${comment}'`)
+		(comment, `COMMENT '${encodeStringLiteral(comment)}'`)
 		(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
 		(storedAsStatement, storedAsStatement)

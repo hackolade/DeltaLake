@@ -134,6 +134,9 @@ const getCleanedUrl = url => {
 	return url;
 }
 
+const encodeStringLiteral = (str = '') => {
+	return str.replace(/(')/gi, '\\$1').replace(/\n/gi, '\\n');
+}
 
 module.exports = {
 	buildStatement,
@@ -146,5 +149,6 @@ module.exports = {
 	commentDeactivatedStatements,
 	commentDeactivatedInlineKeys,
 	removeRedundantTrailingCommaFromStatement,
-	getCleanedUrl
+	getCleanedUrl,
+	encodeStringLiteral
 };
