@@ -2,7 +2,7 @@
 
 let _;
 const { dependencies } = require('./appDependencies');
-const { prepareName } = require('./generalHelper');
+const { prepareName, encodeStringLiteral } = require('./generalHelper');
 
 const setDependencies = ({ lodash }) => _ = lodash;
 
@@ -79,7 +79,7 @@ module.exports = {
 		const comment = schema.description;
 		script.push(createStatement);
 		if (schema.selectStatement) {
-			return createStatement + `${comment ? ' COMMENT \'' + comment + '\'' : ''} AS ${schema.selectStatement};\n\n`;
+			return createStatement + `${comment ? ' COMMENT \'' + encodeStringLiteral(comment) + '\'' : ''} AS ${schema.selectStatement};\n\n`;
 		}
 
 		if (_.isEmpty(columns)) {
@@ -87,7 +87,7 @@ module.exports = {
 		}
 
 		if (comment) {
-			script.push(`COMMENT '${comment}'`);
+			script.push(`COMMENT '${encodeStringLiteral(comment)}'`);
 		}
 
 		if (!_.isEmpty(columns)) {
