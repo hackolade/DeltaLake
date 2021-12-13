@@ -125,7 +125,11 @@ class Visitor extends SqlBaseVisitor {
 	}
 
 	visitPrimitiveDataType(ctx) {
-		return getName(ctx.identifier()).toLowerCase();
+		return {
+			type: getName(ctx.identifier()).toLowerCase(),
+			precision: getLabelValue(ctx, 'precision'),
+			scale: getLabelValue(ctx, 'scale'),
+		}
 	}
 
 	visitComplexColTypeList(ctx) {

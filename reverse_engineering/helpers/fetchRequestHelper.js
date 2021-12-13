@@ -54,7 +54,7 @@ const fetchClusterProperties = async (connectionInfo) => {
 				return response.text()
 			}
 			throw {
-				message: response.statusText, code: response.status, description: body
+				message: response.statusText, code: response.status, description: ''
 			};
 		})
 		.then(body => {
