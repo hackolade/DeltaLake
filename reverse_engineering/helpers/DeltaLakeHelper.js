@@ -52,8 +52,8 @@ const convertIndexes = indexes => {
 	return Object.keys(indexMap).map(options => ({ options, forColumns: indexMap[options] }))
 }
 
-const getDatabaseCollectionNames = async (connectionInfo) => {
-	const parsedDatabaseData = await fetchRequestHelper.fetchClusterDatabaseTables(connectionInfo);
+const getDatabaseCollectionNames = async (connectionInfo, logger) => {
+	const parsedDatabaseData = await fetchRequestHelper.fetchClusterDatabaseTables(connectionInfo, logger);
 	return parsedDatabaseData.map(item => ({
 		dbName: item.dbName,
 		dbCollections: item.dbCollections,
@@ -220,9 +220,9 @@ const prepareNamesForInsertionIntoScalaCode = (databasesNames, collectionsNames)
 		}
 	}, { viewNames: [], tableNames: [] })
 
-const getClusterData = (connectionInfo, databasesNames, collectionsNames) => {
+const getClusterData = (connectionInfo, databasesNames, collectionsNames, logger) => {
 	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
-	return fetchRequestHelper.fetchClusterData(connectionInfo, tableNames.join(', '), dbNames.join(', '));
+	return fetchRequestHelper.fetchClusterData(connectionInfo, tableNames.join(', '), dbNames.join(', '), logger);
 }
 
 const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames) => {

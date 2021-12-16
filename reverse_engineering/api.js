@@ -59,19 +59,28 @@ module.exports = {
 				accessToken: connectionInfo.accessToken
 			}
 
-			const dbCollectionsNames = await deltaLakeHelper.getDatabaseCollectionNames(connectionData)
+			const dbCollectionsNames = await deltaLakeHelper.getDatabaseCollectionNames(connectionData, logger)
 
 			cb(null, dbCollectionsNames);
 		} catch (err) {
-
-			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
-			if (!clusterState.isRunning) {
+			try{
+				const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
+				if (!clusterState.isRunning) {
+					logger.log(
+						'error',
+						{ message: err.message, stack: err.stack, error: err },
+						`Cluster is unavailable. Cluster state: ${clusterState.state}`
+					);
+					cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
+					return;
+				}
+			}catch(err){
 				logger.log(
 					'error',
 					{ message: err.message, stack: err.stack, error: err },
-					`Cluster is unavailable. Cluster state: ${clusterState.state}`
+					`Cluster is unavailable.`
 				);
-				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
+				cb({ message: err.message, stack: err.stack });
 				return;
 			}
 
@@ -100,7 +109,7 @@ module.exports = {
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
 			progress({ message: 'Start getting data from entities', containerName: 'databases', entityName: 'entities' });
-			const clusterData = await deltaLakeHelper.getClusterData(connectionData, dataBaseNames, collections);
+			const clusterData = await deltaLakeHelper.getClusterData(connectionData, dataBaseNames, collections, logger);
 			progress({ message: 'Start getting entities ddl', containerName: 'databases', entityName: 'entities' });
 			const entitiesDdl = await Promise.all(deltaLakeHelper.getEntitiesDDL(connectionData, dataBaseNames, collections));
 			const ddlByEntity = entitiesDdl.reduce((ddlByEntity, ddlObject) => {

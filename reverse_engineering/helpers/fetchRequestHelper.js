@@ -24,7 +24,7 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 	}
 }
 
-const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, isAbsolute, percentage,	absoluteNumber }) => {
+const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, isAbsolute, percentage, absoluteNumber }) => {
 	try {
 		const columnsToSelect = fields.map(field => field.name).join(', ');
 		const fetchDocumentsCommand = getDocuments({
@@ -68,7 +68,7 @@ const fetchClusterProperties = async (connectionInfo) => {
 		})
 }
 
-const fetchClusterDatabaseTables = async (connectionInfo) => {
+const fetchClusterDatabaseTables = async (connectionInfo, logger) => {
 	const getDatabasesTablesCommand = getDatabasesTablesCode();
 	const result = await executeCommand(connectionInfo, getDatabasesTablesCommand);
 	const formattedResult = result.split('databasesTables: String = ')[1]
@@ -77,11 +77,15 @@ const fetchClusterDatabaseTables = async (connectionInfo) => {
 		.replaceAll('"[', '[')
 		.replaceAll('}"', '}')
 		.replaceAll(']"', ']');
-
-	return JSON.parse(formattedResult);
+	try {
+		return JSON.parse(formattedResult);
+	} catch (error) {
+		logger.log('error', { error }, `\nDatabricks response: ${result}\n\nFormatted result: ${formattedResult}\n`);
+		throw error;
+	}
 }
 
-const fetchClusterData = async (connectionInfo, tablesNames, databasesNames) => {
+const fetchClusterData = async (connectionInfo, tablesNames, databasesNames, logger) => {
 	const getClusterDataCommand = getClusterData(tablesNames, databasesNames);
 	const result = await executeCommand(connectionInfo, getClusterDataCommand);
 	const formattedResult = result.split('clusterData: String =')[1]
@@ -92,7 +96,12 @@ const fetchClusterData = async (connectionInfo, tablesNames, databasesNames) => 
 		.replaceAll('}"', '}')
 		.replaceAll('\\"', '"')
 		.replaceAll(']"', ']');
-	return JSON.parse(formattedResult);
+	try {
+		return JSON.parse(formattedResult);
+	} catch (error) {
+		logger.log('error', { error }, `\nDatabricks response: ${result}\n\nFormatted result: ${formattedResult}\n`);
+		throw error;
+	}
 }
 
 const fetchCreateStatementRequest = async (command, connectionInfo) => {
