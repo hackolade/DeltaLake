@@ -59,7 +59,7 @@ module.exports = {
 				accessToken: connectionInfo.accessToken
 			}
 
-			const dbCollectionsNames = await deltaLakeHelper.getDatabaseCollectionNames(connectionData, logger)
+			const dbCollectionsNames = await deltaLakeHelper.getDatabaseCollectionNames(connectionData)
 
 			cb(null, dbCollectionsNames);
 		} catch (err) {

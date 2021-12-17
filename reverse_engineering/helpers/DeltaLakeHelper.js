@@ -8,7 +8,7 @@ const columnREHelper = require('./ColumnsREHelper')
 const antlr4 = require('antlr4');
 const { dependencies } = require('../appDependencies')
 
-const getTableData = async (table,data, logger) => {
+const getTableData = async (table, data, logger) => {
 	const { ddl, nullableMap, indexes } = table;
 	let tableData = {};
 	try {
@@ -18,7 +18,7 @@ const getTableData = async (table,data, logger) => {
 		return {};
 	}
 	const BloomIndxs = convertIndexes(indexes)
-	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: nullableMap[property.name]!== 'true' }))
+	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: nullableMap[property.name] !== 'true' }))
 	const tableSchema = tablePropertiesWithNotNullConstraints.reduce((schema, property) => ({ ...schema, [property.name]: property }), {})
 	const requiredColumns = tablePropertiesWithNotNullConstraints.filter(column => column.required).map(column => column.name);
 	tableData = {
@@ -52,13 +52,35 @@ const convertIndexes = indexes => {
 	return Object.keys(indexMap).map(options => ({ options, forColumns: indexMap[options] }))
 }
 
-const getDatabaseCollectionNames = async (connectionInfo, logger) => {
-	const parsedDatabaseData = await fetchRequestHelper.fetchClusterDatabaseTables(connectionInfo, logger);
-	return parsedDatabaseData.map(item => ({
-		dbName: item.dbName,
-		dbCollections: item.dbCollections,
-		isEmpty: item.isEmpty
-	}));
+const getDatabaseCollectionNames = async (connectionInfo) => {
+	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
+
+	const viewsResult = await fetchRequestHelper.fetchClusterViewsNames(connectionInfo);
+	const viewsNames = viewsResult.map(([dbName, viewName]) => `${dbName}.${viewName}`);
+	const views = viewsResult.reduce((databaseViews, [dbName, viewName]) => {
+		if (databaseViews[dbName]) {
+			return { ...databaseViews, [dbName]: [...databaseViews[dbName], `${viewName} (v)`] };
+		}
+		return { ...databaseViews, [dbName]: [`${viewName} (v)`] };
+	}, {});
+
+	const tablesResult = await fetchRequestHelper.fetchClusterTablesNames(connectionInfo);
+	const tables = tablesResult.reduce((databaseTables, [dbName, tableName]) => {
+		if (viewsNames.includes(`${dbName}.${tableName}`)) {
+			return databaseTables;
+		}
+		if (databaseTables[dbName]) {
+			return { ...databaseTables, [dbName]: [...databaseTables[dbName], tableName] };
+		}
+		return { ...databaseTables, [dbName]: [tableName] };
+	}, {});
+
+	return databasesNames.map(dbName => {
+		const dbTables = tables[dbName] || [];
+		const dbViews = views[dbName] || [];
+		const dbCollections = [...dbTables, ...dbViews];
+		return { dbName, dbCollections, isEmpty: dbCollections.length === 0 }
+	});
 }
 
 const getModelData = async (connectionInfo, logger) => {
@@ -119,7 +141,7 @@ const getTableDataFromDDl = (statement) => {
 		parsedTableData.query = statement.substring(parsedTableData.query.select.start, parsedTableData.query.select.stop)
 	}
 	const properties = parsedTableData.colList.map(column => columnREHelper.reverseTableColumn(column));
-	const tableProperties = parsedTableData.tableProperties[0] || {start:0, stop:0}
+	const tableProperties = parsedTableData.tableProperties[0] || { start: 0, stop: 0 }
 	return {
 		properties,
 		propertiesPane: {

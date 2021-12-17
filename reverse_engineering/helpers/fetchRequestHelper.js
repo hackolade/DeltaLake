@@ -67,23 +67,16 @@ const fetchClusterProperties = async (connectionInfo) => {
 			}
 		})
 }
-
-const fetchClusterDatabaseTables = async (connectionInfo, logger) => {
-	const getDatabasesTablesCommand = getDatabasesTablesCode();
-	const result = await executeCommand(connectionInfo, getDatabasesTablesCommand);
-	const formattedResult = result.split('databasesTables: String = ')[1]
-		.replaceAll('\n', ' ')
-		.replaceAll('"{', '{')
-		.replaceAll('"[', '[')
-		.replaceAll('}"', '}')
-		.replaceAll(']"', ']');
-	try {
-		return JSON.parse(formattedResult);
-	} catch (error) {
-		logger.log('error', { error }, `\nDatabricks response: ${result}\n\nFormatted result: ${formattedResult}\n`);
-		throw error;
-	}
+const fetchClusterDatabasesNames = async (connectionInfo) => {
+	const result = await executeCommand(connectionInfo, "SHOW DATABASES", 'sql');
+	return dependencies.lodash.flattenDeep(result);
 }
+
+
+const fetchClusterViewsNames = (connectionInfo) => executeCommand(connectionInfo, "SHOW VIEWS", 'sql');
+
+
+const fetchClusterTablesNames = (connectionInfo) => executeCommand(connectionInfo, "SHOW TABLES", 'sql');
 
 const fetchClusterData = async (connectionInfo, tablesNames, databasesNames, logger) => {
 	const getClusterDataCommand = getClusterData(tablesNames, databasesNames);
@@ -189,7 +182,7 @@ const destroyContext = (connectionInfo, contextId) => {
 		});
 }
 
-const executeCommand = (connectionInfo, command) => {
+const executeCommand = (connectionInfo, command, language = "scala") => {
 
 	let activeContextId;
 
@@ -198,7 +191,7 @@ const executeCommand = (connectionInfo, command) => {
 			activeContextId = contextId;
 			const query = connectionInfo.host + '/api/1.2/commands/execute';
 			const body = JSON.stringify({
-				language: "scala",
+				language,
 				clusterId: connectionInfo.clusterId,
 				contextId,
 				command
@@ -267,7 +260,9 @@ module.exports = {
 	fetchApplyToInstance,
 	fetchDocuments,
 	destroyActiveContext,
-	fetchClusterDatabaseTables,
 	fetchClusterData,
-	fetchCreateStatementRequest
+	fetchCreateStatementRequest,
+	fetchClusterDatabasesNames,
+	fetchClusterViewsNames,
+	fetchClusterTablesNames
 };
