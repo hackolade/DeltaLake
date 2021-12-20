@@ -3,8 +3,11 @@
 const logHelper = require('./logHelper');
 let connectionData = null;
 
-const fetchRequestHelper = require('./helpers/fetchRequestHelper')
-const deltaLakeHelper = require('./helpers/DeltaLakeHelper');
+const fetchRequestHelper = require('./helpers/fetchRequestHelper');
+const tableDDlHelper = require('./helpers/tableDDLHelper');
+const viewDDLHelper = require('./helpers/viewDDLHelper')
+const databricksHelper = require('./helpers/databricksHelper');
+const {splitTableAndViewNames} = require('./helpers/utils')
 const { setDependencies, dependencies } = require('./appDependencies');
 const fs = require('fs');
 const antlr4 = require('antlr4');
@@ -33,7 +36,7 @@ module.exports = {
 			}
 
 			logInfo('Test connection RE', connectionInfo, logger, logger);
-			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
+			const clusterState = await databricksHelper.requiredClusterState(connectionData, logInfo, logger);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`, type: 'simpleError' })
 			}
@@ -59,12 +62,12 @@ module.exports = {
 				accessToken: connectionInfo.accessToken
 			}
 
-			const dbCollectionsNames = await deltaLakeHelper.getDatabaseCollectionNames(connectionData)
+			const dbCollectionsNames = await databricksHelper.getDatabaseCollectionNames(connectionData)
 
 			cb(null, dbCollectionsNames);
 		} catch (err) {
 			try{
-				const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
+				const clusterState = await databricksHelper.requiredClusterState(connectionData, logInfo, logger);
 				if (!clusterState.isRunning) {
 					logger.log(
 						'error',
@@ -104,26 +107,31 @@ module.exports = {
 		try {
 			setDependencies(app);
 
-			const modelData = await deltaLakeHelper.getModelData(connectionData, logger);
+			const modelData = await databricksHelper.getModelData(connectionData, logger);
 
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
+
 			progress({ message: 'Start getting data from entities', containerName: 'databases', entityName: 'entities' });
-			const clusterData = await deltaLakeHelper.getClusterData(connectionData, dataBaseNames, collections, logger);
+			const clusterData = await databricksHelper.getClusterData(connectionData, dataBaseNames, collections, logger);
+
 			progress({ message: 'Start getting entities ddl', containerName: 'databases', entityName: 'entities' });
-			const entitiesDdl = await Promise.all(deltaLakeHelper.getEntitiesDDL(connectionData, dataBaseNames, collections));
+			const entitiesDdl = await Promise.all(databricksHelper.getEntitiesDDL(connectionData, dataBaseNames, collections));
 			const ddlByEntity = entitiesDdl.reduce((ddlByEntity, ddlObject) => {
 				const entityName = Object.keys(ddlObject)[0]
 				return { ...ddlByEntity, [entityName]: ddlObject[entityName] }
 			}, {})
-			progress({ message: 'Entities data retrieved successfully', containerName: 'databases', entityName: 'entities' });
+
+			progress({ message: 'Entities ddl retrieved successfully', containerName: 'databases', entityName: 'entities' });
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];
 				const packages = await packagesPromise;
 				const tablesPackages = dbData.dbTables.map(async (table) => {
 					const ddl = ddlByEntity[`${dbName}.${table.name}`]
+
 					progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
-					let tableData  = await deltaLakeHelper.getTableData({ ...table, ddl },data, logger);
+					let tableData  = await tableDDlHelper.getTableData({ ...table, ddl },data, logger);
+
 					const columnsOfTypeString = tableData.properties.filter(property => property.mode === 'string');
 					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
 					let documents = [];
@@ -134,12 +142,11 @@ module.exports = {
 							dbName,
 							tableName: table.name,
 							fields: columnsOfTypeString,
-							isAbsolute: data.recordSamplingSettings.active === 'absolute',
-							percentage: data.recordSamplingSettings.relative.value,
-							absoluteNumber: data.recordSamplingSettings.absolute.value
+							recordSamplingSettings: data.recordSamplingSettings
 						});
 						progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name });
 					}
+					
 					progress({ message: 'Table data processed successfully', containerName: dbName, entityName: table.name });
 					return {
 						dbName,
@@ -151,16 +158,12 @@ module.exports = {
 						validation: {
 							jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns }
 						},
-						bucketInfo: {
-							description: dbData.dbProperties.Comment,
-							dbProperties: dbData.dbProperties.Properties,
-							location: dbData.dbProperties.Location
-						}
+						bucketInfo: dbData.dbProperties
 					};
 				})
 
 				const viewsNames = dataBaseNames.reduce((viewsNames, dbName) => {
-					const { views } = deltaLakeHelper.splitTableAndViewNames(collections[dbName]);	
+					const { views } = splitTableAndViewNames(collections[dbName]);	
 					return {...viewsNames, [dbName]: views}
 				}, {});
 
@@ -174,7 +177,7 @@ module.exports = {
 					let viewData = {};
 
 					try {
-						viewData = deltaLakeHelper.getViewDataFromDDl(ddl);
+						viewData = viewDDLHelper.getViewDataFromDDl(ddl);
 					} catch (e) {
 						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
 						return {};
@@ -189,7 +192,7 @@ module.exports = {
 							selectStatement: viewData.selectStatement,
 						},
 						ddl: {
-							script: `CREATE VIEW \`${viewData.code}\` AS ${viewData.selectStatement}`,
+							script: `CREATE VIEW ${viewData.code} AS ${viewData.selectStatement};`,
 							type: 'postgres'
 						}
 					};
@@ -213,7 +216,7 @@ module.exports = {
 			fetchRequestHelper.destroyActiveContext();
 			cb(null, packages, modelData);
 		} catch (err) {
-			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
+			const clusterState = await databricksHelper.requiredClusterState(connectionData, logInfo, logger);
 			if (!clusterState.isRunning) {
 				logger.log(
 					'error',

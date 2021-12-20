@@ -57,7 +57,7 @@ const getCreateUsingStatement = ({
 	return buildStatement(`CREATE${tempExtStatement}TABLE IF NOT EXISTS ${fullTableName} (`, isActivated)
 		(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))
 		(true, ')')
-		(using, `USING ${using}`)
+		(using, `USING ${getCorrectUsing(using)}`)
 		(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)
 		(clusteredKeys, `CLUSTERED BY (${clusteredKeys})`)
 		(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)
@@ -99,7 +99,7 @@ const getCreateLikeStatement = ({
 		(primaryKeyStatement, primaryKeyStatement)
 		(foreignKeyStatement, foreignKeyStatement)
 		(true, ')')
-		(using, `USING '${using}'`)
+		(using, `USING '${getCorrectUsing(using)}'`)
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
 		(storedAsStatement, storedAsStatement)
 		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
@@ -257,9 +257,9 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, a
 		isActivated: isTableActivated,
 	});
 
-	const constraintsStatements = Object.keys(columns).map(colName =>({colName:colName.replaceAll('`',''),...columns[colName]})).filter(column => column.constraints.check).map(column => `ALTER TABLE ${tableName} ADD CONSTRAINT \`${column.colName}_constraint\` CHECK (${column.constraints.check})`).join(';\n')
-	if(!_.isEmpty(constraintsStatements)){
-		tableStatement = tableStatement + `USE ${dbName};\n\n`+constraintsStatements+';\n';
+	const constraintsStatements = Object.keys(columns).map(colName => ({ colName: colName.replaceAll('`', ''), ...columns[colName] })).filter(column => column.constraints.check).map(column => `ALTER TABLE ${tableName} ADD CONSTRAINT \`${column.colName}_constraint\` CHECK (${column.constraints.check})`).join(';\n')
+	if (!_.isEmpty(constraintsStatements)) {
+		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + ';\n';
 	}
 	return removeRedundantTrailingCommaFromStatement(tableStatement);
 };
@@ -295,6 +295,31 @@ const getTableAlterStatements = (containerData, entityData, jsonSchema, definiti
 
 	return tableStatements;
 };
+
+const getCorrectUsing = using => {
+	switch (using) {
+		case 'delta':
+			return 'DELTA'
+		case 'textfile':
+			return 'TEXT'
+		case 'delta':
+			return 'DELTA'
+		case 'CSVfile':
+			return 'CSV'
+		case 'JSONfile':
+			return 'JSON'
+		case 'JDBC':
+			return 'JDBC'
+		case 'Parquet':
+			return 'PARQUET'
+		case 'ORC':
+			return 'ORC'
+		case 'LIBSVM':
+			return 'LIBSVM'
+		default:
+			return '';
+	}
+}
 
 
 module.exports = {

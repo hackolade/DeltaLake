@@ -1,14 +1,14 @@
 'use strict'
 const fetch = require('node-fetch');
 const { dependencies } = require('../appDependencies');
-const { getDatabasesTablesCode, getClusterData, getDocuments } = require('./ScalaGeneratorHelper')
+const { getClusterData } = require('./scalaScriptGeneratorHelper');
+const { getCount, prepareNamesForInsertionIntoScalaCode } = require('./utils');
 let activeContext;
 
 const destroyActiveContext = () => {
 	destroyContext(activeContext.connectionInfo, activeContext.id)
 	activeContext = undefined;
-}
-
+};
 
 const fetchApplyToInstance = async (connectionInfo, logger) => {
 	const scriptWithoutNewLineSymb = connectionInfo.script.replaceAll(/[\s]+/g, " ");
@@ -22,28 +22,34 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 		const command = `var stmt = sqlContext.sql("${script}")`;
 		await Promise.race([executeCommand(connectionInfo, command), new Promise((_r, rej) => setTimeout(() => { throw new Error("Timeout exceeded for script\n" + script); }, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
 	}
-}
+};
 
-const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, isAbsolute, percentage, absoluteNumber }) => {
+const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recordSamplingSettings }) => {
 	try {
-		const columnsToSelect = fields.map(field => field.name).join(', ');
-		const fetchDocumentsCommand = getDocuments({
-			dbName,
-			tableName,
-			isAbsolute,
-			percentage,
-			absoluteNumber,
-			columnsToSelect
-		})
-		const result = await executeCommand(connectionInfo, fetchDocumentsCommand);
-		const rowsExtractionRegex = /(rows: Array\[String\] = Array\((.+)\))/gm
-		const rowsJSON = dependencies.lodash.get(rowsExtractionRegex.exec(result), '2', '')
-		const rows = JSON.parse(`[${rowsJSON}]`);
-		return rows;
+		const countResult = await executeCommand(connectionInfo, `SELECT COUNT(*) FROM \`${dbName}\`.\`${tableName}\``, 'sql');
+		const count = dependencies.lodash.get(countResult, '[0][0]', 0);
+
+		if (count === 0) {
+			return [];
+		}
+
+		const columnsToSelect = fields.map(field => field.name);
+		const columnsToSelectString = columnsToSelect.map(fieldName => `\`${fieldName}\``).join(', ');
+		const limit = getCount(count, recordSamplingSettings);
+
+		const documentsResult = await executeCommand(connectionInfo, `SELECT ${columnsToSelectString} FROM \`${dbName}\`.\`${tableName}\` LIMIT ${limit}`, 'sql');
+		return documentsResult.map(result =>
+			columnsToSelect.reduce((document, colName, index) => (
+				{
+					...document,
+					[colName]: result[index]
+				}
+			), {})
+		);
 	} catch (e) {
 		return [];
 	}
-}
+};
 
 const fetchClusterProperties = async (connectionInfo) => {
 	const query = connectionInfo.host + `/api/2.0/clusters/get?cluster_id=${connectionInfo.clusterId}`;
@@ -66,22 +72,41 @@ const fetchClusterProperties = async (connectionInfo) => {
 				};
 			}
 		})
-}
+};
+
 const fetchClusterDatabasesNames = async (connectionInfo) => {
 	const result = await executeCommand(connectionInfo, "SHOW DATABASES", 'sql');
 	return dependencies.lodash.flattenDeep(result);
-}
+};
 
+const fetchDatabaseViewsNames = (dbName, connectionInfo) => executeCommand(connectionInfo, `SHOW VIEWS IN \`${dbName}\``, 'sql');
 
-const fetchClusterViewsNames = (connectionInfo) => executeCommand(connectionInfo, "SHOW VIEWS", 'sql');
+const fetchClusterTablesNames = (dbName, connectionInfo) => executeCommand(connectionInfo, `SHOW TABLES IN \`${dbName}\``, 'sql');
 
+const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames, logger) => {
+	const databasesPropertiesResult = await Promise.all(databasesNames.map(async dbName => {
+		const dbInfoResult = await executeCommand(connectionInfo, `DESCRIBE DATABASE EXTENDED \`${dbName}\``, 'sql');
+		const dbProperties = dbInfoResult.reduce((dbProperties, row) => {
+			if (row[0] === 'Location') {
+				return { ...dbProperties, "location": row[1] }
+			}
+			if (row[0] === 'Comment') {
+				return { ...dbProperties, "description": row[1] }
+			}
+			if (row[0] === 'Properties') {
+				return { ...dbProperties, "dbProperties": row[1] }
+			}
+			return dbProperties;
+		}, {});
+		return { dbName, dbProperties }
+	}));
 
-const fetchClusterTablesNames = (connectionInfo) => executeCommand(connectionInfo, "SHOW TABLES", 'sql');
+	const databasesProperties = databasesPropertiesResult.reduce((properties, { dbName, dbProperties }) => ({ ...properties, [dbName]: dbProperties }), {})
 
-const fetchClusterData = async (connectionInfo, tablesNames, databasesNames, logger) => {
-	const getClusterDataCommand = getClusterData(tablesNames, databasesNames);
-	const result = await executeCommand(connectionInfo, getClusterDataCommand);
-	const formattedResult = result.split('clusterData: String =')[1]
+	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
+	const getClusterDataCommand = getClusterData(tableNames.join(', '), dbNames.join(', '));
+	const databasesTablesInfoResult = await executeCommand(connectionInfo, getClusterDataCommand);
+	const formattedResult = databasesTablesInfoResult.split('clusterData: String =')[1]
 		.replaceAll('\n', ' ')
 		.replaceAll('\\n', '')
 		.replaceAll('"{', '{')
@@ -90,22 +115,24 @@ const fetchClusterData = async (connectionInfo, tablesNames, databasesNames, log
 		.replaceAll('\\"', '"')
 		.replaceAll(']"', ']');
 	try {
-		return JSON.parse(formattedResult);
+		const databasesTablesInfo = JSON.parse(formattedResult);
+		return databasesNames.reduce((clusterData, dbName) => ({
+			...clusterData,
+			[dbName]: {
+				dbTables: dependencies.lodash.get(databasesTablesInfo, dbName, {}),
+				dbProperties: dependencies.lodash.get(databasesProperties, dbName, {})
+			}
+		}), {})
 	} catch (error) {
 		logger.log('error', { error }, `\nDatabricks response: ${result}\n\nFormatted result: ${formattedResult}\n`);
 		throw error;
 	}
-}
+};
 
-const fetchCreateStatementRequest = async (command, connectionInfo) => {
-	const result = await executeCommand(connectionInfo, command);
-
-	const statementExtractionRegex = /stmt: String = "(.+)"/gm;
-	const resultWithoutNewLineSymb = result.replaceAll(/[\n\r]/g, " ");
-	const entityCreateStatement = statementExtractionRegex.exec(resultWithoutNewLineSymb);
-
-	return dependencies.lodash.get(entityCreateStatement, '1', '')
-}
+const fetchCreateStatementRequest = async (entityName, connectionInfo) => {
+	const result = await executeCommand(connectionInfo, `SHOW CREATE TABLE ${entityName};`, 'sql');
+	return dependencies.lodash.get(result, '[0][0]', '')
+};
 
 const getRequestOptions = (connectionInfo) => {
 	const headers = {
@@ -116,7 +143,7 @@ const getRequestOptions = (connectionInfo) => {
 		'method': 'GET',
 		'headers': headers
 	};
-}
+};
 
 const postRequestOptions = (connectionInfo, body) => {
 	const headers = {
@@ -159,7 +186,7 @@ const createContext = (connectionInfo) => {
 			}
 			return activeContext.id;
 		})
-}
+};
 
 const destroyContext = (connectionInfo, contextId) => {
 	const query = connectionInfo.host + '/api/1.2/contexts/destroy'
@@ -180,7 +207,7 @@ const destroyContext = (connectionInfo, contextId) => {
 		.then(body => {
 			body = JSON.parse(body);
 		});
-}
+};
 
 const executeCommand = (connectionInfo, command, language = "scala") => {
 
@@ -223,7 +250,7 @@ const executeCommand = (connectionInfo, command, language = "scala") => {
 				})
 		}
 		)
-}
+};
 
 const getCommandExecutionResult = (query, options) => {
 	return fetch(query, options)
@@ -253,7 +280,7 @@ const getCommandExecutionResult = (query, options) => {
 			}
 			return getCommandExecutionResult(query, options);
 		})
-}
+};
 
 module.exports = {
 	fetchClusterProperties,
@@ -263,6 +290,6 @@ module.exports = {
 	fetchClusterData,
 	fetchCreateStatementRequest,
 	fetchClusterDatabasesNames,
-	fetchClusterViewsNames,
+	fetchDatabaseViewsNames,
 	fetchClusterTablesNames
 };

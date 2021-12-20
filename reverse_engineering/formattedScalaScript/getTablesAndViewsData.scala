@@ -2,11 +2,10 @@ import scala.util.parsing.json.JSONObject;
 
 class Database(
     var name: String,
-    var dbProperties: String,
     var dbTables: String
 ) {
   override def toString(): String = {
-    return "\"" + name + "\": {\"dbTables\" : " + dbTables + "\", \"dbProperties\" : " + dbProperties + "\"}"
+    return "\"" + name + "\": {\"dbTables\" : " + dbTables + "\"}"
   };
 };
 
@@ -27,16 +26,6 @@ val databasesTablesNames: Map[String, List[String]] =
 
 val clusterData = databasesNames
   .map(dbName => {
-    val dbProperties = sqlContext
-      .sql("DESCRIBE DATABASE EXTENDED " + dbName)
-      .filter(row => {
-        val requiredProperties = List("Comment", "Location", "Properties")
-        requiredProperties.contains(row.getString(0))
-      })
-      .map(row => "\"" + row.getString(0) + "\" : \"" + row.getString(1) + "\"")
-      .collect()
-      .toList
-      .mkString("{", ", ", "}");
 
     val dbTablesNames = databasesTablesNames.get(dbName).getOrElse(List())
 
@@ -62,6 +51,6 @@ val clusterData = databasesNames
       })
       .mkString("[", ", ", "]");
       
-    (new Database(dbName, dbProperties, dbTables)).toString();
+    (new Database(dbName, dbTables)).toString();
   })
   .mkString("{", ", ", "}");

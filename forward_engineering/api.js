@@ -8,7 +8,7 @@ const { getViewScript, getViewAlterScripts } = require('./helpers/viewHelper');
 const { getCleanedUrl } = require('./helpers/generalHelper');
 let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
-const deltaLakeHelper = require('../reverse_engineering/helpers/DeltaLakeHelper')
+const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')
 const logHelper = require('../reverse_engineering/logHelper');
 
 const setAppDependencies = ({ lodash }) => _ = lodash;
@@ -272,7 +272,7 @@ module.exports = {
 				accessToken: connectionInfo.accessToken
 			}
 
-			const clusterState = await deltaLakeHelper.requiredClusterState(connectionData, logInfo, logger);
+			const clusterState = await databricksHelper.requiredClusterState(connectionData, logInfo, logger);
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`, type: 'simpleError' })
 			}
