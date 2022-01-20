@@ -168,6 +168,13 @@ const removePartitions = (columns, partitions) => {
 	}, Object.assign({}, columns));
 };
 
+const getTableColumnsStatement = (columns, using, partitionKeys) => {
+	if (using === 'Hive') {
+		return removePartitions(columns, partitionKeys)
+	}
+	return columns;
+}
+
 const getSkewedKeyStatement = (skewedKeys, skewedOn, asDirectories, deactivatedColumnNames, isParentItemActivated) => {
 	const getStatement = (keysString) => `SKEWED BY (${keysString}) ON ${skewedOn} ${asDirectories ? 'STORED AS DIRECTORIES' : ''}`;
 
@@ -235,6 +242,7 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, a
 	const tableName = replaceSpaceWithUnderscore(getName(tableData));
 	const { columns, deactivatedColumnNames } = getColumns(jsonSchema, areColumnConstraintsAvailable, definitions);
 	const keyNames = keyHelper.getKeyNames(tableData, jsonSchema, definitions);
+	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
 	let tableStatement = getCreateStatement({
 		dbName,
 		tableName,
@@ -242,7 +250,7 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, a
 		isExternal: tableData.externalTable,
 		using: tableData.using,
 		likeStatement: getLikeStatement(tableData.like),
-		columnStatement: getColumnsStatement(removePartitions(columns, keyNames.compositePartitionKey), isTableActivated),
+		columnStatement: getColumnsStatement(tableColumns, isTableActivated),
 		comment: tableData.description,
 		partitionedByKeys: getPartitionKeyStatement(getPartitionsKeys(columns, keyNames.compositePartitionKey, isTableActivated)),
 		clusteredKeys: getClusteringKeys(keyNames.compositeClusteringKey, deactivatedColumnNames, isTableActivated),
@@ -276,9 +284,10 @@ const getTableAlterStatements = (containerData, entityData, jsonSchema, definiti
 	const { columns, deactivatedColumnNames } = getColumns(jsonSchema, areColumnConstraintsAvailable, definitions);
 	const keyNames = keyHelper.getKeyNames(tableData, jsonSchema, definitions);
 	const fullTableName = dbName ? `${dbName}.${tableName}` : tableName;
-
+	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
+	
 	if (columns) {
-		tableStatements.push(`ALTER TABLE ${fullTableName} ADD COLUMNS (${getColumnsStatement(removePartitions(columns, keyNames.compositePartitionKey), isTableActivated)});\n\n`)
+		tableStatements.push(`ALTER TABLE ${fullTableName} ADD COLUMNS (${getColumnsStatement(tableColumns, isTableActivated)});\n\n`)
 	}
 
 	if (tableData.tableProperties) {
@@ -300,22 +309,22 @@ const getCorrectUsing = using => {
 	switch (using) {
 		case 'delta':
 			return 'DELTA'
-		case 'textfile':
-			return 'TEXT'
-		case 'delta':
-			return 'DELTA'
 		case 'CSVfile':
 			return 'CSV'
+		case 'Hive':
+			return 'HIVE'
 		case 'JSONfile':
 			return 'JSON'
 		case 'JDBC':
 			return 'JDBC'
-		case 'Parquet':
-			return 'PARQUET'
-		case 'ORC':
-			return 'ORC'
 		case 'LIBSVM':
 			return 'LIBSVM'
+		case 'ORC':
+			return 'ORC'
+		case 'Parquet':
+			return 'PARQUET'
+		case 'textfile':
+			return 'TEXT'
 		default:
 			return '';
 	}
