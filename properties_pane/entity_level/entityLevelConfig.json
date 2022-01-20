@@ -154,13 +154,14 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "select",
 				"options": [
 					"delta",
-					"textfile",
 					"CSVfile",
+					"Hive",
 					"JSONfile",
 					"JDBC",
-					"Parquet",
 					"ORC",
-					"LIBSVM"
+					"Parquet",
+					"LIBSVM",
+					"textfile"
 				]
 			},
 			{
@@ -380,9 +381,13 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Partition key",
 				"propertyKeyword": "compositePartitionKey",
-				"propertyType": "primaryKeySetter",
-				"abbr": "pk"
-			}, 
+				"propertyType": "compositeKeySetter",
+				"disabledItemStrategy": "default",
+				"isCompositeKey": true,
+				"setPrimaryKey": false,
+				"template": "collectiontree",
+				"abbr": "PK"
+			},
 			{
 				"propertyName": "Disable No Validate",
 				"propertyKeyword": "disableNoValidate",
@@ -391,7 +396,11 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Clustering key",
 				"propertyKeyword": "compositeClusteringKey",
-				"propertyType": "primaryKeySetter",
+				"propertyType": "compositeKeySetter",
+				"disabledItemStrategy": "default",
+				"isCompositeKey": true,
+				"setPrimaryKey": false,
+				"template": "collectiontree",
 				"abbr": "ck"
 			},
 			{

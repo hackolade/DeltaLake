@@ -89,6 +89,8 @@ const getTableProvider = (provider) => {
 			return 'Parquet';
 		case 'avro':
 			return 'Avro';
+		case 'hive':
+			return 'Hive';
 		case 'rcfile':
 			return 'RCfile';
 		case 'jsonfile':
