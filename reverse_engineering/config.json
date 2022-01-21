@@ -22,7 +22,7 @@
 			"host",
 			"provider"
 		],
-		"widestColumn": "host"
-	},
-	"helpUrl": "https://hackolade.com/help/ConnecttoaDeltaLakeinstance.html"
+		"widestColumn": "host",
+		"helpUrl": "https://hackolade.com/help/ConnecttoaDeltaLakeinstance.html"
+	}
 ]
