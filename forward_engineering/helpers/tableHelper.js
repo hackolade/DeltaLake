@@ -50,8 +50,8 @@ const getCreateStatement = ({
 };
 
 const getCreateUsingStatement = ({
-	tempExtStatement, fullTableName, using, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
-	clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
+	tempExtStatement, fullTableName, using, columnStatement, primaryKeyStatement, comment, partitionedByKeys,
+	clusteredKeys, sortedKeys, numBuckets, location, tableProperties, selectStatement,
 	isActivated
 }) => {
 	return buildStatement(`CREATE${tempExtStatement}TABLE IF NOT EXISTS ${fullTableName} (`, isActivated)
@@ -136,8 +136,13 @@ const getSortedKeys = (sortedKeys, deactivatedColumnNames, isParentItemActivated
 	return `${getSortKeysStatement(activatedKeys)} /*, ${getSortKeysStatement(deactivatedKeys)} */`;
 };
 
-const getPartitionKeyStatement = (keys, isParentActivated) => {
-	const getKeysStatement = (keys) => keys.map(getColumnStatement).join(',');
+const getPartitionKeyStatement = (keys, isParentActivated, using) => {
+	const getKeysStatement = (keys) => {
+		if(using === 'Hive'){
+			return keys.map(key => `${key.name} ${key.type}`).join(', ');
+		}
+		return keys.map(key => key.name).join(', ');
+	}
 
 	if (!Array.isArray(keys) || !keys.length) {
 		return '';
@@ -252,7 +257,7 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, a
 		likeStatement: getLikeStatement(tableData.like),
 		columnStatement: getColumnsStatement(tableColumns, isTableActivated),
 		comment: tableData.description,
-		partitionedByKeys: getPartitionKeyStatement(getPartitionsKeys(columns, keyNames.compositePartitionKey, isTableActivated)),
+		partitionedByKeys: getPartitionKeyStatement(getPartitionsKeys(columns, keyNames.compositePartitionKey), isTableActivated, tableData.using),
 		clusteredKeys: getClusteringKeys(keyNames.compositeClusteringKey, deactivatedColumnNames, isTableActivated),
 		sortedKeys: getSortedKeys(keyNames.sortedByKey, deactivatedColumnNames, isTableActivated),
 		numBuckets: tableData.numBuckets,
