@@ -23,5 +23,6 @@
 			"provider"
 		],
 		"widestColumn": "host"
-	}
+	},
+	"helpUrl": "https://hackolade.com/help/ConnecttoaDeltaLakeinstance.html"
 ]
