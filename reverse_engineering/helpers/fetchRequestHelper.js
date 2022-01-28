@@ -164,7 +164,7 @@ const postRequestOptions = (connectionInfo, body) => {
 	}
 };
 
-const createContext = async (connectionInfo, language) => {
+const createContext = (connectionInfo, language) => {
 	if (activeContexts[language]) {
 		return Promise.resolve(activeContexts[language].id);
 	}
