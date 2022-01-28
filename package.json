@@ -14,7 +14,8 @@
 			"versions": [
 				"Runtime 6",
 				"Runtime 7",
-				"Runtime 8"
+				"Runtime 8",
+				"Runtime 9"
 			]
 		},
 		"features": {
