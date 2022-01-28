@@ -3,11 +3,17 @@ const fetch = require('node-fetch');
 const { dependencies } = require('../appDependencies');
 const { getClusterData } = require('./scalaScriptGeneratorHelper');
 const { getCount, prepareNamesForInsertionIntoScalaCode } = require('./utils');
-let activeContext;
+let activeContexts = {};
 
 const destroyActiveContext = () => {
-	destroyContext(activeContext.connectionInfo, activeContext.id)
-	activeContext = undefined;
+	if (activeContexts.scala) {
+		destroyContext(activeContexts.scala.connectionInfo, activeContexts.scala.id);
+	}
+	if (activeContexts.sql) {
+		destroyContext(activeContexts.sql.connectionInfo, activeContexts.sql.id);
+	}
+
+	activeContexts = {};
 };
 
 const fetchApplyToInstance = async (connectionInfo, logger) => {
@@ -158,33 +164,34 @@ const postRequestOptions = (connectionInfo, body) => {
 	}
 };
 
-const createContext = (connectionInfo) => {
-	if (activeContext) {
-		return Promise.resolve(activeContext.id);
+const createContext = async (connectionInfo, language) => {
+	if (activeContexts[language]) {
+		return Promise.resolve(activeContexts[language].id);
 	}
 	const query = connectionInfo.host + '/api/1.2/contexts/create'
 	const body = JSON.stringify({
-		"language": "scala",
+		"language": language,
 		"clusterId": connectionInfo.clusterId
 	})
 	const options = postRequestOptions(connectionInfo, body);
 
 	return fetch(query, options)
-		.then(response => {
+		.then(async response => {
 			if (response.ok) {
 				return response.text()
 			}
+			const description = await response.json();
 			throw {
-				message: response.statusText, code: response.status, description: body
+				message: response.statusText, code: response.status, description
 			};
 		})
 		.then(body => {
 			body = JSON.parse(body);
-			activeContext = {
+			activeContexts[language] = {
 				id: body.id,
 				connectionInfo
 			}
-			return activeContext.id;
+			return activeContexts[language].id;
 		})
 };
 
@@ -213,7 +220,7 @@ const executeCommand = (connectionInfo, command, language = "scala") => {
 
 	let activeContextId;
 
-	return createContext(connectionInfo)
+	return createContext(connectionInfo, language)
 		.then(contextId => {
 			activeContextId = contextId;
 			const query = connectionInfo.host + '/api/1.2/commands/execute';
