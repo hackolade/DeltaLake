@@ -168,7 +168,7 @@ const createContext = (connectionInfo, language) => {
 	if (activeContexts[language]) {
 		return Promise.resolve(activeContexts[language].id);
 	}
-	const query = connectionInfo.host + '/api/1.2/contexts/create'
+	const query = connectionInfo.host + '/api/1.2/contexts/create';
 	const body = JSON.stringify({
 		"language": language,
 		"clusterId": connectionInfo.clusterId
@@ -182,7 +182,7 @@ const createContext = (connectionInfo, language) => {
 			}
 			const description = await response.json();
 			throw {
-				message: response.statusText, code: response.status, description
+				message: `${response.statusText}\n${JSON.stringify(description)}`, code: response.status, description
 			};
 		})
 		.then(body => {
