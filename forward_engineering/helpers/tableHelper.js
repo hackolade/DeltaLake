@@ -231,7 +231,15 @@ const getStoredAsStatement = (tableData) => {
 	}
 
 	if (tableData.storedAsTable === 'input/output format') {
-		return `STORED AS INPUTFORMAT '${tableData.inputFormatClassname}' OUTPUTFORMAT '${tableData.outputFormatClassname}'`;
+		let statement = [];
+
+		if (tableData.serDeLibrary) {
+			statement.push(`ROW FORMAT SERDE '${tableData.serDeLibrary}'`);
+		}
+		statement.push(`STORED AS INPUTFORMAT '${tableData.inputFormatClassname}'`);
+		statement.push(`OUTPUTFORMAT '${tableData.outputFormatClassname}'`);
+
+		return statement.join('\n');
 	}
 
 	return `STORED AS ${tableData.storedAsTable.toUpperCase()}`;
