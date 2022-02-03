@@ -25,12 +25,12 @@ const getViewInfoFromAsSelect = (tables, view, views = []) => {
 		.map(setBucketName(selectedTables))
 		.map(getCollectionReference(selectedTables))
 		.filter(Boolean)
-        .reduce((viewProperties, property) => {
-            return {
-                ...viewProperties,
-                [property.name]: property,
-            };
-        }, {});
+		.reduce((viewProperties, property) => {
+			return {
+				...viewProperties,
+				[property.name]: property,
+			};
+		}, {});
 
 	return {
 		options: {
