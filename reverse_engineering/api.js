@@ -126,41 +126,43 @@ module.exports = {
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];
 				const packages = await packagesPromise;
-				const tablesPackages = dbData.dbTables.map(async (table) => {
-					const ddl = ddlByEntity[`${dbName}.${table.name}`]
-
-					progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
-					let tableData  = await tableDDlHelper.getTableData({ ...table, ddl },data, logger);
-
-					const columnsOfTypeString = tableData.properties.filter(property => property.mode === 'string');
-					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
-					let documents = [];
-					if (hasColumnsOfTypeString) {
-						progress({ message: 'Start getting documents from table', containerName: 'databases', entityName: table.name });
-						documents = await fetchRequestHelper.fetchDocuments({
-							connectionInfo: connectionData,
+				const tablesPackages = await Promise.all(
+					dbData.dbTables.map(async (table) => {
+						const ddl = ddlByEntity[`${dbName}.${table.name}`]
+	
+						progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
+						let tableData  = await tableDDlHelper.getTableData({ ...table, ddl },data, logger);
+	
+						const columnsOfTypeString = tableData.properties.filter(property => property.mode === 'string');
+						const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
+						let documents = [];
+						if (hasColumnsOfTypeString) {
+							progress({ message: 'Start getting documents from table', containerName: 'databases', entityName: table.name });
+							documents = await fetchRequestHelper.fetchDocuments({
+								connectionInfo: connectionData,
+								dbName,
+								tableName: table.name,
+								fields: columnsOfTypeString,
+								recordSamplingSettings: data.recordSamplingSettings
+							});
+							progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name });
+						}
+						
+						progress({ message: 'Table data processed successfully', containerName: dbName, entityName: table.name });
+						return {
 							dbName,
-							tableName: table.name,
-							fields: columnsOfTypeString,
-							recordSamplingSettings: data.recordSamplingSettings
-						});
-						progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name });
-					}
-					
-					progress({ message: 'Table data processed successfully', containerName: dbName, entityName: table.name });
-					return {
-						dbName,
-						collectionName: table.name,
-						entityLevel: tableData.propertiesPane,
-						documents,
-						views: [],
-						emptyBucket: false,
-						validation: {
-							jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns }
-						},
-						bucketInfo: dbData.dbProperties
-					};
-				})
+							collectionName: table.name,
+							entityLevel: tableData.propertiesPane,
+							documents,
+							views: [],
+							emptyBucket: false,
+							validation: {
+								jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns }
+							},
+							bucketInfo: dbData.dbProperties
+						};
+					})
+				);
 
 				const viewsNames = dataBaseNames.reduce((viewsNames, dbName) => {
 					const { views } = splitTableAndViewNames(collections[dbName]);	
@@ -177,7 +179,7 @@ module.exports = {
 					let viewData = {};
 
 					try {
-						viewData = viewDDLHelper.getViewDataFromDDl(ddl);
+						viewData = viewDDLHelper.getViewDataFromDDl(ddl, tablesPackages, logger);
 					} catch (e) {
 						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
 						return {};
@@ -186,14 +188,10 @@ module.exports = {
 					progress({ message: 'View data processed successfully', containerName: dbName, entityName: name });
 
 					return {
+						...viewData,
 						name,
 						data: {
-							...viewData,
-							selectStatement: viewData.selectStatement,
-						},
-						ddl: {
-							script: `CREATE VIEW ${viewData.code} AS ${viewData.selectStatement};`,
-							type: 'postgres'
+							selectStatement: viewData.selectStatement
 						}
 					};
 				});
