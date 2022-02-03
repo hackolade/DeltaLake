@@ -291,7 +291,7 @@ module.exports = {
 
 const buildScript = (needMinify) => (...statements) => {
 	const script = statements.filter((statement) => statement).join('\n\n');
-	return sqlFormatter.format(script, { indent: '    ' });
+	return sqlFormatter.format(script, { indent: '    ' }) + '\n';
 };
 
 const parseEntities = (entities, serializedItems) => {
