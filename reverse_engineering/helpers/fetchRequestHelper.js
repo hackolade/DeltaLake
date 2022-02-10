@@ -91,7 +91,9 @@ const fetchClusterTablesNames = (dbName, connectionInfo) => executeCommand(conne
 
 const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames, logger) => {
 	const databasesPropertiesResult = await Promise.all(databasesNames.map(async dbName => {
+		logger.log('info', '', `Start describe database: ${dbName} `);
 		const dbInfoResult = await executeCommand(connectionInfo, `DESCRIBE DATABASE EXTENDED \`${dbName}\``, 'sql');
+		logger.log('info', '', `Database: ${dbName} successfully described`);
 		const dbProperties = dbInfoResult.reduce((dbProperties, row) => {
 			if (row[0] === 'Location') {
 				return { ...dbProperties, "location": row[1] }
@@ -111,7 +113,9 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 
 	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
 	const getClusterDataCommand = getClusterData(tableNames.join(', '), dbNames.join(', '));
+	logger.log('info', '', `Start retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`);
 	const databasesTablesInfoResult = await executeCommand(connectionInfo, getClusterDataCommand);
+	logger.log('info', '', `Finish retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`);
 	const formattedResult = databasesTablesInfoResult.split('clusterData: String =')[1]
 		.replaceAll('\n', ' ')
 		.replaceAll('\\n', '')
