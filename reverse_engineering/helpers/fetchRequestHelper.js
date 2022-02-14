@@ -134,7 +134,7 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 			}
 		}), {})
 	} catch (error) {
-		logger.log('error', { error }, `\nDatabricks response: ${result}\n\nFormatted result: ${formattedResult}\n`);
+		logger.log('error', { error }, `\nDatabricks response: ${databasesTablesInfoResult}\n\nFormatted result: ${formattedResult}\n`);
 		throw error;
 	}
 };
