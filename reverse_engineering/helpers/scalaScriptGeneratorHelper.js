@@ -30,24 +30,28 @@ val clusterData = databasesNames
 
     val dbTables = dbTablesNames
       .map(tableName => {
+        try {
+          val nullableMap = spark
+            .table(dbName + \".\" + tableName)
+            .schema
+            .fields
+            .map(field => \"\\"\" + field.name + \"\\" : \\"\" + field.nullable + \"\\"\")
+            .mkString(\"{\", \", \", \"}\");
 
-        val nullableMap = spark
-          .table(dbName + \".\" + tableName)
-          .schema
-          .fields
-          .map(field => \"\\"\" + field.name + \"\\" : \\"\" + field.nullable + \"\\"\")
-          .mkString(\"{\", \", \", \"}\");
-
-        val bloomFilteredIndexes = spark
-          .table(dbName + \".\" + tableName)
-          .schema
-          .map(field => \"\\"\" + field.name + \"\\" : \\"\" + field.metadata + \"\\"\")
-          .mkString(\"{\", \", \", \"}\");
-        new Entity(
-          tableName,
-          nullableMap,
-          bloomFilteredIndexes
-        );
+          val bloomFilteredIndexes = spark
+            .table(dbName + \".\" + tableName)
+            .schema
+            .map(field => \"\\"\" + field.name + \"\\" : \\"\" + field.metadata + \"\\"\")
+            .mkString(\"{\", \", \", \"}\");
+          new Entity(
+            tableName,
+            nullableMap,
+            bloomFilteredIndexes
+          );
+        }
+        catch {
+          case _: Throwable => new Entity(tableName, "{}", "{}")
+        }
       })
       .mkString(\"[\", \", \", \"]\");
     (new Database(dbName, dbTables)).toString();

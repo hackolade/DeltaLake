@@ -115,7 +115,7 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 	const getClusterDataCommand = getClusterData(tableNames.join(', '), dbNames.join(', '));
 	logger.log('info', '', `Start retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`);
 	const databasesTablesInfoResult = await executeCommand(connectionInfo, getClusterDataCommand);
-	logger.log('info', '', `Finish retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`);
+	logger.log('info', '', `Finish retrieving tables info: ${databasesTablesInfoResult}`);
 	const formattedResult = databasesTablesInfoResult.split('clusterData: String =')[1]
 		.replaceAll('\n', ' ')
 		.replaceAll('\\n', '')

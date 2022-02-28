@@ -31,23 +31,29 @@ val clusterData = databasesNames
 
     val dbTables = dbTablesNames
       .map(tableName => {
-        val nullableMap = spark
+        try {
+          throw new Exception("Wait a little")
+          val nullableMap = spark
           .table(dbName + "." + tableName)
           .schema
           .fields
           .map(field => "\"" + field.name + "\" : \"" + field.nullable + "\"")
           .mkString("{", ", ", "}");
 
-        val bloomFilteredIndexes = spark
-          .table(dbName + "." + tableName)
-          .schema
-          .map(field => "\"" + field.name + "\" : \"" + field.metadata + "\"")
-          .mkString("{", ", ", "}");
-        new Entity(
-          tableName,
-          nullableMap,
-          bloomFilteredIndexes
-        );
+          val bloomFilteredIndexes = spark
+            .table(dbName + "." + tableName)
+            .schema
+            .map(field => "\"" + field.name + "\" : \"" + field.metadata + "\"")
+            .mkString("{", ", ", "}");
+          new Entity(
+            tableName,
+            nullableMap,
+            bloomFilteredIndexes
+          );
+        }
+        catch {
+          case _: Throwable => new Entity(tableName, "{}", "{}")
+        }
       })
       .mkString("[", ", ", "]");
       
