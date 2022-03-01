@@ -112,6 +112,18 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 	const databasesProperties = databasesPropertiesResult.reduce((properties, { dbName, dbProperties }) => ({ ...properties, [dbName]: dbProperties }), {})
 
 	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
+	
+	const databasesTablesInfo = await fetchFieldMetadata(dbNames, tableNames, connectionInfo, logger);
+	return databasesNames.reduce((clusterData, dbName) => ({
+		...clusterData,
+		[dbName]: {
+			dbTables: dependencies.lodash.get(databasesTablesInfo, dbName, {}),
+			dbProperties: dependencies.lodash.get(databasesProperties, dbName, {})
+		}
+	}), {});
+};
+
+const fetchFieldMetadata = async (dbNames, tableNames, connectionInfo, logger, previousData = {}) => {
 	const getClusterDataCommand = getClusterData(tableNames.join(', '), dbNames.join(', '));
 	logger.log('info', '', `Start retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`);
 	const databasesTablesInfoResult = await executeCommand(connectionInfo, getClusterDataCommand);
@@ -124,19 +136,76 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 		.replaceAll('}"', '}')
 		.replaceAll('\\"', '"')
 		.replaceAll(']"', ']');
+
+	const isTruncatedResponse = /\.\.\.$/.test(formattedResult);
+
 	try {
-		const databasesTablesInfo = JSON.parse(formattedResult);
-		return databasesNames.reduce((clusterData, dbName) => ({
-			...clusterData,
-			[dbName]: {
-				dbTables: dependencies.lodash.get(databasesTablesInfo, dbName, {}),
-				dbProperties: dependencies.lodash.get(databasesProperties, dbName, {})
-			}
-		}), {})
+		if (!isTruncatedResponse) {
+			const parsedData = JSON.parse(formattedResult);
+			return mergeChunksOfData(previousData, parsedData);
+		}
+	
+		const delimiter = '}, {';
+		const splittedData = formattedResult.split(delimiter);
+		const fullCompletedData = splittedData.slice(0, splittedData.length - 1).join(delimiter);
+	
+		const parsedData = JSON.parse(fullCompletedData + '}]}');
+		const mergedDataChunks = mergeChunksOfData(previousData, parsedData);
+		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilterEntities(tableNames, mergedDataChunks);
+		
+		return fetchFieldMetadata(filteredDbNames, filteredTableNames, connectionInfo, logger, mergedDataChunks);
+		
 	} catch (error) {
 		logger.log('error', { error }, `\nDatabricks response: ${databasesTablesInfoResult}\n\nFormatted result: ${formattedResult}\n`);
 		throw error;
 	}
+};
+
+const getFilterEntities = (tableNames, parsedData) => {
+    return Object.keys(parsedData).reduce((resultEntities, dbName) => {
+        const parsedTableNames = parsedData[dbName].map(table => `"${table.name}"`);
+        const dbTableNames = getDbTableNames(tableNames, dbName);
+
+        const filteredTableNames = dbTableNames.filter(name => !parsedTableNames.includes(name));
+        if (!filteredTableNames.length) {
+            return resultEntities;
+        }
+
+        return {
+            dbNames: [
+                ...resultEntities.dbNames,
+                `"${dbName}"`,
+            ],
+            tableNames: [
+                ...resultEntities.tableNames,
+                buildDbTableNamesString(dbName, filteredTableNames),
+            ]
+        };
+    }, { dbNames: [], tableNames: [] });
+};
+
+const getDbTableNames = (tableNames, dbName) => {
+    const allDatabaseTableNames = tableNames.find(dbTables => dbTables.startsWith(`"${dbName}"`));
+
+	if (!allDatabaseTableNames) {
+		return [];
+	}
+
+    const startNamesIndex = allDatabaseTableNames.indexOf('(');
+    const endNamesIndex = allDatabaseTableNames.indexOf(')');
+    return allDatabaseTableNames.slice(startNamesIndex + 1, endNamesIndex).split(', ');
+};
+
+const buildDbTableNamesString = (dbName, tableNames) => {
+    return `"${dbName}" -> List(${tableNames.join(', ')})`;
+};
+
+const mergeChunksOfData = (leftObj, rightObj) => {
+	return dependencies.lodash.mergeWith(leftObj, rightObj, (objValue, srcValue) => {
+		if (Array.isArray(objValue) && Array.isArray(srcValue)) {
+			return objValue.concat(srcValue);
+		}
+	});
 };
 
 const fetchCreateStatementRequest = async (entityName, connectionInfo) => {
