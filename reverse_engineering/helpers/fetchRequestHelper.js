@@ -151,7 +151,7 @@ const fetchFieldMetadata = async (dbNames, tableNames, connectionInfo, logger, p
 	
 		const parsedData = JSON.parse(fullCompletedData + '}]}');
 		const mergedDataChunks = mergeChunksOfData(previousData, parsedData);
-		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilterEntities(tableNames, mergedDataChunks);
+		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilteredEntities(tableNames, mergedDataChunks);
 		
 		return fetchFieldMetadata(filteredDbNames, filteredTableNames, connectionInfo, logger, mergedDataChunks);
 		
@@ -161,7 +161,7 @@ const fetchFieldMetadata = async (dbNames, tableNames, connectionInfo, logger, p
 	}
 };
 
-const getFilterEntities = (tableNames, parsedData) => {
+const getFilteredEntities = (tableNames, parsedData) => {
     return Object.keys(parsedData).reduce((resultEntities, dbName) => {
         const parsedTableNames = parsedData[dbName].map(table => `"${table.name}"`);
         const dbTableNames = getDbTableNames(tableNames, dbName);
