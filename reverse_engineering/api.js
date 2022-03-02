@@ -132,7 +132,7 @@ module.exports = {
 					progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
 					let tableData  = await tableDDlHelper.getTableData({ ...table, ddl },data, logger);
 
-					const columnsOfTypeString = tableData.properties.filter(property => property.mode === 'string');
+					const columnsOfTypeString = (tableData.properties || []).filter(property => property.mode === 'string');
 					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
 					let documents = [];
 					if (hasColumnsOfTypeString) {
