@@ -12,7 +12,7 @@ const getTableData = async (table, data, logger) => {
 	try {
 		tableData = getTableDataFromDDl(ddl);
 	} catch (e) {
-		logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
+		logger.log('info', data, `Error parsing ddl statement below. Falling back on alternate method. \n${ddl}\n`, data.hiddenKeys);
 		return {};
 	}
 	const BloomIndxs = convertIndexes(indexes)
