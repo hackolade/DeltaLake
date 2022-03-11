@@ -48,6 +48,7 @@
                 },
                 "to": {
                     "type": "varchar",
+                    "mode": "string",
                     "format": "time"
                 }
             }
