@@ -47,8 +47,7 @@
                     "type": "time"
                 },
                 "to": {
-                    "mode": "string",
-                    "type": "text",
+                    "type": "varchar",
                     "format": "time"
                 }
             }
