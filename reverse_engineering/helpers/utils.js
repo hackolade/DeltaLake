@@ -38,9 +38,22 @@ const convertCustomTags = (custom_tags, logger) => {
 
 const isView = name => name.slice(-4) === ' (v)';
 
+const getErrorMessage = (error = {}) => {
+	if (typeof error === 'string') {
+		return error;
+	}
+
+	if (error.code === 'ENOTFOUND') {
+		return 'Cannot connect to workspace. Please check the Workspace URL or network connection.';
+	}
+
+	return error.message || 'Reverse Engineering error';
+};
+
 module.exports = {
 	prepareNamesForInsertionIntoScalaCode,
 	splitTableAndViewNames,
 	convertCustomTags,
+	getErrorMessage,
 	getCount
 };

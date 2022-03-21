@@ -7,7 +7,7 @@ const fetchRequestHelper = require('./helpers/fetchRequestHelper');
 const tableDDlHelper = require('./helpers/tableDDLHelper');
 const viewDDLHelper = require('./helpers/viewDDLHelper')
 const databricksHelper = require('./helpers/databricksHelper');
-const {splitTableAndViewNames} = require('./helpers/utils')
+const {splitTableAndViewNames, getErrorMessage} = require('./helpers/utils')
 const { setDependencies, dependencies } = require('./appDependencies');
 const fs = require('fs');
 const antlr4 = require('antlr4');
@@ -47,7 +47,7 @@ module.exports = {
 				{ message: err.message, stack: err.stack, error: err },
 				'Test connection RE'
 			);
-			cb({ message: err.message, stack: err.stack });
+			cb({ message: getErrorMessage(err), stack: err.stack });
 		}
 	},
 
@@ -83,7 +83,7 @@ module.exports = {
 					{ message: err.message, stack: err.stack, error: err },
 					`Cluster is unavailable.`
 				);
-				cb({ message: err.message, stack: err.stack });
+				cb({ message: getErrorMessage(err), stack: err.stack });
 				return;
 			}
 
@@ -92,7 +92,7 @@ module.exports = {
 				{ message: err.message, stack: err.stack, error: err },
 				'Retrieving databases and tables names'
 			);
-			cb({ message: err.message, stack: err.stack });
+			cb({ message: getErrorMessage(err), stack: err.stack });
 		}
 	},
 
@@ -280,7 +280,7 @@ const logInfo = (step, connectionInfo, logger) => {
 };
 
 const handleError = (logger, error, cb) => {
-	const message = dependencies.lodash.isString(error) ? error : dependencies.lodash.get(error, 'message', 'Reverse Engineering error')
+	const message = getErrorMessage(error);
 	logger.log('error', { error }, 'Reverse Engineering error');
 	cb(message);
 };

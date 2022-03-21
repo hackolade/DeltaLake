@@ -61,23 +61,17 @@ const fetchClusterProperties = async (connectionInfo) => {
 	const query = connectionInfo.host + `/api/2.0/clusters/get?cluster_id=${connectionInfo.clusterId}`;
 	const options = getRequestOptions(connectionInfo)
 	return await fetch(query, options)
-		.then(response => {
-			if (response.ok) {
-				return response.text()
-			}
-			throw {
-				message: response.statusText, code: response.status, description: ''
-			};
-		})
+		.then(response => response.json())
 		.then(body => {
-			try {
-				return JSON.parse(body);
-			} catch (e) {
+			if (body.error_code) {
 				throw {
-					message: e.message, code: "", description: 'body: ' + body
+					message: body.message,
+					code: body.error_code,
 				};
 			}
-		})
+
+			return body;
+		});
 };
 
 const fetchClusterDatabasesNames = async (connectionInfo) => {
