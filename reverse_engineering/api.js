@@ -116,7 +116,7 @@ module.exports = {
 			const clusterData = await databricksHelper.getClusterData(connectionData, dataBaseNames, collections, logger);
 
 			progress({ message: 'Start getting entities ddl', containerName: 'databases', entityName: 'entities' });
-			const entitiesDdl = await Promise.all(databricksHelper.getEntitiesDDL(connectionData, dataBaseNames, collections));
+			const entitiesDdl = await Promise.all(databricksHelper.getEntitiesDDL(connectionData, dataBaseNames, collections, logger));
 			const ddlByEntity = entitiesDdl.reduce((ddlByEntity, ddlObject) => {
 				const entityName = Object.keys(ddlObject)[0]
 				return { ...ddlByEntity, [entityName]: ddlObject[entityName] }
