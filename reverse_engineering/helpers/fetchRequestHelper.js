@@ -202,9 +202,14 @@ const mergeChunksOfData = (leftObj, rightObj) => {
 	});
 };
 
-const fetchCreateStatementRequest = async (entityName, connectionInfo) => {
-	const result = await executeCommand(connectionInfo, `SHOW CREATE TABLE ${entityName};`, 'sql');
-	return dependencies.lodash.get(result, '[0][0]', '')
+const fetchCreateStatementRequest = async (entityName, connectionInfo, logger) => {
+	try {
+		const result = await executeCommand(connectionInfo, `SHOW CREATE TABLE ${entityName};`, 'sql');
+		return dependencies.lodash.get(result, '[0][0]', '');
+	} catch (error) {
+		logger.log('error', error, `Error during retrieve create table DDL statement. Table name: ${entityName}`);
+		return '';
+	}
 };
 
 const getRequestOptions = (connectionInfo) => {
@@ -291,13 +296,13 @@ const executeCommand = (connectionInfo, command, language = "scala") => {
 		.then(contextId => {
 			activeContextId = contextId;
 			const query = connectionInfo.host + '/api/1.2/commands/execute';
-			const body = JSON.stringify({
+			const commandOptions = JSON.stringify({
 				language,
 				clusterId: connectionInfo.clusterId,
 				contextId,
 				command
 			});
-			const options = postRequestOptions(connectionInfo, body)
+			const options = postRequestOptions(connectionInfo, commandOptions)
 
 			return fetch(query, options)
 				.then(response => {
@@ -305,7 +310,7 @@ const executeCommand = (connectionInfo, command, language = "scala") => {
 						return response.text()
 					}
 					throw {
-						message: response.statusText, code: response.status, description: body
+						message: response.statusText, code: response.status, description: commandOptions
 					};
 				})
 				.then(body => {
@@ -320,20 +325,21 @@ const executeCommand = (connectionInfo, command, language = "scala") => {
 					}
 					query.search = new URLSearchParams(params).toString();
 					const options = getRequestOptions(connectionInfo);
-					return getCommandExecutionResult(query, options);
+					return getCommandExecutionResult(query, options, commandOptions);
 				})
 		}
 		)
 };
 
-const getCommandExecutionResult = (query, options) => {
+const getCommandExecutionResult = (query, options, commandOptions) => {
 	return fetch(query, options)
 		.then(response => {
+			const responseBody = await response.text();
 			if (response.ok) {
-				return response.text()
+				return responseBody;
 			}
 			throw {
-				message: response.statusText, code: response.status, description: body
+				message: response.statusText, code: response.status, description: commandOptions, responseBody,
 			};
 		})
 		.then(body => {
@@ -341,7 +347,7 @@ const getCommandExecutionResult = (query, options) => {
 			if (body.status === 'Finished' && body.results !== null) {
 				if (body.results.resultType === 'error') {
 					throw {
-						message: body.results.data || body.results.cause, code: "", description: ""
+						message: body.results.data || body.results.cause, code: "", description: commandOptions
 					};
 				}
 				return body.results.data;
@@ -349,10 +355,10 @@ const getCommandExecutionResult = (query, options) => {
 
 			if (body.status === 'Error') {
 				throw {
-					message: "Error during receiving command result", code: "", description: ""
+					message: "Error during receiving command result", code: "", description: commandOptions
 				};
 			}
-			return getCommandExecutionResult(query, options);
+			return getCommandExecutionResult(query, options, commandOptions);
 		})
 };
 

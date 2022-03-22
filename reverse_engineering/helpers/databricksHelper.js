@@ -4,8 +4,8 @@ const fetchRequestHelper = require('./fetchRequestHelper')
 const { splitTableAndViewNames, convertCustomTags } = require('./utils')
 
 
-const getEntityCreateStatement = async (connectionInfo, dbName, entityName) => {
-	return await fetchRequestHelper.fetchCreateStatementRequest(`\`${dbName}\`.\`${entityName}\``, connectionInfo);
+const getEntityCreateStatement = (connectionInfo, dbName, entityName, logger) => {
+	return fetchRequestHelper.fetchCreateStatementRequest(`\`${dbName}\`.\`${entityName}\``, connectionInfo, logger);
 }
 
 const getDatabaseCollectionNames = async (connectionInfo) => {
@@ -64,7 +64,7 @@ const requiredClusterState = async (connectionInfo, logInfo, logger) => {
 	}
 }
 
-const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames) => {
+const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, logger) => {
 	const entitiesNames = databasesNames.reduce((entitiesNames, dbName) => {
 		const { tables, views } = splitTableAndViewNames(collectionsNames[dbName]);
 		const viewNames = views.map(viewName => ({ dbName, name: viewName }));
@@ -72,7 +72,7 @@ const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames) => {
 
 		return [...entitiesNames, ...viewNames, ...tableNames]
 	}, []);
-	return entitiesNames.map(async entity => ({ [`${entity.dbName}.${entity.name}`]: await getEntityCreateStatement(connectionInfo, entity.dbName, entity.name) }))
+	return entitiesNames.map(async entity => ({ [`${entity.dbName}.${entity.name}`]: await getEntityCreateStatement(connectionInfo, entity.dbName, entity.name, logger) }))
 }
 
 const getClusterData = (connectionInfo, databasesNames, collectionsNames, logger) => {
