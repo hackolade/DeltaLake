@@ -334,11 +334,12 @@ const executeCommand = (connectionInfo, command, language = "scala") => {
 const getCommandExecutionResult = (query, options, commandOptions) => {
 	return fetch(query, options)
 		.then(response => {
+			const responseBody = await response.text();
 			if (response.ok) {
-				return response.text()
+				return responseBody;
 			}
 			throw {
-				message: response.statusText, code: response.status, description: commandOptions
+				message: response.statusText, code: response.status, description: commandOptions, responseBody,
 			};
 		})
 		.then(body => {
