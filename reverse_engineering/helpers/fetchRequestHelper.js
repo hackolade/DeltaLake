@@ -333,7 +333,7 @@ const executeCommand = (connectionInfo, command, language = "scala") => {
 
 const getCommandExecutionResult = (query, options, commandOptions) => {
 	return fetch(query, options)
-		.then(response => {
+		.then(async response => {
 			const responseBody = await response.text();
 			if (response.ok) {
 				return responseBody;
