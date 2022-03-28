@@ -272,7 +272,9 @@ module.exports = {
 				accessToken: connectionInfo.accessToken
 			}
 
-			const clusterState = await databricksHelper.requiredClusterState(connectionData, logInfo, logger);
+			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
+			logger.log('info', clusterState, 'Cluster state info');
+
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`, type: 'simpleError' })
 			}

@@ -275,12 +275,13 @@ const destroyContext = (connectionInfo, contextId) => {
 	});
 	const options = postRequestOptions(connectionInfo, body);
 	return fetch(query, options)
-		.then(response => {
+		.then(async response => {
+			const responseBody = await response.text();
 			if (response.ok) {
-				return response.text()
+				return responseBody;
 			}
 			throw {
-				message: response.statusText, code: response.status, description: body
+				message: response.statusText, code: response.status, description: body, responseBody
 			};
 		})
 		.then(body => {
@@ -305,12 +306,13 @@ const executeCommand = (connectionInfo, command, language = "scala") => {
 			const options = postRequestOptions(connectionInfo, commandOptions)
 
 			return fetch(query, options)
-				.then(response => {
+				.then(async response => {
+					const responseBody = await response.text();
 					if (response.ok) {
-						return response.text()
+						return responseBody;
 					}
 					throw {
-						message: response.statusText, code: response.status, description: commandOptions
+						message: response.statusText, code: response.status, description: commandOptions, responseBody
 					};
 				})
 				.then(body => {

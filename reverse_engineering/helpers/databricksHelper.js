@@ -33,7 +33,7 @@ const getDatabaseCollectionNames = async (connectionInfo) => {
 	}));
 }
 
-const getModelData = async (connectionInfo, logger) => {
+const getClusterStateInfo = async (connectionInfo, logger) => {
 	const clusterProperties = await fetchRequestHelper.fetchClusterProperties(connectionInfo);
 	return {
 		dbVersion: `Runtime ${clusterProperties.spark_version[0]}`,
@@ -51,17 +51,10 @@ const getModelData = async (connectionInfo, logger) => {
 		custom_tags: convertCustomTags(clusterProperties.custom_tags, logger),
 		autotermination_minutes: clusterProperties.autotermination_minutes,
 		enable_elastic_disk: clusterProperties.enable_elastic_disk,
-		aws_attributes: clusterProperties.aws_attributes
-	};
-}
-
-const requiredClusterState = async (connectionInfo, logInfo, logger) => {
-	const clusterProperties = await fetchRequestHelper.fetchClusterProperties(connectionInfo);
-	logger.log('Retrieving databases and tables information', 'Cluster status: ' + clusterProperties.state);
-	return {
+		aws_attributes: clusterProperties.aws_attributes,
 		isRunning: clusterProperties.state === 'RUNNING',
 		state: clusterProperties.state
-	}
+	};
 }
 
 const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, logger) => {
@@ -81,8 +74,7 @@ const getClusterData = (connectionInfo, databasesNames, collectionsNames, logger
 
 module.exports = {
 	getDatabaseCollectionNames,
-	getModelData,
-	requiredClusterState,
+	getClusterStateInfo,
 	getClusterData,
 	getEntitiesDDL
 };
