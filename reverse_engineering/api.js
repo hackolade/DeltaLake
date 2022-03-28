@@ -35,8 +35,10 @@ module.exports = {
 				accessToken: connectionInfo.accessToken
 			}
 
-			logInfo('Test connection RE', connectionInfo, logger, logger);
-			const clusterState = await databricksHelper.requiredClusterState(connectionData, logInfo, logger);
+			logInfo('Test connection RE', connectionInfo, logger);
+			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
+			logger.log('info', clusterState, 'Cluster state info');
+			
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`, type: 'simpleError' })
 			}
@@ -67,7 +69,7 @@ module.exports = {
 			cb(null, dbCollectionsNames);
 		} catch (err) {
 			try{
-				const clusterState = await databricksHelper.requiredClusterState(connectionData, logInfo, logger);
+				const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
 				if (!clusterState.isRunning) {
 					logger.log(
 						'error',
@@ -107,7 +109,8 @@ module.exports = {
 		try {
 			setDependencies(app);
 
-			const modelData = await databricksHelper.getModelData(connectionData, logger);
+			const modelData = await databricksHelper.getClusterStateInfo(connectionData, logger);
+			logger.log('info', modelData, 'Cluster state info');
 
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
@@ -216,7 +219,7 @@ module.exports = {
 			fetchRequestHelper.destroyActiveContext();
 			cb(null, packages, modelData);
 		} catch (err) {
-			const clusterState = await databricksHelper.requiredClusterState(connectionData, logInfo, logger);
+			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
 			if (!clusterState.isRunning) {
 				logger.log(
 					'error',
