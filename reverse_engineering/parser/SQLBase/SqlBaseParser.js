@@ -1,10 +1,10 @@
-// Generated from grammars/SqlBase.g4 by ANTLR 4.7.2
+// Generated from grammars/SqlBase.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
-var SqlBaseListener = require('./SqlBaseListener').SqlBaseListener;
 var SqlBaseVisitor = require('./SqlBaseVisitor').SqlBaseVisitor;
 
 var grammarFileName = "SqlBase.g4";
+
 
 var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\u0003\u012b\u0c04\u0004\u0002\t\u0002\u0004\u0003\t\u0003\u0004\u0004",
@@ -2206,64 +2206,37 @@ var decisionsToDFA = atn.decisionToState.map( function(ds, index) { return new a
 var sharedContextCache = new antlr4.PredictionContextCache();
 
 var literalNames = [ null, "';'", "'('", "')'", "','", "'.'", "'/*+'", "'*/'", 
-                     "'->'", "'['", "']'", "':'", "'ADD'", "'AFTER'", "'ALL'", 
-                     "'ALTER'", "'ANALYZE'", "'AND'", "'ANTI'", "'ANY'", 
-                     "'ARCHIVE'", "'ARRAY'", "'AS'", "'ASC'", "'AT'", "'AUTHORIZATION'", 
-                     "'BETWEEN'", "'BOTH'", "'BUCKET'", "'BUCKETS'", "'BY'", 
-                     "'CACHE'", "'CASCADE'", "'CASE'", "'CAST'", "'CHANGE'", 
-                     "'CHECK'", "'CLEAR'", "'CLUSTER'", "'CLUSTERED'", "'CODEGEN'", 
-                     "'COLLATE'", "'COLLECTION'", "'COLUMN'", "'COLUMNS'", 
-                     "'COMMENT'", "'COMMIT'", "'COMPACT'", "'COMPACTIONS'", 
-                     "'COMPUTE'", "'CONCATENATE'", "'CONSTRAINT'", "'COST'", 
-                     "'CREATE'", "'CROSS'", "'CUBE'", "'CURRENT'", "'CURRENT_DATE'", 
-                     "'CURRENT_TIME'", "'CURRENT_TIMESTAMP'", "'CURRENT_USER'", 
-                     "'DATA'", "'DATABASE'", null, "'DBPROPERTIES'", "'DEFINED'", 
-                     "'DELETE'", "'DELIMITED'", "'DESC'", "'DESCRIBE'", 
-                     "'DFS'", "'DIRECTORIES'", "'DIRECTORY'", "'DISTINCT'", 
-                     "'DISTRIBUTE'", "'DIV'", "'DROP'", "'ELSE'", "'END'", 
-                     "'ESCAPE'", "'ESCAPED'", "'EXCEPT'", "'EXCHANGE'", 
-                     "'EXISTS'", "'EXPLAIN'", "'EXPORT'", "'EXTENDED'", 
-                     "'EXTERNAL'", "'EXTRACT'", "'FALSE'", "'FETCH'", "'FIELDS'", 
-                     "'FILTER'", "'FILEFORMAT'", "'FIRST'", "'FOLLOWING'", 
-                     "'FOR'", "'FOREIGN'", "'FORMAT'", "'FORMATTED'", "'FROM'", 
-                     "'FULL'", "'FUNCTION'", "'FUNCTIONS'", "'GLOBAL'", 
-                     "'GRANT'", "'GROUP'", "'GROUPING'", "'HAVING'", "'IF'", 
-                     "'IGNORE'", "'IMPORT'", "'IN'", "'INDEX'", "'INDEXES'", 
-                     "'INNER'", "'INPATH'", "'INPUTFORMAT'", "'INSERT'", 
-                     "'INTERSECT'", "'INTERVAL'", "'INTO'", "'IS'", "'ITEMS'", 
-                     "'JOIN'", "'KEYS'", "'LAST'", "'LATERAL'", "'LAZY'", 
-                     "'LEADING'", "'LEFT'", "'LIKE'", "'LIMIT'", "'LINES'", 
-                     "'LIST'", "'LOAD'", "'LOCAL'", "'LOCATION'", "'LOCK'", 
-                     "'LOCKS'", "'LOGICAL'", "'MACRO'", "'MAP'", "'MATCHED'", 
-                     "'MERGE'", "'MSCK'", "'NAMESPACE'", "'NAMESPACES'", 
-                     "'NATURAL'", "'NO'", null, "'NULL'", "'NULLS'", "'OF'", 
-                     "'ON'", "'ONLY'", "'OPTION'", "'OPTIONS'", "'OR'", 
-                     "'ORDER'", "'OUT'", "'OUTER'", "'OUTPUTFORMAT'", "'OVER'", 
-                     "'OVERLAPS'", "'OVERLAY'", "'OVERWRITE'", "'PARTITION'", 
-                     "'PARTITIONED'", "'PARTITIONS'", "'PERCENT'", "'PIVOT'", 
-                     "'PLACING'", "'POSITION'", "'PRECEDING'", "'PRIMARY'", 
-                     "'PRINCIPALS'", "'PROPERTIES'", "'PURGE'", "'QUERY'", 
-                     "'RANGE'", "'RECORDREADER'", "'RECORDWRITER'", "'RECOVER'", 
-                     "'REDUCE'", "'REFERENCES'", "'REFRESH'", "'RENAME'", 
-                     "'REPAIR'", "'REPLACE'", "'RESET'", "'RESPECT'", "'RESTRICT'", 
-                     "'REVOKE'", "'RIGHT'", null, "'ROLE'", "'ROLES'", "'ROLLBACK'", 
-                     "'ROLLUP'", "'ROW'", "'ROWS'", "'SCHEMA'", "'SELECT'", 
-                     "'SEMI'", "'SEPARATED'", "'SERDE'", "'SERDEPROPERTIES'", 
-                     "'SESSION_USER'", "'SET'", "'MINUS'", "'SETS'", "'SHOW'", 
-                     "'SKEWED'", "'SOME'", "'SORT'", "'SORTED'", "'START'", 
-                     "'STATISTICS'", "'STORED'", "'STRATIFY'", "'STRUCT'", 
-                     "'SUBSTR'", "'SUBSTRING'", "'SYNC'", "'TABLE'", "'TABLES'", 
-                     "'TABLESAMPLE'", "'TBLPROPERTIES'", null, "'TERMINATED'", 
-                     "'THEN'", "'TIME'", "'TO'", "'TOUCH'", "'TRAILING'", 
-                     "'TRANSACTION'", "'TRANSACTIONS'", "'TRANSFORM'", "'TRIM'", 
-                     "'TRUE'", "'TRUNCATE'", "'TRY_CAST'", "'TYPE'", "'UNARCHIVE'", 
-                     "'UNBOUNDED'", "'UNCACHE'", "'UNION'", "'UNIQUE'", 
-                     "'UNKNOWN'", "'UNLOCK'", "'UNSET'", "'UPDATE'", "'USE'", 
-                     "'USER'", "'USING'", "'VALUES'", "'VIEW'", "'VIEWS'", 
-                     "'WHEN'", "'WHERE'", "'WINDOW'", "'WITH'", "'ZONE'", 
-                     null, "'<=>'", "'<>'", "'!='", "'<'", null, "'>'", 
-                     null, "'+'", "'-'", "'*'", "'/'", "'%'", "'~'", "'&'", 
-                     "'|'", "'||'", "'^'" ];
+                     "'->'", "'['", "']'", "':'", null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, null, null, null, 
+                     null, null, null, null, null, null, "'<=>'", "'<>'", 
+                     "'!='", "'<'", null, "'>'", null, "'+'", "'-'", "'*'", 
+                     "'/'", "'%'", "'~'", "'&'", "'|'", "'||'", "'^'" ];
 
 var symbolicNames = [ null, null, null, null, null, null, null, null, null, 
                       null, null, null, "ADD", "AFTER", "ALL", "ALTER", 
@@ -2372,7 +2345,6 @@ function SqlBaseParser (input) {
     this.ruleNames = ruleNames;
     this.literalNames = literalNames;
     this.symbolicNames = symbolicNames;
-
     return this;
 }
 
@@ -2826,6 +2798,7 @@ SqlBaseParser.RULE_ansiNonReserved = 138;
 SqlBaseParser.RULE_strictNonReserved = 139;
 SqlBaseParser.RULE_nonReserved = 140;
 
+
 function SingleStatementContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -2848,18 +2821,6 @@ SingleStatementContext.prototype.statement = function() {
 
 SingleStatementContext.prototype.EOF = function() {
     return this.getToken(SqlBaseParser.EOF, 0);
-};
-
-SingleStatementContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSingleStatement(this);
-	}
-};
-
-SingleStatementContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSingleStatement(this);
-	}
 };
 
 SingleStatementContext.prototype.accept = function(visitor) {
@@ -2910,6 +2871,7 @@ SqlBaseParser.prototype.singleStatement = function() {
     return localctx;
 };
 
+
 function SingleExpressionContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -2932,18 +2894,6 @@ SingleExpressionContext.prototype.namedExpression = function() {
 
 SingleExpressionContext.prototype.EOF = function() {
     return this.getToken(SqlBaseParser.EOF, 0);
-};
-
-SingleExpressionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSingleExpression(this);
-	}
-};
-
-SingleExpressionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSingleExpression(this);
-	}
 };
 
 SingleExpressionContext.prototype.accept = function(visitor) {
@@ -2983,6 +2933,7 @@ SqlBaseParser.prototype.singleExpression = function() {
     return localctx;
 };
 
+
 function SingleTableIdentifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -3005,18 +2956,6 @@ SingleTableIdentifierContext.prototype.tableIdentifier = function() {
 
 SingleTableIdentifierContext.prototype.EOF = function() {
     return this.getToken(SqlBaseParser.EOF, 0);
-};
-
-SingleTableIdentifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSingleTableIdentifier(this);
-	}
-};
-
-SingleTableIdentifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSingleTableIdentifier(this);
-	}
 };
 
 SingleTableIdentifierContext.prototype.accept = function(visitor) {
@@ -3056,6 +2995,7 @@ SqlBaseParser.prototype.singleTableIdentifier = function() {
     return localctx;
 };
 
+
 function SingleMultipartIdentifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -3078,18 +3018,6 @@ SingleMultipartIdentifierContext.prototype.multipartIdentifier = function() {
 
 SingleMultipartIdentifierContext.prototype.EOF = function() {
     return this.getToken(SqlBaseParser.EOF, 0);
-};
-
-SingleMultipartIdentifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSingleMultipartIdentifier(this);
-	}
-};
-
-SingleMultipartIdentifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSingleMultipartIdentifier(this);
-	}
 };
 
 SingleMultipartIdentifierContext.prototype.accept = function(visitor) {
@@ -3129,6 +3057,7 @@ SqlBaseParser.prototype.singleMultipartIdentifier = function() {
     return localctx;
 };
 
+
 function SingleFunctionIdentifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -3151,18 +3080,6 @@ SingleFunctionIdentifierContext.prototype.functionIdentifier = function() {
 
 SingleFunctionIdentifierContext.prototype.EOF = function() {
     return this.getToken(SqlBaseParser.EOF, 0);
-};
-
-SingleFunctionIdentifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSingleFunctionIdentifier(this);
-	}
-};
-
-SingleFunctionIdentifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSingleFunctionIdentifier(this);
-	}
 };
 
 SingleFunctionIdentifierContext.prototype.accept = function(visitor) {
@@ -3202,6 +3119,7 @@ SqlBaseParser.prototype.singleFunctionIdentifier = function() {
     return localctx;
 };
 
+
 function SingleDataTypeContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -3224,18 +3142,6 @@ SingleDataTypeContext.prototype.dataType = function() {
 
 SingleDataTypeContext.prototype.EOF = function() {
     return this.getToken(SqlBaseParser.EOF, 0);
-};
-
-SingleDataTypeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSingleDataType(this);
-	}
-};
-
-SingleDataTypeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSingleDataType(this);
-	}
 };
 
 SingleDataTypeContext.prototype.accept = function(visitor) {
@@ -3275,6 +3181,7 @@ SqlBaseParser.prototype.singleDataType = function() {
     return localctx;
 };
 
+
 function SingleTableSchemaContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -3297,18 +3204,6 @@ SingleTableSchemaContext.prototype.colTypeList = function() {
 
 SingleTableSchemaContext.prototype.EOF = function() {
     return this.getToken(SqlBaseParser.EOF, 0);
-};
-
-SingleTableSchemaContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSingleTableSchema(this);
-	}
-};
-
-SingleTableSchemaContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSingleTableSchema(this);
-	}
 };
 
 SingleTableSchemaContext.prototype.accept = function(visitor) {
@@ -3347,6 +3242,7 @@ SqlBaseParser.prototype.singleTableSchema = function() {
     }
     return localctx;
 };
+
 
 function StatementContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -3409,18 +3305,6 @@ ExplainContext.prototype.CODEGEN = function() {
 ExplainContext.prototype.COST = function() {
     return this.getToken(SqlBaseParser.COST, 0);
 };
-ExplainContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterExplain(this);
-	}
-};
-
-ExplainContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitExplain(this);
-	}
-};
-
 ExplainContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitExplain(this);
@@ -3444,18 +3328,6 @@ SqlBaseParser.ResetConfigurationContext = ResetConfigurationContext;
 ResetConfigurationContext.prototype.RESET = function() {
     return this.getToken(SqlBaseParser.RESET, 0);
 };
-ResetConfigurationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterResetConfiguration(this);
-	}
-};
-
-ResetConfigurationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitResetConfiguration(this);
-	}
-};
-
 ResetConfigurationContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitResetConfiguration(this);
@@ -3495,18 +3367,6 @@ AlterViewQueryContext.prototype.query = function() {
 AlterViewQueryContext.prototype.AS = function() {
     return this.getToken(SqlBaseParser.AS, 0);
 };
-AlterViewQueryContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAlterViewQuery(this);
-	}
-};
-
-AlterViewQueryContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAlterViewQuery(this);
-	}
-};
-
 AlterViewQueryContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitAlterViewQuery(this);
@@ -3538,18 +3398,6 @@ UseContext.prototype.multipartIdentifier = function() {
 UseContext.prototype.NAMESPACE = function() {
     return this.getToken(SqlBaseParser.NAMESPACE, 0);
 };
-UseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterUse(this);
-	}
-};
-
-UseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitUse(this);
-	}
-};
-
 UseContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitUse(this);
@@ -3597,18 +3445,6 @@ DropNamespaceContext.prototype.RESTRICT = function() {
 DropNamespaceContext.prototype.CASCADE = function() {
     return this.getToken(SqlBaseParser.CASCADE, 0);
 };
-DropNamespaceContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDropNamespace(this);
-	}
-};
-
-DropNamespaceContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDropNamespace(this);
-	}
-};
-
 DropNamespaceContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDropNamespace(this);
@@ -3672,18 +3508,6 @@ CreateTempViewUsingContext.prototype.OPTIONS = function() {
 CreateTempViewUsingContext.prototype.tablePropertyList = function() {
     return this.getTypedRuleContext(TablePropertyListContext,0);
 };
-CreateTempViewUsingContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCreateTempViewUsing(this);
-	}
-};
-
-CreateTempViewUsingContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCreateTempViewUsing(this);
-	}
-};
-
 CreateTempViewUsingContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCreateTempViewUsing(this);
@@ -3736,18 +3560,6 @@ RenameTableContext.prototype.multipartIdentifier = function(i) {
         return this.getTypedRuleContext(MultipartIdentifierContext,i);
     }
 };
-RenameTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRenameTable(this);
-	}
-};
-
-RenameTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRenameTable(this);
-	}
-};
-
 RenameTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRenameTable(this);
@@ -3779,18 +3591,6 @@ FailNativeCommandContext.prototype.ROLE = function() {
 FailNativeCommandContext.prototype.unsupportedHiveNativeCommands = function() {
     return this.getTypedRuleContext(UnsupportedHiveNativeCommandsContext,0);
 };
-FailNativeCommandContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFailNativeCommand(this);
-	}
-};
-
-FailNativeCommandContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFailNativeCommand(this);
-	}
-};
-
 FailNativeCommandContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitFailNativeCommand(this);
@@ -3818,18 +3618,6 @@ ClearCacheContext.prototype.CLEAR = function() {
 ClearCacheContext.prototype.CACHE = function() {
     return this.getToken(SqlBaseParser.CACHE, 0);
 };
-ClearCacheContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterClearCache(this);
-	}
-};
-
-ClearCacheContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitClearCache(this);
-	}
-};
-
 ClearCacheContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitClearCache(this);
@@ -3869,18 +3657,6 @@ DropViewContext.prototype.IF = function() {
 DropViewContext.prototype.EXISTS = function() {
     return this.getToken(SqlBaseParser.EXISTS, 0);
 };
-DropViewContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDropView(this);
-	}
-};
-
-DropViewContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDropView(this);
-	}
-};
-
 DropViewContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDropView(this);
@@ -3929,18 +3705,6 @@ ShowTablesContext.prototype.STRING = function() {
 ShowTablesContext.prototype.LIKE = function() {
     return this.getToken(SqlBaseParser.LIKE, 0);
 };
-ShowTablesContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterShowTables(this);
-	}
-};
-
-ShowTablesContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitShowTables(this);
-	}
-};
-
 ShowTablesContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitShowTables(this);
@@ -3980,18 +3744,6 @@ RecoverPartitionsContext.prototype.RECOVER = function() {
 RecoverPartitionsContext.prototype.PARTITIONS = function() {
     return this.getToken(SqlBaseParser.PARTITIONS, 0);
 };
-RecoverPartitionsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRecoverPartitions(this);
-	}
-};
-
-RecoverPartitionsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRecoverPartitions(this);
-	}
-};
-
 RecoverPartitionsContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRecoverPartitions(this);
@@ -4023,18 +3775,6 @@ ShowCurrentNamespaceContext.prototype.CURRENT = function() {
 ShowCurrentNamespaceContext.prototype.NAMESPACE = function() {
     return this.getToken(SqlBaseParser.NAMESPACE, 0);
 };
-ShowCurrentNamespaceContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterShowCurrentNamespace(this);
-	}
-};
-
-ShowCurrentNamespaceContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitShowCurrentNamespace(this);
-	}
-};
-
 ShowCurrentNamespaceContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitShowCurrentNamespace(this);
@@ -4087,18 +3827,6 @@ RenameTablePartitionContext.prototype.partitionSpec = function(i) {
         return this.getTypedRuleContext(PartitionSpecContext,i);
     }
 };
-RenameTablePartitionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRenameTablePartition(this);
-	}
-};
-
-RenameTablePartitionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRenameTablePartition(this);
-	}
-};
-
 RenameTablePartitionContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRenameTablePartition(this);
@@ -4151,18 +3879,6 @@ RepairTableContext.prototype.DROP = function() {
 RepairTableContext.prototype.SYNC = function() {
     return this.getToken(SqlBaseParser.SYNC, 0);
 };
-RepairTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRepairTable(this);
-	}
-};
-
-RepairTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRepairTable(this);
-	}
-};
-
 RepairTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRepairTable(this);
@@ -4190,18 +3906,6 @@ RefreshResourceContext.prototype.REFRESH = function() {
 RefreshResourceContext.prototype.STRING = function() {
     return this.getToken(SqlBaseParser.STRING, 0);
 };
-RefreshResourceContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRefreshResource(this);
-	}
-};
-
-RefreshResourceContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRefreshResource(this);
-	}
-};
-
 RefreshResourceContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRefreshResource(this);
@@ -4245,18 +3949,6 @@ ShowCreateTableContext.prototype.AS = function() {
 ShowCreateTableContext.prototype.SERDE = function() {
     return this.getToken(SqlBaseParser.SERDE, 0);
 };
-ShowCreateTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterShowCreateTable(this);
-	}
-};
-
-ShowCreateTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitShowCreateTable(this);
-	}
-};
-
 ShowCreateTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitShowCreateTable(this);
@@ -4309,18 +4001,6 @@ ShowNamespacesContext.prototype.STRING = function() {
 ShowNamespacesContext.prototype.LIKE = function() {
     return this.getToken(SqlBaseParser.LIKE, 0);
 };
-ShowNamespacesContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterShowNamespaces(this);
-	}
-};
-
-ShowNamespacesContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitShowNamespaces(this);
-	}
-};
-
 ShowNamespacesContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitShowNamespaces(this);
@@ -4385,18 +4065,6 @@ ShowColumnsContext.prototype.multipartIdentifier = function(i) {
         return this.getTypedRuleContext(MultipartIdentifierContext,i);
     }
 };
-ShowColumnsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterShowColumns(this);
-	}
-};
-
-ShowColumnsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitShowColumns(this);
-	}
-};
-
 ShowColumnsContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitShowColumns(this);
@@ -4440,18 +4108,6 @@ ReplaceTableContext.prototype.query = function() {
 ReplaceTableContext.prototype.AS = function() {
     return this.getToken(SqlBaseParser.AS, 0);
 };
-ReplaceTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterReplaceTable(this);
-	}
-};
-
-ReplaceTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitReplaceTable(this);
-	}
-};
-
 ReplaceTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitReplaceTable(this);
@@ -4503,18 +4159,6 @@ AnalyzeTablesContext.prototype.FROM = function() {
 AnalyzeTablesContext.prototype.IN = function() {
     return this.getToken(SqlBaseParser.IN, 0);
 };
-AnalyzeTablesContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAnalyzeTables(this);
-	}
-};
-
-AnalyzeTablesContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAnalyzeTables(this);
-	}
-};
-
 AnalyzeTablesContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitAnalyzeTables(this);
@@ -4577,18 +4221,6 @@ AddTablePartitionContext.prototype.partitionSpecLocation = function(i) {
         return this.getTypedRuleContext(PartitionSpecLocationContext,i);
     }
 };
-AddTablePartitionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAddTablePartition(this);
-	}
-};
-
-AddTablePartitionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAddTablePartition(this);
-	}
-};
-
 AddTablePartitionContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitAddTablePartition(this);
@@ -4628,18 +4260,6 @@ SetNamespaceLocationContext.prototype.SET = function() {
 SetNamespaceLocationContext.prototype.locationSpec = function() {
     return this.getTypedRuleContext(LocationSpecContext,0);
 };
-SetNamespaceLocationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSetNamespaceLocation(this);
-	}
-};
-
-SetNamespaceLocationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSetNamespaceLocation(this);
-	}
-};
-
 SetNamespaceLocationContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSetNamespaceLocation(this);
@@ -4671,18 +4291,6 @@ RefreshTableContext.prototype.TABLE = function() {
 RefreshTableContext.prototype.multipartIdentifier = function() {
     return this.getTypedRuleContext(MultipartIdentifierContext,0);
 };
-RefreshTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRefreshTable(this);
-	}
-};
-
-RefreshTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRefreshTable(this);
-	}
-};
-
 RefreshTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRefreshTable(this);
@@ -4730,18 +4338,6 @@ SetNamespacePropertiesContext.prototype.DBPROPERTIES = function() {
 SetNamespacePropertiesContext.prototype.PROPERTIES = function() {
     return this.getToken(SqlBaseParser.PROPERTIES, 0);
 };
-SetNamespacePropertiesContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSetNamespaceProperties(this);
-	}
-};
-
-SetNamespacePropertiesContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSetNamespaceProperties(this);
-	}
-};
-
 SetNamespacePropertiesContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSetNamespaceProperties(this);
@@ -4778,18 +4374,6 @@ ManageResourceContext.prototype.LIST = function() {
 ManageResourceContext.prototype.STRING = function() {
     return this.getToken(SqlBaseParser.STRING, 0);
 };
-ManageResourceContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterManageResource(this);
-	}
-};
-
-ManageResourceContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitManageResource(this);
-	}
-};
-
 ManageResourceContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitManageResource(this);
@@ -4825,18 +4409,6 @@ SetQuotedConfigurationContext.prototype.EQ = function() {
 SetQuotedConfigurationContext.prototype.configValue = function() {
     return this.getTypedRuleContext(ConfigValueContext,0);
 };
-SetQuotedConfigurationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSetQuotedConfiguration(this);
-	}
-};
-
-SetQuotedConfigurationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSetQuotedConfiguration(this);
-	}
-};
-
 SetQuotedConfigurationContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSetQuotedConfiguration(this);
@@ -4900,18 +4472,6 @@ AnalyzeContext.prototype.identifierSeq = function() {
 AnalyzeContext.prototype.ALL = function() {
     return this.getToken(SqlBaseParser.ALL, 0);
 };
-AnalyzeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAnalyze(this);
-	}
-};
-
-AnalyzeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAnalyze(this);
-	}
-};
-
 AnalyzeContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitAnalyze(this);
@@ -4991,18 +4551,6 @@ CreateFunctionContext.prototype.resource = function(i) {
         return this.getTypedRuleContext(ResourceContext,i);
     }
 };
-CreateFunctionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCreateFunction(this);
-	}
-};
-
-CreateFunctionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCreateFunction(this);
-	}
-};
-
 CreateFunctionContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCreateFunction(this);
@@ -5052,18 +4600,6 @@ HiveReplaceColumnsContext.prototype.qualifiedColTypeWithPositionList = function(
 HiveReplaceColumnsContext.prototype.partitionSpec = function() {
     return this.getTypedRuleContext(PartitionSpecContext,0);
 };
-HiveReplaceColumnsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterHiveReplaceColumns(this);
-	}
-};
-
-HiveReplaceColumnsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitHiveReplaceColumns(this);
-	}
-};
-
 HiveReplaceColumnsContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitHiveReplaceColumns(this);
@@ -5112,18 +4648,6 @@ CommentNamespaceContext.prototype.STRING = function() {
 CommentNamespaceContext.prototype.NULL = function() {
     return this.getToken(SqlBaseParser.NULL, 0);
 };
-CommentNamespaceContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCommentNamespace(this);
-	}
-};
-
-CommentNamespaceContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCommentNamespace(this);
-	}
-};
-
 CommentNamespaceContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCommentNamespace(this);
@@ -5151,18 +4675,6 @@ ResetQuotedConfigurationContext.prototype.RESET = function() {
 ResetQuotedConfigurationContext.prototype.configKey = function() {
     return this.getTypedRuleContext(ConfigKeyContext,0);
 };
-ResetQuotedConfigurationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterResetQuotedConfiguration(this);
-	}
-};
-
-ResetQuotedConfigurationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitResetQuotedConfiguration(this);
-	}
-};
-
 ResetQuotedConfigurationContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitResetQuotedConfiguration(this);
@@ -5206,18 +4718,6 @@ CreateTableContext.prototype.query = function() {
 CreateTableContext.prototype.AS = function() {
     return this.getToken(SqlBaseParser.AS, 0);
 };
-CreateTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCreateTable(this);
-	}
-};
-
-CreateTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCreateTable(this);
-	}
-};
-
 CreateTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCreateTable(this);
@@ -5245,18 +4745,6 @@ DmlStatementContext.prototype.dmlStatementNoWith = function() {
 DmlStatementContext.prototype.ctes = function() {
     return this.getTypedRuleContext(CtesContext,0);
 };
-DmlStatementContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDmlStatement(this);
-	}
-};
-
-DmlStatementContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDmlStatement(this);
-	}
-};
-
 DmlStatementContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDmlStatement(this);
@@ -5381,18 +4869,6 @@ CreateTableLikeContext.prototype.tablePropertyList = function(i) {
         return this.getTypedRuleContext(TablePropertyListContext,i);
     }
 };
-CreateTableLikeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCreateTableLike(this);
-	}
-};
-
-CreateTableLikeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCreateTableLike(this);
-	}
-};
-
 CreateTableLikeContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCreateTableLike(this);
@@ -5432,18 +4908,6 @@ UncacheTableContext.prototype.IF = function() {
 UncacheTableContext.prototype.EXISTS = function() {
     return this.getToken(SqlBaseParser.EXISTS, 0);
 };
-UncacheTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterUncacheTable(this);
-	}
-};
-
-UncacheTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitUncacheTable(this);
-	}
-};
-
 UncacheTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitUncacheTable(this);
@@ -5487,18 +4951,6 @@ DropFunctionContext.prototype.IF = function() {
 DropFunctionContext.prototype.EXISTS = function() {
     return this.getToken(SqlBaseParser.EXISTS, 0);
 };
-DropFunctionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDropFunction(this);
-	}
-};
-
-DropFunctionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDropFunction(this);
-	}
-};
-
 DropFunctionContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDropFunction(this);
@@ -5551,18 +5003,6 @@ DescribeRelationContext.prototype.EXTENDED = function() {
 DescribeRelationContext.prototype.FORMATTED = function() {
     return this.getToken(SqlBaseParser.FORMATTED, 0);
 };
-DescribeRelationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDescribeRelation(this);
-	}
-};
-
-DescribeRelationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDescribeRelation(this);
-	}
-};
-
 DescribeRelationContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDescribeRelation(this);
@@ -5623,18 +5063,6 @@ LoadDataContext.prototype.OVERWRITE = function() {
 LoadDataContext.prototype.partitionSpec = function() {
     return this.getTypedRuleContext(PartitionSpecContext,0);
 };
-LoadDataContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterLoadData(this);
-	}
-};
-
-LoadDataContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitLoadData(this);
-	}
-};
-
 LoadDataContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitLoadData(this);
@@ -5670,18 +5098,6 @@ ShowPartitionsContext.prototype.multipartIdentifier = function() {
 ShowPartitionsContext.prototype.partitionSpec = function() {
     return this.getTypedRuleContext(PartitionSpecContext,0);
 };
-ShowPartitionsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterShowPartitions(this);
-	}
-};
-
-ShowPartitionsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitShowPartitions(this);
-	}
-};
-
 ShowPartitionsContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitShowPartitions(this);
@@ -5721,18 +5137,6 @@ DescribeFunctionContext.prototype.DESCRIBE = function() {
 DescribeFunctionContext.prototype.EXTENDED = function() {
     return this.getToken(SqlBaseParser.EXTENDED, 0);
 };
-DescribeFunctionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDescribeFunction(this);
-	}
-};
-
-DescribeFunctionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDescribeFunction(this);
-	}
-};
-
 DescribeFunctionContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDescribeFunction(this);
@@ -5790,18 +5194,6 @@ RenameTableColumnContext.prototype.multipartIdentifier = function(i) {
 RenameTableColumnContext.prototype.errorCapturingIdentifier = function() {
     return this.getTypedRuleContext(ErrorCapturingIdentifierContext,0);
 };
-RenameTableColumnContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRenameTableColumn(this);
-	}
-};
-
-RenameTableColumnContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRenameTableColumn(this);
-	}
-};
-
 RenameTableColumnContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRenameTableColumn(this);
@@ -5825,18 +5217,6 @@ SqlBaseParser.StatementDefaultContext = StatementDefaultContext;
 StatementDefaultContext.prototype.query = function() {
     return this.getTypedRuleContext(QueryContext,0);
 };
-StatementDefaultContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterStatementDefault(this);
-	}
-};
-
-StatementDefaultContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitStatementDefault(this);
-	}
-};
-
 StatementDefaultContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitStatementDefault(this);
@@ -5897,18 +5277,6 @@ HiveChangeColumnContext.prototype.COLUMN = function() {
 HiveChangeColumnContext.prototype.colPosition = function() {
     return this.getTypedRuleContext(ColPositionContext,0);
 };
-HiveChangeColumnContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterHiveChangeColumn(this);
-	}
-};
-
-HiveChangeColumnContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitHiveChangeColumn(this);
-	}
-};
-
 HiveChangeColumnContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitHiveChangeColumn(this);
@@ -5953,18 +5321,6 @@ SetTimeZoneContext.prototype.STRING = function() {
 SetTimeZoneContext.prototype.LOCAL = function() {
     return this.getToken(SqlBaseParser.LOCAL, 0);
 };
-SetTimeZoneContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSetTimeZone(this);
-	}
-};
-
-SetTimeZoneContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSetTimeZone(this);
-	}
-};
-
 SetTimeZoneContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSetTimeZone(this);
@@ -6000,18 +5356,6 @@ DescribeQueryContext.prototype.DESCRIBE = function() {
 DescribeQueryContext.prototype.QUERY = function() {
     return this.getToken(SqlBaseParser.QUERY, 0);
 };
-DescribeQueryContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDescribeQuery(this);
-	}
-};
-
-DescribeQueryContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDescribeQuery(this);
-	}
-};
-
 DescribeQueryContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDescribeQuery(this);
@@ -6047,18 +5391,6 @@ TruncateTableContext.prototype.multipartIdentifier = function() {
 TruncateTableContext.prototype.partitionSpec = function() {
     return this.getTypedRuleContext(PartitionSpecContext,0);
 };
-TruncateTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTruncateTable(this);
-	}
-};
-
-TruncateTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTruncateTable(this);
-	}
-};
-
 TruncateTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitTruncateTable(this);
@@ -6118,18 +5450,6 @@ SetTableSerDeContext.prototype.SERDEPROPERTIES = function() {
 SetTableSerDeContext.prototype.tablePropertyList = function() {
     return this.getTypedRuleContext(TablePropertyListContext,0);
 };
-SetTableSerDeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSetTableSerDe(this);
-	}
-};
-
-SetTableSerDeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSetTableSerDe(this);
-	}
-};
-
 SetTableSerDeContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSetTableSerDe(this);
@@ -6271,18 +5591,6 @@ CreateViewContext.prototype.tablePropertyList = function(i) {
 CreateViewContext.prototype.GLOBAL = function() {
     return this.getToken(SqlBaseParser.GLOBAL, 0);
 };
-CreateViewContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCreateView(this);
-	}
-};
-
-CreateViewContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCreateView(this);
-	}
-};
-
 CreateViewContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCreateView(this);
@@ -6345,18 +5653,6 @@ DropTablePartitionsContext.prototype.EXISTS = function() {
 DropTablePartitionsContext.prototype.PURGE = function() {
     return this.getToken(SqlBaseParser.PURGE, 0);
 };
-DropTablePartitionsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDropTablePartitions(this);
-	}
-};
-
-DropTablePartitionsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDropTablePartitions(this);
-	}
-};
-
 DropTablePartitionsContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDropTablePartitions(this);
@@ -6380,18 +5676,6 @@ SqlBaseParser.SetConfigurationContext = SetConfigurationContext;
 SetConfigurationContext.prototype.SET = function() {
     return this.getToken(SqlBaseParser.SET, 0);
 };
-SetConfigurationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSetConfiguration(this);
-	}
-};
-
-SetConfigurationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSetConfiguration(this);
-	}
-};
-
 SetConfigurationContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSetConfiguration(this);
@@ -6435,18 +5719,6 @@ DropTableContext.prototype.EXISTS = function() {
 DropTableContext.prototype.PURGE = function() {
     return this.getToken(SqlBaseParser.PURGE, 0);
 };
-DropTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDropTable(this);
-	}
-};
-
-DropTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDropTable(this);
-	}
-};
-
 DropTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDropTable(this);
@@ -6504,18 +5776,6 @@ ShowTableExtendedContext.prototype.IN = function() {
 ShowTableExtendedContext.prototype.multipartIdentifier = function() {
     return this.getTypedRuleContext(MultipartIdentifierContext,0);
 };
-ShowTableExtendedContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterShowTableExtended(this);
-	}
-};
-
-ShowTableExtendedContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitShowTableExtended(this);
-	}
-};
-
 ShowTableExtendedContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitShowTableExtended(this);
@@ -6555,18 +5815,6 @@ DescribeNamespaceContext.prototype.DESCRIBE = function() {
 DescribeNamespaceContext.prototype.EXTENDED = function() {
     return this.getToken(SqlBaseParser.EXTENDED, 0);
 };
-DescribeNamespaceContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDescribeNamespace(this);
-	}
-};
-
-DescribeNamespaceContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDescribeNamespace(this);
-	}
-};
-
 DescribeNamespaceContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDescribeNamespace(this);
@@ -6627,18 +5875,6 @@ AlterTableAlterColumnContext.prototype.COLUMN = function() {
 AlterTableAlterColumnContext.prototype.alterColumnAction = function() {
     return this.getTypedRuleContext(AlterColumnActionContext,0);
 };
-AlterTableAlterColumnContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAlterTableAlterColumn(this);
-	}
-};
-
-AlterTableAlterColumnContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAlterTableAlterColumn(this);
-	}
-};
-
 AlterTableAlterColumnContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitAlterTableAlterColumn(this);
@@ -6670,18 +5906,6 @@ RefreshFunctionContext.prototype.FUNCTION = function() {
 RefreshFunctionContext.prototype.multipartIdentifier = function() {
     return this.getTypedRuleContext(MultipartIdentifierContext,0);
 };
-RefreshFunctionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRefreshFunction(this);
-	}
-};
-
-RefreshFunctionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRefreshFunction(this);
-	}
-};
-
 RefreshFunctionContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRefreshFunction(this);
@@ -6730,18 +5954,6 @@ CommentTableContext.prototype.STRING = function() {
 CommentTableContext.prototype.NULL = function() {
     return this.getToken(SqlBaseParser.NULL, 0);
 };
-CommentTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCommentTable(this);
-	}
-};
-
-CommentTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCommentTable(this);
-	}
-};
-
 CommentTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCommentTable(this);
@@ -6854,18 +6066,6 @@ CreateNamespaceContext.prototype.PROPERTIES = function(i) {
     }
 };
 
-CreateNamespaceContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCreateNamespace(this);
-	}
-};
-
-CreateNamespaceContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCreateNamespace(this);
-	}
-};
-
 CreateNamespaceContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCreateNamespace(this);
@@ -6903,18 +6103,6 @@ ShowTblPropertiesContext.prototype.multipartIdentifier = function() {
 ShowTblPropertiesContext.prototype.tablePropertyKey = function() {
     return this.getTypedRuleContext(TablePropertyKeyContext,0);
 };
-ShowTblPropertiesContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterShowTblProperties(this);
-	}
-};
-
-ShowTblPropertiesContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitShowTblProperties(this);
-	}
-};
-
 ShowTblPropertiesContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitShowTblProperties(this);
@@ -6970,18 +6158,6 @@ UnsetTablePropertiesContext.prototype.IF = function() {
 UnsetTablePropertiesContext.prototype.EXISTS = function() {
     return this.getToken(SqlBaseParser.EXISTS, 0);
 };
-UnsetTablePropertiesContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterUnsetTableProperties(this);
-	}
-};
-
-UnsetTablePropertiesContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitUnsetTableProperties(this);
-	}
-};
-
 UnsetTablePropertiesContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitUnsetTableProperties(this);
@@ -7025,18 +6201,6 @@ SetTableLocationContext.prototype.locationSpec = function() {
 SetTableLocationContext.prototype.partitionSpec = function() {
     return this.getTypedRuleContext(PartitionSpecContext,0);
 };
-SetTableLocationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSetTableLocation(this);
-	}
-};
-
-SetTableLocationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSetTableLocation(this);
-	}
-};
-
 SetTableLocationContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSetTableLocation(this);
@@ -7085,18 +6249,6 @@ DropTableColumnsContext.prototype.COLUMNS = function() {
 DropTableColumnsContext.prototype.multipartIdentifierList = function() {
     return this.getTypedRuleContext(MultipartIdentifierListContext,0);
 };
-DropTableColumnsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDropTableColumns(this);
-	}
-};
-
-DropTableColumnsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDropTableColumns(this);
-	}
-};
-
 DropTableColumnsContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDropTableColumns(this);
@@ -7145,18 +6297,6 @@ ShowViewsContext.prototype.STRING = function() {
 ShowViewsContext.prototype.LIKE = function() {
     return this.getToken(SqlBaseParser.LIKE, 0);
 };
-ShowViewsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterShowViews(this);
-	}
-};
-
-ShowViewsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitShowViews(this);
-	}
-};
-
 ShowViewsContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitShowViews(this);
@@ -7201,18 +6341,6 @@ ShowFunctionsContext.prototype.LIKE = function() {
 ShowFunctionsContext.prototype.STRING = function() {
     return this.getToken(SqlBaseParser.STRING, 0);
 };
-ShowFunctionsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterShowFunctions(this);
-	}
-};
-
-ShowFunctionsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitShowFunctions(this);
-	}
-};
-
 ShowFunctionsContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitShowFunctions(this);
@@ -7265,18 +6393,6 @@ CacheTableContext.prototype.tablePropertyList = function() {
 CacheTableContext.prototype.AS = function() {
     return this.getToken(SqlBaseParser.AS, 0);
 };
-CacheTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCacheTable(this);
-	}
-};
-
-CacheTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCacheTable(this);
-	}
-};
-
 CacheTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCacheTable(this);
@@ -7325,18 +6441,6 @@ AddTableColumnsContext.prototype.COLUMNS = function() {
 AddTableColumnsContext.prototype.qualifiedColTypeWithPositionList = function() {
     return this.getTypedRuleContext(QualifiedColTypeWithPositionListContext,0);
 };
-AddTableColumnsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAddTableColumns(this);
-	}
-};
-
-AddTableColumnsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAddTableColumns(this);
-	}
-};
-
 AddTableColumnsContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitAddTableColumns(this);
@@ -7384,18 +6488,6 @@ SetTablePropertiesContext.prototype.TABLE = function() {
 SetTablePropertiesContext.prototype.VIEW = function() {
     return this.getToken(SqlBaseParser.VIEW, 0);
 };
-SetTablePropertiesContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSetTableProperties(this);
-	}
-};
-
-SetTablePropertiesContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSetTableProperties(this);
-	}
-};
-
 SetTablePropertiesContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSetTableProperties(this);
@@ -9708,6 +8800,7 @@ SqlBaseParser.prototype.statement = function() {
     return localctx;
 };
 
+
 function ConfigKeyContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -9726,18 +8819,6 @@ ConfigKeyContext.prototype.constructor = ConfigKeyContext;
 
 ConfigKeyContext.prototype.quotedIdentifier = function() {
     return this.getTypedRuleContext(QuotedIdentifierContext,0);
-};
-
-ConfigKeyContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterConfigKey(this);
-	}
-};
-
-ConfigKeyContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitConfigKey(this);
-	}
 };
 
 ConfigKeyContext.prototype.accept = function(visitor) {
@@ -9775,6 +8856,7 @@ SqlBaseParser.prototype.configKey = function() {
     return localctx;
 };
 
+
 function ConfigValueContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -9793,18 +8875,6 @@ ConfigValueContext.prototype.constructor = ConfigValueContext;
 
 ConfigValueContext.prototype.quotedIdentifier = function() {
     return this.getTypedRuleContext(QuotedIdentifierContext,0);
-};
-
-ConfigValueContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterConfigValue(this);
-	}
-};
-
-ConfigValueContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitConfigValue(this);
-	}
 };
 
 ConfigValueContext.prototype.accept = function(visitor) {
@@ -9841,6 +8911,7 @@ SqlBaseParser.prototype.configValue = function() {
     }
     return localctx;
 };
+
 
 function UnsupportedHiveNativeCommandsContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -10062,18 +9133,6 @@ UnsupportedHiveNativeCommandsContext.prototype.ROLLBACK = function() {
 
 UnsupportedHiveNativeCommandsContext.prototype.DFS = function() {
     return this.getToken(SqlBaseParser.DFS, 0);
-};
-
-UnsupportedHiveNativeCommandsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterUnsupportedHiveNativeCommands(this);
-	}
-};
-
-UnsupportedHiveNativeCommandsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitUnsupportedHiveNativeCommands(this);
-	}
 };
 
 UnsupportedHiveNativeCommandsContext.prototype.accept = function(visitor) {
@@ -10610,6 +9669,7 @@ SqlBaseParser.prototype.unsupportedHiveNativeCommands = function() {
     return localctx;
 };
 
+
 function CreateTableHeaderContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -10656,18 +9716,6 @@ CreateTableHeaderContext.prototype.NOT = function() {
 
 CreateTableHeaderContext.prototype.EXISTS = function() {
     return this.getToken(SqlBaseParser.EXISTS, 0);
-};
-
-CreateTableHeaderContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCreateTableHeader(this);
-	}
-};
-
-CreateTableHeaderContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCreateTableHeader(this);
-	}
 };
 
 CreateTableHeaderContext.prototype.accept = function(visitor) {
@@ -10738,6 +9786,7 @@ SqlBaseParser.prototype.createTableHeader = function() {
     return localctx;
 };
 
+
 function ReplaceTableHeaderContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -10772,18 +9821,6 @@ ReplaceTableHeaderContext.prototype.CREATE = function() {
 
 ReplaceTableHeaderContext.prototype.OR = function() {
     return this.getToken(SqlBaseParser.OR, 0);
-};
-
-ReplaceTableHeaderContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterReplaceTableHeader(this);
-	}
-};
-
-ReplaceTableHeaderContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitReplaceTableHeader(this);
-	}
 };
 
 ReplaceTableHeaderContext.prototype.accept = function(visitor) {
@@ -10835,6 +9872,7 @@ SqlBaseParser.prototype.replaceTableHeader = function() {
     }
     return localctx;
 };
+
 
 function BucketSpecContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -10890,18 +9928,6 @@ BucketSpecContext.prototype.SORTED = function() {
 
 BucketSpecContext.prototype.orderedIdentifierList = function() {
     return this.getTypedRuleContext(OrderedIdentifierListContext,0);
-};
-
-BucketSpecContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterBucketSpec(this);
-	}
-};
-
-BucketSpecContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitBucketSpec(this);
-	}
 };
 
 BucketSpecContext.prototype.accept = function(visitor) {
@@ -10962,6 +9988,7 @@ SqlBaseParser.prototype.bucketSpec = function() {
     return localctx;
 };
 
+
 function SkewSpecContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -11012,18 +10039,6 @@ SkewSpecContext.prototype.AS = function() {
 
 SkewSpecContext.prototype.DIRECTORIES = function() {
     return this.getToken(SqlBaseParser.DIRECTORIES, 0);
-};
-
-SkewSpecContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSkewSpec(this);
-	}
-};
-
-SkewSpecContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSkewSpec(this);
-	}
 };
 
 SkewSpecContext.prototype.accept = function(visitor) {
@@ -11094,6 +10109,7 @@ SqlBaseParser.prototype.skewSpec = function() {
     return localctx;
 };
 
+
 function LocationSpecContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -11117,18 +10133,6 @@ LocationSpecContext.prototype.LOCATION = function() {
 
 LocationSpecContext.prototype.STRING = function() {
     return this.getToken(SqlBaseParser.STRING, 0);
-};
-
-LocationSpecContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterLocationSpec(this);
-	}
-};
-
-LocationSpecContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitLocationSpec(this);
-	}
 };
 
 LocationSpecContext.prototype.accept = function(visitor) {
@@ -11168,6 +10172,7 @@ SqlBaseParser.prototype.locationSpec = function() {
     return localctx;
 };
 
+
 function CommentSpecContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -11191,18 +10196,6 @@ CommentSpecContext.prototype.COMMENT = function() {
 
 CommentSpecContext.prototype.STRING = function() {
     return this.getToken(SqlBaseParser.STRING, 0);
-};
-
-CommentSpecContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCommentSpec(this);
-	}
-};
-
-CommentSpecContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCommentSpec(this);
-	}
 };
 
 CommentSpecContext.prototype.accept = function(visitor) {
@@ -11242,6 +10235,7 @@ SqlBaseParser.prototype.commentSpec = function() {
     return localctx;
 };
 
+
 function QueryContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -11268,18 +10262,6 @@ QueryContext.prototype.queryOrganization = function() {
 
 QueryContext.prototype.ctes = function() {
     return this.getTypedRuleContext(CtesContext,0);
-};
-
-QueryContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterQuery(this);
-	}
-};
-
-QueryContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitQuery(this);
-	}
 };
 
 QueryContext.prototype.accept = function(visitor) {
@@ -11327,6 +10309,7 @@ SqlBaseParser.prototype.query = function() {
     }
     return localctx;
 };
+
 
 function InsertIntoContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -11390,18 +10373,6 @@ InsertOverwriteHiveDirContext.prototype.rowFormat = function() {
 InsertOverwriteHiveDirContext.prototype.createFileFormat = function() {
     return this.getTypedRuleContext(CreateFileFormatContext,0);
 };
-InsertOverwriteHiveDirContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterInsertOverwriteHiveDir(this);
-	}
-};
-
-InsertOverwriteHiveDirContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitInsertOverwriteHiveDir(this);
-	}
-};
-
 InsertOverwriteHiveDirContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitInsertOverwriteHiveDir(this);
@@ -11455,18 +10426,6 @@ InsertOverwriteDirContext.prototype.STRING = function() {
 InsertOverwriteDirContext.prototype.tablePropertyList = function() {
     return this.getTypedRuleContext(TablePropertyListContext,0);
 };
-InsertOverwriteDirContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterInsertOverwriteDir(this);
-	}
-};
-
-InsertOverwriteDirContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitInsertOverwriteDir(this);
-	}
-};
-
 InsertOverwriteDirContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitInsertOverwriteDir(this);
@@ -11522,18 +10481,6 @@ InsertOverwriteTableContext.prototype.NOT = function() {
 InsertOverwriteTableContext.prototype.EXISTS = function() {
     return this.getToken(SqlBaseParser.EXISTS, 0);
 };
-InsertOverwriteTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterInsertOverwriteTable(this);
-	}
-};
-
-InsertOverwriteTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitInsertOverwriteTable(this);
-	}
-};
-
 InsertOverwriteTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitInsertOverwriteTable(this);
@@ -11589,18 +10536,6 @@ InsertIntoTableContext.prototype.EXISTS = function() {
 InsertIntoTableContext.prototype.identifierList = function() {
     return this.getTypedRuleContext(IdentifierListContext,0);
 };
-InsertIntoTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterInsertIntoTable(this);
-	}
-};
-
-InsertIntoTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitInsertIntoTable(this);
-	}
-};
-
 InsertIntoTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitInsertIntoTable(this);
@@ -11808,6 +10743,7 @@ SqlBaseParser.prototype.insertInto = function() {
     return localctx;
 };
 
+
 function PartitionSpecLocationContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -11830,18 +10766,6 @@ PartitionSpecLocationContext.prototype.partitionSpec = function() {
 
 PartitionSpecLocationContext.prototype.locationSpec = function() {
     return this.getTypedRuleContext(LocationSpecContext,0);
-};
-
-PartitionSpecLocationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPartitionSpecLocation(this);
-	}
-};
-
-PartitionSpecLocationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPartitionSpecLocation(this);
-	}
 };
 
 PartitionSpecLocationContext.prototype.accept = function(visitor) {
@@ -11888,6 +10812,7 @@ SqlBaseParser.prototype.partitionSpecLocation = function() {
     return localctx;
 };
 
+
 function PartitionSpecContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -11917,18 +10842,6 @@ PartitionSpecContext.prototype.partitionVal = function(i) {
     } else {
         return this.getTypedRuleContext(PartitionValContext,i);
     }
-};
-
-PartitionSpecContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPartitionSpec(this);
-	}
-};
-
-PartitionSpecContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPartitionSpec(this);
-	}
 };
 
 PartitionSpecContext.prototype.accept = function(visitor) {
@@ -11985,6 +10898,7 @@ SqlBaseParser.prototype.partitionSpec = function() {
     return localctx;
 };
 
+
 function PartitionValContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -12011,18 +10925,6 @@ PartitionValContext.prototype.EQ = function() {
 
 PartitionValContext.prototype.constant = function() {
     return this.getTypedRuleContext(ConstantContext,0);
-};
-
-PartitionValContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPartitionVal(this);
-	}
-};
-
-PartitionValContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPartitionVal(this);
-	}
 };
 
 PartitionValContext.prototype.accept = function(visitor) {
@@ -12071,6 +10973,7 @@ SqlBaseParser.prototype.partitionVal = function() {
     return localctx;
 };
 
+
 function NamespaceContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -12097,18 +11000,6 @@ NamespaceContext.prototype.DATABASE = function() {
 
 NamespaceContext.prototype.SCHEMA = function() {
     return this.getToken(SqlBaseParser.SCHEMA, 0);
-};
-
-NamespaceContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterNamespace(this);
-	}
-};
-
-NamespaceContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitNamespace(this);
-	}
 };
 
 NamespaceContext.prototype.accept = function(visitor) {
@@ -12154,6 +11045,7 @@ SqlBaseParser.prototype.namespace = function() {
     return localctx;
 };
 
+
 function DescribeFuncNameContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -12188,18 +11080,6 @@ DescribeFuncNameContext.prototype.arithmeticOperator = function() {
 
 DescribeFuncNameContext.prototype.predicateOperator = function() {
     return this.getTypedRuleContext(PredicateOperatorContext,0);
-};
-
-DescribeFuncNameContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDescribeFuncName(this);
-	}
-};
-
-DescribeFuncNameContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDescribeFuncName(this);
-	}
 };
 
 DescribeFuncNameContext.prototype.accept = function(visitor) {
@@ -12269,6 +11149,7 @@ SqlBaseParser.prototype.describeFuncName = function() {
     return localctx;
 };
 
+
 function DescribeColNameContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -12296,18 +11177,6 @@ DescribeColNameContext.prototype.identifier = function(i) {
     } else {
         return this.getTypedRuleContext(IdentifierContext,i);
     }
-};
-
-DescribeColNameContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDescribeColName(this);
-	}
-};
-
-DescribeColNameContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDescribeColName(this);
-	}
 };
 
 DescribeColNameContext.prototype.accept = function(visitor) {
@@ -12360,6 +11229,7 @@ SqlBaseParser.prototype.describeColName = function() {
     return localctx;
 };
 
+
 function CtesContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -12389,18 +11259,6 @@ CtesContext.prototype.namedQuery = function(i) {
     } else {
         return this.getTypedRuleContext(NamedQueryContext,i);
     }
-};
-
-CtesContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCtes(this);
-	}
-};
-
-CtesContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCtes(this);
-	}
 };
 
 CtesContext.prototype.accept = function(visitor) {
@@ -12453,6 +11311,7 @@ SqlBaseParser.prototype.ctes = function() {
     return localctx;
 };
 
+
 function NamedQueryContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -12485,18 +11344,6 @@ NamedQueryContext.prototype.AS = function() {
 
 NamedQueryContext.prototype.identifierList = function() {
     return this.getTypedRuleContext(IdentifierListContext,0);
-};
-
-NamedQueryContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterNamedQuery(this);
-	}
-};
-
-NamedQueryContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitNamedQuery(this);
-	}
 };
 
 NamedQueryContext.prototype.accept = function(visitor) {
@@ -12557,6 +11404,7 @@ SqlBaseParser.prototype.namedQuery = function() {
     return localctx;
 };
 
+
 function TableProviderContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -12579,18 +11427,6 @@ TableProviderContext.prototype.USING = function() {
 
 TableProviderContext.prototype.multipartIdentifier = function() {
     return this.getTypedRuleContext(MultipartIdentifierContext,0);
-};
-
-TableProviderContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTableProvider(this);
-	}
-};
-
-TableProviderContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTableProvider(this);
-	}
 };
 
 TableProviderContext.prototype.accept = function(visitor) {
@@ -12629,6 +11465,7 @@ SqlBaseParser.prototype.tableProvider = function() {
     }
     return localctx;
 };
+
 
 function CreateTableClausesContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -12785,18 +11622,6 @@ CreateTableClausesContext.prototype.partitionFieldList = function(i) {
     }
 };
 
-CreateTableClausesContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCreateTableClauses(this);
-	}
-};
-
-CreateTableClausesContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCreateTableClauses(this);
-	}
-};
-
 CreateTableClausesContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCreateTableClauses(this);
@@ -12889,6 +11714,7 @@ SqlBaseParser.prototype.createTableClauses = function() {
     return localctx;
 };
 
+
 function TablePropertyListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -12914,18 +11740,6 @@ TablePropertyListContext.prototype.tableProperty = function(i) {
     } else {
         return this.getTypedRuleContext(TablePropertyContext,i);
     }
-};
-
-TablePropertyListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTablePropertyList(this);
-	}
-};
-
-TablePropertyListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTablePropertyList(this);
-	}
 };
 
 TablePropertyListContext.prototype.accept = function(visitor) {
@@ -12980,6 +11794,7 @@ SqlBaseParser.prototype.tablePropertyList = function() {
     return localctx;
 };
 
+
 function TablePropertyContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -13008,18 +11823,6 @@ TablePropertyContext.prototype.tablePropertyValue = function() {
 
 TablePropertyContext.prototype.EQ = function() {
     return this.getToken(SqlBaseParser.EQ, 0);
-};
-
-TablePropertyContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTableProperty(this);
-	}
-};
-
-TablePropertyContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTableProperty(this);
-	}
 };
 
 TablePropertyContext.prototype.accept = function(visitor) {
@@ -13074,6 +11877,7 @@ SqlBaseParser.prototype.tableProperty = function() {
     return localctx;
 };
 
+
 function TablePropertyKeyContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -13103,18 +11907,6 @@ TablePropertyKeyContext.prototype.identifier = function(i) {
 
 TablePropertyKeyContext.prototype.STRING = function() {
     return this.getToken(SqlBaseParser.STRING, 0);
-};
-
-TablePropertyKeyContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTablePropertyKey(this);
-	}
-};
-
-TablePropertyKeyContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTablePropertyKey(this);
-	}
 };
 
 TablePropertyKeyContext.prototype.accept = function(visitor) {
@@ -13179,6 +11971,7 @@ SqlBaseParser.prototype.tablePropertyKey = function() {
     return localctx;
 };
 
+
 function TablePropertyValueContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -13209,18 +12002,6 @@ TablePropertyValueContext.prototype.booleanValue = function() {
 
 TablePropertyValueContext.prototype.STRING = function() {
     return this.getToken(SqlBaseParser.STRING, 0);
-};
-
-TablePropertyValueContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTablePropertyValue(this);
-	}
-};
-
-TablePropertyValueContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTablePropertyValue(this);
-	}
 };
 
 TablePropertyValueContext.prototype.accept = function(visitor) {
@@ -13282,6 +12063,7 @@ SqlBaseParser.prototype.tablePropertyValue = function() {
     return localctx;
 };
 
+
 function ConstantListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -13307,18 +12089,6 @@ ConstantListContext.prototype.constant = function(i) {
     } else {
         return this.getTypedRuleContext(ConstantContext,i);
     }
-};
-
-ConstantListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterConstantList(this);
-	}
-};
-
-ConstantListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitConstantList(this);
-	}
 };
 
 ConstantListContext.prototype.accept = function(visitor) {
@@ -13373,6 +12143,7 @@ SqlBaseParser.prototype.constantList = function() {
     return localctx;
 };
 
+
 function NestedConstantListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -13398,18 +12169,6 @@ NestedConstantListContext.prototype.constantList = function(i) {
     } else {
         return this.getTypedRuleContext(ConstantListContext,i);
     }
-};
-
-NestedConstantListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterNestedConstantList(this);
-	}
-};
-
-NestedConstantListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitNestedConstantList(this);
-	}
 };
 
 NestedConstantListContext.prototype.accept = function(visitor) {
@@ -13464,6 +12223,7 @@ SqlBaseParser.prototype.nestedConstantList = function() {
     return localctx;
 };
 
+
 function CreateFileFormatContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -13498,18 +12258,6 @@ CreateFileFormatContext.prototype.BY = function() {
 
 CreateFileFormatContext.prototype.storageHandler = function() {
     return this.getTypedRuleContext(StorageHandlerContext,0);
-};
-
-CreateFileFormatContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCreateFileFormat(this);
-	}
-};
-
-CreateFileFormatContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCreateFileFormat(this);
-	}
 };
 
 CreateFileFormatContext.prototype.accept = function(visitor) {
@@ -13569,6 +12317,7 @@ SqlBaseParser.prototype.createFileFormat = function() {
     return localctx;
 };
 
+
 function FileFormatContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -13624,18 +12373,6 @@ TableFileFormatContext.prototype.STRING = function(i) {
     }
 };
 
-TableFileFormatContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTableFileFormat(this);
-	}
-};
-
-TableFileFormatContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTableFileFormat(this);
-	}
-};
-
 TableFileFormatContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitTableFileFormat(this);
@@ -13659,18 +12396,6 @@ SqlBaseParser.GenericFileFormatContext = GenericFileFormatContext;
 GenericFileFormatContext.prototype.identifier = function() {
     return this.getTypedRuleContext(IdentifierContext,0);
 };
-GenericFileFormatContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterGenericFileFormat(this);
-	}
-};
-
-GenericFileFormatContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitGenericFileFormat(this);
-	}
-};
-
 GenericFileFormatContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitGenericFileFormat(this);
@@ -13727,6 +12452,7 @@ SqlBaseParser.prototype.fileFormat = function() {
     return localctx;
 };
 
+
 function StorageHandlerContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -13757,18 +12483,6 @@ StorageHandlerContext.prototype.SERDEPROPERTIES = function() {
 
 StorageHandlerContext.prototype.tablePropertyList = function() {
     return this.getTypedRuleContext(TablePropertyListContext,0);
-};
-
-StorageHandlerContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterStorageHandler(this);
-	}
-};
-
-StorageHandlerContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitStorageHandler(this);
-	}
 };
 
 StorageHandlerContext.prototype.accept = function(visitor) {
@@ -13818,6 +12532,7 @@ SqlBaseParser.prototype.storageHandler = function() {
     return localctx;
 };
 
+
 function ResourceContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -13840,18 +12555,6 @@ ResourceContext.prototype.identifier = function() {
 
 ResourceContext.prototype.STRING = function() {
     return this.getToken(SqlBaseParser.STRING, 0);
-};
-
-ResourceContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterResource(this);
-	}
-};
-
-ResourceContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitResource(this);
-	}
 };
 
 ResourceContext.prototype.accept = function(visitor) {
@@ -13890,6 +12593,7 @@ SqlBaseParser.prototype.resource = function() {
     }
     return localctx;
 };
+
 
 function DmlStatementNoWithContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -13944,18 +12648,6 @@ DeleteFromTableContext.prototype.tableAlias = function() {
 DeleteFromTableContext.prototype.whereClause = function() {
     return this.getTypedRuleContext(WhereClauseContext,0);
 };
-DeleteFromTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDeleteFromTable(this);
-	}
-};
-
-DeleteFromTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDeleteFromTable(this);
-	}
-};
-
 DeleteFromTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDeleteFromTable(this);
@@ -13987,18 +12679,6 @@ SingleInsertQueryContext.prototype.queryTerm = function() {
 SingleInsertQueryContext.prototype.queryOrganization = function() {
     return this.getTypedRuleContext(QueryOrganizationContext,0);
 };
-SingleInsertQueryContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSingleInsertQuery(this);
-	}
-};
-
-SingleInsertQueryContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSingleInsertQuery(this);
-	}
-};
-
 SingleInsertQueryContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSingleInsertQuery(this);
@@ -14033,18 +12713,6 @@ MultiInsertQueryContext.prototype.multiInsertQueryBody = function(i) {
         return this.getTypedRuleContext(MultiInsertQueryBodyContext,i);
     }
 };
-MultiInsertQueryContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterMultiInsertQuery(this);
-	}
-};
-
-MultiInsertQueryContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitMultiInsertQuery(this);
-	}
-};
-
 MultiInsertQueryContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitMultiInsertQuery(this);
@@ -14084,18 +12752,6 @@ UpdateTableContext.prototype.setClause = function() {
 UpdateTableContext.prototype.whereClause = function() {
     return this.getTypedRuleContext(WhereClauseContext,0);
 };
-UpdateTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterUpdateTable(this);
-	}
-};
-
-UpdateTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitUpdateTable(this);
-	}
-};
-
 UpdateTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitUpdateTable(this);
@@ -14189,18 +12845,6 @@ MergeIntoTableContext.prototype.notMatchedClause = function(i) {
         return this.getTypedRuleContext(NotMatchedClauseContext,i);
     }
 };
-MergeIntoTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterMergeIntoTable(this);
-	}
-};
-
-MergeIntoTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitMergeIntoTable(this);
-	}
-};
-
 MergeIntoTableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitMergeIntoTable(this);
@@ -14367,6 +13011,7 @@ SqlBaseParser.prototype.dmlStatementNoWith = function() {
     return localctx;
 };
 
+
 function QueryOrganizationContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -14450,18 +13095,6 @@ QueryOrganizationContext.prototype.expression = function(i) {
 
 QueryOrganizationContext.prototype.ALL = function() {
     return this.getToken(SqlBaseParser.ALL, 0);
-};
-
-QueryOrganizationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterQueryOrganization(this);
-	}
-};
-
-QueryOrganizationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitQueryOrganization(this);
-	}
 };
 
 QueryOrganizationContext.prototype.accept = function(visitor) {
@@ -14644,6 +13277,7 @@ SqlBaseParser.prototype.queryOrganization = function() {
     return localctx;
 };
 
+
 function MultiInsertQueryBodyContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -14666,18 +13300,6 @@ MultiInsertQueryBodyContext.prototype.insertInto = function() {
 
 MultiInsertQueryBodyContext.prototype.fromStatementBody = function() {
     return this.getTypedRuleContext(FromStatementBodyContext,0);
-};
-
-MultiInsertQueryBodyContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterMultiInsertQueryBody(this);
-	}
-};
-
-MultiInsertQueryBodyContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitMultiInsertQueryBody(this);
-	}
 };
 
 MultiInsertQueryBodyContext.prototype.accept = function(visitor) {
@@ -14717,6 +13339,7 @@ SqlBaseParser.prototype.multiInsertQueryBody = function() {
     return localctx;
 };
 
+
 function QueryTermContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -14753,18 +13376,6 @@ SqlBaseParser.QueryTermDefaultContext = QueryTermDefaultContext;
 QueryTermDefaultContext.prototype.queryPrimary = function() {
     return this.getTypedRuleContext(QueryPrimaryContext,0);
 };
-QueryTermDefaultContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterQueryTermDefault(this);
-	}
-};
-
-QueryTermDefaultContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitQueryTermDefault(this);
-	}
-};
-
 QueryTermDefaultContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitQueryTermDefault(this);
@@ -14818,18 +13429,6 @@ SetOperationContext.prototype.SETMINUS = function() {
 SetOperationContext.prototype.setQuantifier = function() {
     return this.getTypedRuleContext(SetQuantifierContext,0);
 };
-SetOperationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSetOperation(this);
-	}
-};
-
-SetOperationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSetOperation(this);
-	}
-};
-
 SetOperationContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSetOperation(this);
@@ -14882,8 +13481,8 @@ SqlBaseParser.prototype.queryTerm = function(_p) {
                         throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 3)");
                     }
                     this.state = 1626;
-                    if (!( false)) {
-                        throw new antlr4.error.FailedPredicateException(this, "false");
+                    if (!( legacy_setops_precedence_enabled)) {
+                        throw new antlr4.error.FailedPredicateException(this, "legacy_setops_precedence_enabled");
                     }
                     this.state = 1627;
                     localctx.operator = this._input.LT(1);
@@ -14916,8 +13515,8 @@ SqlBaseParser.prototype.queryTerm = function(_p) {
                         throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 2)");
                     }
                     this.state = 1633;
-                    if (!( !false)) {
-                        throw new antlr4.error.FailedPredicateException(this, "!false");
+                    if (!( !legacy_setops_precedence_enabled)) {
+                        throw new antlr4.error.FailedPredicateException(this, "!legacy_setops_precedence_enabled");
                     }
                     this.state = 1634;
                     localctx.operator = this.match(SqlBaseParser.INTERSECT);
@@ -14942,8 +13541,8 @@ SqlBaseParser.prototype.queryTerm = function(_p) {
                         throw new antlr4.error.FailedPredicateException(this, "this.precpred(this._ctx, 1)");
                     }
                     this.state = 1640;
-                    if (!( !false)) {
-                        throw new antlr4.error.FailedPredicateException(this, "!false");
+                    if (!( !legacy_setops_precedence_enabled)) {
+                        throw new antlr4.error.FailedPredicateException(this, "!legacy_setops_precedence_enabled");
                     }
                     this.state = 1641;
                     localctx.operator = this._input.LT(1);
@@ -14988,6 +13587,7 @@ SqlBaseParser.prototype.queryTerm = function(_p) {
     return localctx;
 };
 
+
 function QueryPrimaryContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -15025,18 +13625,6 @@ SqlBaseParser.SubqueryContext = SubqueryContext;
 SubqueryContext.prototype.query = function() {
     return this.getTypedRuleContext(QueryContext,0);
 };
-SubqueryContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSubquery(this);
-	}
-};
-
-SubqueryContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSubquery(this);
-	}
-};
-
 SubqueryContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSubquery(this);
@@ -15060,18 +13648,6 @@ SqlBaseParser.QueryPrimaryDefaultContext = QueryPrimaryDefaultContext;
 QueryPrimaryDefaultContext.prototype.querySpecification = function() {
     return this.getTypedRuleContext(QuerySpecificationContext,0);
 };
-QueryPrimaryDefaultContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterQueryPrimaryDefault(this);
-	}
-};
-
-QueryPrimaryDefaultContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitQueryPrimaryDefault(this);
-	}
-};
-
 QueryPrimaryDefaultContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitQueryPrimaryDefault(this);
@@ -15095,18 +13671,6 @@ SqlBaseParser.InlineTableDefault1Context = InlineTableDefault1Context;
 InlineTableDefault1Context.prototype.inlineTable = function() {
     return this.getTypedRuleContext(InlineTableContext,0);
 };
-InlineTableDefault1Context.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterInlineTableDefault1(this);
-	}
-};
-
-InlineTableDefault1Context.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitInlineTableDefault1(this);
-	}
-};
-
 InlineTableDefault1Context.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitInlineTableDefault1(this);
@@ -15130,18 +13694,6 @@ SqlBaseParser.FromStmtContext = FromStmtContext;
 FromStmtContext.prototype.fromStatement = function() {
     return this.getTypedRuleContext(FromStatementContext,0);
 };
-FromStmtContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFromStmt(this);
-	}
-};
-
-FromStmtContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFromStmt(this);
-	}
-};
-
 FromStmtContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitFromStmt(this);
@@ -15169,18 +13721,6 @@ TableContext.prototype.TABLE = function() {
 TableContext.prototype.multipartIdentifier = function() {
     return this.getTypedRuleContext(MultipartIdentifierContext,0);
 };
-TableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTable(this);
-	}
-};
-
-TableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTable(this);
-	}
-};
-
 TableContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitTable(this);
@@ -15256,6 +13796,7 @@ SqlBaseParser.prototype.queryPrimary = function() {
     return localctx;
 };
 
+
 function SortItemContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -15296,18 +13837,6 @@ SortItemContext.prototype.LAST = function() {
 
 SortItemContext.prototype.FIRST = function() {
     return this.getToken(SqlBaseParser.FIRST, 0);
-};
-
-SortItemContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSortItem(this);
-	}
-};
-
-SortItemContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSortItem(this);
-	}
 };
 
 SortItemContext.prototype.accept = function(visitor) {
@@ -15380,6 +13909,7 @@ SqlBaseParser.prototype.sortItem = function() {
     return localctx;
 };
 
+
 function FromStatementContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -15409,18 +13939,6 @@ FromStatementContext.prototype.fromStatementBody = function(i) {
     } else {
         return this.getTypedRuleContext(FromStatementBodyContext,i);
     }
-};
-
-FromStatementContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFromStatement(this);
-	}
-};
-
-FromStatementContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFromStatement(this);
-	}
 };
 
 FromStatementContext.prototype.accept = function(visitor) {
@@ -15473,6 +13991,7 @@ SqlBaseParser.prototype.fromStatement = function() {
     }
     return localctx;
 };
+
 
 function FromStatementBodyContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -15527,18 +14046,6 @@ FromStatementBodyContext.prototype.havingClause = function() {
 
 FromStatementBodyContext.prototype.windowClause = function() {
     return this.getTypedRuleContext(WindowClauseContext,0);
-};
-
-FromStatementBodyContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFromStatementBody(this);
-	}
-};
-
-FromStatementBodyContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFromStatementBody(this);
-	}
 };
 
 FromStatementBodyContext.prototype.accept = function(visitor) {
@@ -15647,6 +14154,7 @@ SqlBaseParser.prototype.fromStatementBody = function() {
     return localctx;
 };
 
+
 function QuerySpecificationContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -15715,18 +14223,6 @@ RegularQuerySpecificationContext.prototype.havingClause = function() {
 RegularQuerySpecificationContext.prototype.windowClause = function() {
     return this.getTypedRuleContext(WindowClauseContext,0);
 };
-RegularQuerySpecificationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRegularQuerySpecification(this);
-	}
-};
-
-RegularQuerySpecificationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRegularQuerySpecification(this);
-	}
-};
-
 RegularQuerySpecificationContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRegularQuerySpecification(this);
@@ -15758,18 +14254,6 @@ TransformQuerySpecificationContext.prototype.fromClause = function() {
 TransformQuerySpecificationContext.prototype.whereClause = function() {
     return this.getTypedRuleContext(WhereClauseContext,0);
 };
-TransformQuerySpecificationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTransformQuerySpecification(this);
-	}
-};
-
-TransformQuerySpecificationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTransformQuerySpecification(this);
-	}
-};
-
 TransformQuerySpecificationContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitTransformQuerySpecification(this);
@@ -15889,6 +14373,7 @@ SqlBaseParser.prototype.querySpecification = function() {
     return localctx;
 };
 
+
 function TransformClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -15976,18 +14461,6 @@ TransformClauseContext.prototype.identifierSeq = function() {
 
 TransformClauseContext.prototype.colTypeList = function() {
     return this.getTypedRuleContext(ColTypeListContext,0);
-};
-
-TransformClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTransformClause(this);
-	}
-};
-
-TransformClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTransformClause(this);
-	}
 };
 
 TransformClauseContext.prototype.accept = function(visitor) {
@@ -16139,6 +14612,7 @@ SqlBaseParser.prototype.transformClause = function() {
     return localctx;
 };
 
+
 function SelectClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -16178,18 +14652,6 @@ SelectClauseContext.prototype.hint = function(i) {
     } else {
         return this.getTypedRuleContext(HintContext,i);
     }
-};
-
-SelectClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSelectClause(this);
-	}
-};
-
-SelectClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSelectClause(this);
-	}
 };
 
 SelectClauseContext.prototype.accept = function(visitor) {
@@ -16251,6 +14713,7 @@ SqlBaseParser.prototype.selectClause = function() {
     return localctx;
 };
 
+
 function SetClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -16273,18 +14736,6 @@ SetClauseContext.prototype.SET = function() {
 
 SetClauseContext.prototype.assignmentList = function() {
     return this.getTypedRuleContext(AssignmentListContext,0);
-};
-
-SetClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSetClause(this);
-	}
-};
-
-SetClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSetClause(this);
-	}
 };
 
 SetClauseContext.prototype.accept = function(visitor) {
@@ -16323,6 +14774,7 @@ SqlBaseParser.prototype.setClause = function() {
     }
     return localctx;
 };
+
 
 function MatchedClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -16363,18 +14815,6 @@ MatchedClauseContext.prototype.AND = function() {
 
 MatchedClauseContext.prototype.booleanExpression = function() {
     return this.getTypedRuleContext(BooleanExpressionContext,0);
-};
-
-MatchedClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterMatchedClause(this);
-	}
-};
-
-MatchedClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitMatchedClause(this);
-	}
 };
 
 MatchedClauseContext.prototype.accept = function(visitor) {
@@ -16429,6 +14869,7 @@ SqlBaseParser.prototype.matchedClause = function() {
     return localctx;
 };
 
+
 function NotMatchedClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -16472,18 +14913,6 @@ NotMatchedClauseContext.prototype.AND = function() {
 
 NotMatchedClauseContext.prototype.booleanExpression = function() {
     return this.getTypedRuleContext(BooleanExpressionContext,0);
-};
-
-NotMatchedClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterNotMatchedClause(this);
-	}
-};
-
-NotMatchedClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitNotMatchedClause(this);
-	}
 };
 
 NotMatchedClauseContext.prototype.accept = function(visitor) {
@@ -16540,6 +14969,7 @@ SqlBaseParser.prototype.notMatchedClause = function() {
     return localctx;
 };
 
+
 function MatchedActionContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -16574,18 +15004,6 @@ MatchedActionContext.prototype.ASTERISK = function() {
 
 MatchedActionContext.prototype.assignmentList = function() {
     return this.getTypedRuleContext(AssignmentListContext,0);
-};
-
-MatchedActionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterMatchedAction(this);
-	}
-};
-
-MatchedActionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitMatchedAction(this);
-	}
 };
 
 MatchedActionContext.prototype.accept = function(visitor) {
@@ -16651,6 +15069,7 @@ SqlBaseParser.prototype.matchedAction = function() {
     return localctx;
 };
 
+
 function NotMatchedActionContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -16693,18 +15112,6 @@ NotMatchedActionContext.prototype.expression = function(i) {
 
 NotMatchedActionContext.prototype.multipartIdentifierList = function() {
     return this.getTypedRuleContext(MultipartIdentifierListContext,0);
-};
-
-NotMatchedActionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterNotMatchedAction(this);
-	}
-};
-
-NotMatchedActionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitNotMatchedAction(this);
-	}
 };
 
 NotMatchedActionContext.prototype.accept = function(visitor) {
@@ -16785,6 +15192,7 @@ SqlBaseParser.prototype.notMatchedAction = function() {
     return localctx;
 };
 
+
 function AssignmentListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -16810,18 +15218,6 @@ AssignmentListContext.prototype.assignment = function(i) {
     } else {
         return this.getTypedRuleContext(AssignmentContext,i);
     }
-};
-
-AssignmentListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAssignmentList(this);
-	}
-};
-
-AssignmentListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAssignmentList(this);
-	}
 };
 
 AssignmentListContext.prototype.accept = function(visitor) {
@@ -16872,6 +15268,7 @@ SqlBaseParser.prototype.assignmentList = function() {
     return localctx;
 };
 
+
 function AssignmentContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -16900,18 +15297,6 @@ AssignmentContext.prototype.multipartIdentifier = function() {
 
 AssignmentContext.prototype.expression = function() {
     return this.getTypedRuleContext(ExpressionContext,0);
-};
-
-AssignmentContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAssignment(this);
-	}
-};
-
-AssignmentContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAssignment(this);
-	}
 };
 
 AssignmentContext.prototype.accept = function(visitor) {
@@ -16953,6 +15338,7 @@ SqlBaseParser.prototype.assignment = function() {
     return localctx;
 };
 
+
 function WhereClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -16975,18 +15361,6 @@ WhereClauseContext.prototype.WHERE = function() {
 
 WhereClauseContext.prototype.booleanExpression = function() {
     return this.getTypedRuleContext(BooleanExpressionContext,0);
-};
-
-WhereClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterWhereClause(this);
-	}
-};
-
-WhereClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitWhereClause(this);
-	}
 };
 
 WhereClauseContext.prototype.accept = function(visitor) {
@@ -17026,6 +15400,7 @@ SqlBaseParser.prototype.whereClause = function() {
     return localctx;
 };
 
+
 function HavingClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -17048,18 +15423,6 @@ HavingClauseContext.prototype.HAVING = function() {
 
 HavingClauseContext.prototype.booleanExpression = function() {
     return this.getTypedRuleContext(BooleanExpressionContext,0);
-};
-
-HavingClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterHavingClause(this);
-	}
-};
-
-HavingClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitHavingClause(this);
-	}
 };
 
 HavingClauseContext.prototype.accept = function(visitor) {
@@ -17099,6 +15462,7 @@ SqlBaseParser.prototype.havingClause = function() {
     return localctx;
 };
 
+
 function HintContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -17126,18 +15490,6 @@ HintContext.prototype.hintStatement = function(i) {
     } else {
         return this.getTypedRuleContext(HintStatementContext,i);
     }
-};
-
-HintContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterHint(this);
-	}
-};
-
-HintContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitHint(this);
-	}
 };
 
 HintContext.prototype.accept = function(visitor) {
@@ -17202,6 +15554,7 @@ SqlBaseParser.prototype.hint = function() {
     return localctx;
 };
 
+
 function HintStatementContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -17234,18 +15587,6 @@ HintStatementContext.prototype.primaryExpression = function(i) {
     } else {
         return this.getTypedRuleContext(PrimaryExpressionContext,i);
     }
-};
-
-HintStatementContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterHintStatement(this);
-	}
-};
-
-HintStatementContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitHintStatement(this);
-	}
 };
 
 HintStatementContext.prototype.accept = function(visitor) {
@@ -17318,6 +15659,7 @@ SqlBaseParser.prototype.hintStatement = function() {
     return localctx;
 };
 
+
 function FromClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -17362,18 +15704,6 @@ FromClauseContext.prototype.lateralView = function(i) {
 
 FromClauseContext.prototype.pivotClause = function() {
     return this.getTypedRuleContext(PivotClauseContext,0);
-};
-
-FromClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFromClause(this);
-	}
-};
-
-FromClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFromClause(this);
-	}
 };
 
 FromClauseContext.prototype.accept = function(visitor) {
@@ -17448,6 +15778,7 @@ SqlBaseParser.prototype.fromClause = function() {
     }
     return localctx;
 };
+
 
 function AggregationClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -17529,18 +15860,6 @@ AggregationClauseContext.prototype.CUBE = function() {
 
 AggregationClauseContext.prototype.GROUPING = function() {
     return this.getToken(SqlBaseParser.GROUPING, 0);
-};
-
-AggregationClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAggregationClause(this);
-	}
-};
-
-AggregationClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAggregationClause(this);
-	}
 };
 
 AggregationClauseContext.prototype.accept = function(visitor) {
@@ -17675,6 +15994,7 @@ SqlBaseParser.prototype.aggregationClause = function() {
     return localctx;
 };
 
+
 function GroupByClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -17697,18 +16017,6 @@ GroupByClauseContext.prototype.groupingAnalytics = function() {
 
 GroupByClauseContext.prototype.expression = function() {
     return this.getTypedRuleContext(ExpressionContext,0);
-};
-
-GroupByClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterGroupByClause(this);
-	}
-};
-
-GroupByClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitGroupByClause(this);
-	}
 };
 
 GroupByClauseContext.prototype.accept = function(visitor) {
@@ -17760,6 +16068,7 @@ SqlBaseParser.prototype.groupByClause = function() {
     return localctx;
 };
 
+
 function GroupingAnalyticsContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -17801,18 +16110,6 @@ GroupingAnalyticsContext.prototype.GROUPING = function() {
 
 GroupingAnalyticsContext.prototype.SETS = function() {
     return this.getToken(SqlBaseParser.SETS, 0);
-};
-
-GroupingAnalyticsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterGroupingAnalytics(this);
-	}
-};
-
-GroupingAnalyticsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitGroupingAnalytics(this);
-	}
 };
 
 GroupingAnalyticsContext.prototype.accept = function(visitor) {
@@ -17887,6 +16184,7 @@ SqlBaseParser.prototype.groupingAnalytics = function() {
     return localctx;
 };
 
+
 function GroupingSetContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -17912,18 +16210,6 @@ GroupingSetContext.prototype.expression = function(i) {
     } else {
         return this.getTypedRuleContext(ExpressionContext,i);
     }
-};
-
-GroupingSetContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterGroupingSet(this);
-	}
-};
-
-GroupingSetContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitGroupingSet(this);
-	}
 };
 
 GroupingSetContext.prototype.accept = function(visitor) {
@@ -17998,6 +16284,7 @@ SqlBaseParser.prototype.groupingSet = function() {
     return localctx;
 };
 
+
 function PivotClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -18046,18 +16333,6 @@ PivotClauseContext.prototype.pivotValue = function(i) {
     } else {
         return this.getTypedRuleContext(PivotValueContext,i);
     }
-};
-
-PivotClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPivotClause(this);
-	}
-};
-
-PivotClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPivotClause(this);
-	}
 };
 
 PivotClauseContext.prototype.accept = function(visitor) {
@@ -18128,6 +16403,7 @@ SqlBaseParser.prototype.pivotClause = function() {
     return localctx;
 };
 
+
 function PivotColumnContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -18155,18 +16431,6 @@ PivotColumnContext.prototype.identifier = function(i) {
     } else {
         return this.getTypedRuleContext(IdentifierContext,i);
     }
-};
-
-PivotColumnContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPivotColumn(this);
-	}
-};
-
-PivotColumnContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPivotColumn(this);
-	}
 };
 
 PivotColumnContext.prototype.accept = function(visitor) {
@@ -18238,6 +16502,7 @@ SqlBaseParser.prototype.pivotColumn = function() {
     return localctx;
 };
 
+
 function PivotValueContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -18264,18 +16529,6 @@ PivotValueContext.prototype.identifier = function() {
 
 PivotValueContext.prototype.AS = function() {
     return this.getToken(SqlBaseParser.AS, 0);
-};
-
-PivotValueContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPivotValue(this);
-	}
-};
-
-PivotValueContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPivotValue(this);
-	}
 };
 
 PivotValueContext.prototype.accept = function(visitor) {
@@ -18328,6 +16581,7 @@ SqlBaseParser.prototype.pivotValue = function() {
     }
     return localctx;
 };
+
 
 function LateralViewContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -18388,18 +16642,6 @@ LateralViewContext.prototype.expression = function(i) {
 
 LateralViewContext.prototype.AS = function() {
     return this.getToken(SqlBaseParser.AS, 0);
-};
-
-LateralViewContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterLateralView(this);
-	}
-};
-
-LateralViewContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitLateralView(this);
-	}
 };
 
 LateralViewContext.prototype.accept = function(visitor) {
@@ -18509,6 +16751,7 @@ SqlBaseParser.prototype.lateralView = function() {
     return localctx;
 };
 
+
 function SetQuantifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -18531,18 +16774,6 @@ SetQuantifierContext.prototype.DISTINCT = function() {
 
 SetQuantifierContext.prototype.ALL = function() {
     return this.getToken(SqlBaseParser.ALL, 0);
-};
-
-SetQuantifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSetQuantifier(this);
-	}
-};
-
-SetQuantifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSetQuantifier(this);
-	}
 };
 
 SetQuantifierContext.prototype.accept = function(visitor) {
@@ -18588,6 +16819,7 @@ SqlBaseParser.prototype.setQuantifier = function() {
     return localctx;
 };
 
+
 function RelationContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -18617,18 +16849,6 @@ RelationContext.prototype.joinRelation = function(i) {
     } else {
         return this.getTypedRuleContext(JoinRelationContext,i);
     }
-};
-
-RelationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRelation(this);
-	}
-};
-
-RelationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRelation(this);
-	}
 };
 
 RelationContext.prototype.accept = function(visitor) {
@@ -18679,6 +16899,7 @@ SqlBaseParser.prototype.relation = function() {
     return localctx;
 };
 
+
 function JoinRelationContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -18714,18 +16935,6 @@ JoinRelationContext.prototype.joinCriteria = function() {
 
 JoinRelationContext.prototype.NATURAL = function() {
     return this.getToken(SqlBaseParser.NATURAL, 0);
-};
-
-JoinRelationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterJoinRelation(this);
-	}
-};
-
-JoinRelationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitJoinRelation(this);
-	}
 };
 
 JoinRelationContext.prototype.accept = function(visitor) {
@@ -18801,6 +17010,7 @@ SqlBaseParser.prototype.joinRelation = function() {
     return localctx;
 };
 
+
 function JoinTypeContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -18847,18 +17057,6 @@ JoinTypeContext.prototype.FULL = function() {
 
 JoinTypeContext.prototype.ANTI = function() {
     return this.getToken(SqlBaseParser.ANTI, 0);
-};
-
-JoinTypeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterJoinType(this);
-	}
-};
-
-JoinTypeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitJoinType(this);
-	}
 };
 
 JoinTypeContext.prototype.accept = function(visitor) {
@@ -18987,6 +17185,7 @@ SqlBaseParser.prototype.joinType = function() {
     return localctx;
 };
 
+
 function JoinCriteriaContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -19017,18 +17216,6 @@ JoinCriteriaContext.prototype.USING = function() {
 
 JoinCriteriaContext.prototype.identifierList = function() {
     return this.getTypedRuleContext(IdentifierListContext,0);
-};
-
-JoinCriteriaContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterJoinCriteria(this);
-	}
-};
-
-JoinCriteriaContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitJoinCriteria(this);
-	}
 };
 
 JoinCriteriaContext.prototype.accept = function(visitor) {
@@ -19083,6 +17270,7 @@ SqlBaseParser.prototype.joinCriteria = function() {
     return localctx;
 };
 
+
 function SampleContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -19105,18 +17293,6 @@ SampleContext.prototype.TABLESAMPLE = function() {
 
 SampleContext.prototype.sampleMethod = function() {
     return this.getTypedRuleContext(SampleMethodContext,0);
-};
-
-SampleContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSample(this);
-	}
-};
-
-SampleContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSample(this);
-	}
 };
 
 SampleContext.prototype.accept = function(visitor) {
@@ -19166,6 +17342,7 @@ SqlBaseParser.prototype.sample = function() {
     return localctx;
 };
 
+
 function SampleMethodContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -19207,18 +17384,6 @@ SampleByRowsContext.prototype.expression = function() {
 SampleByRowsContext.prototype.ROWS = function() {
     return this.getToken(SqlBaseParser.ROWS, 0);
 };
-SampleByRowsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSampleByRows(this);
-	}
-};
-
-SampleByRowsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSampleByRows(this);
-	}
-};
-
 SampleByRowsContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSampleByRows(this);
@@ -19256,18 +17421,6 @@ SampleByPercentileContext.prototype.DECIMAL_VALUE = function() {
 SampleByPercentileContext.prototype.MINUS = function() {
     return this.getToken(SqlBaseParser.MINUS, 0);
 };
-SampleByPercentileContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSampleByPercentile(this);
-	}
-};
-
-SampleByPercentileContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSampleByPercentile(this);
-	}
-};
-
 SampleByPercentileContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSampleByPercentile(this);
@@ -19326,18 +17479,6 @@ SampleByBucketContext.prototype.identifier = function() {
 SampleByBucketContext.prototype.qualifiedName = function() {
     return this.getTypedRuleContext(QualifiedNameContext,0);
 };
-SampleByBucketContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSampleByBucket(this);
-	}
-};
-
-SampleByBucketContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSampleByBucket(this);
-	}
-};
-
 SampleByBucketContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSampleByBucket(this);
@@ -19362,18 +17503,6 @@ SqlBaseParser.SampleByBytesContext = SampleByBytesContext;
 SampleByBytesContext.prototype.expression = function() {
     return this.getTypedRuleContext(ExpressionContext,0);
 };
-SampleByBytesContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSampleByBytes(this);
-	}
-};
-
-SampleByBytesContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSampleByBytes(this);
-	}
-};
-
 SampleByBytesContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSampleByBytes(this);
@@ -19494,6 +17623,7 @@ SqlBaseParser.prototype.sampleMethod = function() {
     return localctx;
 };
 
+
 function IdentifierListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -19512,18 +17642,6 @@ IdentifierListContext.prototype.constructor = IdentifierListContext;
 
 IdentifierListContext.prototype.identifierSeq = function() {
     return this.getTypedRuleContext(IdentifierSeqContext,0);
-};
-
-IdentifierListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterIdentifierList(this);
-	}
-};
-
-IdentifierListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitIdentifierList(this);
-	}
 };
 
 IdentifierListContext.prototype.accept = function(visitor) {
@@ -19565,6 +17683,7 @@ SqlBaseParser.prototype.identifierList = function() {
     return localctx;
 };
 
+
 function IdentifierSeqContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -19592,18 +17711,6 @@ IdentifierSeqContext.prototype.errorCapturingIdentifier = function(i) {
     } else {
         return this.getTypedRuleContext(ErrorCapturingIdentifierContext,i);
     }
-};
-
-IdentifierSeqContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterIdentifierSeq(this);
-	}
-};
-
-IdentifierSeqContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitIdentifierSeq(this);
-	}
 };
 
 IdentifierSeqContext.prototype.accept = function(visitor) {
@@ -19658,6 +17765,7 @@ SqlBaseParser.prototype.identifierSeq = function() {
     return localctx;
 };
 
+
 function OrderedIdentifierListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -19683,18 +17791,6 @@ OrderedIdentifierListContext.prototype.orderedIdentifier = function(i) {
     } else {
         return this.getTypedRuleContext(OrderedIdentifierContext,i);
     }
-};
-
-OrderedIdentifierListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterOrderedIdentifierList(this);
-	}
-};
-
-OrderedIdentifierListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitOrderedIdentifierList(this);
-	}
 };
 
 OrderedIdentifierListContext.prototype.accept = function(visitor) {
@@ -19749,6 +17845,7 @@ SqlBaseParser.prototype.orderedIdentifierList = function() {
     return localctx;
 };
 
+
 function OrderedIdentifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -19777,18 +17874,6 @@ OrderedIdentifierContext.prototype.ASC = function() {
 
 OrderedIdentifierContext.prototype.DESC = function() {
     return this.getToken(SqlBaseParser.DESC, 0);
-};
-
-OrderedIdentifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterOrderedIdentifier(this);
-	}
-};
-
-OrderedIdentifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitOrderedIdentifier(this);
-	}
 };
 
 OrderedIdentifierContext.prototype.accept = function(visitor) {
@@ -19843,6 +17928,7 @@ SqlBaseParser.prototype.orderedIdentifier = function() {
     return localctx;
 };
 
+
 function IdentifierCommentListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -19868,18 +17954,6 @@ IdentifierCommentListContext.prototype.identifierComment = function(i) {
     } else {
         return this.getTypedRuleContext(IdentifierCommentContext,i);
     }
-};
-
-IdentifierCommentListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterIdentifierCommentList(this);
-	}
-};
-
-IdentifierCommentListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitIdentifierCommentList(this);
-	}
 };
 
 IdentifierCommentListContext.prototype.accept = function(visitor) {
@@ -19934,6 +18008,7 @@ SqlBaseParser.prototype.identifierCommentList = function() {
     return localctx;
 };
 
+
 function IdentifierCommentContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -19956,18 +18031,6 @@ IdentifierCommentContext.prototype.identifier = function() {
 
 IdentifierCommentContext.prototype.commentSpec = function() {
     return this.getTypedRuleContext(CommentSpecContext,0);
-};
-
-IdentifierCommentContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterIdentifierComment(this);
-	}
-};
-
-IdentifierCommentContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitIdentifierComment(this);
-	}
 };
 
 IdentifierCommentContext.prototype.accept = function(visitor) {
@@ -20014,6 +18077,7 @@ SqlBaseParser.prototype.identifierComment = function() {
     return localctx;
 };
 
+
 function RelationPrimaryContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -20051,18 +18115,6 @@ SqlBaseParser.TableValuedFunctionContext = TableValuedFunctionContext;
 TableValuedFunctionContext.prototype.functionTable = function() {
     return this.getTypedRuleContext(FunctionTableContext,0);
 };
-TableValuedFunctionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTableValuedFunction(this);
-	}
-};
-
-TableValuedFunctionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTableValuedFunction(this);
-	}
-};
-
 TableValuedFunctionContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitTableValuedFunction(this);
@@ -20086,18 +18138,6 @@ SqlBaseParser.InlineTableDefault2Context = InlineTableDefault2Context;
 InlineTableDefault2Context.prototype.inlineTable = function() {
     return this.getTypedRuleContext(InlineTableContext,0);
 };
-InlineTableDefault2Context.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterInlineTableDefault2(this);
-	}
-};
-
-InlineTableDefault2Context.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitInlineTableDefault2(this);
-	}
-};
-
 InlineTableDefault2Context.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitInlineTableDefault2(this);
@@ -20129,18 +18169,6 @@ AliasedRelationContext.prototype.tableAlias = function() {
 AliasedRelationContext.prototype.sample = function() {
     return this.getTypedRuleContext(SampleContext,0);
 };
-AliasedRelationContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAliasedRelation(this);
-	}
-};
-
-AliasedRelationContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAliasedRelation(this);
-	}
-};
-
 AliasedRelationContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitAliasedRelation(this);
@@ -20172,18 +18200,6 @@ AliasedQueryContext.prototype.tableAlias = function() {
 AliasedQueryContext.prototype.sample = function() {
     return this.getTypedRuleContext(SampleContext,0);
 };
-AliasedQueryContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAliasedQuery(this);
-	}
-};
-
-AliasedQueryContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAliasedQuery(this);
-	}
-};
-
 AliasedQueryContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitAliasedQuery(this);
@@ -20215,18 +18231,6 @@ TableNameContext.prototype.tableAlias = function() {
 TableNameContext.prototype.sample = function() {
     return this.getTypedRuleContext(SampleContext,0);
 };
-TableNameContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTableName(this);
-	}
-};
-
-TableNameContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTableName(this);
-	}
-};
-
 TableNameContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitTableName(this);
@@ -20336,6 +18340,7 @@ SqlBaseParser.prototype.relationPrimary = function() {
     return localctx;
 };
 
+
 function InlineTableContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -20369,18 +18374,6 @@ InlineTableContext.prototype.expression = function(i) {
 
 InlineTableContext.prototype.tableAlias = function() {
     return this.getTypedRuleContext(TableAliasContext,0);
-};
-
-InlineTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterInlineTable(this);
-	}
-};
-
-InlineTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitInlineTable(this);
-	}
 };
 
 InlineTableContext.prototype.accept = function(visitor) {
@@ -20437,6 +18430,7 @@ SqlBaseParser.prototype.inlineTable = function() {
     return localctx;
 };
 
+
 function FunctionTableContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -20471,18 +18465,6 @@ FunctionTableContext.prototype.expression = function(i) {
     } else {
         return this.getTypedRuleContext(ExpressionContext,i);
     }
-};
-
-FunctionTableContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFunctionTable(this);
-	}
-};
-
-FunctionTableContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFunctionTable(this);
-	}
 };
 
 FunctionTableContext.prototype.accept = function(visitor) {
@@ -20547,6 +18529,7 @@ SqlBaseParser.prototype.functionTable = function() {
     return localctx;
 };
 
+
 function TableAliasContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -20573,18 +18556,6 @@ TableAliasContext.prototype.AS = function() {
 
 TableAliasContext.prototype.identifierList = function() {
     return this.getTypedRuleContext(IdentifierListContext,0);
-};
-
-TableAliasContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTableAlias(this);
-	}
-};
-
-TableAliasContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTableAlias(this);
-	}
 };
 
 TableAliasContext.prototype.accept = function(visitor) {
@@ -20643,6 +18614,7 @@ SqlBaseParser.prototype.tableAlias = function() {
     }
     return localctx;
 };
+
 
 function RowFormatContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -20707,18 +18679,6 @@ RowFormatSerdeContext.prototype.SERDEPROPERTIES = function() {
 RowFormatSerdeContext.prototype.tablePropertyList = function() {
     return this.getTypedRuleContext(TablePropertyListContext,0);
 };
-RowFormatSerdeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRowFormatSerde(this);
-	}
-};
-
-RowFormatSerdeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRowFormatSerde(this);
-	}
-};
-
 RowFormatSerdeContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRowFormatSerde(this);
@@ -20832,18 +18792,6 @@ RowFormatDelimitedContext.prototype.STRING = function(i) {
 RowFormatDelimitedContext.prototype.ESCAPED = function() {
     return this.getToken(SqlBaseParser.ESCAPED, 0);
 };
-RowFormatDelimitedContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRowFormatDelimited(this);
-	}
-};
-
-RowFormatDelimitedContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRowFormatDelimited(this);
-	}
-};
-
 RowFormatDelimitedContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRowFormatDelimited(this);
@@ -21002,6 +18950,7 @@ SqlBaseParser.prototype.rowFormat = function() {
     return localctx;
 };
 
+
 function MultipartIdentifierListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -21027,18 +18976,6 @@ MultipartIdentifierListContext.prototype.multipartIdentifier = function(i) {
     } else {
         return this.getTypedRuleContext(MultipartIdentifierContext,i);
     }
-};
-
-MultipartIdentifierListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterMultipartIdentifierList(this);
-	}
-};
-
-MultipartIdentifierListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitMultipartIdentifierList(this);
-	}
 };
 
 MultipartIdentifierListContext.prototype.accept = function(visitor) {
@@ -21089,6 +19026,7 @@ SqlBaseParser.prototype.multipartIdentifierList = function() {
     return localctx;
 };
 
+
 function MultipartIdentifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -21116,18 +19054,6 @@ MultipartIdentifierContext.prototype.errorCapturingIdentifier = function(i) {
     } else {
         return this.getTypedRuleContext(ErrorCapturingIdentifierContext,i);
     }
-};
-
-MultipartIdentifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterMultipartIdentifier(this);
-	}
-};
-
-MultipartIdentifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitMultipartIdentifier(this);
-	}
 };
 
 MultipartIdentifierContext.prototype.accept = function(visitor) {
@@ -21182,6 +19108,7 @@ SqlBaseParser.prototype.multipartIdentifier = function() {
     return localctx;
 };
 
+
 function TableIdentifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -21209,18 +19136,6 @@ TableIdentifierContext.prototype.errorCapturingIdentifier = function(i) {
     } else {
         return this.getTypedRuleContext(ErrorCapturingIdentifierContext,i);
     }
-};
-
-TableIdentifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTableIdentifier(this);
-	}
-};
-
-TableIdentifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTableIdentifier(this);
-	}
 };
 
 TableIdentifierContext.prototype.accept = function(visitor) {
@@ -21268,6 +19183,7 @@ SqlBaseParser.prototype.tableIdentifier = function() {
     return localctx;
 };
 
+
 function FunctionIdentifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -21295,18 +19211,6 @@ FunctionIdentifierContext.prototype.errorCapturingIdentifier = function(i) {
     } else {
         return this.getTypedRuleContext(ErrorCapturingIdentifierContext,i);
     }
-};
-
-FunctionIdentifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFunctionIdentifier(this);
-	}
-};
-
-FunctionIdentifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFunctionIdentifier(this);
-	}
 };
 
 FunctionIdentifierContext.prototype.accept = function(visitor) {
@@ -21354,6 +19258,7 @@ SqlBaseParser.prototype.functionIdentifier = function() {
     return localctx;
 };
 
+
 function NamedExpressionContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -21385,18 +19290,6 @@ NamedExpressionContext.prototype.AS = function() {
 
 NamedExpressionContext.prototype.errorCapturingIdentifier = function() {
     return this.getTypedRuleContext(ErrorCapturingIdentifierContext,0);
-};
-
-NamedExpressionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterNamedExpression(this);
-	}
-};
-
-NamedExpressionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitNamedExpression(this);
-	}
 };
 
 NamedExpressionContext.prototype.accept = function(visitor) {
@@ -21463,6 +19356,7 @@ SqlBaseParser.prototype.namedExpression = function() {
     return localctx;
 };
 
+
 function NamedExpressionSeqContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -21488,18 +19382,6 @@ NamedExpressionSeqContext.prototype.namedExpression = function(i) {
     } else {
         return this.getTypedRuleContext(NamedExpressionContext,i);
     }
-};
-
-NamedExpressionSeqContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterNamedExpressionSeq(this);
-	}
-};
-
-NamedExpressionSeqContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitNamedExpressionSeq(this);
-	}
 };
 
 NamedExpressionSeqContext.prototype.accept = function(visitor) {
@@ -21552,6 +19434,7 @@ SqlBaseParser.prototype.namedExpressionSeq = function() {
     return localctx;
 };
 
+
 function PartitionFieldListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -21579,18 +19462,6 @@ PartitionFieldListContext.prototype.partitionField = function(i) {
     } else {
         return this.getTypedRuleContext(PartitionFieldContext,i);
     }
-};
-
-PartitionFieldListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPartitionFieldList(this);
-	}
-};
-
-PartitionFieldListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPartitionFieldList(this);
-	}
 };
 
 PartitionFieldListContext.prototype.accept = function(visitor) {
@@ -21647,6 +19518,7 @@ SqlBaseParser.prototype.partitionFieldList = function() {
     return localctx;
 };
 
+
 function PartitionFieldContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -21684,18 +19556,6 @@ SqlBaseParser.PartitionColumnContext = PartitionColumnContext;
 PartitionColumnContext.prototype.colType = function() {
     return this.getTypedRuleContext(ColTypeContext,0);
 };
-PartitionColumnContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPartitionColumn(this);
-	}
-};
-
-PartitionColumnContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPartitionColumn(this);
-	}
-};
-
 PartitionColumnContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitPartitionColumn(this);
@@ -21719,18 +19579,6 @@ SqlBaseParser.PartitionTransformContext = PartitionTransformContext;
 PartitionTransformContext.prototype.transform = function() {
     return this.getTypedRuleContext(TransformContext,0);
 };
-PartitionTransformContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPartitionTransform(this);
-	}
-};
-
-PartitionTransformContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPartitionTransform(this);
-	}
-};
-
 PartitionTransformContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitPartitionTransform(this);
@@ -21781,6 +19629,7 @@ SqlBaseParser.prototype.partitionField = function() {
     return localctx;
 };
 
+
 function TransformContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -21818,18 +19667,6 @@ SqlBaseParser.IdentityTransformContext = IdentityTransformContext;
 IdentityTransformContext.prototype.qualifiedName = function() {
     return this.getTypedRuleContext(QualifiedNameContext,0);
 };
-IdentityTransformContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterIdentityTransform(this);
-	}
-};
-
-IdentityTransformContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitIdentityTransform(this);
-	}
-};
-
 IdentityTransformContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitIdentityTransform(this);
@@ -21867,18 +19704,6 @@ ApplyTransformContext.prototype.transformArgument = function(i) {
         return this.getTypedRuleContext(TransformArgumentContext,i);
     }
 };
-ApplyTransformContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterApplyTransform(this);
-	}
-};
-
-ApplyTransformContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitApplyTransform(this);
-	}
-};
-
 ApplyTransformContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitApplyTransform(this);
@@ -21950,6 +19775,7 @@ SqlBaseParser.prototype.transform = function() {
     return localctx;
 };
 
+
 function TransformArgumentContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -21972,18 +19798,6 @@ TransformArgumentContext.prototype.qualifiedName = function() {
 
 TransformArgumentContext.prototype.constant = function() {
     return this.getTypedRuleContext(ConstantContext,0);
-};
-
-TransformArgumentContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTransformArgument(this);
-	}
-};
-
-TransformArgumentContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTransformArgument(this);
-	}
 };
 
 TransformArgumentContext.prototype.accept = function(visitor) {
@@ -22035,6 +19849,7 @@ SqlBaseParser.prototype.transformArgument = function() {
     return localctx;
 };
 
+
 function ExpressionContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -22053,18 +19868,6 @@ ExpressionContext.prototype.constructor = ExpressionContext;
 
 ExpressionContext.prototype.booleanExpression = function() {
     return this.getTypedRuleContext(BooleanExpressionContext,0);
-};
-
-ExpressionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterExpression(this);
-	}
-};
-
-ExpressionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitExpression(this);
-	}
 };
 
 ExpressionContext.prototype.accept = function(visitor) {
@@ -22101,6 +19904,7 @@ SqlBaseParser.prototype.expression = function() {
     }
     return localctx;
 };
+
 
 function BooleanExpressionContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -22142,18 +19946,6 @@ LogicalNotContext.prototype.NOT = function() {
 LogicalNotContext.prototype.booleanExpression = function() {
     return this.getTypedRuleContext(BooleanExpressionContext,0);
 };
-LogicalNotContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterLogicalNot(this);
-	}
-};
-
-LogicalNotContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitLogicalNot(this);
-	}
-};
-
 LogicalNotContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitLogicalNot(this);
@@ -22181,18 +19973,6 @@ PredicatedContext.prototype.valueExpression = function() {
 PredicatedContext.prototype.predicate = function() {
     return this.getTypedRuleContext(PredicateContext,0);
 };
-PredicatedContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPredicated(this);
-	}
-};
-
-PredicatedContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPredicated(this);
-	}
-};
-
 PredicatedContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitPredicated(this);
@@ -22220,18 +20000,6 @@ ExistsContext.prototype.EXISTS = function() {
 ExistsContext.prototype.query = function() {
     return this.getTypedRuleContext(QueryContext,0);
 };
-ExistsContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterExists(this);
-	}
-};
-
-ExistsContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitExists(this);
-	}
-};
-
 ExistsContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitExists(this);
@@ -22273,18 +20041,6 @@ LogicalBinaryContext.prototype.AND = function() {
 LogicalBinaryContext.prototype.OR = function() {
     return this.getToken(SqlBaseParser.OR, 0);
 };
-LogicalBinaryContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterLogicalBinary(this);
-	}
-};
-
-LogicalBinaryContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitLogicalBinary(this);
-	}
-};
-
 LogicalBinaryContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitLogicalBinary(this);
@@ -22416,6 +20172,7 @@ SqlBaseParser.prototype.booleanExpression = function(_p) {
     return localctx;
 };
 
+
 function PredicateContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -22535,18 +20292,6 @@ PredicateContext.prototype.FROM = function() {
 
 PredicateContext.prototype.DISTINCT = function() {
     return this.getToken(SqlBaseParser.DISTINCT, 0);
-};
-
-PredicateContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPredicate(this);
-	}
-};
-
-PredicateContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPredicate(this);
-	}
 };
 
 PredicateContext.prototype.accept = function(visitor) {
@@ -22818,6 +20563,7 @@ SqlBaseParser.prototype.predicate = function() {
     return localctx;
 };
 
+
 function ValueExpressionContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -22854,18 +20600,6 @@ SqlBaseParser.ValueExpressionDefaultContext = ValueExpressionDefaultContext;
 ValueExpressionDefaultContext.prototype.primaryExpression = function() {
     return this.getTypedRuleContext(PrimaryExpressionContext,0);
 };
-ValueExpressionDefaultContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterValueExpressionDefault(this);
-	}
-};
-
-ValueExpressionDefaultContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitValueExpressionDefault(this);
-	}
-};
-
 ValueExpressionDefaultContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitValueExpressionDefault(this);
@@ -22902,18 +20636,6 @@ ComparisonContext.prototype.valueExpression = function(i) {
         return this.getTypedRuleContext(ValueExpressionContext,i);
     }
 };
-ComparisonContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterComparison(this);
-	}
-};
-
-ComparisonContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitComparison(this);
-	}
-};
-
 ComparisonContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitComparison(this);
@@ -22987,18 +20709,6 @@ ArithmeticBinaryContext.prototype.HAT = function() {
 ArithmeticBinaryContext.prototype.PIPE = function() {
     return this.getToken(SqlBaseParser.PIPE, 0);
 };
-ArithmeticBinaryContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterArithmeticBinary(this);
-	}
-};
-
-ArithmeticBinaryContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitArithmeticBinary(this);
-	}
-};
-
 ArithmeticBinaryContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitArithmeticBinary(this);
@@ -23035,18 +20745,6 @@ ArithmeticUnaryContext.prototype.PLUS = function() {
 ArithmeticUnaryContext.prototype.TILDE = function() {
     return this.getToken(SqlBaseParser.TILDE, 0);
 };
-ArithmeticUnaryContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterArithmeticUnary(this);
-	}
-};
-
-ArithmeticUnaryContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitArithmeticUnary(this);
-	}
-};
-
 ArithmeticUnaryContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitArithmeticUnary(this);
@@ -23237,6 +20935,7 @@ SqlBaseParser.prototype.valueExpression = function(_p) {
     return localctx;
 };
 
+
 function PrimaryExpressionContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -23286,18 +20985,6 @@ StructContext.prototype.namedExpression = function(i) {
         return this.getTypedRuleContext(NamedExpressionContext,i);
     }
 };
-StructContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterStruct(this);
-	}
-};
-
-StructContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitStruct(this);
-	}
-};
-
 StructContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitStruct(this);
@@ -23327,18 +21014,6 @@ DereferenceContext.prototype.primaryExpression = function() {
 DereferenceContext.prototype.identifier = function() {
     return this.getTypedRuleContext(IdentifierContext,0);
 };
-DereferenceContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDereference(this);
-	}
-};
-
-DereferenceContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDereference(this);
-	}
-};
-
 DereferenceContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDereference(this);
@@ -23394,18 +21069,6 @@ SimpleCaseContext.prototype.whenClause = function(i) {
 SimpleCaseContext.prototype.ELSE = function() {
     return this.getToken(SqlBaseParser.ELSE, 0);
 };
-SimpleCaseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSimpleCase(this);
-	}
-};
-
-SimpleCaseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSimpleCase(this);
-	}
-};
-
 SimpleCaseContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSimpleCase(this);
@@ -23429,18 +21092,6 @@ SqlBaseParser.ColumnReferenceContext = ColumnReferenceContext;
 ColumnReferenceContext.prototype.identifier = function() {
     return this.getTypedRuleContext(IdentifierContext,0);
 };
-ColumnReferenceContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterColumnReference(this);
-	}
-};
-
-ColumnReferenceContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitColumnReference(this);
-	}
-};
-
 ColumnReferenceContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitColumnReference(this);
@@ -23471,18 +21122,6 @@ RowConstructorContext.prototype.namedExpression = function(i) {
         return this.getTypedRuleContext(NamedExpressionContext,i);
     }
 };
-RowConstructorContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRowConstructor(this);
-	}
-};
-
-RowConstructorContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRowConstructor(this);
-	}
-};
-
 RowConstructorContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitRowConstructor(this);
@@ -23518,18 +21157,6 @@ LastContext.prototype.IGNORE = function() {
 LastContext.prototype.NULLS = function() {
     return this.getToken(SqlBaseParser.NULLS, 0);
 };
-LastContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterLast(this);
-	}
-};
-
-LastContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitLast(this);
-	}
-};
-
 LastContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitLast(this);
@@ -23557,18 +21184,6 @@ StarContext.prototype.ASTERISK = function() {
 StarContext.prototype.qualifiedName = function() {
     return this.getTypedRuleContext(QualifiedNameContext,0);
 };
-StarContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterStar(this);
-	}
-};
-
-StarContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitStar(this);
-	}
-};
-
 StarContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitStar(this);
@@ -23619,18 +21234,6 @@ OverlayContext.prototype.valueExpression = function(i) {
 OverlayContext.prototype.FOR = function() {
     return this.getToken(SqlBaseParser.FOR, 0);
 };
-OverlayContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterOverlay(this);
-	}
-};
-
-OverlayContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitOverlay(this);
-	}
-};
-
 OverlayContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitOverlay(this);
@@ -23660,18 +21263,6 @@ SubscriptContext.prototype.primaryExpression = function() {
 SubscriptContext.prototype.valueExpression = function() {
     return this.getTypedRuleContext(ValueExpressionContext,0);
 };
-SubscriptContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSubscript(this);
-	}
-};
-
-SubscriptContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSubscript(this);
-	}
-};
-
 SubscriptContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSubscript(this);
@@ -23695,18 +21286,6 @@ SqlBaseParser.SubqueryExpressionContext = SubqueryExpressionContext;
 SubqueryExpressionContext.prototype.query = function() {
     return this.getTypedRuleContext(QueryContext,0);
 };
-SubqueryExpressionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSubqueryExpression(this);
-	}
-};
-
-SubqueryExpressionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSubqueryExpression(this);
-	}
-};
-
 SubqueryExpressionContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSubqueryExpression(this);
@@ -23756,18 +21335,6 @@ SubstringContext.prototype.FROM = function() {
 SubstringContext.prototype.FOR = function() {
     return this.getToken(SqlBaseParser.FOR, 0);
 };
-SubstringContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSubstring(this);
-	}
-};
-
-SubstringContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSubstring(this);
-	}
-};
-
 SubstringContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSubstring(this);
@@ -23796,18 +21363,6 @@ CurrentDatetimeContext.prototype.CURRENT_DATE = function() {
 CurrentDatetimeContext.prototype.CURRENT_TIMESTAMP = function() {
     return this.getToken(SqlBaseParser.CURRENT_TIMESTAMP, 0);
 };
-CurrentDatetimeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCurrentDatetime(this);
-	}
-};
-
-CurrentDatetimeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCurrentDatetime(this);
-	}
-};
-
 CurrentDatetimeContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCurrentDatetime(this);
@@ -23848,18 +21403,6 @@ CastContext.prototype.CAST = function() {
 CastContext.prototype.TRY_CAST = function() {
     return this.getToken(SqlBaseParser.TRY_CAST, 0);
 };
-CastContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterCast(this);
-	}
-};
-
-CastContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitCast(this);
-	}
-};
-
 CastContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitCast(this);
@@ -23883,18 +21426,6 @@ SqlBaseParser.ConstantDefaultContext = ConstantDefaultContext;
 ConstantDefaultContext.prototype.constant = function() {
     return this.getTypedRuleContext(ConstantContext,0);
 };
-ConstantDefaultContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterConstantDefault(this);
-	}
-};
-
-ConstantDefaultContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitConstantDefault(this);
-	}
-};
-
 ConstantDefaultContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitConstantDefault(this);
@@ -23929,18 +21460,6 @@ LambdaContext.prototype.identifier = function(i) {
 LambdaContext.prototype.expression = function() {
     return this.getTypedRuleContext(ExpressionContext,0);
 };
-LambdaContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterLambda(this);
-	}
-};
-
-LambdaContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitLambda(this);
-	}
-};
-
 LambdaContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitLambda(this);
@@ -23964,18 +21483,6 @@ SqlBaseParser.ParenthesizedExpressionContext = ParenthesizedExpressionContext;
 ParenthesizedExpressionContext.prototype.expression = function() {
     return this.getTypedRuleContext(ExpressionContext,0);
 };
-ParenthesizedExpressionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterParenthesizedExpression(this);
-	}
-};
-
-ParenthesizedExpressionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitParenthesizedExpression(this);
-	}
-};
-
 ParenthesizedExpressionContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitParenthesizedExpression(this);
@@ -24013,18 +21520,6 @@ ExtractContext.prototype.identifier = function() {
 ExtractContext.prototype.valueExpression = function() {
     return this.getTypedRuleContext(ValueExpressionContext,0);
 };
-ExtractContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterExtract(this);
-	}
-};
-
-ExtractContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitExtract(this);
-	}
-};
-
 ExtractContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitExtract(this);
@@ -24078,18 +21573,6 @@ TrimContext.prototype.LEADING = function() {
 TrimContext.prototype.TRAILING = function() {
     return this.getToken(SqlBaseParser.TRAILING, 0);
 };
-TrimContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTrim(this);
-	}
-};
-
-TrimContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTrim(this);
-	}
-};
-
 TrimContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitTrim(this);
@@ -24164,18 +21647,6 @@ FunctionCallContext.prototype.RESPECT = function() {
 FunctionCallContext.prototype.setQuantifier = function() {
     return this.getTypedRuleContext(SetQuantifierContext,0);
 };
-FunctionCallContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFunctionCall(this);
-	}
-};
-
-FunctionCallContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFunctionCall(this);
-	}
-};
-
 FunctionCallContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitFunctionCall(this);
@@ -24223,18 +21694,6 @@ SearchedCaseContext.prototype.ELSE = function() {
 SearchedCaseContext.prototype.expression = function() {
     return this.getTypedRuleContext(ExpressionContext,0);
 };
-SearchedCaseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSearchedCase(this);
-	}
-};
-
-SearchedCaseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSearchedCase(this);
-	}
-};
-
 SearchedCaseContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSearchedCase(this);
@@ -24275,18 +21734,6 @@ PositionContext.prototype.valueExpression = function(i) {
         return this.getTypedRuleContext(ValueExpressionContext,i);
     }
 };
-PositionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPosition(this);
-	}
-};
-
-PositionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPosition(this);
-	}
-};
-
 PositionContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitPosition(this);
@@ -24322,18 +21769,6 @@ FirstContext.prototype.IGNORE = function() {
 FirstContext.prototype.NULLS = function() {
     return this.getToken(SqlBaseParser.NULLS, 0);
 };
-FirstContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFirst(this);
-	}
-};
-
-FirstContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFirst(this);
-	}
-};
-
 FirstContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitFirst(this);
@@ -24981,6 +22416,7 @@ SqlBaseParser.prototype.primaryExpression = function(_p) {
     return localctx;
 };
 
+
 function ConstantContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -25018,18 +22454,6 @@ SqlBaseParser.NullLiteralContext = NullLiteralContext;
 NullLiteralContext.prototype.NULL = function() {
     return this.getToken(SqlBaseParser.NULL, 0);
 };
-NullLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterNullLiteral(this);
-	}
-};
-
-NullLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitNullLiteral(this);
-	}
-};
-
 NullLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitNullLiteral(this);
@@ -25061,18 +22485,6 @@ StringLiteralContext.prototype.STRING = function(i) {
     }
 };
 
-StringLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterStringLiteral(this);
-	}
-};
-
-StringLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitStringLiteral(this);
-	}
-};
-
 StringLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitStringLiteral(this);
@@ -25100,18 +22512,6 @@ TypeConstructorContext.prototype.identifier = function() {
 TypeConstructorContext.prototype.STRING = function() {
     return this.getToken(SqlBaseParser.STRING, 0);
 };
-TypeConstructorContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTypeConstructor(this);
-	}
-};
-
-TypeConstructorContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTypeConstructor(this);
-	}
-};
-
 TypeConstructorContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitTypeConstructor(this);
@@ -25135,18 +22535,6 @@ SqlBaseParser.IntervalLiteralContext = IntervalLiteralContext;
 IntervalLiteralContext.prototype.interval = function() {
     return this.getTypedRuleContext(IntervalContext,0);
 };
-IntervalLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterIntervalLiteral(this);
-	}
-};
-
-IntervalLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitIntervalLiteral(this);
-	}
-};
-
 IntervalLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitIntervalLiteral(this);
@@ -25170,18 +22558,6 @@ SqlBaseParser.NumericLiteralContext = NumericLiteralContext;
 NumericLiteralContext.prototype.number = function() {
     return this.getTypedRuleContext(NumberContext,0);
 };
-NumericLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterNumericLiteral(this);
-	}
-};
-
-NumericLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitNumericLiteral(this);
-	}
-};
-
 NumericLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitNumericLiteral(this);
@@ -25205,18 +22581,6 @@ SqlBaseParser.BooleanLiteralContext = BooleanLiteralContext;
 BooleanLiteralContext.prototype.booleanValue = function() {
     return this.getTypedRuleContext(BooleanValueContext,0);
 };
-BooleanLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterBooleanLiteral(this);
-	}
-};
-
-BooleanLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitBooleanLiteral(this);
-	}
-};
-
 BooleanLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitBooleanLiteral(this);
@@ -25311,6 +22675,7 @@ SqlBaseParser.prototype.constant = function() {
     return localctx;
 };
 
+
 function ComparisonOperatorContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -25359,18 +22724,6 @@ ComparisonOperatorContext.prototype.NSEQ = function() {
     return this.getToken(SqlBaseParser.NSEQ, 0);
 };
 
-ComparisonOperatorContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterComparisonOperator(this);
-	}
-};
-
-ComparisonOperatorContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitComparisonOperator(this);
-	}
-};
-
 ComparisonOperatorContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitComparisonOperator(this);
@@ -25413,6 +22766,7 @@ SqlBaseParser.prototype.comparisonOperator = function() {
     }
     return localctx;
 };
+
 
 function ArithmeticOperatorContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -25474,18 +22828,6 @@ ArithmeticOperatorContext.prototype.HAT = function() {
     return this.getToken(SqlBaseParser.HAT, 0);
 };
 
-ArithmeticOperatorContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterArithmeticOperator(this);
-	}
-};
-
-ArithmeticOperatorContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitArithmeticOperator(this);
-	}
-};
-
 ArithmeticOperatorContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitArithmeticOperator(this);
@@ -25529,6 +22871,7 @@ SqlBaseParser.prototype.arithmeticOperator = function() {
     return localctx;
 };
 
+
 function PredicateOperatorContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -25559,18 +22902,6 @@ PredicateOperatorContext.prototype.IN = function() {
 
 PredicateOperatorContext.prototype.NOT = function() {
     return this.getToken(SqlBaseParser.NOT, 0);
-};
-
-PredicateOperatorContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPredicateOperator(this);
-	}
-};
-
-PredicateOperatorContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPredicateOperator(this);
-	}
 };
 
 PredicateOperatorContext.prototype.accept = function(visitor) {
@@ -25616,6 +22947,7 @@ SqlBaseParser.prototype.predicateOperator = function() {
     return localctx;
 };
 
+
 function BooleanValueContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -25638,18 +22970,6 @@ BooleanValueContext.prototype.TRUE = function() {
 
 BooleanValueContext.prototype.FALSE = function() {
     return this.getToken(SqlBaseParser.FALSE, 0);
-};
-
-BooleanValueContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterBooleanValue(this);
-	}
-};
-
-BooleanValueContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitBooleanValue(this);
-	}
 };
 
 BooleanValueContext.prototype.accept = function(visitor) {
@@ -25695,6 +23015,7 @@ SqlBaseParser.prototype.booleanValue = function() {
     return localctx;
 };
 
+
 function IntervalContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -25721,18 +23042,6 @@ IntervalContext.prototype.errorCapturingMultiUnitsInterval = function() {
 
 IntervalContext.prototype.errorCapturingUnitToUnitInterval = function() {
     return this.getTypedRuleContext(ErrorCapturingUnitToUnitIntervalContext,0);
-};
-
-IntervalContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterInterval(this);
-	}
-};
-
-IntervalContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitInterval(this);
-	}
 };
 
 IntervalContext.prototype.accept = function(visitor) {
@@ -25782,6 +23091,7 @@ SqlBaseParser.prototype.interval = function() {
     return localctx;
 };
 
+
 function ErrorCapturingMultiUnitsIntervalContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -25804,18 +23114,6 @@ ErrorCapturingMultiUnitsIntervalContext.prototype.multiUnitsInterval = function(
 
 ErrorCapturingMultiUnitsIntervalContext.prototype.unitToUnitInterval = function() {
     return this.getTypedRuleContext(UnitToUnitIntervalContext,0);
-};
-
-ErrorCapturingMultiUnitsIntervalContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterErrorCapturingMultiUnitsInterval(this);
-	}
-};
-
-ErrorCapturingMultiUnitsIntervalContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitErrorCapturingMultiUnitsInterval(this);
-	}
 };
 
 ErrorCapturingMultiUnitsIntervalContext.prototype.accept = function(visitor) {
@@ -25861,6 +23159,7 @@ SqlBaseParser.prototype.errorCapturingMultiUnitsInterval = function() {
     return localctx;
 };
 
+
 function MultiUnitsIntervalContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -25899,18 +23198,6 @@ MultiUnitsIntervalContext.prototype.identifier = function(i) {
     } else {
         return this.getTypedRuleContext(IdentifierContext,i);
     }
-};
-
-MultiUnitsIntervalContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterMultiUnitsInterval(this);
-	}
-};
-
-MultiUnitsIntervalContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitMultiUnitsInterval(this);
-	}
 };
 
 MultiUnitsIntervalContext.prototype.accept = function(visitor) {
@@ -25965,6 +23252,7 @@ SqlBaseParser.prototype.multiUnitsInterval = function() {
     return localctx;
 };
 
+
 function ErrorCapturingUnitToUnitIntervalContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -25997,18 +23285,6 @@ ErrorCapturingUnitToUnitIntervalContext.prototype.unitToUnitInterval = function(
 
 ErrorCapturingUnitToUnitIntervalContext.prototype.multiUnitsInterval = function() {
     return this.getTypedRuleContext(MultiUnitsIntervalContext,0);
-};
-
-ErrorCapturingUnitToUnitIntervalContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterErrorCapturingUnitToUnitInterval(this);
-	}
-};
-
-ErrorCapturingUnitToUnitIntervalContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitErrorCapturingUnitToUnitInterval(this);
-	}
 };
 
 ErrorCapturingUnitToUnitIntervalContext.prototype.accept = function(visitor) {
@@ -26058,6 +23334,7 @@ SqlBaseParser.prototype.errorCapturingUnitToUnitInterval = function() {
     return localctx;
 };
 
+
 function UnitToUnitIntervalContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -26094,18 +23371,6 @@ UnitToUnitIntervalContext.prototype.identifier = function(i) {
     } else {
         return this.getTypedRuleContext(IdentifierContext,i);
     }
-};
-
-UnitToUnitIntervalContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterUnitToUnitInterval(this);
-	}
-};
-
-UnitToUnitIntervalContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitUnitToUnitInterval(this);
-	}
 };
 
 UnitToUnitIntervalContext.prototype.accept = function(visitor) {
@@ -26149,6 +23414,7 @@ SqlBaseParser.prototype.unitToUnitInterval = function() {
     return localctx;
 };
 
+
 function IntervalValueContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -26183,18 +23449,6 @@ IntervalValueContext.prototype.MINUS = function() {
 
 IntervalValueContext.prototype.STRING = function() {
     return this.getToken(SqlBaseParser.STRING, 0);
-};
-
-IntervalValueContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterIntervalValue(this);
-	}
-};
-
-IntervalValueContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitIntervalValue(this);
-	}
 };
 
 IntervalValueContext.prototype.accept = function(visitor) {
@@ -26271,6 +23525,7 @@ SqlBaseParser.prototype.intervalValue = function() {
     return localctx;
 };
 
+
 function ColPositionContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -26299,18 +23554,6 @@ ColPositionContext.prototype.AFTER = function() {
 
 ColPositionContext.prototype.errorCapturingIdentifier = function() {
     return this.getTypedRuleContext(ErrorCapturingIdentifierContext,0);
-};
-
-ColPositionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterColPosition(this);
-	}
-};
-
-ColPositionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitColPosition(this);
-	}
 };
 
 ColPositionContext.prototype.accept = function(visitor) {
@@ -26362,6 +23605,7 @@ SqlBaseParser.prototype.colPosition = function() {
     }
     return localctx;
 };
+
 
 function DataTypeContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -26422,18 +23666,6 @@ MapDataTypeContext.prototype.dataType = function(i) {
         return this.getTypedRuleContext(DataTypeContext,i);
     }
 };
-MapDataTypeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterMapDataType(this);
-	}
-};
-
-MapDataTypeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitMapDataType(this);
-	}
-};
-
 MapDataTypeContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitMapDataType(this);
@@ -26474,18 +23706,6 @@ StructDataTypeContext.prototype.NEQ = function() {
 StructDataTypeContext.prototype.complexColTypeList = function() {
     return this.getTypedRuleContext(ComplexColTypeListContext,0);
 };
-StructDataTypeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterStructDataType(this);
-	}
-};
-
-StructDataTypeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitStructDataType(this);
-	}
-};
-
 StructDataTypeContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitStructDataType(this);
@@ -26522,18 +23742,6 @@ ArrayDataTypeContext.prototype.GT = function() {
 ArrayDataTypeContext.prototype.ARRAY = function() {
     return this.getToken(SqlBaseParser.ARRAY, 0);
 };
-ArrayDataTypeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterArrayDataType(this);
-	}
-};
-
-ArrayDataTypeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitArrayDataType(this);
-	}
-};
-
 ArrayDataTypeContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitArrayDataType(this);
@@ -26569,18 +23777,6 @@ PrimitiveDataTypeContext.prototype.INTEGER_VALUE = function(i) {
     } else {
         return this.getToken(SqlBaseParser.INTEGER_VALUE, i);
     }
-};
-
-PrimitiveDataTypeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterPrimitiveDataType(this);
-	}
-};
-
-PrimitiveDataTypeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitPrimitiveDataType(this);
-	}
 };
 
 PrimitiveDataTypeContext.prototype.accept = function(visitor) {
@@ -26712,6 +23908,7 @@ SqlBaseParser.prototype.dataType = function() {
     return localctx;
 };
 
+
 function QualifiedColTypeWithPositionListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -26737,18 +23934,6 @@ QualifiedColTypeWithPositionListContext.prototype.qualifiedColTypeWithPosition =
     } else {
         return this.getTypedRuleContext(QualifiedColTypeWithPositionContext,i);
     }
-};
-
-QualifiedColTypeWithPositionListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterQualifiedColTypeWithPositionList(this);
-	}
-};
-
-QualifiedColTypeWithPositionListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitQualifiedColTypeWithPositionList(this);
-	}
 };
 
 QualifiedColTypeWithPositionListContext.prototype.accept = function(visitor) {
@@ -26799,6 +23984,7 @@ SqlBaseParser.prototype.qualifiedColTypeWithPositionList = function() {
     return localctx;
 };
 
+
 function QualifiedColTypeWithPositionContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -26838,18 +24024,6 @@ QualifiedColTypeWithPositionContext.prototype.commentSpec = function() {
 
 QualifiedColTypeWithPositionContext.prototype.colPosition = function() {
     return this.getTypedRuleContext(ColPositionContext,0);
-};
-
-QualifiedColTypeWithPositionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterQualifiedColTypeWithPosition(this);
-	}
-};
-
-QualifiedColTypeWithPositionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitQualifiedColTypeWithPosition(this);
-	}
 };
 
 QualifiedColTypeWithPositionContext.prototype.accept = function(visitor) {
@@ -26916,6 +24090,7 @@ SqlBaseParser.prototype.qualifiedColTypeWithPosition = function() {
     return localctx;
 };
 
+
 function ColTypeListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -26941,18 +24116,6 @@ ColTypeListContext.prototype.colType = function(i) {
     } else {
         return this.getTypedRuleContext(ColTypeContext,i);
     }
-};
-
-ColTypeListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterColTypeList(this);
-	}
-};
-
-ColTypeListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitColTypeList(this);
-	}
 };
 
 ColTypeListContext.prototype.accept = function(visitor) {
@@ -27005,6 +24168,7 @@ SqlBaseParser.prototype.colTypeList = function() {
     return localctx;
 };
 
+
 function ColTypeContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -27040,18 +24204,6 @@ ColTypeContext.prototype.NULL = function() {
 
 ColTypeContext.prototype.commentSpec = function() {
     return this.getTypedRuleContext(CommentSpecContext,0);
-};
-
-ColTypeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterColType(this);
-	}
-};
-
-ColTypeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitColType(this);
-	}
 };
 
 ColTypeContext.prototype.accept = function(visitor) {
@@ -27109,6 +24261,7 @@ SqlBaseParser.prototype.colType = function() {
     return localctx;
 };
 
+
 function ComplexColTypeListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -27134,18 +24287,6 @@ ComplexColTypeListContext.prototype.complexColType = function(i) {
     } else {
         return this.getTypedRuleContext(ComplexColTypeContext,i);
     }
-};
-
-ComplexColTypeListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterComplexColTypeList(this);
-	}
-};
-
-ComplexColTypeListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitComplexColTypeList(this);
-	}
 };
 
 ComplexColTypeListContext.prototype.accept = function(visitor) {
@@ -27196,6 +24337,7 @@ SqlBaseParser.prototype.complexColTypeList = function() {
     return localctx;
 };
 
+
 function ComplexColTypeContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -27230,18 +24372,6 @@ ComplexColTypeContext.prototype.NULL = function() {
 
 ComplexColTypeContext.prototype.commentSpec = function() {
     return this.getTypedRuleContext(CommentSpecContext,0);
-};
-
-ComplexColTypeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterComplexColType(this);
-	}
-};
-
-ComplexColTypeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitComplexColType(this);
-	}
 };
 
 ComplexColTypeContext.prototype.accept = function(visitor) {
@@ -27302,6 +24432,7 @@ SqlBaseParser.prototype.complexColType = function() {
     return localctx;
 };
 
+
 function WhenClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -27337,18 +24468,6 @@ WhenClauseContext.prototype.expression = function(i) {
     } else {
         return this.getTypedRuleContext(ExpressionContext,i);
     }
-};
-
-WhenClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterWhenClause(this);
-	}
-};
-
-WhenClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitWhenClause(this);
-	}
 };
 
 WhenClauseContext.prototype.accept = function(visitor) {
@@ -27392,6 +24511,7 @@ SqlBaseParser.prototype.whenClause = function() {
     return localctx;
 };
 
+
 function WindowClauseContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -27421,18 +24541,6 @@ WindowClauseContext.prototype.namedWindow = function(i) {
     } else {
         return this.getTypedRuleContext(NamedWindowContext,i);
     }
-};
-
-WindowClauseContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterWindowClause(this);
-	}
-};
-
-WindowClauseContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitWindowClause(this);
-	}
 };
 
 WindowClauseContext.prototype.accept = function(visitor) {
@@ -27487,6 +24595,7 @@ SqlBaseParser.prototype.windowClause = function() {
     return localctx;
 };
 
+
 function NamedWindowContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -27514,18 +24623,6 @@ NamedWindowContext.prototype.windowSpec = function() {
 
 NamedWindowContext.prototype.errorCapturingIdentifier = function() {
     return this.getTypedRuleContext(ErrorCapturingIdentifierContext,0);
-};
-
-NamedWindowContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterNamedWindow(this);
-	}
-};
-
-NamedWindowContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitNamedWindow(this);
-	}
 };
 
 NamedWindowContext.prototype.accept = function(visitor) {
@@ -27567,6 +24664,7 @@ SqlBaseParser.prototype.namedWindow = function() {
     return localctx;
 };
 
+
 function WindowSpecContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -27605,18 +24703,6 @@ SqlBaseParser.WindowRefContext = WindowRefContext;
 WindowRefContext.prototype.errorCapturingIdentifier = function() {
     return this.getTypedRuleContext(ErrorCapturingIdentifierContext,0);
 };
-WindowRefContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterWindowRef(this);
-	}
-};
-
-WindowRefContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitWindowRef(this);
-	}
-};
-
 WindowRefContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitWindowRef(this);
@@ -27696,18 +24782,6 @@ WindowDefContext.prototype.ORDER = function() {
 WindowDefContext.prototype.SORT = function() {
     return this.getToken(SqlBaseParser.SORT, 0);
 };
-WindowDefContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterWindowDef(this);
-	}
-};
-
-WindowDefContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitWindowDef(this);
-	}
-};
-
 WindowDefContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitWindowDef(this);
@@ -27880,6 +24954,7 @@ SqlBaseParser.prototype.windowSpec = function() {
     return localctx;
 };
 
+
 function WindowFrameContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -27924,18 +24999,6 @@ WindowFrameContext.prototype.BETWEEN = function() {
 
 WindowFrameContext.prototype.AND = function() {
     return this.getToken(SqlBaseParser.AND, 0);
-};
-
-WindowFrameContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterWindowFrame(this);
-	}
-};
-
-WindowFrameContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitWindowFrame(this);
-	}
 };
 
 WindowFrameContext.prototype.accept = function(visitor) {
@@ -28019,6 +25082,7 @@ SqlBaseParser.prototype.windowFrame = function() {
     return localctx;
 };
 
+
 function FrameBoundContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -28058,18 +25122,6 @@ FrameBoundContext.prototype.CURRENT = function() {
 
 FrameBoundContext.prototype.expression = function() {
     return this.getTypedRuleContext(ExpressionContext,0);
-};
-
-FrameBoundContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFrameBound(this);
-	}
-};
-
-FrameBoundContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFrameBound(this);
-	}
 };
 
 FrameBoundContext.prototype.accept = function(visitor) {
@@ -28150,6 +25202,7 @@ SqlBaseParser.prototype.frameBound = function() {
     return localctx;
 };
 
+
 function QualifiedNameListContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -28175,18 +25228,6 @@ QualifiedNameListContext.prototype.qualifiedName = function(i) {
     } else {
         return this.getTypedRuleContext(QualifiedNameContext,i);
     }
-};
-
-QualifiedNameListContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterQualifiedNameList(this);
-	}
-};
-
-QualifiedNameListContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitQualifiedNameList(this);
-	}
 };
 
 QualifiedNameListContext.prototype.accept = function(visitor) {
@@ -28237,6 +25278,7 @@ SqlBaseParser.prototype.qualifiedNameList = function() {
     return localctx;
 };
 
+
 function FunctionNameContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -28267,18 +25309,6 @@ FunctionNameContext.prototype.LEFT = function() {
 
 FunctionNameContext.prototype.RIGHT = function() {
     return this.getToken(SqlBaseParser.RIGHT, 0);
-};
-
-FunctionNameContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFunctionName(this);
-	}
-};
-
-FunctionNameContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFunctionName(this);
-	}
 };
 
 FunctionNameContext.prototype.accept = function(visitor) {
@@ -28342,6 +25372,7 @@ SqlBaseParser.prototype.functionName = function() {
     return localctx;
 };
 
+
 function QualifiedNameContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -28367,18 +25398,6 @@ QualifiedNameContext.prototype.identifier = function(i) {
     } else {
         return this.getTypedRuleContext(IdentifierContext,i);
     }
-};
-
-QualifiedNameContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterQualifiedName(this);
-	}
-};
-
-QualifiedNameContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitQualifiedName(this);
-	}
 };
 
 QualifiedNameContext.prototype.accept = function(visitor) {
@@ -28431,6 +25450,7 @@ SqlBaseParser.prototype.qualifiedName = function() {
     return localctx;
 };
 
+
 function ErrorCapturingIdentifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -28453,18 +25473,6 @@ ErrorCapturingIdentifierContext.prototype.identifier = function() {
 
 ErrorCapturingIdentifierContext.prototype.errorCapturingIdentifierExtra = function() {
     return this.getTypedRuleContext(ErrorCapturingIdentifierExtraContext,0);
-};
-
-ErrorCapturingIdentifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterErrorCapturingIdentifier(this);
-	}
-};
-
-ErrorCapturingIdentifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitErrorCapturingIdentifier(this);
-	}
 };
 
 ErrorCapturingIdentifierContext.prototype.accept = function(visitor) {
@@ -28503,6 +25511,7 @@ SqlBaseParser.prototype.errorCapturingIdentifier = function() {
     }
     return localctx;
 };
+
 
 function ErrorCapturingIdentifierExtraContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -28560,18 +25569,6 @@ ErrorIdentContext.prototype.identifier = function(i) {
         return this.getTypedRuleContext(IdentifierContext,i);
     }
 };
-ErrorIdentContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterErrorIdent(this);
-	}
-};
-
-ErrorIdentContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitErrorIdent(this);
-	}
-};
-
 ErrorIdentContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitErrorIdent(this);
@@ -28591,18 +25588,6 @@ RealIdentContext.prototype = Object.create(ErrorCapturingIdentifierExtraContext.
 RealIdentContext.prototype.constructor = RealIdentContext;
 
 SqlBaseParser.RealIdentContext = RealIdentContext;
-
-RealIdentContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterRealIdent(this);
-	}
-};
-
-RealIdentContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitRealIdent(this);
-	}
-};
 
 RealIdentContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
@@ -28669,6 +25654,7 @@ SqlBaseParser.prototype.errorCapturingIdentifierExtra = function() {
     return localctx;
 };
 
+
 function IdentifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -28691,18 +25677,6 @@ IdentifierContext.prototype.strictIdentifier = function() {
 
 IdentifierContext.prototype.strictNonReserved = function() {
     return this.getTypedRuleContext(StrictNonReservedContext,0);
-};
-
-IdentifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterIdentifier(this);
-	}
-};
-
-IdentifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitIdentifier(this);
-	}
 };
 
 IdentifierContext.prototype.accept = function(visitor) {
@@ -28736,8 +25710,8 @@ SqlBaseParser.prototype.identifier = function() {
         case 2:
             this.enterOuterAlt(localctx, 2);
             this.state = 2999;
-            if (!( !false)) {
-                throw new antlr4.error.FailedPredicateException(this, "!false");
+            if (!( !SQL_standard_keyword_behavior)) {
+                throw new antlr4.error.FailedPredicateException(this, "!SQL_standard_keyword_behavior");
             }
             this.state = 3000;
             this.strictNonReserved();
@@ -28757,6 +25731,7 @@ SqlBaseParser.prototype.identifier = function() {
     }
     return localctx;
 };
+
 
 function StrictIdentifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -28795,18 +25770,6 @@ SqlBaseParser.QuotedIdentifierAlternativeContext = QuotedIdentifierAlternativeCo
 QuotedIdentifierAlternativeContext.prototype.quotedIdentifier = function() {
     return this.getTypedRuleContext(QuotedIdentifierContext,0);
 };
-QuotedIdentifierAlternativeContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterQuotedIdentifierAlternative(this);
-	}
-};
-
-QuotedIdentifierAlternativeContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitQuotedIdentifierAlternative(this);
-	}
-};
-
 QuotedIdentifierAlternativeContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitQuotedIdentifierAlternative(this);
@@ -28838,18 +25801,6 @@ UnquotedIdentifierContext.prototype.ansiNonReserved = function() {
 UnquotedIdentifierContext.prototype.nonReserved = function() {
     return this.getTypedRuleContext(NonReservedContext,0);
 };
-UnquotedIdentifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterUnquotedIdentifier(this);
-	}
-};
-
-UnquotedIdentifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitUnquotedIdentifier(this);
-	}
-};
-
 UnquotedIdentifierContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitUnquotedIdentifier(this);
@@ -28889,8 +25840,8 @@ SqlBaseParser.prototype.strictIdentifier = function() {
             localctx = new UnquotedIdentifierContext(this, localctx);
             this.enterOuterAlt(localctx, 3);
             this.state = 3005;
-            if (!( false)) {
-                throw new antlr4.error.FailedPredicateException(this, "false");
+            if (!( SQL_standard_keyword_behavior)) {
+                throw new antlr4.error.FailedPredicateException(this, "SQL_standard_keyword_behavior");
             }
             this.state = 3006;
             this.ansiNonReserved();
@@ -28900,8 +25851,8 @@ SqlBaseParser.prototype.strictIdentifier = function() {
             localctx = new UnquotedIdentifierContext(this, localctx);
             this.enterOuterAlt(localctx, 4);
             this.state = 3007;
-            if (!( !false)) {
-                throw new antlr4.error.FailedPredicateException(this, "!false");
+            if (!( !SQL_standard_keyword_behavior)) {
+                throw new antlr4.error.FailedPredicateException(this, "!SQL_standard_keyword_behavior");
             }
             this.state = 3008;
             this.nonReserved();
@@ -28922,6 +25873,7 @@ SqlBaseParser.prototype.strictIdentifier = function() {
     return localctx;
 };
 
+
 function QuotedIdentifierContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -28940,18 +25892,6 @@ QuotedIdentifierContext.prototype.constructor = QuotedIdentifierContext;
 
 QuotedIdentifierContext.prototype.BACKQUOTED_IDENTIFIER = function() {
     return this.getToken(SqlBaseParser.BACKQUOTED_IDENTIFIER, 0);
-};
-
-QuotedIdentifierContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterQuotedIdentifier(this);
-	}
-};
-
-QuotedIdentifierContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitQuotedIdentifier(this);
-	}
 };
 
 QuotedIdentifierContext.prototype.accept = function(visitor) {
@@ -28988,6 +25928,7 @@ SqlBaseParser.prototype.quotedIdentifier = function() {
     }
     return localctx;
 };
+
 
 function NumberContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -29030,18 +25971,6 @@ DecimalLiteralContext.prototype.DECIMAL_VALUE = function() {
 DecimalLiteralContext.prototype.MINUS = function() {
     return this.getToken(SqlBaseParser.MINUS, 0);
 };
-DecimalLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDecimalLiteral(this);
-	}
-};
-
-DecimalLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDecimalLiteral(this);
-	}
-};
-
 DecimalLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDecimalLiteral(this);
@@ -29069,18 +25998,6 @@ BigIntLiteralContext.prototype.BIGINT_LITERAL = function() {
 BigIntLiteralContext.prototype.MINUS = function() {
     return this.getToken(SqlBaseParser.MINUS, 0);
 };
-BigIntLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterBigIntLiteral(this);
-	}
-};
-
-BigIntLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitBigIntLiteral(this);
-	}
-};
-
 BigIntLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitBigIntLiteral(this);
@@ -29108,18 +26025,6 @@ TinyIntLiteralContext.prototype.TINYINT_LITERAL = function() {
 TinyIntLiteralContext.prototype.MINUS = function() {
     return this.getToken(SqlBaseParser.MINUS, 0);
 };
-TinyIntLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterTinyIntLiteral(this);
-	}
-};
-
-TinyIntLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitTinyIntLiteral(this);
-	}
-};
-
 TinyIntLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitTinyIntLiteral(this);
@@ -29151,18 +26056,6 @@ LegacyDecimalLiteralContext.prototype.DECIMAL_VALUE = function() {
 LegacyDecimalLiteralContext.prototype.MINUS = function() {
     return this.getToken(SqlBaseParser.MINUS, 0);
 };
-LegacyDecimalLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterLegacyDecimalLiteral(this);
-	}
-};
-
-LegacyDecimalLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitLegacyDecimalLiteral(this);
-	}
-};
-
 LegacyDecimalLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitLegacyDecimalLiteral(this);
@@ -29190,18 +26083,6 @@ BigDecimalLiteralContext.prototype.BIGDECIMAL_LITERAL = function() {
 BigDecimalLiteralContext.prototype.MINUS = function() {
     return this.getToken(SqlBaseParser.MINUS, 0);
 };
-BigDecimalLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterBigDecimalLiteral(this);
-	}
-};
-
-BigDecimalLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitBigDecimalLiteral(this);
-	}
-};
-
 BigDecimalLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitBigDecimalLiteral(this);
@@ -29229,18 +26110,6 @@ ExponentLiteralContext.prototype.EXPONENT_VALUE = function() {
 ExponentLiteralContext.prototype.MINUS = function() {
     return this.getToken(SqlBaseParser.MINUS, 0);
 };
-ExponentLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterExponentLiteral(this);
-	}
-};
-
-ExponentLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitExponentLiteral(this);
-	}
-};
-
 ExponentLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitExponentLiteral(this);
@@ -29268,18 +26137,6 @@ DoubleLiteralContext.prototype.DOUBLE_LITERAL = function() {
 DoubleLiteralContext.prototype.MINUS = function() {
     return this.getToken(SqlBaseParser.MINUS, 0);
 };
-DoubleLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterDoubleLiteral(this);
-	}
-};
-
-DoubleLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitDoubleLiteral(this);
-	}
-};
-
 DoubleLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitDoubleLiteral(this);
@@ -29307,18 +26164,6 @@ IntegerLiteralContext.prototype.INTEGER_VALUE = function() {
 IntegerLiteralContext.prototype.MINUS = function() {
     return this.getToken(SqlBaseParser.MINUS, 0);
 };
-IntegerLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterIntegerLiteral(this);
-	}
-};
-
-IntegerLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitIntegerLiteral(this);
-	}
-};
-
 IntegerLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitIntegerLiteral(this);
@@ -29346,18 +26191,6 @@ FloatLiteralContext.prototype.FLOAT_LITERAL = function() {
 FloatLiteralContext.prototype.MINUS = function() {
     return this.getToken(SqlBaseParser.MINUS, 0);
 };
-FloatLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterFloatLiteral(this);
-	}
-};
-
-FloatLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitFloatLiteral(this);
-	}
-};
-
 FloatLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitFloatLiteral(this);
@@ -29385,18 +26218,6 @@ SmallIntLiteralContext.prototype.SMALLINT_LITERAL = function() {
 SmallIntLiteralContext.prototype.MINUS = function() {
     return this.getToken(SqlBaseParser.MINUS, 0);
 };
-SmallIntLiteralContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterSmallIntLiteral(this);
-	}
-};
-
-SmallIntLiteralContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitSmallIntLiteral(this);
-	}
-};
-
 SmallIntLiteralContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitSmallIntLiteral(this);
@@ -29423,8 +26244,8 @@ SqlBaseParser.prototype.number = function() {
             localctx = new ExponentLiteralContext(this, localctx);
             this.enterOuterAlt(localctx, 1);
             this.state = 3013;
-            if (!( !false)) {
-                throw new antlr4.error.FailedPredicateException(this, "!false");
+            if (!( !legacy_exponent_literal_as_decimal_enabled)) {
+                throw new antlr4.error.FailedPredicateException(this, "!legacy_exponent_literal_as_decimal_enabled");
             }
             this.state = 3015;
             this._errHandler.sync(this);
@@ -29442,8 +26263,8 @@ SqlBaseParser.prototype.number = function() {
             localctx = new DecimalLiteralContext(this, localctx);
             this.enterOuterAlt(localctx, 2);
             this.state = 3018;
-            if (!( !false)) {
-                throw new antlr4.error.FailedPredicateException(this, "!false");
+            if (!( !legacy_exponent_literal_as_decimal_enabled)) {
+                throw new antlr4.error.FailedPredicateException(this, "!legacy_exponent_literal_as_decimal_enabled");
             }
             this.state = 3020;
             this._errHandler.sync(this);
@@ -29461,8 +26282,8 @@ SqlBaseParser.prototype.number = function() {
             localctx = new LegacyDecimalLiteralContext(this, localctx);
             this.enterOuterAlt(localctx, 3);
             this.state = 3023;
-            if (!( false)) {
-                throw new antlr4.error.FailedPredicateException(this, "false");
+            if (!( legacy_exponent_literal_as_decimal_enabled)) {
+                throw new antlr4.error.FailedPredicateException(this, "legacy_exponent_literal_as_decimal_enabled");
             }
             this.state = 3025;
             this._errHandler.sync(this);
@@ -29603,6 +26424,7 @@ SqlBaseParser.prototype.number = function() {
     return localctx;
 };
 
+
 function AlterColumnActionContext(parser, parent, invokingState) {
 	if(parent===undefined) {
 	    parent = null;
@@ -29650,18 +26472,6 @@ AlterColumnActionContext.prototype.SET = function() {
 
 AlterColumnActionContext.prototype.DROP = function() {
     return this.getToken(SqlBaseParser.DROP, 0);
-};
-
-AlterColumnActionContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAlterColumnAction(this);
-	}
-};
-
-AlterColumnActionContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAlterColumnAction(this);
-	}
 };
 
 AlterColumnActionContext.prototype.accept = function(visitor) {
@@ -29738,6 +26548,7 @@ SqlBaseParser.prototype.alterColumnAction = function() {
     }
     return localctx;
 };
+
 
 function AnsiNonReservedContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -30487,18 +27298,6 @@ AnsiNonReservedContext.prototype.ZONE = function() {
     return this.getToken(SqlBaseParser.ZONE, 0);
 };
 
-AnsiNonReservedContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterAnsiNonReserved(this);
-	}
-};
-
-AnsiNonReservedContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitAnsiNonReserved(this);
-	}
-};
-
 AnsiNonReservedContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitAnsiNonReserved(this);
@@ -30541,6 +27340,7 @@ SqlBaseParser.prototype.ansiNonReserved = function() {
     }
     return localctx;
 };
+
 
 function StrictNonReservedContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -30618,18 +27418,6 @@ StrictNonReservedContext.prototype.USING = function() {
     return this.getToken(SqlBaseParser.USING, 0);
 };
 
-StrictNonReservedContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterStrictNonReserved(this);
-	}
-};
-
-StrictNonReservedContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitStrictNonReserved(this);
-	}
-};
-
 StrictNonReservedContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitStrictNonReserved(this);
@@ -30672,6 +27460,7 @@ SqlBaseParser.prototype.strictNonReserved = function() {
     }
     return localctx;
 };
+
 
 function NonReservedContext(parser, parent, invokingState) {
 	if(parent===undefined) {
@@ -31637,18 +28426,6 @@ NonReservedContext.prototype.ZONE = function() {
     return this.getToken(SqlBaseParser.ZONE, 0);
 };
 
-NonReservedContext.prototype.enterRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.enterNonReserved(this);
-	}
-};
-
-NonReservedContext.prototype.exitRule = function(listener) {
-    if(listener instanceof SqlBaseListener ) {
-        listener.exitNonReserved(this);
-	}
-};
-
 NonReservedContext.prototype.accept = function(visitor) {
     if ( visitor instanceof SqlBaseVisitor ) {
         return visitor.visitNonReserved(this);
@@ -31719,15 +28496,15 @@ SqlBaseParser.prototype.queryTerm_sempred = function(localctx, predIndex) {
 		case 0:
 			return this.precpred(this._ctx, 3);
 		case 1:
-			return false;
+			return legacy_setops_precedence_enabled;
 		case 2:
 			return this.precpred(this._ctx, 2);
 		case 3:
-			return !false;
+			return !legacy_setops_precedence_enabled;
 		case 4:
 			return this.precpred(this._ctx, 1);
 		case 5:
-			return !false;
+			return !legacy_setops_precedence_enabled;
 		default:
 			throw "No predicate with index:" + predIndex;
 	}
@@ -31777,7 +28554,7 @@ SqlBaseParser.prototype.primaryExpression_sempred = function(localctx, predIndex
 SqlBaseParser.prototype.identifier_sempred = function(localctx, predIndex) {
 	switch(predIndex) {
 		case 16:
-			return !false;
+			return !SQL_standard_keyword_behavior;
 		default:
 			throw "No predicate with index:" + predIndex;
 	}
@@ -31786,9 +28563,9 @@ SqlBaseParser.prototype.identifier_sempred = function(localctx, predIndex) {
 SqlBaseParser.prototype.strictIdentifier_sempred = function(localctx, predIndex) {
 	switch(predIndex) {
 		case 17:
-			return false;
+			return SQL_standard_keyword_behavior;
 		case 18:
-			return !false;
+			return !SQL_standard_keyword_behavior;
 		default:
 			throw "No predicate with index:" + predIndex;
 	}
@@ -31797,11 +28574,11 @@ SqlBaseParser.prototype.strictIdentifier_sempred = function(localctx, predIndex)
 SqlBaseParser.prototype.number_sempred = function(localctx, predIndex) {
 	switch(predIndex) {
 		case 19:
-			return !false;
+			return !legacy_exponent_literal_as_decimal_enabled;
 		case 20:
-			return !false;
+			return !legacy_exponent_literal_as_decimal_enabled;
 		case 21:
-			return false;
+			return legacy_exponent_literal_as_decimal_enabled;
 		default:
 			throw "No predicate with index:" + predIndex;
 	}
