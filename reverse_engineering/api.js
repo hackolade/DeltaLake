@@ -183,22 +183,12 @@ module.exports = {
 						viewData = viewDDLHelper.getViewDataFromDDl(ddl);
 					} catch (e) {
 						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
-						return {};
+						return createViewPackage(name);
 					}
 
 					progress({ message: 'View data processed successfully', containerName: dbName, entityName: name });
 
-					return {
-						name,
-						data: {
-							...viewData,
-							selectStatement: viewData.selectStatement,
-						},
-						ddl: {
-							script: `CREATE VIEW ${viewData.code} AS ${viewData.selectStatement};`,
-							type: 'postgres'
-						}
-					};
+					return createViewPackage(name, viewData);
 				});
 
 				const viewPackage = Promise.resolve({
@@ -286,4 +276,21 @@ const handleError = (logger, error, cb) => {
 	const message = getErrorMessage(error);
 	logger.log('error', { error }, 'Reverse Engineering error');
 	cb(message);
+};
+
+const createViewPackage = (name, viewData = {}) => {
+	const selectStatement = viewData.selectStatement || '';
+	const viewName = viewData.code || name;
+
+	return {
+		name,
+		data: {
+			...viewData,
+			selectStatement,
+		},
+		ddl: {
+			script: `CREATE VIEW ${viewName} AS ${selectStatement};`.replace(/`/g, '"'),
+			type: 'postgres'
+		}
+	};
 };

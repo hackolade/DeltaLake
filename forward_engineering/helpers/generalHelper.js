@@ -41,7 +41,7 @@ const buildStatement = (mainStatement, isActivated) => {
 
 const isEscaped = (name) => /\`[\s\S]*\`/.test(name);
 
-const prepareName = name => {
+const prepareName = (name = '') => {
 	const containSpaces = /\s/g;
 	if (containSpaces.test(name) && !isEscaped(name)) {
 		return `\`${name}\``;
