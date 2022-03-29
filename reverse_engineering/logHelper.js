@@ -21,11 +21,16 @@ const checkConnection = (host, port, timeout = 5000) => new Promise((resolve, re
 
 const getPluginVersion = () => packageFile.version;
 
-const getSystemInfo = (appVersion) => {
+const getSystemInfo = (connectionInfo) => {
 	return '' + 
 	`Date: ${new Date()}` + '\n' + 
-	`Application version: ${appVersion}` + '\n' + 
+	`Application version: ${connectionInfo.appVersion}` + '\n' + 
 	`Plugin version: ${getPluginVersion()}` + '\n\n' + 
+	`Connection information:` + '\n' +
+	` Connection name:  ${connectionInfo.name}` + '\n' +
+	` Host:  ${connectionInfo.host}` + '\n' +
+	` Cluster id:  ${connectionInfo.clusterId}` + '\n' +
+	` Provider:  ${connectionInfo.provider}` + '\n\n' +
 	`System information:` + '\n' +
 	` Hostname:  ${os.hostname()}` + '\n' +
 	` Platform:  ${os.platform()} ${os.arch()}` + '\n' +

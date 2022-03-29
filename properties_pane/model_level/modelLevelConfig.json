@@ -138,9 +138,9 @@ making sure that you maintain a proper JSON format.
 				"options": [
 					"Runtime 6",
 					"Runtime 7",
-					"Runtime 8"
-				],
-				"disabledOption": true
+					"Runtime 8",
+					"Runtime 9"
+				]
 			},
 			{
 				"propertyName": "Host",

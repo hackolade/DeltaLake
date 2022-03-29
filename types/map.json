@@ -21,6 +21,9 @@
 		"map<num>": {
 			"childValueType": "numeric"
 		},
+		"map<bin>": {
+			"childValueType": "binary"
+		},
 		"map<bool>": {
 			"childValueType": "bool"
 		},

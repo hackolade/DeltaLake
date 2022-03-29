@@ -47,6 +47,8 @@ const prepareName = name => {
 		return `\`${name}\``;
 	} else if (RESERVED_WORDS.includes(name.toLowerCase())) {
 		return `\`${name}\``;
+	} else if (!isNaN(name)){
+		return `\`${name}\``;
 	}
 	return name;
 };
@@ -88,7 +90,7 @@ const commentDeactivatedStatements = (statement, isActivated = true) => {
 const commentDeactivatedInlineKeys = (keys, deactivatedKeyNames) => {
 	setDependencies(dependencies);
 
-	const [activatedKeys, deactivatedKeys] = _.partition(
+	const [activatedKeys, deactivatedKeys] = dependencies.lodash.partition(
 		keys,
 		(key) =>
 			!(
@@ -113,7 +115,7 @@ const removeRedundantTrailingCommaFromStatement = (statement) => {
 	if (splitedStatement.length < 4 || !splitedStatement[splitedStatement.length - 2].trim().startsWith('--')) {
 		return statement;
 	}
-	const lineWithTrailingCommaIndex = _.findLastIndex(splitedStatement, line => {
+	const lineWithTrailingCommaIndex = dependencies.lodash.findLastIndex(splitedStatement, line => {
 		if (line.trim() !== ');' && !line.trim().startsWith('--')) {
 			return true;
 		}
@@ -124,6 +126,17 @@ const removeRedundantTrailingCommaFromStatement = (statement) => {
 	}
 	return statement;
 } 
+
+const getCleanedUrl = url => {
+	if(url.endsWith('/')){
+		return url.slice(0,-1)
+	}
+	return url;
+}
+
+const encodeStringLiteral = (str = '') => {
+	return str.replace(/(')/gi, '\\$1').replace(/\n/gi, '\\n');
+}
 
 module.exports = {
 	buildStatement,
@@ -136,4 +149,6 @@ module.exports = {
 	commentDeactivatedStatements,
 	commentDeactivatedInlineKeys,
 	removeRedundantTrailingCommaFromStatement,
+	getCleanedUrl,
+	encodeStringLiteral
 };

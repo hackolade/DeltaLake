@@ -1,4 +1,4 @@
-const { SqlBaseVisitor } = require('./parser/SqlBaseVisitor');
+const { SqlBaseVisitor } = require('./parser/SQLBase/SqlBaseVisitor');
 const { dependencies } = require('./appDependencies');
 
 class Visitor extends SqlBaseVisitor {
@@ -11,12 +11,14 @@ class Visitor extends SqlBaseVisitor {
 		const colList = this.visitIfExists(ctx, 'colTypeList');
 		const tableClauses = this.visit(ctx.createTableClauses());
 		const querySelectProperties = this.visitIfExists(ctx, 'query');
-		const tableProvider = this.visitIfExists(ctx, 'tableProvider')||tableClauses.createFileFormat?.serDeLibrary;
+		const using = this.visitIfExists(ctx, 'tableProvider');
+		const tableProvider = tableClauses.createFileFormat?.serDeLibrary;
 		return {
 			isExternal: tableHeader.isExternal,
 			isTemporary: tableHeader.isTemporary,
 			tableName: tableHeader.tableName,
 			colList,
+			using,
 			tableProvider,
 			bucketsNum: tableClauses.bucketSpec?.bucketsNum,
 			clusteredBy: tableClauses.bucketSpec?.clusteredBy,
@@ -46,6 +48,7 @@ class Visitor extends SqlBaseVisitor {
 		const identifier = getName(ctx.multipartIdentifier());
 		return {
 			orReplace: this.visitFlagValue(ctx, 'REPLACE'),
+			global: this.visitFlagValue(ctx, 'GLOBAL'),
 			temporary: this.visitFlagValue(ctx, 'TEMPORARY'),
 			ifNotExists: this.visitFlagValue(ctx, 'EXISTS'),
 			identifier: identifier.split('.')[1],
@@ -102,7 +105,7 @@ class Visitor extends SqlBaseVisitor {
 		return {
 			type: "map",
 			key: this.visit(ctx.key),
-			val:this.visit(ctx.val),
+			val: this.visit(ctx.val),
 		}
 
 	}
@@ -114,19 +117,26 @@ class Visitor extends SqlBaseVisitor {
 		}
 	}
 
-	visitArrayDataType(ctx){
-		return getName(ctx).toLowerCase();
+	visitArrayDataType(ctx) {
+		return {
+			type: "array",
+			elements: this.visit(ctx.dataType()),
+		}
 	}
 
-	visitPrimitiveDataType(ctx){
-		return getName(ctx.identifier()).toLowerCase();
+	visitPrimitiveDataType(ctx) {
+		return {
+			type: getName(ctx.identifier()).toLowerCase(),
+			precision: getLabelValue(ctx, 'precision'),
+			scale: getLabelValue(ctx, 'scale'),
+		}
 	}
 
-	visitComplexColTypeList(ctx){
+	visitComplexColTypeList(ctx) {
 		return this.visit(ctx.complexColType())
 	}
 
-	visitComplexColType(ctx){
+	visitComplexColType(ctx) {
 		return {
 			colName: getName(ctx.identifier()),
 			colType: this.visit(ctx.dataType()),
@@ -145,7 +155,14 @@ class Visitor extends SqlBaseVisitor {
 			createFileFormat: this.visitIfExists(ctx, 'createFileFormat', [])[0],
 			locationSpec: this.visitIfExists(ctx, 'locationSpec', [])[0],
 			commentSpec: this.visitIfExists(ctx, 'commentSpec', [])[0],
-			tableProperties: getName(ctx.tableProps)
+			tableProperties: this.visitIfExists(ctx, 'tablePropertyList', {start:0, stop:0})
+		}
+	}
+
+	visitTablePropertyList(ctx){
+		return {
+			start: ctx.start.start,
+			stop: ctx.stop.stop
 		}
 	}
 

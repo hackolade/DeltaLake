@@ -4,6 +4,7 @@
 	"dtdAbbreviation": "{...}",
 	"parentType": "document",
 	"useSample": true,
+	"default": true,
 	"defaultValues": {
 		"subtype": "struct<str>",
 		"keyType": "string",

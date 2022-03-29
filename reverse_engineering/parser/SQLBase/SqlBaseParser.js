@@ -26545,6 +26545,8 @@ ArrayDataTypeContext.prototype.accept = function(visitor) {
 
 function PrimitiveDataTypeContext(parser, ctx) {
 	DataTypeContext.call(this, parser);
+    this.precision = null; // Token;
+    this.scale = null; // Token;
     DataTypeContext.prototype.copyFrom.call(this, ctx);
     return this;
 }
@@ -26676,7 +26678,7 @@ SqlBaseParser.prototype.dataType = function() {
                 this.state = 2802;
                 this.match(SqlBaseParser.T__1);
                 this.state = 2803;
-                this.match(SqlBaseParser.INTEGER_VALUE);
+                localctx.precision = this.match(SqlBaseParser.INTEGER_VALUE);
                 this.state = 2808;
                 this._errHandler.sync(this);
                 _la = this._input.LA(1);
@@ -26684,7 +26686,7 @@ SqlBaseParser.prototype.dataType = function() {
                     this.state = 2804;
                     this.match(SqlBaseParser.T__3);
                     this.state = 2805;
-                    this.match(SqlBaseParser.INTEGER_VALUE);
+                    localctx.scale = this.match(SqlBaseParser.INTEGER_VALUE);
                     this.state = 2810;
                     this._errHandler.sync(this);
                     _la = this._input.LA(1);

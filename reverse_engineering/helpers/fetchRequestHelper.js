@@ -1,61 +1,216 @@
 'use strict'
 const fetch = require('node-fetch');
 const { dependencies } = require('../appDependencies');
+const { getClusterData } = require('./scalaScriptGeneratorHelper');
+const { getCount, prepareNamesForInsertionIntoScalaCode } = require('./utils');
+let activeContexts = {};
 
+const destroyActiveContext = () => {
+	if (activeContexts.scala) {
+		destroyContext(activeContexts.scala.connectionInfo, activeContexts.scala.id);
+	}
+	if (activeContexts.sql) {
+		destroyContext(activeContexts.sql.connectionInfo, activeContexts.sql.id);
+	}
 
-const fetchCreateStatementRequest = async (command, connectionInfo) => {
-	const result = await executeCommand(connectionInfo, command);
+	activeContexts = {};
+};
 
-	const statementExtractionRegex = /stmt: String = "(.+)"/gm;
-	const resultWithoutNewLineSymb = result.replaceAll(/[\n\r]/g, " ");
-	const entityCreateStatement = statementExtractionRegex.exec(resultWithoutNewLineSymb);
+const fetchApplyToInstance = async (connectionInfo, logger) => {
+	const scriptWithoutNewLineSymb = connectionInfo.script.replaceAll(/[\s]+/g, " ");
+	const eachEntityScript = scriptWithoutNewLineSymb.split(';').filter(script => script !== '');
+	const progress = (message) => {
+		logger.log('info', message, 'Applying to instande');
+		logger.progress(message);
+	};
+	for (let script of eachEntityScript) {
+		progress({ message: `Applying script: \n ${script}` });
+		const command = `var stmt = sqlContext.sql("${script}")`;
+		await Promise.race([executeCommand(connectionInfo, command), new Promise((_r, rej) => setTimeout(() => { throw new Error("Timeout exceeded for script\n" + script); }, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
+	}
+};
 
-	return dependencies.lodash.get(entityCreateStatement, '1', '')
-}
+const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recordSamplingSettings }) => {
+	try {
+		const countResult = await executeCommand(connectionInfo, `SELECT COUNT(*) FROM \`${dbName}\`.\`${tableName}\``, 'sql');
+		const count = dependencies.lodash.get(countResult, '[0][0]', 0);
+
+		if (count === 0) {
+			return [];
+		}
+
+		const columnsToSelect = fields.map(field => field.name);
+		const columnsToSelectString = columnsToSelect.map(fieldName => `\`${fieldName}\``).join(', ');
+		const limit = getCount(count, recordSamplingSettings);
+
+		const documentsResult = await executeCommand(connectionInfo, `SELECT ${columnsToSelectString} FROM \`${dbName}\`.\`${tableName}\` LIMIT ${limit}`, 'sql');
+		return documentsResult.map(result =>
+			columnsToSelect.reduce((document, colName, index) => (
+				{
+					...document,
+					[colName]: result[index]
+				}
+			), {})
+		);
+	} catch (e) {
+		return [];
+	}
+};
 
 const fetchClusterProperties = async (connectionInfo) => {
 	const query = connectionInfo.host + `/api/2.0/clusters/get?cluster_id=${connectionInfo.clusterId}`;
 	const options = getRequestOptions(connectionInfo)
 	return await fetch(query, options)
-		.then(response => {
-			if (response.ok) {
-				return response.text()
-			}
-			throw {
-				message: response.statusText, code: response.status, description: body
-			};
-		})
+		.then(response => response.json())
 		.then(body => {
-			return JSON.parse(body);
-		})
-}
+			if (body.error_code) {
+				throw {
+					message: body.message,
+					code: body.error_code,
+				};
+			}
 
-const fetchClusterDatabaseNames = async (connectionInfo) => {
-	const getDatabasesNamesCommand = "var values = sqlContext.sql(\"SHOW DATABASES\").select(\"databaseName\").collect().map(_(0)).toList"
-	return await getDFColumnValues(connectionInfo, getDatabasesNamesCommand);
-}
+			return body;
+		});
+};
 
-const fetchDatabaseTablesNames = async (connectionInfo, dbName) => {
-	const getTablesNamesCommand = `var values = sqlContext.sql(\"SHOW TABLES FROM ${dbName}\").select(\"tableName\").collect().map(_(0)).toList`
-	return await getDFColumnValues(connectionInfo, getTablesNamesCommand);
-}
+const fetchClusterDatabasesNames = async (connectionInfo) => {
+	const result = await executeCommand(connectionInfo, "SHOW DATABASES", 'sql');
+	return dependencies.lodash.flattenDeep(result);
+};
 
-const fetchFunctionNames = async (connectionInfo) => {
-	const getFunctionsNamesCommand = `var values = sqlContext.sql(\"SHOW USER FUNCTIONS\").select(\"function\").collect().map(_(0)).toList`
-	return await getDFColumnValues(connectionInfo, getFunctionsNamesCommand);
-}
+const fetchDatabaseViewsNames = (dbName, connectionInfo) => executeCommand(connectionInfo, `SHOW VIEWS IN \`${dbName}\``, 'sql');
 
-const getFunctionClass = async (connectionInfo, funcName) => {
-	const getFunctionsClassCommand = `var clas = sqlContext.sql(\"DESCRIBE FUNCTION ${funcName}\").select(\"function_desc\").collect().map(_(0)).toList(1)`
-	const result = await executeCommand(connectionInfo, getFunctionsClassCommand);
-	const valuesExtractionRegex = /clas: Any = Class: (.*)/gm;
-	return dependencies.lodash.get(valuesExtractionRegex.exec(result), '1', '');
-}
+const fetchClusterTablesNames = (dbName, connectionInfo) => executeCommand(connectionInfo, `SHOW TABLES IN \`${dbName}\``, 'sql');
 
-const fetchDatabaseViewsNames = async (connectionInfo, dbName) => {
-	const getViiewsNamesCommand = `var values = sqlContext.sql(\"SHOW VIEWS FROM ${dbName}\").select(\"viewName\").collect().map(_(0)).toList`
-	return await getDFColumnValues(connectionInfo, getViiewsNamesCommand);
-}
+const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames, logger) => {
+	const databasesPropertiesResult = await Promise.all(databasesNames.map(async dbName => {
+		logger.log('info', '', `Start describe database: ${dbName} `);
+		const dbInfoResult = await executeCommand(connectionInfo, `DESCRIBE DATABASE EXTENDED \`${dbName}\``, 'sql');
+		logger.log('info', '', `Database: ${dbName} successfully described`);
+		const dbProperties = dbInfoResult.reduce((dbProperties, row) => {
+			if (row[0] === 'Location') {
+				return { ...dbProperties, "location": row[1] }
+			}
+			if (row[0] === 'Comment') {
+				return { ...dbProperties, "description": row[1] }
+			}
+			if (row[0] === 'Properties') {
+				return { ...dbProperties, "dbProperties": row[1] }
+			}
+			return dbProperties;
+		}, {});
+		return { dbName, dbProperties }
+	}));
+
+	const databasesProperties = databasesPropertiesResult.reduce((properties, { dbName, dbProperties }) => ({ ...properties, [dbName]: dbProperties }), {})
+
+	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
+	
+	const databasesTablesInfo = await fetchFieldMetadata(dbNames, tableNames, connectionInfo, logger);
+	return databasesNames.reduce((clusterData, dbName) => ({
+		...clusterData,
+		[dbName]: {
+			dbTables: dependencies.lodash.get(databasesTablesInfo, dbName, {}),
+			dbProperties: dependencies.lodash.get(databasesProperties, dbName, {})
+		}
+	}), {});
+};
+
+const fetchFieldMetadata = async (dbNames, tableNames, connectionInfo, logger, previousData = {}) => {
+	const getClusterDataCommand = getClusterData(tableNames.join(', '), dbNames.join(', '));
+	logger.log('info', '', `Start retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`);
+	const databasesTablesInfoResult = await executeCommand(connectionInfo, getClusterDataCommand);
+	logger.log('info', '', `Finish retrieving tables info: ${databasesTablesInfoResult}`);
+	const formattedResult = databasesTablesInfoResult.split('clusterData: String =')[1]
+		.replaceAll('\n', ' ')
+		.replaceAll('\\n', '')
+		.replaceAll('"{', '{')
+		.replaceAll('"[', '[')
+		.replaceAll('}"', '}')
+		.replaceAll('\\"', '"')
+		.replaceAll(']"', ']');
+
+	const isTruncatedResponse = /\.\.\.$/.test(formattedResult);
+
+	try {
+		if (!isTruncatedResponse) {
+			const parsedData = JSON.parse(formattedResult);
+			return mergeChunksOfData(previousData, parsedData);
+		}
+	
+		const delimiter = '}, {';
+		const splittedData = formattedResult.split(delimiter);
+		const fullCompletedData = splittedData.slice(0, splittedData.length - 1).join(delimiter);
+	
+		const parsedData = JSON.parse(fullCompletedData + '}]}');
+		const mergedDataChunks = mergeChunksOfData(previousData, parsedData);
+		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilteredEntities(tableNames, mergedDataChunks);
+		
+		return fetchFieldMetadata(filteredDbNames, filteredTableNames, connectionInfo, logger, mergedDataChunks);
+		
+	} catch (error) {
+		logger.log('error', { error }, `\nDatabricks response: ${databasesTablesInfoResult}\n\nFormatted result: ${formattedResult}\n`);
+		throw error;
+	}
+};
+
+const getFilteredEntities = (tableNames, parsedData) => {
+    return Object.keys(parsedData).reduce((resultEntities, dbName) => {
+        const parsedTableNames = parsedData[dbName].map(table => `"${table.name}"`);
+        const dbTableNames = getDbTableNames(tableNames, dbName);
+
+        const filteredTableNames = dbTableNames.filter(name => !parsedTableNames.includes(name));
+        if (!filteredTableNames.length) {
+            return resultEntities;
+        }
+
+        return {
+            dbNames: [
+                ...resultEntities.dbNames,
+                `"${dbName}"`,
+            ],
+            tableNames: [
+                ...resultEntities.tableNames,
+                buildDbTableNamesString(dbName, filteredTableNames),
+            ]
+        };
+    }, { dbNames: [], tableNames: [] });
+};
+
+const getDbTableNames = (tableNames, dbName) => {
+    const allDatabaseTableNames = tableNames.find(dbTables => dbTables.startsWith(`"${dbName}"`));
+
+	if (!allDatabaseTableNames) {
+		return [];
+	}
+
+    const startNamesIndex = allDatabaseTableNames.indexOf('(');
+    const endNamesIndex = allDatabaseTableNames.indexOf(')');
+    return allDatabaseTableNames.slice(startNamesIndex + 1, endNamesIndex).split(', ');
+};
+
+const buildDbTableNamesString = (dbName, tableNames) => {
+    return `"${dbName}" -> List(${tableNames.join(', ')})`;
+};
+
+const mergeChunksOfData = (leftObj, rightObj) => {
+	return dependencies.lodash.mergeWith(leftObj, rightObj, (objValue, srcValue) => {
+		if (Array.isArray(objValue) && Array.isArray(srcValue)) {
+			return objValue.concat(srcValue);
+		}
+	});
+};
+
+const fetchCreateStatementRequest = async (entityName, connectionInfo, logger) => {
+	try {
+		const result = await executeCommand(connectionInfo, `SHOW CREATE TABLE ${entityName};`, 'sql');
+		return dependencies.lodash.get(result, '[0][0]', '');
+	} catch (error) {
+		logger.log('error', error, `Error during retrieve create table DDL statement. Table name: ${entityName}`);
+		return '';
+	}
+};
 
 const getRequestOptions = (connectionInfo) => {
 	const headers = {
@@ -66,7 +221,7 @@ const getRequestOptions = (connectionInfo) => {
 		'method': 'GET',
 		'headers': headers
 	};
-}
+};
 
 const postRequestOptions = (connectionInfo, body) => {
 	const headers = {
@@ -81,75 +236,83 @@ const postRequestOptions = (connectionInfo, body) => {
 	}
 };
 
-const createContext = (connectionInfo) => {
-
-	const query = connectionInfo.host + '/api/1.2/contexts/create'
+const createContext = (connectionInfo, language) => {
+	if (activeContexts[language]) {
+		return Promise.resolve(activeContexts[language].id);
+	}
+	const query = connectionInfo.host + '/api/1.2/contexts/create';
 	const body = JSON.stringify({
-		"language": "scala",
+		"language": language,
 		"clusterId": connectionInfo.clusterId
 	})
 	const options = postRequestOptions(connectionInfo, body);
 
 	return fetch(query, options)
-		.then(response => {
+		.then(async response => {
 			if (response.ok) {
 				return response.text()
 			}
+			const description = await response.json();
 			throw {
-				message: response.statusText, code: response.status, description: body
+				message: `${response.statusText}\n${JSON.stringify(description)}`, code: response.status, description
 			};
 		})
 		.then(body => {
 			body = JSON.parse(body);
-			return body.id;
+			activeContexts[language] = {
+				id: body.id,
+				connectionInfo
+			}
+			return activeContexts[language].id;
 		})
-}
+};
 
 const destroyContext = (connectionInfo, contextId) => {
-	const query = '' + '/api/1.2/contexts/destroy'
+	const query = connectionInfo.host + '/api/1.2/contexts/destroy'
 	const body = JSON.stringify({
 		"contextId": contextId,
 		"clusterId": connectionInfo.clusterId
 	});
 	const options = postRequestOptions(connectionInfo, body);
 	return fetch(query, options)
-		.then(response => response.text())
+		.then(async response => {
+			const responseBody = await response.text();
+			if (response.ok) {
+				return responseBody;
+			}
+			throw {
+				message: response.statusText, code: response.status, description: body, responseBody
+			};
+		})
 		.then(body => {
 			body = JSON.parse(body);
-
-			if (response.ok) {
-				return body;
-			}
-
-			throw {
-				message: response.statusText, code: response.status, description: body
-			};
 		});
-}
+};
 
-const executeCommand = (connectionInfo, command) => {
+const executeCommand = (connectionInfo, command, language = "scala") => {
 
 	let activeContextId;
 
-	return createContext(connectionInfo)
+	return createContext(connectionInfo, language)
 		.then(contextId => {
 			activeContextId = contextId;
 			const query = connectionInfo.host + '/api/1.2/commands/execute';
-			const body = JSON.stringify({
-				language: "scala",
+			const commandOptions = JSON.stringify({
+				language,
 				clusterId: connectionInfo.clusterId,
 				contextId,
 				command
 			});
-			const options = postRequestOptions(connectionInfo, body)
+			const options = postRequestOptions(connectionInfo, commandOptions)
 
 			return fetch(query, options)
-				.then(response => {
+				.then(async response => {
+					const responseBody = await response.text();
 					if (response.ok) {
-						return response.text()
+						return responseBody;
 					}
 					throw {
-						message: response.statusText, code: response.status, description: body
+						message: response.statusText, code: response.status, description: commandOptions, responseBody
 					};
 				})
 				.then(body => {
@@ -164,51 +327,51 @@ const executeCommand = (connectionInfo, command) => {
 					}
 					query.search = new URLSearchParams(params).toString();
 					const options = getRequestOptions(connectionInfo);
-					return getCommandExecutionResult(query, options);
+					return getCommandExecutionResult(query, options, commandOptions);
 				})
 		}
 		)
-}
+};
 
-const getCommandExecutionResult = (query, options) => {
+const getCommandExecutionResult = (query, options, commandOptions) => {
 	return fetch(query, options)
-		.then(response => {
+		.then(async response => {
+			const responseBody = await response.text();
 			if (response.ok) {
-				return response.text()
+				return responseBody;
 			}
 			throw {
-				message: response.statusText, code: response.status, description: body
+				message: response.statusText, code: response.status, description: commandOptions, responseBody,
 			};
 		})
 		.then(body => {
 			body = JSON.parse(body);
 			if (body.status === 'Finished' && body.results !== null) {
+				if (body.results.resultType === 'error') {
+					throw {
+						message: body.results.data || body.results.cause, code: "", description: commandOptions
+					};
+				}
 				return body.results.data;
 			}
 
 			if (body.status === 'Error') {
 				throw {
-					message: "Error during receiving command result", code: "", description: ""
+					message: "Error during receiving command result", code: "", description: commandOptions
 				};
 			}
-			return getCommandExecutionResult(query, options);
+			return getCommandExecutionResult(query, options, commandOptions);
 		})
-}
-
-const getDFColumnValues = async (connectionInfo, command) => {
-	const _ = dependencies.lodash;
-	const result = await executeCommand(connectionInfo, command);
-	const valuesExtractionRegex = /values: List\[Any\] = List\((.+)\)/gm;
-	const values = _.get(valuesExtractionRegex.exec(result), '1', '')
-	return _.isEmpty(values) ? [] : values.split(", ");
-}
+};
 
 module.exports = {
-	fetchCreateStatementRequest,
-	fetchClusterDatabaseNames,
-	fetchDatabaseTablesNames,
-	fetchDatabaseViewsNames,
 	fetchClusterProperties,
-	getFunctionClass,
-	fetchFunctionNames
+	fetchApplyToInstance,
+	fetchDocuments,
+	destroyActiveContext,
+	fetchClusterData,
+	fetchCreateStatementRequest,
+	fetchClusterDatabasesNames,
+	fetchDatabaseViewsNames,
+	fetchClusterTablesNames
 };

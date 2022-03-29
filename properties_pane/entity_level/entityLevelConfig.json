@@ -148,21 +148,34 @@ making sure that you maintain a proper JSON format.
 				"propertyTooltip": "if the specified table already exists, the command should make no changes and return a message that the table exists, rather than terminating with an error. "
 			},
 			{
+				"propertyName": "Using",
+				"propertyKeyword": "using",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"delta",
+					"CSVfile",
+					"Hive",
+					"JSONfile",
+					"JDBC",
+					"ORC",
+					"Parquet",
+					"LIBSVM",
+					"textfile"
+				]
+			},
+			{
 				"propertyName": "Stored as",
 				"propertyKeyword": "storedAsTable",
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
 				"options": [
-					"delta",
 					"textfile",
 					"sequencefile",
 					"ORC",
 					"Parquet",
 					"Avro",
 					"RCfile",
-					"JSONfile",
-					"CSVfile",
-					"by",
 					"input/output format"
 				]
 			},
@@ -368,9 +381,13 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Partition key",
 				"propertyKeyword": "compositePartitionKey",
-				"propertyType": "primaryKeySetter",
-				"abbr": "pk"
-			}, 
+				"propertyType": "compositeKeySetter",
+				"disabledItemStrategy": "default",
+				"isCompositeKey": true,
+				"setPrimaryKey": false,
+				"template": "collectiontree",
+				"abbr": "PK"
+			},
 			{
 				"propertyName": "Disable No Validate",
 				"propertyKeyword": "disableNoValidate",
@@ -379,7 +396,11 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Clustering key",
 				"propertyKeyword": "compositeClusteringKey",
-				"propertyType": "primaryKeySetter",
+				"propertyType": "compositeKeySetter",
+				"disabledItemStrategy": "default",
+				"isCompositeKey": true,
+				"setPrimaryKey": false,
+				"template": "collectiontree",
 				"abbr": "ck"
 			},
 			{
@@ -416,6 +437,15 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "checkbox"
 			},
 			{
+				"propertyName": "Like parent table",
+				"propertyKeyword": "like",
+				"propertyTooltip": "Specifies an existing table from which the new table automatically copies column names, data types, and NOT NULL constraints.",
+				"propertyType": "selecthashed",
+				"template": "entities",
+				"withEmptyOption": true,
+				"excludeCurrent": true
+			},
+			{
 				"propertyName": "Location",
 				"propertyKeyword": "location",
 				"propertyType": "text"
@@ -441,73 +471,23 @@ making sure that you maintain a proper JSON format.
 		"columnsRatio": [4.1, 5]
 	},
 	{
-		"lowerTab": "Secondary Indexes",
+		"lowerTab": "Bloom Filter Indexes",
 		"structure": [{
-			"propertyName": "Secondary Index",
+			"propertyName": "Bloom Filter Index",
 			"propertyType": "group",
-			"propertyKeyword": "SecIndxs",
+			"propertyKeyword": "BloomIndxs",
 			"propertyTooltip": "",
 			"structure": [
 				{
-					"propertyName": "Name",
-					"propertyKeyword": "name",
-					"propertyTooltip": "",
-					"propertyType": "text",
-					"defaultValue": "New Secondary Index"
-				},
-				{
-					"propertyName": "Key",
-					"propertyKeyword": "SecIndxKey",
+					"propertyName": "Columns",
+					"propertyKeyword": "forColumns",
 					"propertyType": "fieldList",
 					"template": "orderedList"
 				},
 				{
-					"propertyName": "Id",
-					"propertyKeyword": "SecIndxID",
-					"propertyTooltip": "Secondary Index ID",
-					"propertyType": "text"
-				},
-				{
-					"propertyName": "Index handler",
-					"propertyKeyword": "SecIndxHandler",
-					"propertyTooltip": "Class name of index handler",
-					"propertyType": "text",
-					"defaultValue": "org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler"
-				},
-				{
-					"propertyName": "With deferred rebuild",
-					"propertyKeyword": "SecIndxWithDeferredRebuild",
-					"propertyTooltip": "With deferred rebuild",
-					"propertyType": "checkbox",
-					"defaultValue": true
-				},
-				{
-					"propertyName": "Index properties",
-					"propertyKeyword": "SecIndxProperties",
-					"propertyTooltip": "Index properties",
-					"propertyType": "details",
-					"template": "textarea",
-					"markdown": false
-				},
-				{
-					"propertyName": "Index table",
-					"propertyKeyword": "SecIndxTable",
-					"propertyTooltip": "IN TABLE statement",
-					"propertyType": "details",
-					"template": "textarea",
-					"markdown": false
-				},
-				{
-					"propertyName": "Description",
-					"propertyKeyword": "SecIndxDescription",
-					"propertyTooltip": "description",
-					"propertyType": "details",
-					"template": "textarea"
-				},
-				{
-					"propertyName": "Comments",
-					"propertyKeyword": "SecIndxComments",
-					"propertyTooltip": "comments",
+					"propertyName": "Options",
+					"propertyKeyword": "options",
+					"propertyTooltip": "options",
 					"propertyType": "details",
 					"template": "textarea"
 				}

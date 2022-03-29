@@ -138,11 +138,29 @@ making sure that you maintain a proper JSON format.
 				"propertyTooltip": "Indicates the scope of view being created. When TEMPORARY is specified, the created view is valid and visible in the current session. No persistent entry is made in the catalog for these kind of functions."
 			},
 			{
+				"propertyName": "Global",
+				"propertyKeyword": "viewGlobal",
+				"propertyType": "checkbox",
+				"propertyTooltip": "If specified, views are tied to a system preserved temporary database global_temp",
+				"dependency": {
+					"key": "viewTemporary",
+					"value": true
+				}
+			},
+			{
 				"propertyName": "If not exist",
 				"propertyKeyword": "viewIfNotExist",
 				"propertyTooltip": "If specified, creates the view only when it does not exist. The creation of view succeeds (no error is thrown) if the specified view already exists in the system. This parameter is mutually exclusive to OR REPLACE and cannot be specified together.",
 				"defaultValue": true,
 				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Table properties",
+				"propertyKeyword": "tableProperties",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false,
+				"valueType": "string"
 			},
 			{
 				"propertyName": "Comments",

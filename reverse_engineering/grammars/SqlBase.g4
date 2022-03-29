@@ -891,7 +891,7 @@ dataType
     : complex=ARRAY '<' dataType '>'                            #arrayDataType
     | complex=MAP '<' key=dataType ',' val=dataType '>'         #mapDataType
     | complex=STRUCT ('<' complexColTypeList? '>' | NEQ)        #structDataType
-    | identifier ('(' INTEGER_VALUE (',' INTEGER_VALUE)* ')')?  #primitiveDataType
+    | identifier ('(' precision=INTEGER_VALUE (',' scale=INTEGER_VALUE)* ')')?  #primitiveDataType
     ;
 
 qualifiedColTypeWithPositionList
