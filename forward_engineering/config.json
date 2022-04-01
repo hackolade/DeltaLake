@@ -7,6 +7,19 @@
 		"entity": true,
 		"container": true
 	},
+	"compMode": {
+		"entity": true,
+		"container": true
+	},
 	"applyScriptToInstance": true,
-	"mode": "mysql"
+	"mode": "mysql",
+	"additionalOptions": [
+		{
+			"id": "applyDropStatements",
+			"value": false,
+			"forUpdate": true,
+			"name": "Apply Drop Statements",
+			"isDropInStatements": true
+		}
+	]
 }
