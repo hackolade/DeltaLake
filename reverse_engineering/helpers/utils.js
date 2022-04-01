@@ -37,6 +37,18 @@ const convertCustomTags = (custom_tags, logger) => {
 }
 
 const isView = name => name.slice(-4) === ' (v)';
+const isViewDdl = (statement = '') => /^create (or replace |global |temporary ){0,1}view/.test(statement.toLocaleLowerCase());
+const isTableDdl = (statement = '') => /^create (or replace ){0,1}table/.test(statement.toLocaleLowerCase());
+
+const cleanEntityName = (sparkVersion, name = '') => {
+	return isSupportGettingListOfViews(sparkVersion) ? name.replace(/ \(v\)$/, '') : name;
+}
+
+const isSupportGettingListOfViews = (sparkVersionString = '') => {
+	const MAX_NOT_SUPPORT_VERSION = 6;
+	const databricksRuntimeMajorVersion = parseInt(sparkVersionString.slice(0, 1));
+	return databricksRuntimeMajorVersion > MAX_NOT_SUPPORT_VERSION;
+}
 
 const getErrorMessage = (error = {}) => {
 	if (typeof error === 'string') {
@@ -55,5 +67,9 @@ module.exports = {
 	splitTableAndViewNames,
 	convertCustomTags,
 	getErrorMessage,
-	getCount
+	getCount,
+	isViewDdl,
+	isTableDdl,
+	cleanEntityName,
+	isSupportGettingListOfViews,
 };
