@@ -7,7 +7,7 @@ const fetchRequestHelper = require('./helpers/fetchRequestHelper');
 const tableDDlHelper = require('./helpers/tableDDLHelper');
 const viewDDLHelper = require('./helpers/viewDDLHelper')
 const databricksHelper = require('./helpers/databricksHelper');
-const {splitTableAndViewNames, getErrorMessage} = require('./helpers/utils')
+const { getErrorMessage, cleanEntityName, isViewDdl, isTableDdl } = require('./helpers/utils')
 const { setDependencies, dependencies } = require('./appDependencies');
 const fs = require('fs');
 const antlr4 = require('antlr4');
@@ -38,7 +38,7 @@ module.exports = {
 			logInfo('Test connection RE', connectionInfo, logger);
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
 			logger.log('info', clusterState, 'Cluster state info');
-			
+
 			if (!clusterState.isRunning) {
 				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`, type: 'simpleError' })
 			}
@@ -64,11 +64,12 @@ module.exports = {
 				accessToken: connectionInfo.accessToken
 			}
 
-			const dbCollectionsNames = await databricksHelper.getDatabaseCollectionNames(connectionData)
+			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
+			const dbCollectionsNames = await databricksHelper.getDatabaseCollectionNames(connectionData, clusterState.spark_version);
 
 			cb(null, dbCollectionsNames);
 		} catch (err) {
-			try{
+			try {
 				const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
 				if (!clusterState.isRunning) {
 					logger.log(
@@ -79,7 +80,7 @@ module.exports = {
 					cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
 					return;
 				}
-			}catch(err){
+			} catch (err) {
 				logger.log(
 					'error',
 					{ message: err.message, stack: err.stack, error: err },
@@ -119,7 +120,7 @@ module.exports = {
 			const clusterData = await databricksHelper.getClusterData(connectionData, dataBaseNames, collections, logger);
 
 			progress({ message: 'Start getting entities ddl', containerName: 'databases', entityName: 'entities' });
-			const entitiesDdl = await Promise.all(databricksHelper.getEntitiesDDL(connectionData, dataBaseNames, collections, logger));
+			const entitiesDdl = await Promise.all(databricksHelper.getEntitiesDDL(connectionData, dataBaseNames, collections, modelData.spark_version, logger));
 			const ddlByEntity = entitiesDdl.reduce((ddlByEntity, ddlObject) => {
 				const entityName = Object.keys(ddlObject)[0]
 				return { ...ddlByEntity, [entityName]: ddlObject[entityName] }
@@ -129,45 +130,50 @@ module.exports = {
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];
 				const packages = await packagesPromise;
-				const tablesPackages = dbData.dbTables.map(async (table) => {
-					const ddl = ddlByEntity[`${dbName}.${table.name}`]
+				const tablesPackages = dbData.dbTables
+					.filter(table => isTableDdl(ddlByEntity[`${dbName}.${table.name}`]))
+					.map(async (table) => {
+						const ddl = ddlByEntity[`${dbName}.${table.name}`]
 
-					progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
-					let tableData  = await tableDDlHelper.getTableData({ ...table, ddl },data, logger);
+						progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
+						let tableData = await tableDDlHelper.getTableData({ ...table, ddl }, data, logger);
 
-					const columnsOfTypeString = (tableData.properties || []).filter(property => property.mode === 'string');
-					const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
-					let documents = [];
-					if (hasColumnsOfTypeString) {
-						progress({ message: 'Start getting documents from table', containerName: 'databases', entityName: table.name });
-						documents = await fetchRequestHelper.fetchDocuments({
-							connectionInfo: connectionData,
+						const columnsOfTypeString = (tableData.properties || []).filter(property => property.mode === 'string');
+						const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
+						let documents = [];
+						if (hasColumnsOfTypeString) {
+							progress({ message: 'Start getting documents from table', containerName: 'databases', entityName: table.name });
+							documents = await fetchRequestHelper.fetchDocuments({
+								connectionInfo: connectionData,
+								dbName,
+								tableName: table.name,
+								fields: columnsOfTypeString,
+								recordSamplingSettings: data.recordSamplingSettings
+							});
+							progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name });
+						}
+
+						progress({ message: 'Table data processed successfully', containerName: dbName, entityName: table.name });
+						return {
 							dbName,
-							tableName: table.name,
-							fields: columnsOfTypeString,
-							recordSamplingSettings: data.recordSamplingSettings
-						});
-						progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name });
-					}
-					
-					progress({ message: 'Table data processed successfully', containerName: dbName, entityName: table.name });
-					return {
-						dbName,
-						collectionName: table.name,
-						entityLevel: tableData.propertiesPane,
-						documents,
-						views: [],
-						emptyBucket: false,
-						validation: {
-							jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns }
-						},
-						bucketInfo: dbData.dbProperties
-					};
-				})
+							collectionName: table.name,
+							entityLevel: tableData.propertiesPane,
+							documents,
+							views: [],
+							emptyBucket: false,
+							validation: {
+								jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns }
+							},
+							bucketInfo: dbData.dbProperties
+						};
+					})
 
 				const viewsNames = dataBaseNames.reduce((viewsNames, dbName) => {
-					const { views } = splitTableAndViewNames(collections[dbName]);	
-					return {...viewsNames, [dbName]: views}
+					const views = collections[dbName]
+						.map(entityName => cleanEntityName(modelData.spark_version, entityName))
+						.filter(entityName => isViewDdl(ddlByEntity[`${dbName}.${entityName}`]));
+
+					return { ...viewsNames, [dbName]: views };
 				}, {});
 
 				if (dependencies.lodash.isEmpty(viewsNames[dbName])) {

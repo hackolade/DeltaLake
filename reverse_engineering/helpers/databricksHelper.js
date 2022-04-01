@@ -1,24 +1,28 @@
 'use strict'
 const { dependencies } = require('../appDependencies');
 const fetchRequestHelper = require('./fetchRequestHelper')
-const { splitTableAndViewNames, convertCustomTags } = require('./utils')
+const { convertCustomTags, cleanEntityName, isSupportGettingListOfViews } = require('./utils')
 
 
 const getEntityCreateStatement = (connectionInfo, dbName, entityName, logger) => {
 	return fetchRequestHelper.fetchCreateStatementRequest(`\`${dbName}\`.\`${entityName}\``, connectionInfo, logger);
 }
 
-const getDatabaseCollectionNames = async (connectionInfo) => {
+const getDatabaseCollectionNames = async (connectionInfo, sparkVersion) => {
 	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
 	return await Promise.all(databasesNames.map(async dbName => {
 
-		const viewsResult = await fetchRequestHelper.fetchDatabaseViewsNames(dbName, connectionInfo);
-		const viewsNames = viewsResult.map(([namespace, viewName]) => viewName);
-		const views = viewsNames.map(viewName => `${viewName} (v)`);
+		let views = [];
+		let viewNames = [];
+		if (isSupportGettingListOfViews(sparkVersion)) {
+			const viewsResult = await fetchRequestHelper.fetchDatabaseViewsNames(dbName, connectionInfo);
+			viewNames = viewsResult.map(([namespace, viewName]) => viewName);
+			views = viewNames.map(viewName => `${viewName} (v)`);
+		}
 
 		const tablesResult = await fetchRequestHelper.fetchClusterTablesNames(dbName, connectionInfo);
 		const tables = tablesResult.reduce((databaseTables, [dbName, tableName]) => {
-			if (viewsNames.includes(tableName)) {
+			if (viewNames.includes(tableName)) {
 				return databaseTables;
 			}
 			return [...databaseTables, tableName]
@@ -57,15 +61,18 @@ const getClusterStateInfo = async (connectionInfo, logger) => {
 	};
 }
 
-const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, logger) => {
-	const entitiesNames = databasesNames.reduce((entitiesNames, dbName) => {
-		const { tables, views } = splitTableAndViewNames(collectionsNames[dbName]);
-		const viewNames = views.map(viewName => ({ dbName, name: viewName }));
-		const tableNames = tables.map(tableName => ({ dbName, name: tableName }));
-
-		return [...entitiesNames, ...viewNames, ...tableNames]
-	}, []);
-	return entitiesNames.map(async entity => ({ [`${entity.dbName}.${entity.name}`]: await getEntityCreateStatement(connectionInfo, entity.dbName, entity.name, logger) }))
+const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkVersion, logger) => {
+	const entitiesNames = dependencies.lodash.flatMap(databasesNames, dbName => {
+		return (collectionsNames[dbName] || []).map(entityName => ({ dbName, name: entityName }));
+	});
+	
+	return entitiesNames.map(async entity => {
+		const entityName = cleanEntityName(sparkVersion, entity.name);
+		const ddlStatement = await getEntityCreateStatement(connectionInfo, entity.dbName, entityName, logger);
+		return {
+			[`${entity.dbName}.${entityName}`]: ddlStatement
+		};
+	});
 }
 
 const getClusterData = (connectionInfo, databasesNames, collectionsNames, logger) => {
