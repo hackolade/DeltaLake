@@ -20,7 +20,7 @@ const prepareNamesForInsertionIntoScalaCode = (databasesNames, collectionsNames)
 		const tableNames = tables.map(tableName => `\"${tableName}\"`).join(', ');
 
 		return {
-			tableNames: [...entities.tableNames, `\"${dbName}\" -> List(${tableNames})`],
+			tableNames: [...entities.tableNames, `\"${dbName}\": [${tableNames}]`],
 			dbNames: databasesNames.map(name => `\"${name}\"`)
 		}
 	}, { viewNames: [], tableNames: [] })

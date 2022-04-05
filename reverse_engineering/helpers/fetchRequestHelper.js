@@ -1,7 +1,7 @@
 'use strict'
 const fetch = require('node-fetch');
 const { dependencies } = require('../appDependencies');
-const { getClusterData } = require('./scalaScriptGeneratorHelper');
+const { getClusterData } = require('./pythonScriptGeneratorHelper');
 const { getCount, prepareNamesForInsertionIntoScalaCode } = require('./utils');
 let activeContexts = {};
 
@@ -104,10 +104,8 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 	}));
 
 	const databasesProperties = databasesPropertiesResult.reduce((properties, { dbName, dbProperties }) => ({ ...properties, [dbName]: dbProperties }), {})
-
-	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
 	
-	const databasesTablesInfo = await fetchFieldMetadata(dbNames, tableNames, connectionInfo, logger);
+	const databasesTablesInfo = await fetchFieldMetadata(databasesNames, collectionsNames, connectionInfo, logger);
 	return databasesNames.reduce((clusterData, dbName) => ({
 		...clusterData,
 		[dbName]: {
@@ -117,49 +115,41 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 	}), {});
 };
 
-const fetchFieldMetadata = async (dbNames, tableNames, connectionInfo, logger, previousData = {}) => {
+const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionInfo, logger, previousData = {}) => {
+	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
 	const getClusterDataCommand = getClusterData(tableNames.join(', '), dbNames.join(', '));
 	logger.log('info', '', `Start retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`);
-	const databasesTablesInfoResult = await executeCommand(connectionInfo, getClusterDataCommand);
+	const databasesTablesInfoResult = await executeCommand(connectionInfo, getClusterDataCommand, 'python');
 	logger.log('info', '', `Finish retrieving tables info: ${databasesTablesInfoResult}`);
-	const formattedResult = databasesTablesInfoResult.split('clusterData: String =')[1]
-		.replaceAll('\n', ' ')
-		.replaceAll('\\n', '')
-		.replaceAll('"{', '{')
-		.replaceAll('"[', '[')
-		.replaceAll('}"', '}')
-		.replaceAll('\\"', '"')
-		.replaceAll(']"', ']');
 
-	const isTruncatedResponse = /\.\.\.$/.test(formattedResult);
+	const isTruncatedResponse = /\*\*\* WARNING: skipped \d* bytes of output \*\*\*$/.test(databasesTablesInfoResult);
 
 	try {
 		if (!isTruncatedResponse) {
-			const parsedData = JSON.parse(formattedResult);
+			const parsedData = JSON.parse(databasesTablesInfoResult);
 			return mergeChunksOfData(previousData, parsedData);
 		}
 	
 		const delimiter = '}, {';
-		const splittedData = formattedResult.split(delimiter);
+		const splittedData = databasesTablesInfoResult.split(delimiter);
 		const fullCompletedData = splittedData.slice(0, splittedData.length - 1).join(delimiter);
 	
 		const parsedData = JSON.parse(fullCompletedData + '}]}');
 		const mergedDataChunks = mergeChunksOfData(previousData, parsedData);
-		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilteredEntities(tableNames, mergedDataChunks);
+		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilteredEntities(collectionsNames, mergedDataChunks);
 		
 		return fetchFieldMetadata(filteredDbNames, filteredTableNames, connectionInfo, logger, mergedDataChunks);
 		
 	} catch (error) {
-		logger.log('error', { error }, `\nDatabricks response: ${databasesTablesInfoResult}\n\nFormatted result: ${formattedResult}\n`);
+		logger.log('error', { error }, `\nDatabricks response: ${databasesTablesInfoResult}\n`);
 		throw error;
 	}
 };
 
 const getFilteredEntities = (tableNames, parsedData) => {
     return Object.keys(parsedData).reduce((resultEntities, dbName) => {
-        const parsedTableNames = parsedData[dbName].map(table => `"${table.name}"`);
-        const dbTableNames = getDbTableNames(tableNames, dbName);
-
+        const parsedTableNames = parsedData[dbName].map(table => table.name);
+        const dbTableNames = tableNames[dbName]
         const filteredTableNames = dbTableNames.filter(name => !parsedTableNames.includes(name));
         if (!filteredTableNames.length) {
             return resultEntities;
@@ -168,30 +158,14 @@ const getFilteredEntities = (tableNames, parsedData) => {
         return {
             dbNames: [
                 ...resultEntities.dbNames,
-                `"${dbName}"`,
+                dbName,
             ],
-            tableNames: [
+            tableNames: {
                 ...resultEntities.tableNames,
-                buildDbTableNamesString(dbName, filteredTableNames),
-            ]
+				[dbName]: filteredTableNames,
+			}
         };
-    }, { dbNames: [], tableNames: [] });
-};
-
-const getDbTableNames = (tableNames, dbName) => {
-    const allDatabaseTableNames = tableNames.find(dbTables => dbTables.startsWith(`"${dbName}"`));
-
-	if (!allDatabaseTableNames) {
-		return [];
-	}
-
-    const startNamesIndex = allDatabaseTableNames.indexOf('(');
-    const endNamesIndex = allDatabaseTableNames.indexOf(')');
-    return allDatabaseTableNames.slice(startNamesIndex + 1, endNamesIndex).split(', ');
-};
-
-const buildDbTableNamesString = (dbName, tableNames) => {
-    return `"${dbName}" -> List(${tableNames.join(', ')})`;
+    }, { dbNames: [], tableNames: {} });
 };
 
 const mergeChunksOfData = (leftObj, rightObj) => {
