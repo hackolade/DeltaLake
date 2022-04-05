@@ -17,17 +17,14 @@ const destroyActiveContext = () => {
 };
 
 const fetchApplyToInstance = async (connectionInfo, logger) => {
-	const scriptWithoutNewLineSymb = connectionInfo.script.replaceAll(/[\s]+/g, " ");
-	const eachEntityScript = scriptWithoutNewLineSymb.split(';').filter(script => script !== '');
 	const progress = (message) => {
-		logger.log('info', message, 'Applying to instande');
+		logger.log('info', message, 'Applying to instance');
 		logger.progress(message);
 	};
-	for (let script of eachEntityScript) {
-		progress({ message: `Applying script: \n ${script}` });
-		const command = `var stmt = sqlContext.sql("${script}")`;
-		await Promise.race([executeCommand(connectionInfo, command), new Promise((_r, rej) => setTimeout(() => { throw new Error("Timeout exceeded for script\n" + script); }, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
-	}
+
+	progress({ message: `Applying script: \n ${connectionInfo.script}` });
+
+	await Promise.race([executeCommand(connectionInfo, connectionInfo.script, 'sql'), new Promise((_r, rej) => setTimeout(() => { throw new Error("Timeout exceeded for script\n" + script); }, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
 };
 
 const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recordSamplingSettings }) => {
@@ -263,7 +260,7 @@ const destroyContext = (connectionInfo, contextId) => {
 		});
 };
 
-const executeCommand = (connectionInfo, command, language = "scala") => {
+const executeCommand = (connectionInfo, command, language = 'sql') => {
 
 	let activeContextId;
 
