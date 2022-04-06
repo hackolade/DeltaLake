@@ -61,8 +61,17 @@ module.exports = app => {
 			return !name ? '' : assignTemplates(templates.dropDatabase, { name });
 		},
 
+		alterSerDeProperties({ properties, serDe, name }) {
+			if (!name || !serDe) {
+				return '';
+			}
+			const serDeProperties = properties ? assignTemplates(templates.serDeProperties, { properties }) : '';
+			
+			return assignTemplates(templates.alterSerDeProperties, { name, serDeProperties, serDe });
+		},
+
 		alterView({ dataProperties, dbName, fullName, rename: { newName, oldName }, selectStatement }) {
-			const { add: addProperties = '', drop: dropProperties = '' } = dataProperties;
+			const { add: addProperties = '', drop: dropProperties = '' } = dataProperties || {};
 			let script = [];
 			if (newName !== oldName && !!newName && !!oldName) {
 				const fullNewName = getFullEntityName(dbName, newName);

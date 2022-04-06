@@ -54,12 +54,13 @@ const hydrateAlterView = view => {
 	const rename = getEntityName(compMod, 'name');
 	const dbName = getContainerName(compMod);
 	const fullName = getFullEntityName(dbName, rename.newName);
-	const dataProperties = _.get(compMod, 'tableProperties', '');
+	const tableProperties = _.get(compMod, 'tableProperties', '');
 	const { new: newSelect, old: oldSelect } = _.get(compMod, 'selectStatement', '');
+	const { dataProperties } = hydrateTableProperties(tableProperties, fullName);
 	
 	return {
-		dataProperties: hydrateTableProperties(dataProperties),
 		selectStatement: !_.isEqual(newSelect, oldSelect) && newSelect ? newSelect : '',
+		dataProperties,
 		fullName,
 		dbName,
 		rename,

@@ -23,5 +23,9 @@ module.exports = {
 
 	unsetTableProperties: 'ALTER TABLE ${name} UNSET TBLPROPERTIES IF EXISTS (${properties});',
 
+	alterSerDeProperties: 'ALTER TABLE ${name} SET SERDE ${serDe}${serDeProperties};',
+
+	serDeProperties: ' WITH SERDEPROPERTIES (${properties})',
+
 	dropDatabase: 'DROP DATABASE IF EXISTS ${name};',
 }
