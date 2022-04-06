@@ -40,7 +40,7 @@ const getDatabaseCollectionNames = async (connectionInfo, sparkVersion) => {
 const getClusterStateInfo = async (connectionInfo, logger) => {
 	const clusterProperties = await fetchRequestHelper.fetchClusterProperties(connectionInfo);
 	return {
-		dbVersion: `Runtime ${clusterProperties.spark_version[0]}`,
+		dbVersion: getDatabricksRuntimeVersion(clusterProperties.spark_version),
 		modelName: clusterProperties.cluster_name,
 		author: clusterProperties.creator_user_name,
 		host: connectionInfo.host,
@@ -59,6 +59,11 @@ const getClusterStateInfo = async (connectionInfo, logger) => {
 		isRunning: clusterProperties.state === 'RUNNING',
 		state: clusterProperties.state
 	};
+}
+
+const getDatabricksRuntimeVersion = (sparkVersion = '') => {
+	const runtimeVersion = sparkVersion.split('.')[0];
+	return `Runtime ${runtimeVersion}`;
 }
 
 const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkVersion, logger) => {
