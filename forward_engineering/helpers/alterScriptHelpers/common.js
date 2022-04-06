@@ -12,17 +12,18 @@ const getDifferentItems = (newItems = [], oldItems = []) => {
 	};
 };
 
-const hydrateTableProperties = ({ new: newItems, old: oldItems }) => {
+const hydrateTableProperties = ({ new: newItems, old: oldItems }, name) => {
 	const hydrateProperties = properties => (properties || '').split(',').map(prop => prop.trim());
 	const prepareProperties = properties => properties.join(',\n');
 	const preparePropertiesName = properties => properties.map(prop => prop.replace(/(=\S+)/, '')).join(', ');
 	const newHydrateItems = hydrateProperties(newItems);
 	const oldHydrateItems = hydrateProperties(oldItems);
 	const { add, drop } = getDifferentItems(newHydrateItems, oldHydrateItems);
-	return {
+	const dataProperties = {
 		add: prepareProperties(add),
 		drop: preparePropertiesName(drop),
 	};
+	return { dataProperties, name };
 };
 
 const compareProperties = ({new: newProperty, old: oldProperty}) => {

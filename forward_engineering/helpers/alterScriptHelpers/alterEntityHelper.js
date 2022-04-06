@@ -16,8 +16,17 @@ const {
 let _;
 const setDependencies = ({ lodash }) => _ = lodash;
 
-const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'location', 'numBuckets', 'skewedby', 'skewedOn', 'sortByKey', 'storedAsTable', 'temporaryTable', 'using'];
-const otherTableProperties = ['code', 'collectionName', 'tableProperties', 'description', 'properties'];
+const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'location', 'numBuckets', 'skewedby', 'skewedOn', 'sortByKey', 'storedAsTable', 'temporaryTable', 'using', 'rowFormat', 'fieldsTerminatedBy', 'fieldsescapedBy', 'collectionItemsTerminatedBy', 'mapKeysTerminatedBy', 'linesTerminatedBy', 'nullDefinedAs', 'inputFormatClassname', 'outputFormatClassname'];
+const otherTableProperties = ['code', 'collectionName', 'tableProperties', 'description', 'properties', 'serDeLibrary', 'serDeProperties'];
+
+const hydrateSerDeProperties = (compMod, name) => {
+	const { serDeProperties, serDeLibrary } = compMod
+	return {
+		properties: !_.isEqual(serDeProperties?.new, serDeProperties?.old) && serDeProperties?.new,
+		serDe: !_.isEqual(serDeLibrary?.new, serDeLibrary?.old) && serDeLibrary?.new,
+		name
+	};
+}
 
 const hydrateAlterTableName = compMod => {
 	const { newName, oldName } = getEntityName(compMod);
@@ -84,9 +93,11 @@ const generateModifyCollectionScript = (entity, definitions, provider) => {
 	}
 	const dataProperties = _.get(compMod, 'tableProperties', '');
 	const alterTableNameScript = provider.alterTableName(hydrateAlterTableName(compMod))
-	const hydratedTableProperties = hydrateTableProperties(dataProperties);
-	const tablePropertiesScript = provider.alterTableProperties({ dataProperties: hydratedTableProperties, name: fullCollectionName });
-	return prepareScript(alterTableNameScript, ...tablePropertiesScript);
+	const hydratedTableProperties = hydrateTableProperties(dataProperties, fullCollectionName);
+	const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
+	const tablePropertiesScript = provider.alterTableProperties(hydratedTableProperties);
+	const serDeProperties = provider.alterSerDeProperties(hydratedSerDeProperties)
+	return prepareScript(alterTableNameScript, ...tablePropertiesScript, serDeProperties);
 }
 
 const getAddCollectionsScripts = definitions => entity => {
