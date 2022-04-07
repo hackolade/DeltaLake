@@ -16,7 +16,7 @@ const {
 let _;
 const setDependencies = ({ lodash }) => _ = lodash;
 
-const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'location', 'numBuckets', 'skewedby', 'skewedOn', 'sortByKey', 'storedAsTable', 'temporaryTable', 'using', 'rowFormat', 'fieldsTerminatedBy', 'fieldsescapedBy', 'collectionItemsTerminatedBy', 'mapKeysTerminatedBy', 'linesTerminatedBy', 'nullDefinedAs', 'inputFormatClassname', 'outputFormatClassname'];
+const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'location', 'numBuckets', 'skewedby', 'skewedOn', 'skewStoredAsDir', 'sortedByKey', 'storedAsTable', 'temporaryTable', 'using', 'rowFormat', 'fieldsTerminatedBy', 'fieldsescapedBy', 'collectionItemsTerminatedBy', 'mapKeysTerminatedBy', 'linesTerminatedBy', 'nullDefinedAs', 'inputFormatClassname', 'outputFormatClassname'];
 const otherTableProperties = ['code', 'collectionName', 'tableProperties', 'description', 'properties', 'serDeLibrary', 'serDeProperties'];
 
 const hydrateSerDeProperties = (compMod, name) => {
@@ -89,7 +89,7 @@ const generateModifyCollectionScript = (entity, definitions, provider) => {
 		const hydratedCollection = hydrateCollection({...entity, role: { ...entity.role, ...roleData }}, definitions);
 		const addCollectionScript = getTableStatement(...hydratedCollection, true);
 		const deleteCollectionScript = provider.dropTable(fullCollectionName);
-		return prepareScript(deleteCollectionScript, addCollectionScript);
+		return { type: 'new', script: prepareScript(deleteCollectionScript, addCollectionScript) };
 	}
 	const dataProperties = _.get(compMod, 'tableProperties', '');
 	const alterTableNameScript = provider.alterTableName(hydrateAlterTableName(compMod))
@@ -97,7 +97,7 @@ const generateModifyCollectionScript = (entity, definitions, provider) => {
 	const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
 	const tablePropertiesScript = provider.alterTableProperties(hydratedTableProperties);
 	const serDeProperties = provider.alterSerDeProperties(hydratedSerDeProperties)
-	return prepareScript(alterTableNameScript, ...tablePropertiesScript, serDeProperties);
+	return { type: 'modify', script: prepareScript(alterTableNameScript, ...tablePropertiesScript, serDeProperties) };
 }
 
 const getAddCollectionsScripts = definitions => entity => {
@@ -124,12 +124,12 @@ const getDeleteCollectionsScripts = provider => entity => {
 const getModifyCollectionsScripts = (definitions, provider) => entity => {
 	setDependencies(dependencies);
 	const properties = getEntityProperties(entity);
-	const tableScript = generateModifyCollectionScript(entity, definitions, provider);
+	const { script } = generateModifyCollectionScript(entity, definitions, provider);
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
 	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 
-	return prepareScript(dropIndexScript, ...tableScript, addIndexScript);
+	return prepareScript(dropIndexScript, ...script, addIndexScript);
 };
 
 const getAddColumnsScripts = (definitions, provider) => entity => {
@@ -140,14 +140,14 @@ const getAddColumnsScripts = (definitions, provider) => entity => {
 	const columnStatement = getColumnsStatement(columns);
 	const fullCollectionName = generateFullEntityName(entity);
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
-	const modifyCollectionScript = generateModifyCollectionScript(entity, definitions, provider);
+	const modifyScript = generateModifyCollectionScript(entity, definitions, provider);
 	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 	const addColumnScript = provider.addTableColumns({ name: fullCollectionName, columns: columnStatement });
 
-	return modifyCollectionScript.length ? 
-		prepareScript(dropIndexScript, ...modifyCollectionScript, addIndexScript) : 
-		prepareScript(dropIndexScript, addColumnScript, addIndexScript);
+	return modifyScript.type === 'new' ? 
+		prepareScript(dropIndexScript, ...modifyScript.script, addIndexScript) : 
+		prepareScript(dropIndexScript, addColumnScript, ...modifyScript.script, addIndexScript);
 };
 
 const getDeleteColumnsScripts = (definitions, provider) => entity => {
@@ -182,14 +182,14 @@ const getModifyColumnsScripts = (definitions, provider) => entity => {
 	};
 	const hydratedAlterColumnName = hydrateAlterColumnName(entity, properties);
 	const alterColumnScripts = provider.alterTableColumnName(hydratedAlterColumnName);
-	const modifiedCollectionScript = generateModifyCollectionScript(entityData, definitions, provider);
+	const modifiedScript = generateModifyCollectionScript(entityData, definitions, provider);
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
 	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 	
-	return modifiedCollectionScript.length ? 
-		prepareScript(dropIndexScript, ...modifiedCollectionScript, addIndexScript) : 
-		prepareScript(dropIndexScript, ...alterColumnScripts, addIndexScript);
+	return modifiedScript.type === 'new' ? 
+		prepareScript(dropIndexScript, ...modifiedScript.script, addIndexScript) : 
+		prepareScript(dropIndexScript, ...alterColumnScripts, ...modifiedScript.script, addIndexScript);
 };
 
 module.exports = {
