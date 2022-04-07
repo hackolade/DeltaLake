@@ -5,14 +5,16 @@ const { getDatabaseStatement, getDatabaseAlterStatement } = require('./helpers/d
 const { getTableStatement, getTableAlterStatements } = require('./helpers/tableHelper');
 const { getIndexes } = require('./helpers/indexHelper');
 const { getViewScript, getViewAlterScripts } = require('./helpers/viewHelper');
-const { getCleanedUrl } = require('./helpers/generalHelper');
+const { getCleanedUrl, getIsDeltaModel } = require('./helpers/generalHelper');
 let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')
 const logHelper = require('../reverse_engineering/logHelper');
+const { getAlterScript } = require('./helpers/alterScriptFromDeltaHelper');
+const sqlFormatter = require('sql-formatter');
+const { DROP_STATEMENTS } = require('./helpers/constants');
 
 const setAppDependencies = ({ lodash }) => _ = lodash;
-const sqlFormatter = require('sql-formatter');
 
 
 module.exports = {
@@ -37,6 +39,14 @@ module.exports = {
 					(option) => option.id === 'minify'
 				) || {}
 			).value;
+
+			const isDeltaModel = getIsDeltaModel(jsonSchema);
+			if (data.isUpdateScript && isDeltaModel) {
+				const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
+				const scripts = getAlterScript(jsonSchema, definitions, data, app);
+				callback(null, scripts);
+				return;
+			}
 
 			const databaseStatement = data.isUpdateScript ? getDatabaseAlterStatement(containerData) : getDatabaseStatement(containerData);
 			let tableStatements = [];
@@ -121,10 +131,17 @@ module.exports = {
 					(option) => option.id === 'minify'
 				) || {}
 			).value;
+			
+			const deltaModelSchema = _.first(Object.values(jsonSchema)) || {};
+			const isDeltaModel = getIsDeltaModel(deltaModelSchema);
+			if (isDeltaModel && Object.values(jsonSchema).length === 1) {
+				const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
+				const scripts = getAlterScript(deltaModelSchema, definitions, data, app);
+				callback(null, scripts);
+				return;
+			}
 
 			let viewsScripts = [];
-
-	
 
 			data.views.map(viewId => {
 				const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
@@ -287,7 +304,25 @@ module.exports = {
 			);
 			cb({ message: err.message, stack: err.stack });
 		}
-	}
+	},
+
+	isDropInStatements(data, logger, cb, app) {
+		try {
+			setDependencies(app);
+			
+			const callback = (error, script = '') => {
+				cb(error, DROP_STATEMENTS.some(statement => script.includes(statement)));
+			};
+			
+			if (data.level === 'container') {
+				this.generateContainerScript(data, logger, callback, app);
+			} else if (data.level === 'entity') {
+				this.generateScript(data, logger, callback, app);
+			}
+		}	catch (e) {
+			callback({ message: e.message, stack: e.stack });
+		}
+	},
 };
 
 
