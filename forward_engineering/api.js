@@ -306,18 +306,19 @@ module.exports = {
 		}
 	},
 
-	isDropInStatements(data, logger, callback, app) {
+	isDropInStatements(data, logger, cb, app) {
 		try {
 			setDependencies(app);
-			let script = '';
+			
+			const callback = (error, script = '') => {
+				cb(error, DROP_STATEMENTS.some(statement => script.includes(statement)));
+			};
 			
 			if (data.level === 'container') {
-				script = this.generateContainerScript(data, logger, callback, app);
+				this.generateContainerScript(data, logger, callback, app);
 			} else if (data.level === 'entity') {
-				script = this.generateScript(data, logger, callback, app);
+				this.generateScript(data, logger, callback, app);
 			}
-
-			callback(null, DROP_STATEMENTS.some(statement => script.includes(statement)));
 		}	catch (e) {
 			callback({ message: e.message, stack: e.stack });
 		}
