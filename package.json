@@ -1,7 +1,7 @@
 {
 	"name": "DeltaLake",
-	"version": "0.1.49",
-	"versionDate": "2022-04-12",
+	"version": "0.1.50",
+	"versionDate": "2022-04-22",
 	"author": "hackolade",
 	"engines": {
 		"hackolade": "4.3.20",
