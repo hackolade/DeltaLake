@@ -68,9 +68,15 @@ const convertCommandsToEntities = (commands, originalScript) => {
 
 const convertCommandsToReDocs = (commands, originalScript) => {
     const reData = convertCommandsToEntities(commands, originalScript);
+    const createBuckets = [];
 
-    const result = reData.entities.map((entity) => {
+    let result = reData.entities.map((entity) => {
         const relatedViews = reData.views.filter((view) => view.collectionName === entity.collectionName);
+
+        if (createBuckets.includes(entity.bucketName)) {
+            createBuckets.push(entity.bucketName);
+        }
+
         return {
             objectNames: {
                 collectionName: entity.collectionName,
@@ -85,6 +91,21 @@ const convertCommandsToReDocs = (commands, originalScript) => {
             jsonSchema: entity.schema,
         };
     });
+
+    if (Object.keys(reData.buckets || {}).length !== createBuckets.length) {
+        const emptyBuckets = Object.keys(reData.buckets).map((bucketName) => {
+            return {
+                doc: {
+                    dbName: bucketName,
+                    bucketInfo: {
+                        additionalData: reData.buckets[bucketName] || {}
+                    },
+                    emptyBucket: true,
+                },
+            };
+        });
+        result = result.concat(emptyBuckets);
+    }
 
     return { result, info: reData.modelProperties, relationships: reData.relationships };
 };
