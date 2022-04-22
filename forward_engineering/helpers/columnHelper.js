@@ -11,7 +11,7 @@ const {
 
 const getStructChild = (name, type, comment) => `${prepareName(name)}: ${type}` + (comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '');
 
-const getStructChildProperties = getTypeByProperty => property => {
+const getStructChildProperties = (getTypeByProperty, definitions) => property => {
 	const childProperties = Object.keys(property.properties || {});
 	const activatedProps = [];
 	const deactivatedProps = [];
@@ -19,9 +19,13 @@ const getStructChildProperties = getTypeByProperty => property => {
 	if (childProperties.length) {
 		childProperties.forEach(propertyName => {
 			const childProperty = property.properties[propertyName];
-			const name = (getName(childProperty) || propertyName);
+			const name = getName(childProperty) || propertyName;
 			const isActivated = childProperty.isActivated !== false;
-			const structChild = getStructChild(name, getTypeByProperty(childProperty), childProperty.description);
+			const structChild = getStructChild(
+				name,
+				getTypeByProperty(childProperty),
+				getDescription(definitions, childProperty),
+			);
 			if (isActivated) {
 				activatedProps.push(structChild);
 			} else {
@@ -47,10 +51,10 @@ const getStructChildProperties = getTypeByProperty => property => {
 	return { activatedProps, deactivatedProps };
 };
 
-const getStruct = getTypeByProperty => property => {
+const getStruct = (getTypeByProperty, definitions) => property => {
 	const getStructStatement = (propertiesString) => `struct<${propertiesString}>`;
 	
-	const { activatedProps, deactivatedProps } = getStructChildProperties(getTypeByProperty)(property);
+	const { activatedProps, deactivatedProps } = getStructChildProperties(getTypeByProperty, definitions)(property);
 	if (deactivatedProps.length === 0) {
 		return getStructStatement(activatedProps.join(', '));
 	} else if (activatedProps.length === 0) {
@@ -264,7 +268,7 @@ const getTypeByProperty = (definitions = []) => property => {
 		case 'interval':
 			return 'string';
 		case 'struct':
-			return getStruct(getTypeByProperty(definitions))(property);
+			return getStruct(getTypeByProperty(definitions), definitions)(property);
 		case 'array':
 			return getArray(getTypeByProperty(definitions))(property);
 		case 'map':
@@ -296,7 +300,7 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 			getColumn(
 				prepareName(name),
 				getTypeByProperty(definitions)(property),
-				property.description,
+				getDescription(definitions, property),
 				areColumnConstraintsAvailable ? {
 					notNull: isRequired,
 					unique: property.unique,
@@ -356,6 +360,16 @@ const getColumnConstraintsStaitment = ({ notNull, unique, check, defaultValue })
 
 	return constraintsStaitment ? ` ${constraintsStaitment}` : '';
 };
+
+const getDescription = (definitions, property) => {
+	if(!property.$ref) {
+		return property.description;
+	}
+
+	const definitionDescription = getDefinitionByReference(definitions, property)?.description;
+
+	return property.refDescription || property.description || definitionDescription
+}
 
 module.exports = {
 	getColumns,
