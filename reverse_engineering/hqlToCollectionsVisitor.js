@@ -1013,12 +1013,14 @@ class Visitor extends HiveParserVisitor {
     visitCreateDatabaseStatement(ctx) {
         const name = this.visit(ctx.identifier());
         const description = this.visitWhenExists(ctx, 'databaseComment');
+        const location = removeSingleDoubleQuotes(ctx?.dbLocation()?.StringLiteral()?.getText() || '');
 
         return {
             type: CREATE_BUCKET_COMMAND,
             name,
             data: {
                 description,
+                location,
             },
         };
     }
