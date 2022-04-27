@@ -387,7 +387,7 @@ const convertDbProperties = (dbProperties = '') => {
 		.map(keyValueString => {
 			const splitterIndex = keyValueString.indexOf(',');
 			const keyword = keyValueString.slice(0, splitterIndex);
-			const value = keyValueString.slice(splitterIndex + 1, test.length);
+			const value = keyValueString.slice(splitterIndex + 1, keyValueString.length);
 			return `'${keyword}'=${convertDbPropertyValue(value)}`;
 		})
 		.join(',\n')
