@@ -356,17 +356,38 @@ const convertDbPropertyValue = value => {
 	} else {
 		return `'${value}'`;
 	}
+};
 
+const splitStatementsByBrackets = (statements) => {
+	const _ = dependencies.lodash;
+	let result = [];
+	let startIndex = 0;
+	let skippedBrackets = 0;
+	_.range(statements.length).forEach(index => {
+		const symbol = statements.charAt(index);
+		if (symbol === '(' && startIndex) {
+			skippedBrackets++
+		} else if (symbol === '(') {
+			startIndex = index + 1;
+		} else if (symbol === ')' && skippedBrackets) {
+			skippedBrackets--;
+		} else if (symbol === ')') {
+			const statement = statements.slice(startIndex, index);
+			result = result.concat(statement);
+			startIndex = 0;
+			skippedBrackets = 0;
+		}
+	});
+
+	return result;
 };
 
 const convertDbProperties = (dbProperties = '') => {
-	return removeBrackets(dbProperties)
-		.split('), (')
-		.map(propertyString => {
-			const test = removeBrackets(propertyString);
-			const splitterIndex = test.indexOf(',');
-			const keyword = test.slice(0, splitterIndex);
-			const value = test.slice(splitterIndex + 1, test.length);
+	return splitStatementsByBrackets(removeBrackets(dbProperties))
+		.map(keyValueString => {
+			const splitterIndex = keyValueString.indexOf(',');
+			const keyword = keyValueString.slice(0, splitterIndex);
+			const value = keyValueString.slice(splitterIndex + 1, test.length);
 			return `'${keyword}'=${convertDbPropertyValue(value)}`;
 		})
 		.join(',\n')
