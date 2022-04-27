@@ -252,10 +252,7 @@ module.exports = {
 			);
 			callback(null, result, info, relationships, 'multipleSchema');
 		} catch (err) {
-			const { error, title, name } = err;
-			const handledError = handleErrorObject(error || err, title || name);
-			logger.log('error', handledError, title);
-			callback(handledError);
+			handleError(logger, err, callback);
 		}
 	},
 
