@@ -2,7 +2,7 @@
 const fetch = require('node-fetch');
 const { dependencies } = require('../appDependencies');
 const { getClusterData } = require('./pythonScriptGeneratorHelper');
-const { getCount, prepareNamesForInsertionIntoScalaCode } = require('./utils');
+const { getCount, prepareNamesForInsertionIntoScalaCode, removeBrackets } = require('./utils');
 let activeContexts = {};
 
 const destroyActiveContext = () => {
@@ -93,7 +93,8 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 				return { ...dbProperties, "description": row[1] }
 			}
 			if (row[0] === 'Properties') {
-				return { ...dbProperties, "dbProperties": row[1] }
+
+				return { ...dbProperties, "dbProperties": convertDbProperties(row[1]) }
 			}
 			return dbProperties;
 		}, {});
@@ -333,6 +334,42 @@ const getCommandExecutionResult = (query, options, commandOptions) => {
 			}
 			return getCommandExecutionResult(query, options, commandOptions);
 		})
+};
+
+const convertDbPropertyValue = value => {
+	const _ = dependencies.lodash;
+	const isNumber = value => !_.isNaN(_.toNumber(value));
+	const isBoolean = value => _.toLower(value) === 'false' || _.toLower(value) === 'true';
+	const convertToBoolean = value => {
+		switch (_.toLower(value)) {
+			case 'true':
+				return true;
+			case 'false':
+				return false;
+		}
+	}
+
+	if (isNumber(value)) {
+		return _.toNumber(value);
+	} else if (isBoolean(value)) {
+		return convertToBoolean(value);
+	} else {
+		return `'${value}'`;
+	}
+
+};
+
+const convertDbProperties = (dbProperties = '') => {
+	return removeBrackets(dbProperties)
+		.split('), (')
+		.map(propertyString => {
+			const test = removeBrackets(propertyString);
+			const splitterIndex = test.indexOf(',');
+			const keyword = test.slice(0, splitterIndex);
+			const value = test.slice(splitterIndex + 1, test.length);
+			return `'${keyword}'=${convertDbPropertyValue(value)}`;
+		})
+		.join(',\n')
 };
 
 module.exports = {
