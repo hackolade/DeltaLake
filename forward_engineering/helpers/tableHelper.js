@@ -74,11 +74,13 @@ const getCreateHiveStatement = ({
 	tempExtStatement, fullTableName, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
 	rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement, isActivated
 }) => {
-	return buildStatement(`CREATE${tempExtStatement}TABLE IF NOT EXISTS ${fullTableName} (`, isActivated)
+	const isAddBrackets = columnStatement || primaryKeyStatement || foreignKeyStatement;
+	return buildStatement(`CREATE${tempExtStatement}TABLE IF NOT EXISTS ${fullTableName} `, isActivated)
+		(isAddBrackets, '(')
 		(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))
 		(primaryKeyStatement, primaryKeyStatement)
 		(foreignKeyStatement, foreignKeyStatement)
-		(true, ')')
+		(isAddBrackets, ')')
 		(comment, `COMMENT '${encodeStringLiteral(comment)}'`)
 		(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
