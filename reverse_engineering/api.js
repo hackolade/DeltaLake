@@ -170,14 +170,25 @@ module.exports = {
 					})
 
 				const viewsNames = dataBaseNames.reduce((viewsNames, dbName) => {
-					const views = collections[dbName]
+					const views = (collections[dbName] || [])
 						.map(entityName => cleanEntityName(modelData.spark_version, entityName))
 						.filter(entityName => isViewDdl(ddlByEntity[`${dbName}.${entityName}`]));
 
 					return { ...viewsNames, [dbName]: views };
 				}, {});
 
-				if (dependencies.lodash.isEmpty(viewsNames[dbName])) {
+				const hasTables = tablesPackages?.length !== 0;
+				const hasViews = viewsNames[dbName]?.length !== 0;
+				const isEmptyBucket = !hasTables && !hasViews;
+				if (isEmptyBucket) {
+					const emptyBucket = {
+						dbName: dbName,
+						entityLevel: {},
+						emptyBucket: isEmptyBucket,
+						bucketInfo: dbData.dbProperties,
+					}
+					return [...packages, emptyBucket];
+				} else if (!hasViews) {
 					return [...packages, ...tablesPackages];
 				}
 
@@ -203,11 +214,7 @@ module.exports = {
 					entityLevel: {},
 					views,
 					emptyBucket: false,
-					bucketInfo: {
-						description: dbData.dbProperties.Comment,
-						dbProperties: dbData.dbProperties.Properties,
-						location: dbData.dbProperties.Location
-					}
+					bucketInfo: dbData.dbProperties,
 				});
 
 				return [...packages, ...tablesPackages, viewPackage];
@@ -252,10 +259,7 @@ module.exports = {
 			);
 			callback(null, result, info, relationships, 'multipleSchema');
 		} catch (err) {
-			const { error, title, name } = err;
-			const handledError = handleErrorObject(error || err, title || name);
-			logger.log('error', handledError, title);
-			callback(handledError);
+			handleError(logger, err, callback);
 		}
 	},
 
