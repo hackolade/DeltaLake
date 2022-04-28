@@ -30,7 +30,7 @@ const {
 
 const schemaHelper = require('./thriftService/schemaHelper');
 const { dependencies } = require('./appDependencies');
-const { removeBrackets } = require('../../../DeltaLake/reverse_engineering/helpers/utils');
+const { removeBrackets } = require('./helpers/utils');
 
 const ALLOWED_COMMANDS = [
     HiveParser.RULE_createTableStatement,
