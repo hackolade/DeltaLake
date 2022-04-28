@@ -51,6 +51,14 @@
                     "mode": "string",
                     "format": "time"
                 }
+            },
+            {
+                "from": {
+                    "compositeUniqueKey": true
+                },
+                "to": {
+                    "unique": true
+                }
             }
         ]
     }
