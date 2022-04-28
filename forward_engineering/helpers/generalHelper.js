@@ -22,7 +22,7 @@ const buildStatement = (mainStatement, isActivated) => {
 	};
 
 	const getStatement = (condition, statement) => {
-		if (statement === ')') {
+		if (condition && statement === ')') {
 			return '\n)';
 		}
 		if (statement === ';') {
