@@ -30,6 +30,7 @@ const {
 
 const schemaHelper = require('./thriftService/schemaHelper');
 const { dependencies } = require('./appDependencies');
+const { removeBrackets } = require('../../../DeltaLake/reverse_engineering/helpers/utils');
 
 const ALLOWED_COMMANDS = [
     HiveParser.RULE_createTableStatement,
@@ -1014,6 +1015,7 @@ class Visitor extends HiveParserVisitor {
         const name = this.visit(ctx.identifier());
         const description = this.visitWhenExists(ctx, 'databaseComment');
         const location = removeSingleDoubleQuotes(ctx?.dbLocation()?.StringLiteral()?.getText() || '');
+        const dbProperties = removeBrackets(ctx?.dbProperties()?.getText() || '');
 
         return {
             type: CREATE_BUCKET_COMMAND,
@@ -1021,6 +1023,7 @@ class Visitor extends HiveParserVisitor {
             data: {
                 description,
                 location,
+                dbProperties,
             },
         };
     }
