@@ -177,8 +177,8 @@ module.exports = {
 					return { ...viewsNames, [dbName]: views };
 				}, {});
 
-				const hasTables = tablesPackages.length !== 0;
-				const hasViews = viewsNames[dbName].length !== 0;
+				const hasTables = tablesPackages?.length !== 0;
+				const hasViews = viewsNames[dbName]?.length !== 0;
 				const isEmptyBucket = !hasTables && !hasViews;
 				if (isEmptyBucket) {
 					const emptyBucket = {
