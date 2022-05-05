@@ -138,19 +138,6 @@ const encodeStringLiteral = (str = '') => {
 	return str.replace(/(')/gi, '\\$1').replace(/\n/gi, '\\n');
 }
 
-const getIsDeltaModel = (schema = {}) => {
-	if (!schema || typeof schema !== 'object') {
-		return;
-	}
-
-	const properties = schema.properties;
-	if (!properties) {
-		return;
-	}
-	const propertiesForDeltaModel = ['containers', 'entities', 'views', 'modelDefinitions', 'relationships'];
-	return propertiesForDeltaModel.every(key => properties[key]);
-}
-
 module.exports = {
 	buildStatement,
 	getName,
@@ -164,5 +151,4 @@ module.exports = {
 	removeRedundantTrailingCommaFromStatement,
 	getCleanedUrl,
 	encodeStringLiteral,
-	getIsDeltaModel,
 };
