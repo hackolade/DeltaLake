@@ -98,28 +98,4 @@ module.exports = {
 
 		return script.join('\n  ') + ';\n\n\n\n\n'
 	},
-
-	getViewAlterScripts({
-		schema,
-		viewData,
-		containerData,
-		collectionRefsDefinitionsMap,
-	}) {
-		setDependencies(dependencies);
-		const view = _.first(viewData) || {};
-		const bucketName = replaceSpaceWithUnderscore(prepareName(retrieveContainerName(containerData)));
-		const viewName = replaceSpaceWithUnderscore(prepareName(view.code || view.name));
-		const columns = schema.properties || {};
-		const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
-		const fromStatement = getFromStatement(collectionRefsDefinitionsMap, columns);
-		let viewScripts = []
-		if (schema.selectStatement) {
-			viewScripts.push(`ALTER VIEW ${name} AS ${schema.selectStatement};\n\n`);
-		} else if (!_.isEmpty(columns)) {
-			const columnsNames = getColumnNames(collectionRefsDefinitionsMap, columns);
-			viewScripts.push(`ALTER VIEW ${name} AS SELECT ${columnsNames} ${fromStatement};\n\n`);
-		}
-		return viewScripts;
-	}
-
-	};
+};

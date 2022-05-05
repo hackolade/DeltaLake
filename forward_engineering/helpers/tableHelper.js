@@ -287,39 +287,6 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, a
 	return removeRedundantTrailingCommaFromStatement(tableStatement);
 };
 
-const getTableAlterStatements = (containerData, entityData, jsonSchema, definitions, foreignKeyStatement, areColumnConstraintsAvailable, areForeignPrimaryKeyConstraintsAvailable) => {
-	setDependencies(dependencies);
-	let tableStatements = []
-
-	const dbName = replaceSpaceWithUnderscore(getName(getTab(0, containerData)));
-	const tableData = getTab(0, entityData);
-	const container = getTab(0, containerData);
-	const isTableActivated = tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
-	const tableName = replaceSpaceWithUnderscore(getName(tableData));
-	const { columns, deactivatedColumnNames } = getColumns(jsonSchema, areColumnConstraintsAvailable, definitions);
-	const keyNames = keyHelper.getKeyNames(tableData, jsonSchema, definitions);
-	const fullTableName = dbName ? `${dbName}.${tableName}` : tableName;
-	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
-	
-	if (columns) {
-		tableStatements.push(`ALTER TABLE ${fullTableName} ADD COLUMNS (${getColumnsStatement(tableColumns, isTableActivated)});\n\n`)
-	}
-
-	if (tableData.tableProperties) {
-		tableStatements.push(`ALTER TABLE ${fullTableName} SET TBLPROPERTIES (${tableData.tableProperties});\n\n`)
-	}
-	if (tableData.serDeLibrary) {
-		tableStatements.push(`ALTER TABLE ${fullTableName} SET SERDE '${tableData.serDeLibrary}'${tableData.serDeProperties ? `WITH SERDEPROPERTIES (${tableData.serDeProperties})` : ''};\n\n`)
-	} else if (tableData.serDeProperties) {
-		tableStatements.push(`ALTER TABLE ${fullTableName} SET SERDEPROPERTIES (${tableData.serDeProperties});\n\n`)
-	}
-	if (tableData.location) {
-		tableStatements.push(`ALTER TABLE ${fullTableName} SET LOCATION '${tableData.location}';\n\n`)
-	}
-
-	return tableStatements;
-};
-
 const getCorrectUsing = using => {
 	switch (using) {
 		case 'delta':
@@ -348,5 +315,4 @@ const getCorrectUsing = using => {
 
 module.exports = {
 	getTableStatement,
-	getTableAlterStatements
 };

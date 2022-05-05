@@ -1,11 +1,11 @@
 'use strict';
 
 const { setDependencies, dependencies } = require('./helpers/appDependencies');
-const { getDatabaseStatement, getDatabaseAlterStatement } = require('./helpers/databaseHelper');
-const { getTableStatement, getTableAlterStatements } = require('./helpers/tableHelper');
+const { getDatabaseStatement } = require('./helpers/databaseHelper');
+const { getTableStatement } = require('./helpers/tableHelper');
 const { getIndexes } = require('./helpers/indexHelper');
-const { getViewScript, getViewAlterScripts } = require('./helpers/viewHelper');
-const { getCleanedUrl, getIsDeltaModel } = require('./helpers/generalHelper');
+const { getViewScript } = require('./helpers/viewHelper');
+const { getCleanedUrl } = require('./helpers/generalHelper');
 let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')
@@ -34,39 +34,14 @@ module.exports = {
 			const areForeignPrimaryKeyConstraintsAvailable = !data.modelData[0].dbVersion.startsWith(
 				'1'
 			);
-			const needMinify = (
-				dependencies.lodash.get(data, 'options.additionalOptions', []).find(
-					(option) => option.id === 'minify'
-				) || {}
-			).value;
+			let scripts = '';
 
-			const isDeltaModel = getIsDeltaModel(jsonSchema);
-			if (data.isUpdateScript && isDeltaModel) {
-				const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
-				const scripts = getAlterScript(jsonSchema, definitions, data, app);
-				callback(null, scripts);
-				return;
-			}
-
-			const databaseStatement = data.isUpdateScript ? getDatabaseAlterStatement(containerData) : getDatabaseStatement(containerData);
-			let tableStatements = [];
 			if (data.isUpdateScript) {
-				const tableAlterStatements = getTableAlterStatements(
-					containerData,
-					entityData,
-					jsonSchema,
-					[
-						modelDefinitions,
-						internalDefinitions,
-						externalDefinitions,
-					],
-					null,
-					areColumnConstraintsAvailable,
-					areForeignPrimaryKeyConstraintsAvailable
-				)
-				tableStatements = [...tableStatements, ...tableAlterStatements]
+				const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
+				scripts = getAlterScript(jsonSchema, definitions, data, app);
 			} else {
-				const tableStatement = getTableStatement(
+				const databaseStatement = getDatabaseStatement(containerData);
+				const tableStatements = getTableStatement(
 					containerData,
 					entityData,
 					jsonSchema,
@@ -78,21 +53,20 @@ module.exports = {
 					null,
 					areColumnConstraintsAvailable,
 					areForeignPrimaryKeyConstraintsAvailable
-				)
-				tableStatements.push(tableStatement)
-			}
-			callback(
-				null,
-				buildScript(needMinify)(
+				);
+				scripts = buildScript(
 					databaseStatement,
-					...tableStatements
-					,
+					tableStatements,
 					getIndexes(containerData, entityData, jsonSchema, [
 						modelDefinitions,
 						internalDefinitions,
 						externalDefinitions,
 					])
 				)
+			}
+			callback(
+				null,
+				scripts
 			);
 		} catch (e) {
 			logger.log(
@@ -114,7 +88,6 @@ module.exports = {
 			const containerData = data.containerData;
 			const modelDefinitions = JSON.parse(data.modelDefinitions);
 			const externalDefinitions = JSON.parse(data.externalDefinitions);
-			const databaseStatement = data.isUpdateScript ? getDatabaseAlterStatement(containerData) : getDatabaseStatement(containerData);
 			const jsonSchema = parseEntities(data.entities, data.jsonSchema);
 			const internalDefinitions = parseEntities(
 				data.entities,
@@ -126,69 +99,25 @@ module.exports = {
 			const areForeignPrimaryKeyConstraintsAvailable = !data.modelData[0].dbVersion.startsWith(
 				'1'
 			);
-			const needMinify = (
-				dependencies.lodash.get(data, 'options.additionalOptions', []).find(
-					(option) => option.id === 'minify'
-				) || {}
-			).value;
 			
-			const deltaModelSchema = _.first(Object.values(jsonSchema)) || {};
-			const isDeltaModel = getIsDeltaModel(deltaModelSchema);
-			if (isDeltaModel && Object.values(jsonSchema).length === 1) {
+			if (data.isUpdateScript) {
+				const deltaModelSchema = _.first(Object.values(jsonSchema)) || {};
 				const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
 				const scripts = getAlterScript(deltaModelSchema, definitions, data, app);
 				callback(null, scripts);
 				return;
 			}
 
-			let viewsScripts = [];
-
-			data.views.map(viewId => {
+			const databaseStatement = getDatabaseStatement(containerData);
+			let viewsScripts = data.views.map(viewId => {
 				const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
-				if (data.isUpdateScript) {
-					const viewAlterScripts = getViewAlterScripts({
-						schema: viewSchema,
-						viewData: data.viewData[viewId],
-						containerData: data.containerData,
-						collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
-						isKeyspaceActivated: true
-					})
-					viewsScripts = [...viewsScripts, ...viewAlterScripts];
-				} else {
-					const viewScript = getViewScript({
-						schema: viewSchema,
-						viewData: data.viewData[viewId],
-						containerData: data.containerData,
-						collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
-						isKeyspaceActivated: true
-					})
-					viewsScripts.push(viewScript);
-				}
-			})
-
-			viewsScripts = viewsScripts.filter(script => !dependencies.lodash.isEmpty(script));
-
-			data.views.map(viewId => {
-				const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
-				if (data.isUpdateScript) {
-					const viewAlterScripts = getViewAlterScripts({
-						schema: viewSchema,
-						viewData: data.viewData[viewId],
-						containerData: data.containerData,
-						collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
-						isKeyspaceActivated: true
-					})
-					viewsScripts = [...viewsScripts, ...viewAlterScripts];
-				} else {
-					const viewScript = getViewScript({
-						schema: viewSchema,
-						viewData: data.viewData[viewId],
-						containerData: data.containerData,
-						collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
-						isKeyspaceActivated: true
-					})
-					viewsScripts.push(viewScript);
-				}
+				return getViewScript({
+					schema: viewSchema,
+					viewData: data.viewData[viewId],
+					containerData: data.containerData,
+					collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
+					isKeyspaceActivated: true
+				})
 			})
 
 			viewsScripts = viewsScripts.filter(script => !dependencies.lodash.isEmpty(script));
@@ -206,40 +135,26 @@ module.exports = {
 					true
 				];
 
-				let tableStatements = [];
-
-				if (data.isUpdateScript) {
-					const tableAlterStatement = getTableAlterStatements(
-						...args,
-						null,
-						areColumnConstraintsAvailable,
-						areForeignPrimaryKeyConstraintsAvailable
-					)
-					tableStatements = [...tableStatements, ...tableAlterStatement]
-				} else {
-					const tableStatement = getTableStatement(
-						...args,
-						null,
-						areColumnConstraintsAvailable,
-						areForeignPrimaryKeyConstraintsAvailable
-					)
-					tableStatements.push(tableStatement)
-				}
+				const tableStatement = getTableStatement(
+					...args,
+					null,
+					areColumnConstraintsAvailable,
+					areForeignPrimaryKeyConstraintsAvailable
+				)
 
 				return result.concat([
-					...tableStatements,
+					tableStatement,
 					getIndexes(...args),
 				]);
 			}, []);
 
-			callback(
-				null,
-				buildScript(needMinify)(
-					databaseStatement,
-					...entities,
-					...viewsScripts
-				)
-			);
+			const scripts = buildScript(
+				databaseStatement,
+				...entities,
+				...viewsScripts
+			)
+
+			callback(null, scripts);
 		} catch (e) {
 			logger.log(
 				'error',
@@ -326,7 +241,7 @@ module.exports = {
 };
 
 
-const buildScript = (needMinify) => (...statements) => {
+const buildScript = (...statements) => {
 	const script = statements.filter((statement) => statement).join('\n\n');
 	return sqlFormatter.format(script, { indent: '    ' }) + '\n';
 };
