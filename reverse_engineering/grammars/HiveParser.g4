@@ -262,15 +262,16 @@ createTableStatement
          tableLocation?
          tablePropertiesPrefixed?
        | (LPAREN columnNameTypeOrConstraintList RPAREN)?
-         tableUsingDataSource?
-         tableBuckets?
-         tableSkewed?
-         tableRowFormat?
-         tableFileFormat?
-         tableLocation?
-         tablePartition?
-         tablePropertiesPrefixed?
-         tableComment?
+       ( tableUsingDataSource
+         | tableBuckets
+         | tableSkewed
+         | tableRowFormat
+         | tableFileFormat
+         | tablePartition
+         | tableLocation
+         | tablePropertiesPrefixed
+         | tableComment
+        )*
          (KW_AS selectStatementWithCTE)?
       )
     ;
