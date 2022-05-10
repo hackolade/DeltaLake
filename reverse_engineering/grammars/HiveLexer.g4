@@ -508,7 +508,7 @@ An Identifier can be:
 - window name
 */
 Identifier
-    : (Letter | Digit) (Letter | Digit | '_' | DOT)*
+    : (Letter | Digit) (Letter | Digit | '_')*
     | QuotedIdentifier  /* though at the language level we allow all Identifiers to be QuotedIdentifiers;
                                               at the API level only columns are allowed to be of this form */
     | '`' RegexComponent+ '`'

@@ -964,7 +964,7 @@ keyValue
     ;
 
 keyProperty
-    : Identifier
+    : identifier (DOT identifier)*
     | StringLiteral
     ;
 

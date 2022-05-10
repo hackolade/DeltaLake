@@ -305,10 +305,25 @@ const addIndexToCollection = (entitiesData, bucket, statementData) => {
     };
 };
 
+const isAllIndexKeysHasSameOptions = (columnsData, indexOptions) => {
+    return columnsData.every(column => !column.options || column.options === indexOptions);
+};
+
 const createBloomfilterIndexes = (columnsData = [], indexOptions) => {
+    const _ = dependencies.lodash;
+    indexOptions = indexOptions || _.get(_.first(columnsData), 'options', '');
+    const useSameOptions = isAllIndexKeysHasSameOptions(columnsData, indexOptions);
+
+    if (useSameOptions) {
+        return [{
+            forColumns: columnsData.map(({ name }) => name),
+            options: indexOptions,
+        }];
+    }
+
     return columnsData.map(column => {
         return {
-            forColumns: [ column.name ],
+            forColumns: [column.name],
             options: column.options || indexOptions
         };
     });
@@ -340,6 +355,22 @@ const addBloomfilterIndexToCollection = (entitiesData, bucket, statementData) =>
     };
 };
 
+const filterCollectionBloomfilterIndexes = _ => (bloomIndexes, indexKeysToRemove) =>
+    _.chain(bloomIndexes || [])
+        .map(bloomIndex => {
+            const indexKeys = bloomIndex.forColumns.filter(key => !_.includes(indexKeysToRemove, key));
+            if (_.isEmpty(indexKeys)) {
+                return;
+            }
+
+            return {
+                ...bloomIndex,
+                forColumns: indexKeys,
+            }
+        })
+        .compact()
+        .value();
+
 const removeBloomfilterIndexFromCollection = (entitiesData, bucket, statementData) => {
     const _ = dependencies.lodash;
     const { entities } = entitiesData;
@@ -347,14 +378,12 @@ const removeBloomfilterIndexFromCollection = (entitiesData, bucket, statementDat
     if (entityIndex === -1) {
         return entitiesData;
     }
-    
+
     const entity = entities[entityIndex];
     const entityLevelData = entity.entityLevelData || {};
-    const keyNamesToRemove = statementData.columns.map(column => column.name);
-    const indexes = (entityLevelData.BloomIndxs || []).filter((index) => {
-        return !_.includes(keyNamesToRemove, _.first(index.forColumns)); // In forColumns property it always will by only one key.
-    });
-    
+    const indexKeysToRemove = statementData.columns.map(column => column.name);
+    const indexes = filterCollectionBloomfilterIndexes(_)(entityLevelData.BloomIndxs, indexKeysToRemove)
+
     return {
         ...entitiesData,
         entities: set(entities, entityIndex, {
