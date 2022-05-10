@@ -2,7 +2,7 @@
 const fetch = require('node-fetch');
 const { dependencies } = require('../appDependencies');
 const { getClusterData } = require('./pythonScriptGeneratorHelper');
-const { getCount, prepareNamesForInsertionIntoScalaCode, removeBrackets } = require('./utils');
+const { getCount, prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 let activeContexts = {};
 
 const destroyActiveContext = () => {
@@ -383,7 +383,7 @@ const splitStatementsByBrackets = (statements) => {
 };
 
 const convertDbProperties = (dbProperties = '') => {
-	return splitStatementsByBrackets(removeBrackets(dbProperties))
+	return splitStatementsByBrackets(removeParentheses(dbProperties))
 		.map(keyValueString => {
 			const splitterIndex = keyValueString.indexOf(',');
 			const keyword = keyValueString.slice(0, splitterIndex);

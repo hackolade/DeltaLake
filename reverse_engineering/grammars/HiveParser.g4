@@ -182,6 +182,8 @@ ddlStatement
     | resourcePlanDdlStatements
     | createIndexStatement
     | dropIndexStatement
+    | createBloomfilterIndexStatement
+    | dropBloomfilterIndexStatement
     ;
 
 ifExists
@@ -256,17 +258,19 @@ createTableStatement
       (  KW_LIKE tableName
          tableRowFormat?
          tableFileFormat?
+         tableUsingDataSource?
          tableLocation?
          tablePropertiesPrefixed?
        | (LPAREN columnNameTypeOrConstraintList RPAREN)?
-         tableComment?
-         tablePartition?
+         tableUsingDataSource?
          tableBuckets?
          tableSkewed?
          tableRowFormat?
          tableFileFormat?
          tableLocation?
+         tablePartition?
          tablePropertiesPrefixed?
+         tableComment?
          (KW_AS selectStatementWithCTE)?
       )
     ;
@@ -522,6 +526,41 @@ createIndexMainStatement
 
 dropIndexStatement
     : KW_DROP KW_INDEX identifier KW_ON tableName;
+
+createBloomfilterIndexStatement
+    : createBloomfilterIndexMainStatement
+    (KW_FOR KW_COLUMNS bloomfilterColumnParenthesesList)?
+    bloomfilterIndexOptions?
+    ;
+
+createBloomfilterIndexMainStatement
+    : KW_CREATE KW_BLOOMFILTER KW_INDEX KW_ON KW_TABLE? tableName
+    ;
+
+bloomfilterColumnParenthesesList
+    : LPAREN bloomfilterColumnNameList RPAREN
+    ;
+
+bloomfilterColumnNameList
+    : bloomfilterColumnName (COMMA bloomfilterColumnName)*
+    ;
+
+bloomfilterColumnName
+    : identifier bloomfilterIndexOptions?
+    ;
+
+bloomfilterIndexOptions
+    : KW_OPTIONS tableProperties
+    ;
+
+dropBloomfilterIndexStatement
+    : dropBloomfilterIndexMainStatement
+    (KW_FOR KW_COLUMNS bloomfilterColumnParenthesesList)?
+    ;
+
+dropBloomfilterIndexMainStatement
+    : KW_DROP KW_BLOOMFILTER KW_INDEX KW_ON KW_TABLE? tableName
+    ;
 
 tablePartitionPrefix
   : tableName partitionSpec?
@@ -850,8 +889,21 @@ tableComment
     : KW_COMMENT StringLiteral
     ;
 
+tableUsingDataSource
+    : KW_USING tableDataSource
+    ;
+
+tableDataSource
+    : KW_AVRO
+    | KW_CSV
+    | KW_JSON
+    | KW_PARQUET
+    | KW_ORC
+    | KW_DELTA
+    ;
+
 tablePartition
-    : KW_PARTITIONED KW_BY LPAREN columnNameTypeConstraint (COMMA columnNameTypeConstraint)* RPAREN
+    : KW_PARTITIONED KW_BY LPAREN partitionedColumnNameTypeConstraint (COMMA partitionedColumnNameTypeConstraint)* RPAREN
     ;
 
 tableBuckets
@@ -902,11 +954,18 @@ tablePropertiesList
     ;
 
 keyValueProperty
-    : StringLiteral EQUAL StringLiteral
+    : keyProperty EQUAL keyValue
+    ;
+
+keyValue
+    : Number
+    | booleanValue
+    | StringLiteral
     ;
 
 keyProperty
-    : StringLiteral
+    : identifier (DOT identifier)*
+    | StringLiteral
     ;
 
 tableRowFormatFieldIdentifier
@@ -1126,6 +1185,10 @@ tableConstraint
 
 columnNameTypeConstraint
     : identifier colType columnConstraint? (KW_COMMENT StringLiteral)?
+    ;
+
+partitionedColumnNameTypeConstraint
+    : identifier colType?
     ;
 
 columnConstraint
