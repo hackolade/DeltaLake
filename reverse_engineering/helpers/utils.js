@@ -62,7 +62,7 @@ const getErrorMessage = (error = {}) => {
 	return error.message || 'Reverse Engineering error';
 };
 
-const removeBrackets = string => string.replace(/^\(|\)$/g, '');
+const removeParentheses = string => string.replace(/^\(|\)$/g, '');
 
 module.exports = {
 	prepareNamesForInsertionIntoScalaCode,
@@ -74,5 +74,5 @@ module.exports = {
 	isTableDdl,
 	cleanEntityName,
 	isSupportGettingListOfViews,
-	removeBrackets,
+	removeParentheses,
 };

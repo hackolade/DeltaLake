@@ -11,6 +11,8 @@ const {
     CREATE_VIEW_COMMAND,
     ADD_COLLECTION_LEVEL_INDEX_COMMAND,
     REMOVE_COLLECTION_LEVEL_INDEX_COMMAND,
+    ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
+    REMOVE_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
     UPDATE_ENTITY_LEVEL_DATA_COMMAND,
     UPDATE_VIEW_LEVEL_DATA_COMMAND,
     RENAME_VIEW_COMMAND,
@@ -30,7 +32,7 @@ const {
 
 const schemaHelper = require('./thriftService/schemaHelper');
 const { dependencies } = require('./appDependencies');
-const { removeBrackets } = require('./helpers/utils');
+const { removeParentheses } = require('./helpers/utils');
 
 const ALLOWED_COMMANDS = [
     HiveParser.RULE_createTableStatement,
@@ -47,6 +49,8 @@ const ALLOWED_COMMANDS = [
     HiveParser.RULE_resourcePlanDdlStatements,
     HiveParser.RULE_createIndexStatement,
     HiveParser.RULE_dropIndexStatement,
+    HiveParser.RULE_createBloomfilterIndexStatement,
+    HiveParser.RULE_dropBloomfilterIndexStatement,
 ];
 
 class Visitor extends HiveParserVisitor {
@@ -78,6 +82,7 @@ class Visitor extends HiveParserVisitor {
     visitCreateTableStatement(ctx) {
         const _ = dependencies.lodash
         const [tableName, tableLikeName] = this.visit(ctx.tableName());
+        const tableDataSource = this.visitWhenExists(ctx, 'tableUsingDataSource');
         const compositePartitionKey = this.visitWhenExists(ctx, 'tablePartition', []);
         const { compositeClusteringKey, numBuckets, sortedByKey } = this.visitWhenExists(ctx, 'tableBuckets', {});
         const { skewedby, skewedOn, skewStoredAsDir } = this.visitWhenExists(ctx, 'tableSkewed', {});
@@ -107,7 +112,7 @@ class Visitor extends HiveParserVisitor {
                 schema: handleChoices({
                     collectionName: table,
                     type: 'object',
-                    properties: { ...properties, ...convertKeysToProperties(compositePartitionKey) },
+                    properties: { ...convertKeysToProperties(compositePartitionKey), ...properties },
                 }),
                 tableLikeName: (tableLikeName || {}).table,
                 entityLevelData: _.pickBy(
@@ -115,7 +120,7 @@ class Visitor extends HiveParserVisitor {
                         temporaryTable,
                         externalTable,
                         description,
-                        compositePartitionKey: compositePartitionKey.map((key) => ({ name: key.name })),
+                        compositePartitionKey: compositePartitionKey.map(([ name ]) => ({ name })),
                         compositeClusteringKey,
                         numBuckets,
                         sortedByKey,
@@ -124,6 +129,7 @@ class Visitor extends HiveParserVisitor {
                         skewStoredAsDir,
                         location,
                         tableProperties,
+                        using: tableDataSource,
                         ...storedAsTable,
                         ...tableRowFormat,
                     },
@@ -135,6 +141,10 @@ class Visitor extends HiveParserVisitor {
                 type: ADD_RELATIONSHIP_COMMAND,
             })),
         ];
+    }
+
+    visitTableUsingDataSource(ctx) {
+        return ctx.tableDataSource().getText();
     }
 
     visitAtomSelectStatement(ctx) {
@@ -174,7 +184,7 @@ class Visitor extends HiveParserVisitor {
     }
 
     visitTablePartition(ctx) {
-        return this.visit(ctx.columnNameTypeConstraint());
+        return this.visit(ctx.partitionedColumnNameTypeConstraint());
     }
 
     visitTableComment(ctx) {
@@ -1015,7 +1025,7 @@ class Visitor extends HiveParserVisitor {
         const name = this.visit(ctx.identifier());
         const description = this.visitWhenExists(ctx, 'databaseComment');
         const location = removeSingleDoubleQuotes(ctx?.dbLocation()?.StringLiteral()?.getText() || '');
-        const dbProperties = removeBrackets(ctx?.dbProperties()?.getText() || '');
+        const dbProperties = removeParentheses(ctx?.dbProperties()?.getText() || '');
 
         return {
             type: CREATE_BUCKET_COMMAND,
@@ -1098,6 +1108,67 @@ class Visitor extends HiveParserVisitor {
             collectionName: table,
             bucketName: database,
         };
+    }
+
+    visitCreateBloomfilterIndexStatement(ctx) {
+        const { collectionName, bucketName } = this.visit(ctx.createBloomfilterIndexMainStatement());
+        const columns = this.visitWhenExists(ctx, 'bloomfilterColumnParenthesesList')
+        const options = this.visitWhenExists(ctx, 'bloomfilterIndexOptions');
+
+        return {
+            type: ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
+            bucketName,
+            collectionName,
+            columns,
+            options,
+        };
+    }
+
+    visitCreateBloomfilterIndexMainStatement(ctx) {
+        const { database, table } = this.visit(ctx.tableName());
+        return {
+            collectionName: table,
+            bucketName: database,
+        }
+    }
+
+    visitBloomfilterColumnParenthesesList(ctx) {
+        return this.visit(ctx.bloomfilterColumnNameList());
+    }
+
+    visitBloomfilterColumnNameList(ctx) {
+        return this.visit(ctx.bloomfilterColumnName());
+    }
+
+    visitBloomfilterColumnName(ctx) {
+        return {
+            name: this.visit(ctx.identifier()),
+            options: this.visitWhenExists(ctx, 'bloomfilterIndexOptions'),
+        }
+    }
+
+    visitBloomfilterIndexOptions(ctx) {
+        return removeParentheses(ctx.tableProperties().getText());
+    }
+
+    visitDropBloomfilterIndexStatement(ctx) {
+        const { collectionName, bucketName } = this.visit(ctx.dropBloomfilterIndexMainStatement());
+        const columns = this.visitWhenExists(ctx, 'bloomfilterColumnParenthesesList')
+
+        return {
+            type: REMOVE_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
+            bucketName,
+            collectionName,
+            columns,
+        };
+    }
+
+    visitDropBloomfilterIndexMainStatement(ctx) {
+        const { database, table } = this.visit(ctx.tableName());
+        return {
+            collectionName: table,
+            bucketName: database,
+        }
     }
 
     visitResourcePlanDdlStatements(ctx) {
@@ -1428,10 +1499,10 @@ const handleChoices = (field) => {
 };
 
 const convertKeysToProperties = (keys = []) => {
-    return keys.reduce((properties, key) => {
+    return keys.reduce((properties, [ name, type ]) => {
         return {
             ...properties,
-            [key.name]: key.type,
+            [name]: type,
         };
     }, {});
 };

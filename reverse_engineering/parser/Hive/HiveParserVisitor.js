@@ -1,4 +1,4 @@
-// Generated from grammars/HiveParser.g4 by ANTLR 4.7.2
+// Generated from HiveParser.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -516,6 +516,54 @@ HiveParserVisitor.prototype.visitDropIndexStatement = function(ctx) {
 };
 
 
+// Visit a parse tree produced by HiveParser#createBloomfilterIndexStatement.
+HiveParserVisitor.prototype.visitCreateBloomfilterIndexStatement = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#createBloomfilterIndexMainStatement.
+HiveParserVisitor.prototype.visitCreateBloomfilterIndexMainStatement = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#bloomfilterColumnParenthesesList.
+HiveParserVisitor.prototype.visitBloomfilterColumnParenthesesList = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#bloomfilterColumnNameList.
+HiveParserVisitor.prototype.visitBloomfilterColumnNameList = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#bloomfilterColumnName.
+HiveParserVisitor.prototype.visitBloomfilterColumnName = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#bloomfilterIndexOptions.
+HiveParserVisitor.prototype.visitBloomfilterIndexOptions = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#dropBloomfilterIndexStatement.
+HiveParserVisitor.prototype.visitDropBloomfilterIndexStatement = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#dropBloomfilterIndexMainStatement.
+HiveParserVisitor.prototype.visitDropBloomfilterIndexMainStatement = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by HiveParser#tablePartitionPrefix.
 HiveParserVisitor.prototype.visitTablePartitionPrefix = function(ctx) {
   return this.visitChildren(ctx);
@@ -870,6 +918,18 @@ HiveParserVisitor.prototype.visitTableComment = function(ctx) {
 };
 
 
+// Visit a parse tree produced by HiveParser#tableUsingDataSource.
+HiveParserVisitor.prototype.visitTableUsingDataSource = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#tableDataSource.
+HiveParserVisitor.prototype.visitTableDataSource = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by HiveParser#tablePartition.
 HiveParserVisitor.prototype.visitTablePartition = function(ctx) {
   return this.visitChildren(ctx);
@@ -944,6 +1004,12 @@ HiveParserVisitor.prototype.visitTablePropertiesList = function(ctx) {
 
 // Visit a parse tree produced by HiveParser#keyValueProperty.
 HiveParserVisitor.prototype.visitKeyValueProperty = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#keyValue.
+HiveParserVisitor.prototype.visitKeyValue = function(ctx) {
   return this.visitChildren(ctx);
 };
 
@@ -1250,6 +1316,12 @@ HiveParserVisitor.prototype.visitTableConstraint = function(ctx) {
 
 // Visit a parse tree produced by HiveParser#columnNameTypeConstraint.
 HiveParserVisitor.prototype.visitColumnNameTypeConstraint = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#partitionedColumnNameTypeConstraint.
+HiveParserVisitor.prototype.visitPartitionedColumnNameTypeConstraint = function(ctx) {
   return this.visitChildren(ctx);
 };
 

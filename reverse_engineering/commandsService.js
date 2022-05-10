@@ -2,7 +2,6 @@ const { dependencies } = require('./appDependencies');
 const {
     set,
     findEntityIndex,
-    getCaseInsensitiveKey,
     omitCaseInsensitive,
     isEqualCaseInsensitive,
     remove,
@@ -18,6 +17,8 @@ const REMOVE_BUCKET_COMMAND = 'removeBucket';
 const USE_BUCKET_COMMAND = 'useBucket';
 const ADD_FIELDS_TO_COLLECTION_COMMAND = 'addFieldsToCollection';
 const ADD_COLLECTION_LEVEL_INDEX_COMMAND = 'addCollectionLevelIndex';
+const ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND = 'addCollectionLevelBloomfilterIndex';
+const REMOVE_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND = 'removeCollectionLevelBloomfilterIndex';
 const UPDATE_FIELD_COMMAND = 'updateField';
 const CREATE_VIEW_COMMAND = 'createView';
 const REMOVE_VIEW_COMMAND = 'removeView';
@@ -299,6 +300,68 @@ const addIndexToCollection = (entitiesData, bucket, statementData) => {
             entityLevelData: {
                 ...entityLevelData,
                 SecIndxs: indexes,
+            },
+        }),
+    };
+};
+
+const createBloomfilterIndexes = (columnsData = [], indexOptions) => {
+    return columnsData.map(column => {
+        return {
+            forColumns: [ column.name ],
+            options: column.options || indexOptions
+        };
+    });
+};
+
+const addBloomfilterIndexToCollection = (entitiesData, bucket, statementData) => {
+    const { entities } = entitiesData;
+    const entityIndex = findEntityIndex(entities, bucket, statementData.collectionName);
+    if (entityIndex === -1) {
+        return entitiesData;
+    }
+
+    const entity = entities[entityIndex];
+    const entityLevelData = entity.entityLevelData || {};
+    const indexes = [
+        ...(entityLevelData.BloomIndxs || []),
+        ...createBloomfilterIndexes(statementData.columns, statementData.options),
+    ];
+
+    return {
+        ...entitiesData,
+        entities: set(entities, entityIndex, {
+            ...entity,
+            entityLevelData: {
+                ...entityLevelData,
+                BloomIndxs: indexes,
+            },
+        }),
+    };
+};
+
+const removeBloomfilterIndexFromCollection = (entitiesData, bucket, statementData) => {
+    const _ = dependencies.lodash;
+    const { entities } = entitiesData;
+    const entityIndex = findEntityIndex(entities, bucket, statementData.collectionName);
+    if (entityIndex === -1) {
+        return entitiesData;
+    }
+    
+    const entity = entities[entityIndex];
+    const entityLevelData = entity.entityLevelData || {};
+    const keyNamesToRemove = statementData.columns.map(column => column.name);
+    const indexes = (entityLevelData.BloomIndxs || []).filter((index) => {
+        return !_.includes(keyNamesToRemove, _.first(index.forColumns)); // In forColumns property it always will by only one key.
+    });
+    
+    return {
+        ...entitiesData,
+        entities: set(entities, entityIndex, {
+            ...entity,
+            entityLevelData: {
+                ...entityLevelData,
+                BloomIndxs: indexes,
             },
         }),
     };
@@ -729,6 +792,8 @@ const COMMANDS_ACTION_MAP = {
     [USE_BUCKET_COMMAND]: useBucket,
     [ADD_FIELDS_TO_COLLECTION_COMMAND]: addFieldsToCollection,
     [ADD_COLLECTION_LEVEL_INDEX_COMMAND]: addIndexToCollection,
+    [ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND]: addBloomfilterIndexToCollection,
+    [REMOVE_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND]: removeBloomfilterIndexFromCollection,
     [UPDATE_FIELD_COMMAND]: updateField,
     [CREATE_VIEW_COMMAND]: createView,
     [REMOVE_VIEW_COMMAND]: removeView,
@@ -761,6 +826,8 @@ module.exports = {
     CREATE_VIEW_COMMAND,
     ADD_COLLECTION_LEVEL_INDEX_COMMAND,
     REMOVE_COLLECTION_LEVEL_INDEX_COMMAND,
+    ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
+    REMOVE_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
     ADD_RELATIONSHIP_COMMAND,
     UPDATE_ENTITY_COLUMN,
     CREATE_RESOURCE_PLAN,
