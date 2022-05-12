@@ -389,11 +389,6 @@ making sure that you maintain a proper JSON format.
 				"abbr": "PK"
 			},
 			{
-				"propertyName": "Disable No Validate",
-				"propertyKeyword": "disableNoValidate",
-				"propertyType": "checkbox"
-			},
-			{
 				"propertyName": "Clustering key",
 				"propertyKeyword": "compositeClusteringKey",
 				"propertyType": "compositeKeySetter",
