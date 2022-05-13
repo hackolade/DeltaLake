@@ -1,7 +1,7 @@
 'use strict'
 const fetch = require('node-fetch');
 const { dependencies } = require('../appDependencies');
-const { getClusterData } = require('./pythonScriptGeneratorHelper');
+const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { getCount, prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 let activeContexts = {};
 
@@ -77,6 +77,8 @@ const fetchClusterDatabasesNames = async (connectionInfo) => {
 };
 
 const fetchDatabaseViewsNames = (dbName, connectionInfo) => executeCommand(connectionInfo, `SHOW VIEWS IN \`${dbName}\``, 'sql');
+
+const fetchDatabaseViewsNamesViaPython = (dbName, connectionInfo) => executeCommand(connectionInfo, getViewNamesCommand(dbName), 'python');
 
 const fetchClusterTablesNames = (dbName, connectionInfo) => executeCommand(connectionInfo, `SHOW TABLES IN \`${dbName}\``, 'sql');
 
@@ -402,5 +404,6 @@ module.exports = {
 	fetchCreateStatementRequest,
 	fetchClusterDatabasesNames,
 	fetchDatabaseViewsNames,
-	fetchClusterTablesNames
+	fetchClusterTablesNames,
+	fetchDatabaseViewsNamesViaPython,
 };

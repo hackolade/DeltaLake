@@ -26,8 +26,16 @@ def getDatabaseMetadata(dbName):
 clusterData = { dbName: getDatabaseMetadata(dbName) for dbName in databasesNames }
 
 print(json.dumps(clusterData))
-`
+`;
+
+const getViewNamesCommand = databaseName => `
+import json
+
+viewNames = spark.sql("show views in ${databaseName}").rdd.map(lambda p: p.viewName).collect()
+print(json.dumps(viewNames))
+`;
 
 module.exports = {
   getClusterData,
+  getViewNamesCommand,
 };

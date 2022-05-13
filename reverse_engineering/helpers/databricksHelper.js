@@ -8,18 +8,61 @@ const getEntityCreateStatement = (connectionInfo, dbName, entityName, logger) =>
 	return fetchRequestHelper.fetchCreateStatementRequest(`\`${dbName}\`.\`${entityName}\``, connectionInfo, logger);
 }
 
-const getDatabaseCollectionNames = async (connectionInfo, sparkVersion) => {
+const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logger) => {
+	const _ = dependencies.lodash;
 	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
+	logger.log('info', databasesNames, `Database list`);
+	if (_.isEmpty(databasesNames)) {
+		return;
+	}
+
+	const firstDatabaseName = _.first(databasesNames);
+	
+	const tableNames = await fetchRequestHelper.fetchClusterTablesNames(firstDatabaseName, connectionInfo);
+	logger.log('info', tableNames, `Tables list in ${firstDatabaseName} database`);
+	const viewNames = await getDatabaseViewNames(firstDatabaseName, connectionInfo, sparkVersion, logger);
+	logger.log('info', viewNames, `Views list in ${firstDatabaseName} database`);
+};
+
+const fetchViewNamesFallback = async (dbName, connectionInfo, logger) => {
+	try {
+		const viewNamesResponse = await fetchRequestHelper.fetchDatabaseViewsNamesViaPython(dbName, connectionInfo);
+		const viewNames = JSON.parse(viewNamesResponse);
+		return viewNames.map(name => [ dbName, name ]);
+	} catch (error) {
+		logger.log('warning', error, `Error getting view names from ${dbName} database via Python.`);
+		return [];
+	}
+};
+
+const fetchViewNames = (dbName, connectionInfo, logger) => {
+	try {
+		return fetchRequestHelper.fetchDatabaseViewsNames(dbName, connectionInfo);
+	} catch (error) {
+		logger.log('warning', error, `Error getting view names from ${dbName} database via SQL. Run fallback via Python.`);
+		return fetchViewNamesFallback(dbName, connectionInfo, logger);
+	}
+};
+
+const getDatabaseViewNames = async (dbName, connectionInfo, sparkVersion, logger) => {
+	let views = [];
+	let viewNames = [];
+	if (!isSupportGettingListOfViews(sparkVersion)) {
+		return { views, viewNames };
+	}
+	
+	const viewsResult = await fetchViewNames(dbName, connectionInfo, logger);
+	viewNames = viewsResult.map(([namespace, viewName]) => viewName);
+	views = viewNames.map(viewName => `${viewName} (v)`);
+	
+	return { views, viewNames };
+};
+
+const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) => {
+	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
+	logger.log('info', databasesNames, 'Database names list');
 	return await Promise.all(databasesNames.map(async dbName => {
-
-		let views = [];
-		let viewNames = [];
-		if (isSupportGettingListOfViews(sparkVersion)) {
-			const viewsResult = await fetchRequestHelper.fetchDatabaseViewsNames(dbName, connectionInfo);
-			viewNames = viewsResult.map(([namespace, viewName]) => viewName);
-			views = viewNames.map(viewName => `${viewName} (v)`);
-		}
-
+		const { views, viewNames } = await getDatabaseViewNames(dbName, connectionInfo, sparkVersion, logger)
 		const tablesResult = await fetchRequestHelper.fetchClusterTablesNames(dbName, connectionInfo);
 		const tables = tablesResult.reduce((databaseTables, [dbName, tableName]) => {
 			if (viewNames.includes(tableName)) {
@@ -85,6 +128,7 @@ const getClusterData = (connectionInfo, databasesNames, collectionsNames, logger
 }
 
 module.exports = {
+	getFirstDatabaseCollectionName,
 	getDatabaseCollectionNames,
 	getClusterStateInfo,
 	getClusterData,
