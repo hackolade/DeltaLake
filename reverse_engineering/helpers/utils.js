@@ -46,7 +46,7 @@ const cleanEntityName = (sparkVersion, name = '') => {
 
 const isSupportGettingListOfViews = (sparkVersionString = '') => {
 	const MAX_NOT_SUPPORT_VERSION = 6;
-	const databricksRuntimeMajorVersion = parseInt(sparkVersionString.slice(0, 1));
+	const databricksRuntimeMajorVersion = parseInt(sparkVersionString.slice(0, sparkVersionString.indexOf('.')));
 	return databricksRuntimeMajorVersion > MAX_NOT_SUPPORT_VERSION;
 }
 
