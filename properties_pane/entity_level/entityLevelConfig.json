@@ -466,6 +466,78 @@ making sure that you maintain a proper JSON format.
 		"columnsRatio": [4.1, 5]
 	},
 	{
+		"lowerTab": "Composite keys",
+		"structure": [
+			{
+				"propertyName": "Primary key",
+				"propertyType": "group",
+				"groupItemLimit": 1,
+				"propertyKeyword": "primaryKey",
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "Remove the existing single column primary key definition prior to unlock the possibility to create a composite primary key definition for this table",
+							"dependency": {
+								"type": "and",
+								"values": [
+									{
+										"level": "children",
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "not",
+										"values": {
+											"level": "children",
+											"key": "compositePrimaryKey",
+											"value": true
+										}
+									}
+								]
+							}
+						}, 
+						{
+							"tooltip": "Remove or update the existing composite primary key definition prior to unlock the possibility to create a new composite primary key definition for this table",
+							"dependency": {
+								"key": "primaryKey",
+								"minLength": 1
+							}
+						}
+					]
+				},
+				"disabledOnCondition": [
+					{
+						"type": "and",
+						"values": [
+							{
+								"level": "children",
+								"key": "primaryKey",
+								"value": true
+							},
+							{
+								"type": "not",
+								"values": {
+									"level": "children",
+									"key": "compositePrimaryKey",
+									"value": true
+								}
+							}
+						]
+					}
+				],
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "compositePrimaryKey",
+						"propertyType": "primaryKeySetter",
+						"abbr": "pk",
+						"attributeList": []
+					}
+				]
+			}
+		]
+	},
+	{
 		"lowerTab": "Bloom Filter Indexes",
 		"structure": [{
 			"propertyName": "Bloom Filter Index",
