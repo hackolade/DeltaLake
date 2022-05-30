@@ -507,22 +507,42 @@ making sure that you maintain a proper JSON format.
 				},
 				"disabledOnCondition": [
 					{
-						"type": "and",
-						"values": [
-							{
-								"level": "children",
-								"key": "primaryKey",
-								"value": true
-							},
-							{
-								"type": "not",
-								"values": {
-									"level": "children",
-									"key": "compositePrimaryKey",
+						"level": "children",
+						"value": {
+							"type": "and",
+							"values": [
+								{
+									"key": "primaryKey",
 									"value": true
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositePrimaryKey",
+											"value": false
+										},
+										{
+											"key": "compositePrimaryKey",
+											"exist": false
+										}
+									]
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositeUniqueKey",
+											"value": false
+										},
+										{
+											"key": "compositeUniqueKey",
+											"exist": false
+										}
+									]
 								}
-							}
-						]
+							]
+						}
 					}
 				],
 				"structure": [

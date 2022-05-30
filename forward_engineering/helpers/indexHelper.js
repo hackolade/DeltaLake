@@ -52,7 +52,7 @@ const getIndexes = (containerData, entityData, jsonSchema, definitions) => {
 	const dbData = getTab(0, containerData);
 	const dbName = replaceSpaceWithUnderscore(getName(dbData));
 	const tableData = getTab(0, entityData);
-	const indexesData = getTab(1, entityData).BloomIndxs || [];
+	const indexesData = getTab(2, entityData).BloomIndxs || [];
 	const tableName = replaceSpaceWithUnderscore(getName(tableData));
 	return indexesData.filter(indexData => !_.isEmpty(indexData.forColumns))
 		.map(indexData => {
