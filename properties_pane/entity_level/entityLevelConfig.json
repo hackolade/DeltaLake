@@ -554,6 +554,19 @@ making sure that you maintain a proper JSON format.
 						"attributeList": []
 					}
 				]
+			},
+			{
+				"propertyName": "Unique key",
+				"propertyType": "group",
+				"propertyKeyword": "uniqueKey",
+				"propertyTooltip": "",
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "compositeUniqueKey",
+						"propertyType": "primaryKeySetter",
+						"abbr": "uk"
+					}				]
 			}
 		]
 	},
