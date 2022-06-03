@@ -326,9 +326,50 @@ making sure that you maintain a proper JSON format.
 			},
 			{
 				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -569,9 +610,50 @@ making sure that you maintain a proper JSON format.
 			},
 			{
 				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -806,9 +888,50 @@ making sure that you maintain a proper JSON format.
 			},
 			{
 				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -1003,9 +1126,50 @@ making sure that you maintain a proper JSON format.
 			},
 			{
 				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -1200,9 +1364,50 @@ making sure that you maintain a proper JSON format.
 			},
 			{
 				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -1396,9 +1601,50 @@ making sure that you maintain a proper JSON format.
 			},
 			{
 				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -1612,9 +1858,50 @@ making sure that you maintain a proper JSON format.
 			},
 			{
 				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			{
 				"propertyName": "Check",
@@ -1868,9 +2155,50 @@ making sure that you maintain a proper JSON format.
 			},
 			{
 				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			{
 				"propertyName": "Check",
@@ -2065,9 +2393,50 @@ making sure that you maintain a proper JSON format.
 			},
 			{
 				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			{
 				"propertyName": "Check",
