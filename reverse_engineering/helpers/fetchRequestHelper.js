@@ -1,9 +1,23 @@
 'use strict'
-const fetch = require('node-fetch');
+const nodeFetch = require('node-fetch');
 const { dependencies } = require('../appDependencies');
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { getCount, prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 let activeContexts = {};
+
+const fetch = (query, options, attempts = 10) => {
+	return nodeFetch(query, options).catch(error => {
+		if (['ENOTFOUND', 'ECONNRESET'].includes(error?.code) && attempts) {
+			return new Promise((resolve, reject) => {
+				setTimeout(() => {
+					nodeFetch(query, options, attempts - 1).then(resolve, reject);
+				}, 250);
+			});
+		} else {
+			throw error;
+		}
+	});
+};
 
 const destroyActiveContext = () => {
 	let result = Promise.resolve();
@@ -311,7 +325,7 @@ const executeCommand = (connectionInfo, command, language = 'sql') => {
 		)
 };
 
-const getCommandExecutionResult = (query, options, commandOptions, attempts = 10) => {
+const getCommandExecutionResult = (query, options, commandOptions) => {
 	return fetch(query, options)
 		.then(async response => {
 			const responseBody = await response.text();
@@ -339,12 +353,6 @@ const getCommandExecutionResult = (query, options, commandOptions, attempts = 10
 				};
 			}
 			return getCommandExecutionResult(query, options, commandOptions);
-		}).catch(error => {
-			if (['ENOTFOUND', 'ECONNRESET'].includes(error?.code) && attempts) {
-				return getCommandExecutionResult(query, options, commandOptions, attempts - 1);
-			} else {
-				throw error;
-			}
 		});
 };
 

@@ -147,13 +147,14 @@ module.exports = {
 			logger.log('info', message, 'Retrieving schema', data.hiddenKeys);
 			logger.progress(message);
 		};
+		let modelData;
 
 		try {
 			setDependencies(app);
 
 			const async = dependencies.async;
 
-			const modelData = await databricksHelper.getClusterStateInfo(connectionData, logger);
+			modelData = await databricksHelper.getClusterStateInfo(connectionData, logger);
 			logger.log('info', modelData, 'Cluster state info');
 
 			const collections = data.collectionData.collections;
@@ -263,10 +264,10 @@ module.exports = {
 				return [...packages, ...tablesPackages, viewPackage];
 			}, Promise.resolve([]))
 			const packages = await Promise.all(entitiesPromises);
-			await fetchRequestHelper.destroyActiveContext();
+			fetchRequestHelper.destroyActiveContext();
 			cb(null, packages, modelData);
 		} catch (err) {
-			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
+			const clusterState = modelData || await databricksHelper.getClusterStateInfo(connectionData, logger);
 			if (!clusterState.isRunning) {
 				logger.log(
 					'error',
