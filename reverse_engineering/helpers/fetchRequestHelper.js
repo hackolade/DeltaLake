@@ -11,7 +11,7 @@ const fetch = (query, options, attempts = 10) => {
 			return new Promise((resolve, reject) => {
 				setTimeout(() => {
 					fetch(query, options, attempts - 1).then(resolve, reject);
-				}, 250);
+				}, 1000);
 			});
 		} else {
 			throw error;
