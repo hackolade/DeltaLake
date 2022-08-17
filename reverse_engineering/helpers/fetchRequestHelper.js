@@ -83,7 +83,8 @@ const fetchDatabaseViewsNamesViaPython = (dbName, connectionInfo) => executeComm
 const fetchClusterTablesNames = (dbName, connectionInfo) => executeCommand(connectionInfo, `SHOW TABLES IN \`${dbName}\``, 'sql');
 
 const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames, logger) => {
-	const databasesPropertiesResult = await Promise.all(databasesNames.map(async dbName => {
+	const async = dependencies.async;
+	const databasesPropertiesResult = await async.mapLimit(databasesNames, 40, async dbName => {
 		logger.log('info', '', `Start describe database: ${dbName} `);
 		const dbInfoResult = await executeCommand(connectionInfo, `DESCRIBE DATABASE EXTENDED \`${dbName}\``, 'sql');
 		logger.log('info', '', `Database: ${dbName} successfully described`);
@@ -101,7 +102,7 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 			return dbProperties;
 		}, {});
 		return { dbName, dbProperties }
-	}));
+	});
 
 	const databasesProperties = databasesPropertiesResult.reduce((properties, { dbName, dbProperties }) => ({ ...properties, [dbName]: dbProperties }), {})
 	

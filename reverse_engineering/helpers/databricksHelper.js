@@ -59,9 +59,11 @@ const getDatabaseViewNames = async (dbName, connectionInfo, sparkVersion, logger
 };
 
 const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) => {
+	const async = dependencies.async;
 	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
 	logger.log('info', databasesNames, 'Database names list');
-	return await Promise.all(databasesNames.map(async dbName => {
+	
+	return await async.mapLimit(databasesNames, 30, async dbName => {
 		const { views, viewNames } = await getDatabaseViewNames(dbName, connectionInfo, sparkVersion, logger)
 		const tablesResult = await fetchRequestHelper.fetchClusterTablesNames(dbName, connectionInfo);
 		const tables = tablesResult.reduce((databaseTables, [dbName, tableName]) => {
@@ -72,12 +74,13 @@ const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) 
 		}, []);
 
 		const dbCollections = [...tables, ...views];
+
 		return {
 			dbName,
 			dbCollections,
 			isEmpty: dependencies.lodash.isEmpty(dbCollections)
 		}
-	}));
+	});
 }
 
 const getClusterStateInfo = async (connectionInfo, logger) => {
@@ -110,12 +113,15 @@ const getDatabricksRuntimeVersion = (sparkVersion = '') => {
 }
 
 const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkVersion, logger) => {
+	const async = dependencies.async;
 	const entitiesNames = dependencies.lodash.flatMap(databasesNames, dbName => {
 		return (collectionsNames[dbName] || []).map(entityName => ({ dbName, name: entityName }));
 	});
 	
-	return entitiesNames.map(async entity => {
+	return async.mapLimit(entitiesNames, 40, async entity => {
 		const entityName = cleanEntityName(sparkVersion, entity.name);
+		logger.log('info', { db: entity.dbName, entity: entityName }, 'Getting entity DDL');
+
 		const ddlStatement = await getEntityCreateStatement(connectionInfo, entity.dbName, entityName, logger);
 		return {
 			[`${entity.dbName}.${entityName}`]: ddlStatement

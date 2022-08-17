@@ -113,6 +113,8 @@ module.exports = {
 		try {
 			setDependencies(app);
 
+			const async = dependencies.async;
+
 			const modelData = await databricksHelper.getClusterStateInfo(connectionData, logger);
 			logger.log('info', modelData, 'Cluster state info');
 
@@ -123,7 +125,7 @@ module.exports = {
 			const clusterData = await databricksHelper.getClusterData(connectionData, dataBaseNames, collections, logger);
 
 			progress({ message: 'Start getting entities ddl', containerName: 'databases', entityName: 'entities' });
-			const entitiesDdl = await Promise.all(databricksHelper.getEntitiesDDL(connectionData, dataBaseNames, collections, modelData.spark_version, logger));
+			const entitiesDdl = await databricksHelper.getEntitiesDDL(connectionData, dataBaseNames, collections, modelData.spark_version, logger);
 			const ddlByEntity = entitiesDdl.reduce((ddlByEntity, ddlObject) => {
 				const entityName = Object.keys(ddlObject)[0]
 				return { ...ddlByEntity, [entityName]: ddlObject[entityName] }
@@ -133,9 +135,10 @@ module.exports = {
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];
 				const packages = await packagesPromise;
-				const tablesPackages = dbData.dbTables
-					.filter(table => isTableDdl(ddlByEntity[`${dbName}.${table.name}`]))
-					.map(async (table) => {
+				const tablesPackages = await async.mapLimit(
+					dbData.dbTables.filter(table => isTableDdl(ddlByEntity[`${dbName}.${table.name}`])),
+					40,
+					async (table) => {
 						const ddl = ddlByEntity[`${dbName}.${table.name}`]
 
 						progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
