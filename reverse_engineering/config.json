@@ -16,7 +16,7 @@
 			"id"
 		],
 		"type": "database",
-		"scenario": "connectToDB",
+		"scenario": "getDatabases",
 		"connectionList": [
 			"name",
 			"host",

@@ -6,14 +6,17 @@ const { getCount, prepareNamesForInsertionIntoScalaCode, removeParentheses } = r
 let activeContexts = {};
 
 const destroyActiveContext = () => {
+	let result = Promise.resolve();
 	if (activeContexts.scala) {
-		destroyContext(activeContexts.scala.connectionInfo, activeContexts.scala.id);
+		result = destroyContext(activeContexts.scala.connectionInfo, activeContexts.scala.id);
 	}
 	if (activeContexts.sql) {
-		destroyContext(activeContexts.sql.connectionInfo, activeContexts.sql.id);
+		result = destroyContext(activeContexts.sql.connectionInfo, activeContexts.sql.id);
 	}
 
 	activeContexts = {};
+
+	return result;
 };
 
 const fetchApplyToInstance = async (connectionInfo, logger) => {
@@ -308,7 +311,7 @@ const executeCommand = (connectionInfo, command, language = 'sql') => {
 		)
 };
 
-const getCommandExecutionResult = (query, options, commandOptions) => {
+const getCommandExecutionResult = (query, options, commandOptions, attempts = 10) => {
 	return fetch(query, options)
 		.then(async response => {
 			const responseBody = await response.text();
@@ -336,7 +339,13 @@ const getCommandExecutionResult = (query, options, commandOptions) => {
 				};
 			}
 			return getCommandExecutionResult(query, options, commandOptions);
-		})
+		}).catch(error => {
+			if (['ENOTFOUND', 'ECONNRESET'].includes(error?.code) && attempts) {
+				return getCommandExecutionResult(query, options, commandOptions, attempts - 1);
+			} else {
+				throw error;
+			}
+		});
 };
 
 const convertDbPropertyValue = value => {

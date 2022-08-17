@@ -116,6 +116,12 @@
 				"validation": {
 					"regex": "([^\\s])"
 				}
+			},
+			{
+				"inputLabel": "Database name",
+				"inputKeyword": "databaseName",
+				"inputType": "text",
+				"inputPlaceholder": "Optional"
 			}
 		]
 	},

@@ -55,16 +55,54 @@ module.exports = {
 		}
 	},
 
+	async getDatabases(connectionInfo, logger, cb, app) {
+		logInfo('Retrieving databases information', connectionInfo, logger);
+
+		try {
+			setDependencies(app);
+
+			let dbNames = [];
+
+			if (connectionInfo.databaseName) {
+				dbNames = [connectionInfo.databaseName];
+			} else {
+				const connectionData = {
+					host: getCleanedUrl(connectionInfo.host),
+					clusterId: connectionInfo.clusterId,
+					accessToken: connectionInfo.accessToken,
+				};
+				dbNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionData);
+			}
+
+			logger.log('info', dbNames, 'Database names list');
+
+			cb(null, dbNames);
+		} catch (err) {
+			logger.log(
+				'error',
+				{ message: err.message, stack: err.stack, error: err },
+				'Retrieving databases and tables names'
+			);
+			cb({ message: getErrorMessage(err), stack: err.stack });
+		}
+	},
+
+	getDocumentKinds(connectionInfo, logger, callback) {
+		callback(null, []);
+	},
+
 	getDbCollectionsNames: async (connectionInfo, logger, cb, app) => {
-		logInfo('Retrieving databases and tables information', connectionInfo, logger);
+		logger.log('info', connectionInfo, 'Retrieving tables and views information', connectionInfo.hiddenKeys);
+		
 		try {
 			setDependencies(app);
 
 			connectionData = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
-				accessToken: connectionInfo.accessToken
-			}
+				accessToken: connectionInfo.accessToken,
+				databaseName: connectionInfo.database,
+			};
 
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
 			logger.log('info', clusterState, 'Cluster state info');
@@ -225,7 +263,7 @@ module.exports = {
 				return [...packages, ...tablesPackages, viewPackage];
 			}, Promise.resolve([]))
 			const packages = await Promise.all(entitiesPromises);
-			fetchRequestHelper.destroyActiveContext();
+			await fetchRequestHelper.destroyActiveContext();
 			cb(null, packages, modelData);
 		} catch (err) {
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);

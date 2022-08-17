@@ -60,8 +60,7 @@ const getDatabaseViewNames = async (dbName, connectionInfo, sparkVersion, logger
 
 const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) => {
 	const async = dependencies.async;
-	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
-	logger.log('info', databasesNames, 'Database names list');
+	const databasesNames = connectionInfo.databaseName ? [connectionInfo.databaseName] : await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
 	
 	return await async.mapLimit(databasesNames, 30, async dbName => {
 		const { views, viewNames } = await getDatabaseViewNames(dbName, connectionInfo, sparkVersion, logger)
@@ -123,6 +122,9 @@ const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkV
 		logger.log('info', { db: entity.dbName, entity: entityName }, 'Getting entity DDL');
 
 		const ddlStatement = await getEntityCreateStatement(connectionInfo, entity.dbName, entityName, logger);
+
+		logger.log('info', { db: entity.dbName, entity: entityName }, 'DDL retrieved successfully');
+
 		return {
 			[`${entity.dbName}.${entityName}`]: ddlStatement
 		};
