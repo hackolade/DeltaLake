@@ -10,7 +10,7 @@ const fetch = (query, options, attempts = 10) => {
 		if (['ENOTFOUND', 'ECONNRESET'].includes(error?.code) && attempts) {
 			return new Promise((resolve, reject) => {
 				setTimeout(() => {
-					nodeFetch(query, options, attempts - 1).then(resolve, reject);
+					fetch(query, options, attempts - 1).then(resolve, reject);
 				}, 250);
 			});
 		} else {
