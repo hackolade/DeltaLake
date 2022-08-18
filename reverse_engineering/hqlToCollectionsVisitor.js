@@ -92,7 +92,8 @@ class Visitor extends HiveParserVisitor {
         const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
         const temporaryTable = Boolean(ctx.KW_TEMPORARY());
         const externalTable = Boolean(ctx.KW_EXTERNAL());
-        const storedAsTable = this.visitWhenExists(ctx, 'tableFileFormat', {});
+        let storedAsTable = this.visitWhenExists(ctx, 'tableFileFormat', {});
+        storedAsTable = Array.isArray(storedAsTable) ? storedAsTable?.[0] || {} : storedAsTable;
         const { database, table } = tableName;
         const { properties, foreignKeys } = this.visitWhenExists(ctx, 'columnNameTypeOrConstraintList', {
             properties: {},
