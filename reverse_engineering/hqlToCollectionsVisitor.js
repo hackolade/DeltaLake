@@ -119,7 +119,7 @@ class Visitor extends HiveParserVisitor {
                     {
                         temporaryTable,
                         externalTable,
-                        description,
+                        description: Array.isArray(description) ? description[0] || '' : String(description),
                         compositePartitionKey: compositePartitionKey.map(([ name ]) => ({ name })),
                         compositeClusteringKey,
                         numBuckets,
@@ -127,9 +127,9 @@ class Visitor extends HiveParserVisitor {
                         skewedby,
                         skewedOn,
                         skewStoredAsDir,
-                        location,
-                        tableProperties,
-                        using: tableDataSource,
+                        location: Array.isArray(location) ? location[0] || '' : String(location),
+                        tableProperties: Array.isArray(tableProperties) ? tableProperties[0] || '' : String(tableProperties),
+                        using: getUsingProperty(Array.isArray(tableDataSource) ? tableDataSource[0] || '' : String(tableDataSource)),
                         ...storedAsTable,
                         ...tableRowFormat,
                     },
@@ -1460,6 +1460,20 @@ const getStoredAsTable = (storedAsTable) => {
         case 'jsonfile':
             return 'JSONfile';
     }
+};
+
+const getUsingProperty = (using) => {
+    return {
+        delta: "delta",
+        csvfile: "CSVfile",
+        hive: "Hive",
+        jsonfile: "JSONfile",
+        jdbc: "JDBC",
+        orc: "ORC",
+        parquet: "Parquet",
+        libsvm: "LIBSVM",
+        textfile: "textfile",
+    }[String(using).toLowerCase()] || 'delta';
 };
 
 const handleChoices = (field) => {
