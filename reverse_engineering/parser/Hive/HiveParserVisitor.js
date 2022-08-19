@@ -1,4 +1,4 @@
-// Generated from HiveParser.g4 by ANTLR 4.8
+// Generated from grammars/HiveParser.g4 by ANTLR 4.7.2
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -980,6 +980,12 @@ HiveParserVisitor.prototype.visitRowFormatDelimited = function(ctx) {
 
 // Visit a parse tree produced by HiveParser#tableRowFormat.
 HiveParserVisitor.prototype.visitTableRowFormat = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#tableOptions.
+HiveParserVisitor.prototype.visitTableOptions = function(ctx) {
   return this.visitChildren(ctx);
 };
 

@@ -20,7 +20,7 @@ const setDependencies = ({ lodash }) => _ = lodash;
 const getCreateStatement = ({
 	dbName, tableName, isTemporary, isExternal, using, likeStatement, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
 	clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
-	isActivated
+	isActivated, tableOptions
 }) => {
 	const temporary = isTemporary ? 'TEMPORARY' : '';
 	const external = isExternal ? 'EXTERNAL' : '';
@@ -31,7 +31,7 @@ const getCreateStatement = ({
 		return getCreateLikeStatement({
 			tempExtStatement, fullTableName, using, likeStatement, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
 			clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
-			isActivated
+			isActivated, tableOptions
 		})
 	}
 
@@ -39,20 +39,20 @@ const getCreateStatement = ({
 		return getCreateUsingStatement({
 			tempExtStatement, fullTableName, using, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
 			clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
-			isActivated
+			isActivated, tableOptions
 		})
 	}
 
 	return getCreateHiveStatement({
 		tempExtStatement, fullTableName, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
-		rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement, isActivated
+		rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement, isActivated, tableOptions
 	});
 };
 
 const getCreateUsingStatement = ({
 	tempExtStatement, fullTableName, using, columnStatement, primaryKeyStatement, comment, partitionedByKeys,
 	clusteredKeys, sortedKeys, numBuckets, location, tableProperties, selectStatement,
-	isActivated
+	isActivated, tableOptions
 }) => {
 	return buildStatement(`CREATE${tempExtStatement}TABLE IF NOT EXISTS ${fullTableName} (`, isActivated)
 		(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))
@@ -65,6 +65,7 @@ const getCreateUsingStatement = ({
 		(location, `LOCATION '${location}'`)
 		(comment, `COMMENT '${encodeStringLiteral(comment)}'`)
 		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
+		(tableOptions, `OPTIONS ${tableOptions}`)
 		(selectStatement, `AS ${selectStatement}`)
 		(true, ';')
 		();
@@ -72,7 +73,7 @@ const getCreateUsingStatement = ({
 
 const getCreateHiveStatement = ({
 	tempExtStatement, fullTableName, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
-	rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement, isActivated
+	rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement, isActivated, tableOptions
 }) => {
 	const isAddBrackets = columnStatement || primaryKeyStatement || foreignKeyStatement;
 	return buildStatement(`CREATE${tempExtStatement}TABLE IF NOT EXISTS ${fullTableName} `, isActivated)
@@ -87,6 +88,7 @@ const getCreateHiveStatement = ({
 		(storedAsStatement, storedAsStatement)
 		(location, `LOCATION '${location}'`)
 		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
+		(tableOptions, `OPTIONS ${tableOptions}`)
 		(selectStatement, `AS ${selectStatement}`)
 		(true, ';')
 		();
@@ -105,6 +107,7 @@ const getCreateLikeStatement = ({
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
 		(storedAsStatement, storedAsStatement)
 		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
+		(tableOptions, `OPTIONS ${tableOptions}`)
 		(location, `LOCATION '${location}'`)
 		(true, ';')
 		();
@@ -278,6 +281,7 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, a
 		tableProperties: tableData.tableProperties,
 		selectStatement: '',
 		isActivated: isTableActivated,
+		tableOptions: tableData.tableOptions,
 	});
 
 	const constraintsStatements = Object.keys(columns).map(colName => ({ colName: colName.replaceAll('`', ''), ...columns[colName] })).filter(column => column.constraints.check).map(column => `ALTER TABLE ${tableName} ADD CONSTRAINT \`${column.colName}_constraint\` CHECK (${column.constraints.check})`).join(';\n')

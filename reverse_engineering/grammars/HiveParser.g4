@@ -261,6 +261,7 @@ createTableStatement
          tableUsingDataSource?
          tableLocation?
          tablePropertiesPrefixed?
+         tableOptions?
        | (LPAREN columnNameTypeOrConstraintList RPAREN)?
        ( tableUsingDataSource
          | tableBuckets
@@ -270,6 +271,7 @@ createTableStatement
          | tablePartition
          | tableLocation
          | tablePropertiesPrefixed
+         | tableOptions
          | tableComment
         )*
          (KW_AS selectStatementWithCTE)?
@@ -941,6 +943,10 @@ tableRowFormat
     | rowFormatSerde
     ;
 
+tableOptions
+    : KW_OPTIONS tableProperties
+    ;
+
 tablePropertiesPrefixed
     : KW_TBLPROPERTIES tableProperties
     ;
@@ -955,7 +961,7 @@ tablePropertiesList
     ;
 
 keyValueProperty
-    : keyProperty EQUAL keyValue
+    : keyProperty EQUAL? keyValue
     ;
 
 keyValue

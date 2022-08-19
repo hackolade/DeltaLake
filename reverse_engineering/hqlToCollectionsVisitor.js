@@ -90,6 +90,8 @@ class Visitor extends HiveParserVisitor {
         const description = this.visitWhenExists(ctx, 'tableComment');
         const location = this.visitWhenExists(ctx, 'tableLocation');
         const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
+        let tableOptions = this.visitWhenExists(ctx, 'tableOptions');
+        tableOptions =  Array.isArray(tableOptions) ? tableOptions?.[0] || '' : tableOptions;
         const temporaryTable = Boolean(ctx.KW_TEMPORARY());
         const externalTable = Boolean(ctx.KW_EXTERNAL());
         let storedAsTable = this.visitWhenExists(ctx, 'tableFileFormat', {});
@@ -128,6 +130,7 @@ class Visitor extends HiveParserVisitor {
                         skewedby,
                         skewedOn,
                         skewStoredAsDir,
+                        tableOptions,
                         location: Array.isArray(location) ? location[0] || '' : String(location),
                         tableProperties: Array.isArray(tableProperties) ? tableProperties[0] || '' : String(tableProperties),
                         using: getUsingProperty(Array.isArray(tableDataSource) ? tableDataSource[0] || '' : String(tableDataSource)),
@@ -297,6 +300,10 @@ class Visitor extends HiveParserVisitor {
     }
 
     visitTablePropertiesPrefixed(ctx) {
+        return ctx.tableProperties().getText();
+    }
+
+    visitTableOptions(ctx) {
         return ctx.tableProperties().getText();
     }
 
@@ -1467,6 +1474,7 @@ const getUsingProperty = (using) => {
     return {
         delta: "delta",
         csvfile: "CSVfile",
+        csv: "CSVfile",
         hive: "Hive",
         jsonfile: "JSONfile",
         jdbc: "JDBC",
