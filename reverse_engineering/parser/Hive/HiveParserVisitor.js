@@ -1,4 +1,4 @@
-// Generated from grammars/HiveParser.g4 by ANTLR 4.7.2
+// Generated from grammars/HiveParser.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
 
@@ -2414,6 +2414,12 @@ HiveParserVisitor.prototype.visitNonReserved = function(ctx) {
 
 // Visit a parse tree produced by HiveParser#sql11ReservedKeywordsUsedAsFunctionName.
 HiveParserVisitor.prototype.visitSql11ReservedKeywordsUsedAsFunctionName = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by HiveParser#databricksAllowedReservedNames.
+HiveParserVisitor.prototype.visitDatabricksAllowedReservedNames = function(ctx) {
   return this.visitChildren(ctx);
 };
 

@@ -1,6 +1,7 @@
-// Generated from grammars/HiveLexer.g4 by ANTLR 4.7.2
+// Generated from grammars/HiveLexer.g4 by ANTLR 4.8
 // jshint ignore: start
 var antlr4 = require('antlr4/index');
+
 
 
 var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
@@ -3282,7 +3283,6 @@ HiveLexer.prototype.ruleNames = [ "KW_TRUE", "KW_FALSE", "KW_ALL", "KW_NONE",
                                   "SHOW_HINT", "HIDDEN_HINT" ];
 
 HiveLexer.prototype.grammarFileName = "HiveLexer.g4";
-
 
 
 exports.HiveLexer = HiveLexer;
