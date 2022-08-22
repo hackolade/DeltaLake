@@ -365,7 +365,7 @@ tableProvider
     ;
 
 createTableClauses
-    :((OPTIONS options=tablePropertyList) |
+    :(tableOptions |
      (PARTITIONED BY partitioning=partitionFieldList) |
      skewSpec |
      bucketSpec |
@@ -373,7 +373,15 @@ createTableClauses
      createFileFormat |
      locationSpec |
      commentSpec |
-     (TBLPROPERTIES tableProps=tablePropertyList))*
+     tableProperties)*
+    ;
+
+tableProperties
+    : (TBLPROPERTIES tableProps=tablePropertyList)
+    ;
+
+tableOptions
+    : (OPTIONS tableOpts=tablePropertyList)
     ;
 
 tablePropertyList

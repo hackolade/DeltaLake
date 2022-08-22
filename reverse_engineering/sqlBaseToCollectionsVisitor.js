@@ -25,7 +25,6 @@ class Visitor extends SqlBaseVisitor {
 			sortedBy: tableClauses.bucketSpec?.sortedBy,
 			commentSpec: tableClauses.commentSpec,
 			location: tableClauses.locationSpec,
-			options: tableClauses.options,
 			partitionBy: tableClauses.partitionBy,
 			serDeLibrary: tableClauses.rowFormat?.serDeLibrary,
 			serDeProperties: tableClauses.rowFormat?.serDeProperties,
@@ -39,6 +38,7 @@ class Visitor extends SqlBaseVisitor {
 			skewedBy: tableClauses.skewSpec?.skewedBy,
 			skewedOn: tableClauses.skewSpec?.skewedOn,
 			tableProperties: tableClauses.tableProperties,
+			tableOptions: tableClauses.tableOptions,
 			query: querySelectProperties
 		}
 	}
@@ -147,7 +147,6 @@ class Visitor extends SqlBaseVisitor {
 
 	visitCreateTableClauses(ctx) {
 		return {
-			options: getName(ctx.options),
 			partitionBy: this.visitIfExists(ctx, 'partitionFieldList', [])[0],
 			skewSpec: this.visitIfExists(ctx, 'skewSpec', [])[0],
 			bucketSpec: this.visitIfExists(ctx, 'bucketSpec', [])[0],
@@ -155,7 +154,8 @@ class Visitor extends SqlBaseVisitor {
 			createFileFormat: this.visitIfExists(ctx, 'createFileFormat', [])[0],
 			locationSpec: this.visitIfExists(ctx, 'locationSpec', [])[0],
 			commentSpec: this.visitIfExists(ctx, 'commentSpec', [])[0],
-			tableProperties: this.visitIfExists(ctx, 'tablePropertyList', {start:0, stop:0})
+			tableProperties: this.visitIfExists(ctx, 'tableProperties', {start:0, stop:0})?.[0]?.[1],
+			tableOptions: this.visitIfExists(ctx, 'tableOptions', {start:0, stop:0})?.[0]?.[1],
 		}
 	}
 

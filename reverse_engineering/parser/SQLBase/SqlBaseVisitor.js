@@ -600,6 +600,18 @@ SqlBaseVisitor.prototype.visitCreateTableClauses = function(ctx) {
 };
 
 
+// Visit a parse tree produced by SqlBaseParser#tableProperties.
+SqlBaseVisitor.prototype.visitTableProperties = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
+// Visit a parse tree produced by SqlBaseParser#tableOptions.
+SqlBaseVisitor.prototype.visitTableOptions = function(ctx) {
+  return this.visitChildren(ctx);
+};
+
+
 // Visit a parse tree produced by SqlBaseParser#tablePropertyList.
 SqlBaseVisitor.prototype.visitTablePropertyList = function(ctx) {
   return this.visitChildren(ctx);

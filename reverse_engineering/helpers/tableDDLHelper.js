@@ -47,7 +47,8 @@ const getTableDataFromDDl = (statement) => {
 		parsedTableData.query = statement.substring(parsedTableData.query.select.start, parsedTableData.query.select.stop)
 	}
 	const properties = parsedTableData.colList.map(column => columnREHelper.reverseTableColumn(column));
-	const tableProperties = parsedTableData.tableProperties[0] || { start: 0, stop: 0 }
+	const tableProperties = parsedTableData.tableProperties || { start: 0, stop: 0 }
+	const tableOptions = parsedTableData.tableOptions || { start: 0, stop: 0 }
 	return {
 		properties,
 		propertiesPane: {
@@ -74,7 +75,8 @@ const getTableDataFromDDl = (statement) => {
 			skewedby: parsedTableData.skewedBy?.map(key => ({ name: key })),
 			skewedOn: parsedTableData.skewedOn,
 			location: parsedTableData.location,
-			tableProperties: statement.slice(tableProperties.start + 1, tableProperties.stop),
+			tableProperties: statement.slice(tableProperties.start, tableProperties.stop + 1),
+			tableOptions: statement.slice(tableOptions.start, tableOptions.stop + 1),
 			comments: parsedTableData.commentSpec,
 		}
 	}
@@ -119,5 +121,6 @@ const convertIndexes = indexes => {
 
 
 module.exports = {
-	getTableData
+	getTableData,
+	getTableDataFromDDl,
 };
