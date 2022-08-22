@@ -1,6 +1,8 @@
 const { SqlBaseVisitor } = require('./parser/SQLBase/SqlBaseVisitor');
 const { dependencies } = require('./appDependencies');
 
+global.SQL_standard_keyword_behavior = false;
+
 class Visitor extends SqlBaseVisitor {
 	visitSingleStatement(ctx) {
 		return this.visit(ctx.statement())
@@ -154,8 +156,8 @@ class Visitor extends SqlBaseVisitor {
 			createFileFormat: this.visitIfExists(ctx, 'createFileFormat', [])[0],
 			locationSpec: this.visitIfExists(ctx, 'locationSpec', [])[0],
 			commentSpec: this.visitIfExists(ctx, 'commentSpec', [])[0],
-			tableProperties: this.visitIfExists(ctx, 'tableProperties', {start:0, stop:0})?.[0]?.[1],
-			tableOptions: this.visitIfExists(ctx, 'tableOptions', {start:0, stop:0})?.[0]?.[1],
+			tableProperties: this.visitIfExists(ctx, 'tableProperties', {start:0, stop:-1})?.[0]?.[1],
+			tableOptions: this.visitIfExists(ctx, 'tableOptions', {start:0, stop:-1})?.[0]?.[1],
 		}
 	}
 
