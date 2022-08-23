@@ -7,7 +7,7 @@ const fetchRequestHelper = require('./helpers/fetchRequestHelper');
 const tableDDlHelper = require('./helpers/tableDDLHelper');
 const viewDDLHelper = require('./helpers/viewDDLHelper')
 const databricksHelper = require('./helpers/databricksHelper');
-const { getErrorMessage, cleanEntityName, isViewDdl, isTableDdl } = require('./helpers/utils')
+const { getErrorMessage, cleanEntityName, isViewDdl, isTableDdl, getTemplateDocByJsonSchema } = require('./helpers/utils')
 const { setDependencies, dependencies } = require('./appDependencies');
 const fs = require('fs');
 const antlr4 = require('antlr4');
@@ -206,6 +206,7 @@ module.exports = {
 							documents,
 							views: [],
 							emptyBucket: false,
+							documentTemplate: getTemplateDocByJsonSchema({ properties: tableData.schema }),
 							validation: {
 								jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns }
 							},

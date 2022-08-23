@@ -64,6 +64,35 @@ const getErrorMessage = (error = {}) => {
 
 const removeParentheses = string => string.replace(/^\(|\)$/g, '');
 
+const getTemplateDocByJsonSchema = (schema) => {
+	if (!schema) {
+		return;
+	}
+
+	if (schema.type === 'numeric') {
+		return 1;
+	}
+
+	if (schema.type === 'boolean') {
+		return true;
+	}
+
+	if (schema.type === 'array') {
+		return [];
+	}
+	
+	if (!schema.properties) {
+		return '';
+	}
+
+	return Object.keys(schema?.properties || {}).reduce((result, name) => {
+		return {
+			...result,
+			[name]: getTemplateDocByJsonSchema(schema?.properties[name]),
+		};
+	}, {});
+};
+
 module.exports = {
 	prepareNamesForInsertionIntoScalaCode,
 	splitTableAndViewNames,
@@ -75,4 +104,5 @@ module.exports = {
 	cleanEntityName,
 	isSupportGettingListOfViews,
 	removeParentheses,
+	getTemplateDocByJsonSchema,
 };
