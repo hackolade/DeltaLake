@@ -150,15 +150,17 @@ module.exports = {
 		let modelData;
 
 		try {
+			
 			setDependencies(app);
-
+			
 			const async = dependencies.async;
-
+			
 			modelData = await databricksHelper.getClusterStateInfo(connectionData, logger);
 			logger.log('info', modelData, 'Cluster state info');
-
+			
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
+			const fieldInference = data.fieldInference;
 
 			progress({ message: 'Start getting data from entities', containerName: 'databases', entityName: 'entities' });
 			const clusterData = await databricksHelper.getClusterData(connectionData, dataBaseNames, collections, logger);
@@ -199,19 +201,24 @@ module.exports = {
 						}
 
 						progress({ message: 'Table data processed successfully', containerName: dbName, entityName: table.name });
-						return {
+						const doc = {
 							dbName,
 							collectionName: table.name,
 							entityLevel: tableData.propertiesPane,
 							documents,
 							views: [],
 							emptyBucket: false,
-							documentTemplate: getTemplateDocByJsonSchema({ properties: tableData.schema }),
 							validation: {
 								jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns }
 							},
 							bucketInfo: dbData.dbProperties
 						};
+
+						if (fieldInference.active === 'field') {
+							doc.documentTemplate = getTemplateDocByJsonSchema({ properties: tableData.schema });
+						}
+						
+						return doc;
 					})
 
 				const viewsNames = dataBaseNames.reduce((viewsNames, dbName) => {
