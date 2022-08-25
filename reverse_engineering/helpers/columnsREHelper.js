@@ -92,7 +92,7 @@ const handleType = typeContainer => {
 
 const reverseTableColumn = column => {
     return {
-        ...handleType(column.colType), name: column.colName, comments: column.colComment
+        ...handleType(column.colType), name: column.colName, description: column.colComment
     }
 }
 

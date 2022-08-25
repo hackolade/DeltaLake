@@ -105,9 +105,16 @@ const getTableProvider = (provider) => {
 	}
 }
 
+const isValidIndex = (indexObject) => (
+	indexObject['delta.bloomFilter.enabled'] ||
+	indexObject['delta.bloomFilter.numItems'] ||
+	indexObject['delta.bloomFilter.fpp'] ||
+	indexObject['delta.bloomFilter.maxExpectedFpp']
+);
+
 const convertIndexes = indexes => {
 	const indexMap = Object.keys(indexes)
-		.filter(columnName => !dependencies.lodash.isEmpty(indexes[columnName]))
+		.filter(columnName => !dependencies.lodash.isEmpty(indexes[columnName]) && isValidIndex(indexes[columnName]))
 		.reduce((indexMap, columnName) => {
 			const indexObject = indexes[columnName];
 			const indexString = `fpp = ${indexObject['delta.bloomFilter.fpp']}, numItems = ${indexObject['delta.bloomFilter.numItems']}, maxExpectedFpp = ${indexObject['delta.bloomFilter.maxExpectedFpp']}, enabled = ${indexObject['delta.bloomFilter.enabled']}`
