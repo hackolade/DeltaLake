@@ -16,7 +16,7 @@ const getTableData = async (table, data, logger) => {
 		return {};
 	}
 	const BloomIndxs = convertIndexes(indexes)
-	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: nullableMap[property.name] !== 'true' }))
+	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: ![true, 'true'].includes(nullableMap[property.name]) }))
 	const tableSchema = tablePropertiesWithNotNullConstraints.reduce((schema, property) => ({ ...schema, [property.name]: property }), {})
 	const requiredColumns = tablePropertiesWithNotNullConstraints.filter(column => column.required).map(column => column.name);
 	tableData = {
