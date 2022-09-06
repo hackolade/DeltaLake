@@ -4,11 +4,11 @@
 
 # !important: don't forget to change `import` and `export` to `require` and `module.exports` after the parser is built
 
-# https://www.antlr.org/download/antlr-4.8-complete.jar
+# https://www.antlr.org/download/antlr-4.9.2-complete.jar
 #
 # set antlr4 aliases
-# export CLASSPATH=".:/usr/local/lib/antlr-4.8-complete.jar:$CLASSPATH"
-# alias antlr4='java -jar /usr/local/lib/antlr-4.8-complete.jar'
+# export CLASSPATH=".:/usr/local/lib/antlr-4.9.2-complete.jar:$CLASSPATH"
+# alias antlr4='java -jar /usr/local/lib/antlr-4.9.2-complete.jar'
 # alias grun='java org.antlr.v4.gui.TestRig'
 
 # build parser

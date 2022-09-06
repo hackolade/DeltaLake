@@ -235,7 +235,7 @@ const updateField = (entitiesData, bucket, statementData) => {
 
 const createView = (entitiesData, bucket, statementData, originalScript) => {
     const { views } = entitiesData;
-    const selectStatement = `AS ${originalScript.substring(statementData.select.start, statementData.select.stop)}`;
+    const selectStatement = originalScript.substring(statementData.select.start, statementData.select.stop);
 
     return {
         ...entitiesData,
@@ -246,6 +246,10 @@ const createView = (entitiesData, bucket, statementData, originalScript) => {
                 data: {
                     ...statementData.data,
                     selectStatement,
+                },
+                ddl: {
+                    script: `CREATE VIEW ${statementData.name} AS ${selectStatement};`.replace(/`/g, '"'),
+                    type: 'postgres'
                 },
                 bucketName: statementData.bucketName || bucket,
             },

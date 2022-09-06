@@ -321,7 +321,6 @@ class Visitor extends HiveParserVisitor {
             name,
             bucketName: database,
             collectionName: table,
-            jsonSchema: { properties: {} },
             select,
             data: {
                 description,
