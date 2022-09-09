@@ -243,7 +243,9 @@ module.exports = {
 
 const buildScript = (...statements) => {
 	const script = statements.filter((statement) => statement).join('\n\n');
-	return sqlFormatter.format(script, { indent: '    ' }) + '\n';
+	const formattedScript = sqlFormatter.format(script, { indent: '    ' }) + '\n';
+
+	return formattedScript.replace(/\{\ \{\ (.+)\ \}\ \}/g, '{{$1}}');
 };
 
 const parseEntities = (entities, serializedItems) => {
