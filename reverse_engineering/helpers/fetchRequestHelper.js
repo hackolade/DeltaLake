@@ -1,22 +1,57 @@
 'use strict'
 const nodeFetch = require('node-fetch');
+const AbortController = require('abort-controller');
 const { dependencies } = require('../appDependencies');
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { getCount, prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 let activeContexts = {};
 
 const fetch = (query, options, attempts = 10) => {
-	return nodeFetch(query, options).catch(error => {
+	let { timeout, ...fetchOptions } = (options || {});
+	let controller = createAbortController(timeout);
+
+	fetchOptions = {
+		...fetchOptions,
+		signal: controller.signal,
+	};
+
+	return nodeFetch(query, fetchOptions).then(response => {
+		controller.clear();
+
+		return response;
+	}).catch(error => {
+		controller.clear();
+
 		if (['ENOTFOUND', 'ECONNRESET'].includes(error?.code) && attempts) {
 			return new Promise((resolve, reject) => {
 				setTimeout(() => {
 					fetch(query, options, attempts - 1).then(resolve, reject);
 				}, 1000);
 			});
+		} else if (error.type === 'aborted') {
+			throw new Error('Request timeout exceeded, please try again or increase query request timeout in Tools > Options > Reverse-Engineering');
 		} else {
 			throw error;
 		}
 	});
+};
+
+const createAbortController = (timeout) => {
+	if (!timeout) {
+		return { signal: undefined, clear() {} };
+	}
+	let controller = new AbortController();
+
+	const timer = setTimeout(() => {
+		controller.abort();
+	}, timeout);
+
+	return {
+		signal: controller.signal,
+		clear() {
+			clearTimeout(timer);
+		}
+	};
 };
 
 const destroyActiveContext = () => {
@@ -44,10 +79,18 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 	await Promise.race([executeCommand(connectionInfo, connectionInfo.script, 'sql'), new Promise((_r, rej) => setTimeout(() => { throw new Error("Timeout exceeded for script\n" + script); }, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
 };
 
-const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recordSamplingSettings }) => {
+const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recordSamplingSettings, logger }) => {
 	try {
+		const hasDocumentsBySettings = getCount(100, recordSamplingSettings) > 0;
+
+		if (!hasDocumentsBySettings) {
+			return [];
+		}
+
 		const countResult = await executeCommand(connectionInfo, `SELECT COUNT(*) FROM \`${dbName}\`.\`${tableName}\``, 'sql');
 		const count = dependencies.lodash.get(countResult, '[0][0]', 0);
+
+		logger.log('info', { message: `Found ${count} records`, dbName, tableName }, 'Getting documents');
 
 		if (count === 0) {
 			return [];
@@ -56,8 +99,12 @@ const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recor
 		const columnsToSelect = fields.map(field => field.name);
 		const columnsToSelectString = columnsToSelect.map(fieldName => `\`${fieldName}\``).join(', ');
 		const limit = getCount(count, recordSamplingSettings);
+		const sqlQuery = `SELECT ${columnsToSelectString} FROM \`${dbName}\`.\`${tableName}\` LIMIT ${limit}`;
 
-		const documentsResult = await executeCommand(connectionInfo, `SELECT ${columnsToSelectString} FROM \`${dbName}\`.\`${tableName}\` LIMIT ${limit}`, 'sql');
+		const documentsResult = await executeCommand(connectionInfo, sqlQuery, 'sql');
+		
+		logger.log('info', { message: `Execute query: ${sqlQuery}`, dbName, tableName }, 'Getting documents');
+		
 		return documentsResult.map(result =>
 			columnsToSelect.reduce((document, colName, index) => (
 				{
@@ -67,6 +114,8 @@ const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recor
 			), {})
 		);
 	} catch (e) {
+		logger.log('error', { message: e.message, stack: e.stack, dbName, tableName }, 'Getting documents');
+
 		return [];
 	}
 };
@@ -206,12 +255,13 @@ const fetchCreateStatementRequest = async (entityName, connectionInfo, logger) =
 
 const getRequestOptions = (connectionInfo) => {
 	const headers = {
-		'Authorization': 'Bearer ' + connectionInfo.accessToken
+		'Authorization': 'Bearer ' + connectionInfo.accessToken,
 	};
 
 	return {
 		'method': 'GET',
-		'headers': headers
+		'headers': headers,
+		'timeout': connectionInfo.queryRequestTimeout,
 	};
 };
 
@@ -223,6 +273,7 @@ const postRequestOptions = (connectionInfo, body) => {
 
 	return {
 		'method': 'POST',
+		'timeout': connectionInfo.queryRequestTimeout,
 		headers,
 		body
 	}
