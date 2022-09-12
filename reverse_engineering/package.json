@@ -4,6 +4,7 @@
   "description": "",
   "author": "Hackolade",
   "dependencies": {
+    "abort-controller": "^3.0.0",
     "antlr4": "4.9.2",
     "node-fetch": "^2.6.7"
   },

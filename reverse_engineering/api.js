@@ -33,7 +33,8 @@ module.exports = {
 			connectionData = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
-				accessToken: connectionInfo.accessToken
+				accessToken: connectionInfo.accessToken,
+				queryRequestTimeout: connectionInfo.queryRequestTimeout,
 			}
 
 			logInfo('Test connection RE', connectionInfo, logger);
@@ -70,6 +71,7 @@ module.exports = {
 					host: getCleanedUrl(connectionInfo.host),
 					clusterId: connectionInfo.clusterId,
 					accessToken: connectionInfo.accessToken,
+					queryRequestTimeout: connectionInfo.queryRequestTimeout,
 				};
 				dbNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionData);
 			}
@@ -102,6 +104,7 @@ module.exports = {
 				clusterId: connectionInfo.clusterId,
 				accessToken: connectionInfo.accessToken,
 				databaseName: connectionInfo.database,
+				queryRequestTimeout: connectionInfo.queryRequestTimeout,
 			};
 
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
@@ -195,7 +198,8 @@ module.exports = {
 								dbName,
 								tableName: table.name,
 								fields: columnsOfTypeString,
-								recordSamplingSettings: data.recordSamplingSettings
+								recordSamplingSettings: data.recordSamplingSettings,
+								logger,
 							});
 							progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name });
 						}
