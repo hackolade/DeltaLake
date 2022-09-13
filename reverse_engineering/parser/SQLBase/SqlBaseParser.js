@@ -1812,20 +1812,20 @@ const serializedATN = [
   "\u0002\u0002\u0002\u09bf\u09b3\u0003\u0002\u0002\u0002\u09bf\u09b8\u0003",
   "\u0002\u0002\u0002\u09c0\u00cf\u0003\u0002\u0002\u0002\u09c1\u09c2\b",
   "i\u0001\u0002\u09c2\u09c6\u0005\u00d2j\u0002\u09c3\u09c4\t\u0019\u0002",
-  "\u0002\u09c4\u09c6\u0005\u00d0i\t\u09c5\u09c1\u0003\u0002\u0002\u0002",
+  "\u0002\u09c4\u09c6\u0005\u00d0i\b\u09c5\u09c1\u0003\u0002\u0002\u0002",
   "\u09c5\u09c3\u0003\u0002\u0002\u0002\u09c6\u09dc\u0003\u0002\u0002\u0002",
-  "\u09c7\u09c8\f\b\u0002\u0002\u09c8\u09c9\t\u001a\u0002\u0002\u09c9\u09db",
-  "\u0005\u00d0i\t\u09ca\u09cb\f\u0007\u0002\u0002\u09cb\u09cc\t\u001b",
-  "\u0002\u0002\u09cc\u09db\u0005\u00d0i\b\u09cd\u09ce\f\u0006\u0002\u0002",
-  "\u09ce\u09cf\u0007\u0118\u0002\u0002\u09cf\u09db\u0005\u00d0i\u0007",
-  "\u09d0\u09d1\f\u0005\u0002\u0002\u09d1\u09d2\u0007\u011b\u0002\u0002",
-  "\u09d2\u09db\u0005\u00d0i\u0006\u09d3\u09d4\f\u0004\u0002\u0002\u09d4",
-  "\u09d5\u0007\u0119\u0002\u0002\u09d5\u09db\u0005\u00d0i\u0005\u09d6",
-  "\u09d7\f\u0003\u0002\u0002\u09d7\u09d8\u0005\u00d6l\u0002\u09d8\u09d9",
-  "\u0005\u00d0i\u0004\u09d9\u09db\u0003\u0002\u0002\u0002\u09da\u09c7",
-  "\u0003\u0002\u0002\u0002\u09da\u09ca\u0003\u0002\u0002\u0002\u09da\u09cd",
-  "\u0003\u0002\u0002\u0002\u09da\u09d0\u0003\u0002\u0002\u0002\u09da\u09d3",
-  "\u0003\u0002\u0002\u0002\u09da\u09d6\u0003\u0002\u0002\u0002\u09db\u09de",
+  "\u09c7\u09c8\f\t\u0002\u0002\u09c8\u09c9\u0005\u00d6l\u0002\u09c9\u09ca",
+  "\u0005\u00d0i\n\u09ca\u09db\u0003\u0002\u0002\u0002\u09cb\u09cc\f\u0007",
+  "\u0002\u0002\u09cc\u09cd\t\u001a\u0002\u0002\u09cd\u09db\u0005\u00d0",
+  "i\b\u09ce\u09cf\f\u0006\u0002\u0002\u09cf\u09d0\t\u001b\u0002\u0002",
+  "\u09d0\u09db\u0005\u00d0i\u0007\u09d1\u09d2\f\u0005\u0002\u0002\u09d2",
+  "\u09d3\u0007\u0118\u0002\u0002\u09d3\u09db\u0005\u00d0i\u0006\u09d4",
+  "\u09d5\f\u0004\u0002\u0002\u09d5\u09d6\u0007\u011b\u0002\u0002\u09d6",
+  "\u09db\u0005\u00d0i\u0005\u09d7\u09d8\f\u0003\u0002\u0002\u09d8\u09d9",
+  "\u0007\u0119\u0002\u0002\u09d9\u09db\u0005\u00d0i\u0004\u09da\u09c7",
+  "\u0003\u0002\u0002\u0002\u09da\u09cb\u0003\u0002\u0002\u0002\u09da\u09ce",
+  "\u0003\u0002\u0002\u0002\u09da\u09d1\u0003\u0002\u0002\u0002\u09da\u09d4",
+  "\u0003\u0002\u0002\u0002\u09da\u09d7\u0003\u0002\u0002\u0002\u09db\u09de",
   "\u0003\u0002\u0002\u0002\u09dc\u09da\u0003\u0002\u0002\u0002\u09dc\u09dd",
   "\u0003\u0002\u0002\u0002\u09dd\u00d1\u0003\u0002\u0002\u0002\u09de\u09dc",
   "\u0003\u0002\u0002\u0002\u09df\u09e0\bj\u0001\u0002\u09e0\u0a9c\t\u001c",
@@ -3011,7 +3011,7 @@ class SqlBaseParser extends antlr4.Parser {
   valueExpression_sempred(localctx, predIndex) {
     switch (predIndex) {
       case 8:
-        return this.precpred(this._ctx, 6);
+        return this.precpred(this._ctx, 7);
       case 9:
         return this.precpred(this._ctx, 5);
       case 10:
@@ -11337,7 +11337,7 @@ class SqlBaseParser extends antlr4.Parser {
             this.consume();
           }
           this.state = 2498;
-          this.valueExpression(7);
+          this.valueExpression(6);
           break;
       }
       this._ctx.stop = this._input.LT(-1);
@@ -11355,7 +11355,7 @@ class SqlBaseParser extends antlr4.Parser {
           var la_ = this._interp.adaptivePredict(this._input, 322, this._ctx);
           switch (la_) {
             case 1:
-              localctx = new ArithmeticBinaryContext(
+              localctx = new ComparisonContext(
                 this,
                 new ValueExpressionContext(this, _parentctx, _parentState)
               );
@@ -11366,13 +11366,37 @@ class SqlBaseParser extends antlr4.Parser {
                 SqlBaseParser.RULE_valueExpression
               );
               this.state = 2501;
-              if (!this.precpred(this._ctx, 6)) {
+              if (!this.precpred(this._ctx, 7)) {
                 throw new antlr4.error.FailedPredicateException(
                   this,
-                  "this.precpred(this._ctx, 6)"
+                  "this.precpred(this._ctx, 7)"
                 );
               }
               this.state = 2502;
+              this.comparisonOperator();
+              this.state = 2503;
+              localctx.right = this.valueExpression(8);
+              break;
+
+            case 2:
+              localctx = new ArithmeticBinaryContext(
+                this,
+                new ValueExpressionContext(this, _parentctx, _parentState)
+              );
+              localctx.left = _prevctx;
+              this.pushNewRecursionContext(
+                localctx,
+                _startState,
+                SqlBaseParser.RULE_valueExpression
+              );
+              this.state = 2505;
+              if (!this.precpred(this._ctx, 5)) {
+                throw new antlr4.error.FailedPredicateException(
+                  this,
+                  "this.precpred(this._ctx, 5)"
+                );
+              }
+              this.state = 2506;
               localctx.operator = this._input.LT(1);
               _la = this._input.LA(1);
               if (
@@ -11391,11 +11415,11 @@ class SqlBaseParser extends antlr4.Parser {
                 this._errHandler.reportMatch(this);
                 this.consume();
               }
-              this.state = 2503;
-              localctx.right = this.valueExpression(7);
+              this.state = 2507;
+              localctx.right = this.valueExpression(6);
               break;
 
-            case 2:
+            case 3:
               localctx = new ArithmeticBinaryContext(
                 this,
                 new ValueExpressionContext(this, _parentctx, _parentState)
@@ -11406,14 +11430,14 @@ class SqlBaseParser extends antlr4.Parser {
                 _startState,
                 SqlBaseParser.RULE_valueExpression
               );
-              this.state = 2504;
-              if (!this.precpred(this._ctx, 5)) {
+              this.state = 2508;
+              if (!this.precpred(this._ctx, 4)) {
                 throw new antlr4.error.FailedPredicateException(
                   this,
-                  "this.precpred(this._ctx, 5)"
+                  "this.precpred(this._ctx, 4)"
                 );
               }
-              this.state = 2505;
+              this.state = 2509;
               localctx.operator = this._input.LT(1);
               _la = this._input.LA(1);
               if (
@@ -11431,31 +11455,7 @@ class SqlBaseParser extends antlr4.Parser {
                 this._errHandler.reportMatch(this);
                 this.consume();
               }
-              this.state = 2506;
-              localctx.right = this.valueExpression(6);
-              break;
-
-            case 3:
-              localctx = new ArithmeticBinaryContext(
-                this,
-                new ValueExpressionContext(this, _parentctx, _parentState)
-              );
-              localctx.left = _prevctx;
-              this.pushNewRecursionContext(
-                localctx,
-                _startState,
-                SqlBaseParser.RULE_valueExpression
-              );
-              this.state = 2507;
-              if (!this.precpred(this._ctx, 4)) {
-                throw new antlr4.error.FailedPredicateException(
-                  this,
-                  "this.precpred(this._ctx, 4)"
-                );
-              }
-              this.state = 2508;
-              localctx.operator = this.match(SqlBaseParser.AMPERSAND);
-              this.state = 2509;
+              this.state = 2510;
               localctx.right = this.valueExpression(5);
               break;
 
@@ -11470,16 +11470,16 @@ class SqlBaseParser extends antlr4.Parser {
                 _startState,
                 SqlBaseParser.RULE_valueExpression
               );
-              this.state = 2510;
+              this.state = 2511;
               if (!this.precpred(this._ctx, 3)) {
                 throw new antlr4.error.FailedPredicateException(
                   this,
                   "this.precpred(this._ctx, 3)"
                 );
               }
-              this.state = 2511;
-              localctx.operator = this.match(SqlBaseParser.HAT);
               this.state = 2512;
+              localctx.operator = this.match(SqlBaseParser.AMPERSAND);
+              this.state = 2513;
               localctx.right = this.valueExpression(4);
               break;
 
@@ -11494,21 +11494,21 @@ class SqlBaseParser extends antlr4.Parser {
                 _startState,
                 SqlBaseParser.RULE_valueExpression
               );
-              this.state = 2513;
+              this.state = 2514;
               if (!this.precpred(this._ctx, 2)) {
                 throw new antlr4.error.FailedPredicateException(
                   this,
                   "this.precpred(this._ctx, 2)"
                 );
               }
-              this.state = 2514;
-              localctx.operator = this.match(SqlBaseParser.PIPE);
               this.state = 2515;
+              localctx.operator = this.match(SqlBaseParser.HAT);
+              this.state = 2516;
               localctx.right = this.valueExpression(3);
               break;
 
             case 6:
-              localctx = new ComparisonContext(
+              localctx = new ArithmeticBinaryContext(
                 this,
                 new ValueExpressionContext(this, _parentctx, _parentState)
               );
@@ -11518,16 +11518,16 @@ class SqlBaseParser extends antlr4.Parser {
                 _startState,
                 SqlBaseParser.RULE_valueExpression
               );
-              this.state = 2516;
+              this.state = 2517;
               if (!this.precpred(this._ctx, 1)) {
                 throw new antlr4.error.FailedPredicateException(
                   this,
                   "this.precpred(this._ctx, 1)"
                 );
               }
-              this.state = 2517;
-              this.comparisonOperator();
               this.state = 2518;
+              localctx.operator = this.match(SqlBaseParser.PIPE);
+              this.state = 2519;
               localctx.right = this.valueExpression(2);
               break;
           }
