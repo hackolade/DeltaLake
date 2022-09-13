@@ -3,6 +3,7 @@ const { dependencies } = require('./appDependencies');
 
 global.SQL_standard_keyword_behavior = false;
 global.legacy_exponent_literal_as_decimal_enabled = true;
+global.legacy_setops_precedence_enabled = true;
 
 class Visitor extends SqlBaseVisitor {
 	visitSingleStatement(ctx) {
