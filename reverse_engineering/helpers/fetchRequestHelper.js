@@ -3,11 +3,11 @@ const nodeFetch = require('node-fetch');
 const AbortController = require('abort-controller');
 const { dependencies } = require('../appDependencies');
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
-const { getCount, prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
+const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 let activeContexts = {};
 
 const fetch = (query, options, attempts = 10) => {
-	let { timeout, ...fetchOptions } = (options || {});
+	let { timeout, logger, ...fetchOptions } = (options || {});
 	let controller = createAbortController(timeout);
 
 	fetchOptions = {
@@ -23,6 +23,8 @@ const fetch = (query, options, attempts = 10) => {
 		controller.clear();
 
 		if (['ENOTFOUND', 'ECONNRESET'].includes(error?.code) && attempts) {
+			logger.log('info', { message: 'Failed to connect server: ' + error.message, code: error.code, attempts }, 'Execute request');
+
 			return new Promise((resolve, reject) => {
 				setTimeout(() => {
 					fetch(query, options, attempts - 1).then(resolve, reject);
@@ -79,28 +81,30 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 	await Promise.race([executeCommand(connectionInfo, connectionInfo.script, 'sql'), new Promise((_r, rej) => setTimeout(() => { throw new Error("Timeout exceeded for script\n" + script); }, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
 };
 
+const fetchCount = async ({ connectionInfo, dbName, tableName, recordSamplingSettings, logger }) => {
+	if (recordSamplingSettings.active === 'absolute') {
+		return Number(recordSamplingSettings.absolute.value);
+	}
+	
+	const countResult = await executeCommand(connectionInfo, `SELECT COUNT(*) FROM \`${dbName}\`.\`${tableName}\``, 'sql');
+	const count = dependencies.lodash.get(countResult, '[0][0]', 0);
+
+	logger.log('info', { message: `Found ${count} records`, dbName, tableName }, 'Getting documents');
+
+	return Math.round(count / 100 * per);
+};
+
 const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recordSamplingSettings, logger }) => {
 	try {
-		const hasDocumentsBySettings = getCount(100, recordSamplingSettings) > 0;
+		const limit = await fetchCount({ connectionInfo, recordSamplingSettings, dbName, tableName, logger });
 
-		if (!hasDocumentsBySettings) {
-			return [];
-		}
-
-		const countResult = await executeCommand(connectionInfo, `SELECT COUNT(*) FROM \`${dbName}\`.\`${tableName}\``, 'sql');
-		const count = dependencies.lodash.get(countResult, '[0][0]', 0);
-
-		logger.log('info', { message: `Found ${count} records`, dbName, tableName }, 'Getting documents');
-
-		if (count === 0) {
+		if (limit <= 0) {
 			return [];
 		}
 
 		const columnsToSelect = fields.map(field => field.name);
 		const columnsToSelectString = columnsToSelect.map(fieldName => `\`${fieldName}\``).join(', ');
-		const limit = getCount(count, recordSamplingSettings);
 		const sqlQuery = `SELECT ${columnsToSelectString} FROM \`${dbName}\`.\`${tableName}\` LIMIT ${limit}`;
-
 		const documentsResult = await executeCommand(connectionInfo, sqlQuery, 'sql');
 		
 		logger.log('info', { message: `Execute query: ${sqlQuery}`, dbName, tableName }, 'Getting documents');
@@ -262,6 +266,7 @@ const getRequestOptions = (connectionInfo) => {
 		'method': 'GET',
 		'headers': headers,
 		'timeout': connectionInfo.queryRequestTimeout,
+		'logger': connectionInfo.logger || { log: () => {} },
 	};
 };
 
@@ -274,6 +279,7 @@ const postRequestOptions = (connectionInfo, body) => {
 	return {
 		'method': 'POST',
 		'timeout': connectionInfo.queryRequestTimeout,
+		'logger': connectionInfo.logger || { log: () => {} },
 		headers,
 		body
 	}
