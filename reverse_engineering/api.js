@@ -35,6 +35,7 @@ module.exports = {
 				clusterId: connectionInfo.clusterId,
 				accessToken: connectionInfo.accessToken,
 				queryRequestTimeout: connectionInfo.queryRequestTimeout,
+				logger,
 			}
 
 			logInfo('Test connection RE', connectionInfo, logger);
@@ -72,6 +73,7 @@ module.exports = {
 					clusterId: connectionInfo.clusterId,
 					accessToken: connectionInfo.accessToken,
 					queryRequestTimeout: connectionInfo.queryRequestTimeout,
+					logger,
 				};
 				dbNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionData);
 			}
@@ -105,6 +107,7 @@ module.exports = {
 				accessToken: connectionInfo.accessToken,
 				databaseName: connectionInfo.database,
 				queryRequestTimeout: connectionInfo.queryRequestTimeout,
+				logger,
 			};
 
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
