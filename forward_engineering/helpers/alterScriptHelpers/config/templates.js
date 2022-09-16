@@ -19,6 +19,8 @@ module.exports = {
 
 	addTableColumns: 'ALTER TABLE ${name} ADD COLUMNS ${columns};',
 
+	dropTableColumns: 'ALTER TABLE ${name} DROP COLUMNS ${columns};',
+
 	setTableProperties: 'ALTER TABLE ${name} SET TBLPROPERTIES (${properties});',
 
 	unsetTableProperties: 'ALTER TABLE ${name} UNSET TBLPROPERTIES IF EXISTS (${properties});',

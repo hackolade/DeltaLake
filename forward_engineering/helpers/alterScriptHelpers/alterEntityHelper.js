@@ -151,6 +151,23 @@ const getAddColumnsScripts = (definitions, provider) => entity => {
 };
 
 const getDeleteColumnsScripts = (definitions, provider) => entity => {
+	const entityData = { ...entity, ..._.omit(entity.role, ['properties']) };
+	const { columns } = getColumns(entityData, true, definitions);
+	const properties = getEntityProperties(entity);
+	const columnStatement = getColumnsStatement(columns);
+	const fullCollectionName = generateFullEntityName(entity);
+	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
+	const modifyScript = generateModifyCollectionScript(entity, definitions, provider);
+	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
+	const addIndexScript = getIndexes(...hydratedAddIndex);
+	const deleteColumnScript = provider.dropTableColumns({ name: fullCollectionName, columns: columnStatement });
+
+	return modifyScript.type === 'new' ? 
+		prepareScript(dropIndexScript, ...modifyScript.script, addIndexScript) : 
+		prepareScript(dropIndexScript, deleteColumnScript, ...modifyScript.script, addIndexScript);
+};
+
+const getDeleteColumnScripsForOlderRuntime = (definitions, provider) => entity => {
 	setDependencies(dependencies);
 	const deleteColumnsName = Object.keys(entity.properties || {});
 	const properties = _.omit(_.get(entity, 'role.properties', {}), deleteColumnsName);
@@ -198,5 +215,6 @@ module.exports = {
 	getModifyCollectionsScripts,
 	getAddColumnsScripts,
 	getDeleteColumnsScripts,
+	getDeleteColumnScripsForOlderRuntime,
 	getModifyColumnsScripts
 }
