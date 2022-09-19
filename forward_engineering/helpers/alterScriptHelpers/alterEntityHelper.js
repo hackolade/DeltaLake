@@ -59,8 +59,8 @@ const hydrateAlterColumnType = (properties = {}) => {
 			? { oldName: oldField.name, newName: newField.name }
 			: '';
 	});
-	const columnsToDelete = columns.map(column => column.oldName);
-	const columnsToAdd = columns.map(column => column.newName);
+	const columnsToDelete = columns.map(column => column.oldName).filter(name => Boolean(name));
+	const columnsToAdd = columns.map(column => column.newName).filter(name => Boolean(name));
 	return { columnsToDelete, columnsToAdd };
 }
 
@@ -252,14 +252,19 @@ const getModifyColumnsScriptsForOlderRuntime = (definitions, provider) => entity
 	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 
-	const fullCollectionName = generateFullEntityName(entity);
-	const deleteCollectionScript = provider.dropTable(fullCollectionName);
-	const hydratedCollection = hydrateCollection(entityData, definitions);
-	const addCollectionScript = getTableStatement(...hydratedCollection, true);
+	const { columnsToDelete } = hydrateAlterColumnType(properties);
+	let tableModificationScripts = [];
+	if (!_.isEmpty(columnsToDelete)) {
+		const fullCollectionName = generateFullEntityName(entity);
+		const deleteCollectionScript = provider.dropTable(fullCollectionName);
+		const hydratedCollection = hydrateCollection(entityData, definitions);
+		const addCollectionScript = getTableStatement(...hydratedCollection, true);
+		tableModificationScripts = [deleteCollectionScript, addCollectionScript];
+	}
 
 	return modifiedScript.type === 'new' ? 
 		prepareScript(dropIndexScript, ...modifiedScript.script, addIndexScript) : 
-		prepareScript(dropIndexScript, deleteCollectionScript, addCollectionScript, ...alterColumnScripts, ...modifiedScript.script, addIndexScript);
+		prepareScript(dropIndexScript, ...tableModificationScripts, ...alterColumnScripts, ...modifiedScript.script, addIndexScript);
 }
 
 module.exports = {
