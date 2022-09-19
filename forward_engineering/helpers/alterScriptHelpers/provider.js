@@ -57,6 +57,10 @@ module.exports = app => {
 			return !name || !columns ? '' : assignTemplates(templates.addTableColumns, { name, columns });
 		},
 
+		dropTableColumns({ name, columns }) {
+			return !name || !columns ? '' : assignTemplates(templates.dropTableColumns, { name, columns });
+		},
+
 		dropDatabase(name) {
 			return !name ? '' : assignTemplates(templates.dropDatabase, { name });
 		},

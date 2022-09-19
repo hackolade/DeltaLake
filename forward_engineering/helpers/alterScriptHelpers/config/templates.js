@@ -17,7 +17,9 @@ module.exports = {
 
 	alterTableColumnName: 'ALTER TABLE ${collectionName} RENAME COLUMN ${oldName} TO ${newName};',
 
-	addTableColumns: 'ALTER TABLE ${name} ADD COLUMNS ${columns};',
+	addTableColumns: 'ALTER TABLE ${name} ADD COLUMNS (${columns});',
+
+	dropTableColumns: 'ALTER TABLE ${name} DROP COLUMNS (${columns});',
 
 	setTableProperties: 'ALTER TABLE ${name} SET TBLPROPERTIES (${properties});',
 
