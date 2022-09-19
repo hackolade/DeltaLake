@@ -9,6 +9,7 @@ const {
 	getModifyCollectionsScripts,
 	getDeleteColumnsScripts,
 	getDeleteColumnScripsForOlderRuntime,
+	getModifyColumnsScriptsForOlderRuntime,
 	getAddColumnsScripts,
 	getModifyColumnsScripts
 } = require('./alterScriptHelpers/alterEntityHelper');
@@ -46,7 +47,8 @@ const getAlterCollectionsScripts = ({ schema, definitions, provider, data }) => 
 
 	const getColumnScripts = (items, getScript) => items.filter(item => !item.compMod).flatMap(getScript);
 	const dbVersionNumber = ~~(data.modelData[0].dbVersion.split(' ')[1]);
-	const deletedColumnsScriptsMethod = dbVersionNumber < 11 ? getDeleteColumnScripsForOlderRuntime : getDeleteColumnsScripts;
+	const getDeletedColumnsScriptsMethod = dbVersionNumber < 11 ? getDeleteColumnScripsForOlderRuntime : getDeleteColumnsScripts;
+	const getModifyColumnsScriptsMethod = dbVersionNumber < 11 ? getModifyColumnsScriptsForOlderRuntime : getModifyColumnsScripts;
 
 	const addedCollectionsScripts = getCollectionScripts(
 		getItems(schema, 'entities', 'added'),
@@ -70,11 +72,11 @@ const getAlterCollectionsScripts = ({ schema, definitions, provider, data }) => 
 	);
 	const deletedColumnsScripts = getColumnScripts(
 		getItems(schema, 'entities', 'deleted'),
-		deletedColumnsScriptsMethod(definitions, provider)
+		getDeletedColumnsScriptsMethod(definitions, provider)
 	);
 	const modifiedColumnsScripts = getColumnScripts(
 		getItems(schema, 'entities', 'modified'),
-		getModifyColumnsScripts(definitions, provider)
+		getModifyColumnsScriptsMethod(definitions, provider)
 	);
 
 	return [

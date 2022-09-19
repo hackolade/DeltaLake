@@ -1,5 +1,5 @@
 const { dependencies } = require('../appDependencies');
-const { getColumns, getColumnsStatement } = require('../columnHelper');
+const { getColumns, getColumnsStatement, getColumnsString } = require('../columnHelper');
 const { getIndexes } = require('../indexHelper');
 const { getTableStatement } = require('../tableHelper');
 const { hydrateTableProperties, getDifferentItems, getIsChangeProperties } = require('./common');
@@ -49,6 +49,19 @@ const hydrateAlterColumnName = (entity, properties = {}) => {
 			: '';
 	});
 	return { collectionName, columns: columns.filter(Boolean) };
+}
+
+const hydrateAlterColumnType = (properties = {}) => {
+	const columns = Object.values(properties).map(property => {
+		const compMod = _.get(property, 'compMod', {});
+		const { newField = {}, oldField = {}} = compMod;
+		return newField.type && oldField.type && (newField.type !== oldField.type || newField.mode !== oldField.mode)
+			? { oldName: oldField.name, newName: newField.name }
+			: '';
+	});
+	const columnsToDelete = columns.map(column => column.oldName);
+	const columnsToAdd = columns.map(column => column.newName);
+	return { columnsToDelete, columnsToAdd };
 }
 
 const hydrateDropIndexes = entity => {
@@ -154,7 +167,7 @@ const getDeleteColumnsScripts = (definitions, provider) => entity => {
 	const entityData = { ...entity, ..._.omit(entity.role, ['properties']) };
 	const { columns } = getColumns(entityData, true, definitions);
 	const properties = getEntityProperties(entity);
-	const columnStatement = getColumnsStatement(columns);
+	const columnStatement = getColumnsString(Object.keys(columns));
 	const fullCollectionName = generateFullEntityName(entity);
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
 	const modifyScript = generateModifyCollectionScript(entity, definitions, provider);
@@ -203,11 +216,51 @@ const getModifyColumnsScripts = (definitions, provider) => entity => {
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
 	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
-	
+
+	const fullCollectionName = generateFullEntityName(entity);
+	const { columnsToDelete, columnsToAdd } = hydrateAlterColumnType(properties);
+	const { columns: columnsInfo } = getColumns(entityData.role, true, definitions);
+	const columnsToAddInfo = _.pick(columnsInfo,  columnsToAdd);
+	const addColumnStatement = getColumnsStatement(columnsToAddInfo);
+	const dropColumnStatement = getColumnsString(columnsToDelete);
+	const deleteColumnScript = provider.dropTableColumns({ name: fullCollectionName, columns: dropColumnStatement });
+	const addColumnScript = provider.addTableColumns({ name: fullCollectionName, columns: addColumnStatement });
+
 	return modifiedScript.type === 'new' ? 
 		prepareScript(dropIndexScript, ...modifiedScript.script, addIndexScript) : 
-		prepareScript(dropIndexScript, ...alterColumnScripts, ...modifiedScript.script, addIndexScript);
+		prepareScript(dropIndexScript, deleteColumnScript, addColumnScript, ...alterColumnScripts, ...modifiedScript.script, addIndexScript);
 };
+
+const getModifyColumnsScriptsForOlderRuntime = (definitions, provider) => entity => {
+	setDependencies(dependencies);
+	const properties = _.get(entity, 'properties', {});
+	const unionProperties = _.unionWith(
+		Object.entries(properties), 
+		Object.entries(_.get(entity, 'role.properties', {})), 
+		(firstProperty, secondProperty) => _.isEqual(_.get(firstProperty, '[1].GUID'), _.get(secondProperty, '[1].GUID'))
+	);
+	const entityData = {
+		role: { 
+			..._.omit(entity.role || {}, ['properties']), 
+			properties: Object.fromEntries(unionProperties)
+		}
+	};
+	const hydratedAlterColumnName = hydrateAlterColumnName(entity, properties);
+	const alterColumnScripts = provider.alterTableColumnName(hydratedAlterColumnName);
+	const modifiedScript = generateModifyCollectionScript(entityData, definitions, provider);
+	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
+	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
+	const addIndexScript = getIndexes(...hydratedAddIndex);
+
+	const fullCollectionName = generateFullEntityName(entity);
+	const deleteCollectionScript = provider.dropTable(fullCollectionName);
+	const hydratedCollection = hydrateCollection(entityData, definitions);
+	const addCollectionScript = getTableStatement(...hydratedCollection, true);
+
+	return modifiedScript.type === 'new' ? 
+		prepareScript(dropIndexScript, ...modifiedScript.script, addIndexScript) : 
+		prepareScript(dropIndexScript, deleteCollectionScript, addCollectionScript, ...alterColumnScripts, ...modifiedScript.script, addIndexScript);
+}
 
 module.exports = {
 	getAddCollectionsScripts,
@@ -216,5 +269,6 @@ module.exports = {
 	getAddColumnsScripts,
 	getDeleteColumnsScripts,
 	getDeleteColumnScripsForOlderRuntime,
+	getModifyColumnsScriptsForOlderRuntime,
 	getModifyColumnsScripts
 }

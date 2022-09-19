@@ -352,6 +352,8 @@ const getColumnsStatement = (columns, isParentActivated) => {
 	}).join(', ');
 };
 
+const getColumnsString = columns => columns.join(', ');
+
 const getColumnConstraintsStaitment = ({ notNull, unique, check, defaultValue }) => {
 	const constraints = [
 		(notNull && !unique) ? 'NOT NULL' : ''	
@@ -374,5 +376,6 @@ const getDescription = (definitions, property) => {
 module.exports = {
 	getColumns,
 	getColumnsStatement,
-	getColumnStatement
+	getColumnStatement,
+	getColumnsString,
 };
