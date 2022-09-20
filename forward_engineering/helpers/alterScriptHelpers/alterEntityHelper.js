@@ -52,10 +52,21 @@ const hydrateAlterColumnName = (entity, properties = {}) => {
 }
 
 const hydrateAlterColumnType = (properties = {}) => {
+	const isChangedType = (newField, oldField) => newField.type && oldField.type && (newField.type !== oldField.type || newField.mode !== oldField.mode);
 	const columns = Object.values(properties).map(property => {
 		const compMod = _.get(property, 'compMod', {});
 		const { newField = {}, oldField = {}} = compMod;
-		return newField.type && oldField.type && (newField.type !== oldField.type || newField.mode !== oldField.mode)
+		return isChangedType(oldField, newField) || 
+		(
+			newField.items && 
+			oldField.items && 
+			newField.items.some((field, index) => isChangedType(field, oldField.items[index]))
+		) ||
+		(
+			newField.properties && 
+			oldField.properties && 
+			Object.keys(newField.properties).some(key => isChangedType(newField.properties[key], oldField.properties[key]))
+		)
 			? { oldName: oldField.name, newName: newField.name }
 			: '';
 	});
@@ -164,6 +175,7 @@ const getAddColumnsScripts = (definitions, provider) => entity => {
 };
 
 const getDeleteColumnsScripts = (definitions, provider) => entity => {
+	setDependencies(dependencies);
 	const entityData = { ...entity, ..._.omit(entity.role, ['properties']) };
 	const { columns } = getColumns(entityData, true, definitions);
 	const properties = getEntityProperties(entity);
