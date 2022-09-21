@@ -124,6 +124,36 @@ const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recor
 	}
 };
 
+const fetchEntitySchema = async ({ connectionInfo, dbName, entityName, logger }) => {
+	try {
+		const sqlQuery = `DESC \`${dbName}\`.\`${entityName}\``;
+		const schemaResult = await executeCommand(connectionInfo, sqlQuery, 'sql');
+		
+		logger.log('info', { message: `Execute query: ${sqlQuery}`, dbName, entityName }, 'Getting schema');
+		
+		return schemaResult;
+	} catch (e) {
+		logger.log('error', { message: e.message, stack: e.stack, dbName, entityName }, 'Getting schema');
+
+		return [];
+	}
+};
+
+const fetchSample = async ({ connectionInfo, dbName, entityName, logger }) => {
+	try {
+		const sqlQuery = `SELECT * FROM \`${dbName}\`.\`${entityName}\` LIMIT 1`;
+		const schemaResult = await executeCommand(connectionInfo, sqlQuery, 'sql');
+		
+		logger.log('info', { message: `Execute query: ${sqlQuery}`, dbName, entityName }, 'Fetching sample');
+		
+		return schemaResult;
+	} catch (e) {
+		logger.log('error', { message: e.message, stack: e.stack, dbName, entityName }, 'Fetching sample');
+
+		return [];
+	}
+};
+
 const fetchClusterProperties = async (connectionInfo) => {
 	const query = connectionInfo.host + `/api/2.0/clusters/get?cluster_id=${connectionInfo.clusterId}`;
 	const options = getRequestOptions(connectionInfo)
@@ -481,4 +511,6 @@ module.exports = {
 	fetchDatabaseViewsNames,
 	fetchClusterTablesNames,
 	fetchDatabaseViewsNamesViaPython,
+	fetchEntitySchema,
+	fetchSample,
 };

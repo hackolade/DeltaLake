@@ -4,6 +4,7 @@ const SqlBaseToCollectionVisitor = require('../sqlBaseToCollectionsVisitor')
 const ExprErrorListener = require('../antlrErrorListener');
 const antlr4 = require('antlr4');
 const { dependencies } = require('../appDependencies');
+const schemaHelper = require('./schemaHelper');
 
 const getViewDataFromDDl = statement => {
 	const chars = new antlr4.InputStream(statement);
@@ -33,6 +34,25 @@ const getViewDataFromDDl = statement => {
 	}
 }
 
+const getJsonSchema = (viewSchema, viewSample) => {
+	const COL_NAME = 0;
+	const COL_TYPE = 1;
+	const COL_COMMENT = 2;
+
+	const properties = viewSchema.reduce((result, row, i) => {
+		return {
+			...result,
+			[row[COL_NAME]]: {
+				comments: row[COL_COMMENT],
+				...schemaHelper.getJsonSchema(row[COL_TYPE], viewSample?.[i])
+			},
+		};
+	}, {});
+
+	return { properties };
+};
+
 module.exports = {
-	getViewDataFromDDl
+	getViewDataFromDDl,
+	getJsonSchema,
 };
