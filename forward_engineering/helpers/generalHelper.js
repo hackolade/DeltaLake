@@ -42,7 +42,7 @@ const buildStatement = (mainStatement, isActivated) => {
 const isEscaped = (name) => /\`[\s\S]*\`/.test(name);
 
 const prepareName = (name = '') => {
-	const containSpaces = /\s/g;
+	const containSpaces = /[\s-]/g;
 	if (containSpaces.test(name) && !isEscaped(name)) {
 		return `\`${name}\``;
 	} else if (RESERVED_WORDS.includes(name.toLowerCase())) {
