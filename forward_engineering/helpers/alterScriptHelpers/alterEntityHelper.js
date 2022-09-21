@@ -235,6 +235,9 @@ const getModifyColumnsScripts = (definitions, provider) => entity => {
 
 	const fullCollectionName = generateFullEntityName(entity);
 	const { columnsToDelete, columnsToAdd } = hydrateAlterColumnType(properties);
+	if (columnsToDelete.length === Object.keys(properties).length) {
+		return getModifyColumnsScriptsForOlderRuntime(definitions, provider)(entity);
+	}
 	const { columns: columnsInfo } = getColumns(entityData.role, true, definitions);
 	const columnsToAddInfo = _.pick(columnsInfo,  columnsToAdd);
 	const addColumnStatement = getColumnsStatement(columnsToAddInfo);
