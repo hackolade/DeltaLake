@@ -176,7 +176,11 @@ const getAddColumnsScripts = (definitions, provider) => entity => {
 
 const getDeleteColumnsScripts = (definitions, provider) => entity => {
 	setDependencies(dependencies);
-	const entityData = { ...entity, ..._.omit(entity.role, ['properties']) };
+	const entityData = { 
+		...entity, 
+		..._.omit(entity.role, ['properties']),
+		properties: _.pickBy(entity.properties || {}, column => !column.compMod)
+	};
 	const { columns } = getColumns(entityData, true, definitions);
 	const properties = getEntityProperties(entity);
 	const columnStatement = getColumnsString(Object.keys(columns));
@@ -194,7 +198,7 @@ const getDeleteColumnsScripts = (definitions, provider) => entity => {
 
 const getDeleteColumnScripsForOlderRuntime = (definitions, provider) => entity => {
 	setDependencies(dependencies);
-	const deleteColumnsName = Object.keys(entity.properties || {});
+	const deleteColumnsName = _.filter(Object.keys(entity.properties || {}), name => !entity.properties[name].compMod);
 	const properties = _.omit(_.get(entity, 'role.properties', {}), deleteColumnsName);
 	const entityData = { role: { ..._.omit(entity.role, ['properties']), properties }};
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
