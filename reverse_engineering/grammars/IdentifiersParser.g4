@@ -148,7 +148,7 @@ castExpression
     LPAREN
           expression
           KW_AS
-          primitiveType
+          (primitiveType | structType)
     RPAREN
     ;
 
