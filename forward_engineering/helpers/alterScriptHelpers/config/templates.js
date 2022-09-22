@@ -19,11 +19,11 @@ module.exports = {
 
 	addTableColumns: 'ALTER TABLE ${name} ADD COLUMNS (${columns});',
 
-	addTableColumn: 'ALTER TABLE ${name} ADD COLUMN ${column};',
+	addTableColumn: 'ALTER TABLE ${name} ADD COLUMN (${column});',
 
 	dropTableColumns: 'ALTER TABLE ${name} DROP COLUMNS (${columns});',
 
-	dropTableColumn: 'ALTER TABLE ${name} DROP COLUMN ${column};',
+	dropTableColumn: 'ALTER TABLE ${name} DROP COLUMN (${column});',
 
 	setTableProperties: 'ALTER TABLE ${name} SET TBLPROPERTIES (${properties});',
 
