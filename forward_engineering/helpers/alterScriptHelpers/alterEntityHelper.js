@@ -1,5 +1,5 @@
 const { dependencies } = require('../appDependencies');
-const { getColumns, getColumnsStatement, getColumnsString } = require('../columnHelper');
+const { getColumns, getColumnsStatement, getColumnsString, getColumnStatement } = require('../columnHelper');
 const { getIndexes } = require('../indexHelper');
 const { getTableStatement } = require('../tableHelper');
 const { hydrateTableProperties, getDifferentItems, getIsChangeProperties } = require('./common');
@@ -235,19 +235,14 @@ const getModifyColumnsScripts = (definitions, provider) => entity => {
 
 	const fullCollectionName = generateFullEntityName(entity);
 	const { columnsToDelete, columnsToAdd } = hydrateAlterColumnType(properties);
-	if (columnsToDelete.length === Object.keys(properties).length) {
-		return getModifyColumnsScriptsForOlderRuntime(definitions, provider)(entity);
-	}
 	const { columns: columnsInfo } = getColumns(entityData.role, true, definitions);
-	const columnsToAddInfo = _.pick(columnsInfo,  columnsToAdd);
-	const addColumnStatement = getColumnsStatement(columnsToAddInfo);
-	const dropColumnStatement = getColumnsString(columnsToDelete);
-	const deleteColumnScript = provider.dropTableColumns({ name: fullCollectionName, columns: dropColumnStatement });
-	const addColumnScript = provider.addTableColumns({ name: fullCollectionName, columns: addColumnStatement });
-
+	const deleteColumnScripts = _.map(columnsToDelete, column => provider.dropTableColumn({ name: fullCollectionName, column }));
+	const addColumnScripts = _.map(columnsToAdd, column => 
+		provider.addTableColumn({ name: fullCollectionName, column: getColumnStatement({ name: column, ...columnsInfo[column] }) }));
+	const modifyPaired = _.flatten(_.zip(deleteColumnScripts, addColumnScripts));
 	return modifiedScript.type === 'new' ? 
 		prepareScript(dropIndexScript, ...modifiedScript.script, addIndexScript) : 
-		prepareScript(dropIndexScript, deleteColumnScript, addColumnScript, ...alterColumnScripts, ...modifiedScript.script, addIndexScript);
+		prepareScript(dropIndexScript, ...modifyPaired, ...alterColumnScripts, ...modifiedScript.script, addIndexScript);
 };
 
 const getModifyColumnsScriptsForOlderRuntime = (definitions, provider) => entity => {
