@@ -411,7 +411,8 @@ const createViewPackage = ({ name, viewData = {}, jsonSchema, documentTemplate }
 		ddl: {
 			script: `CREATE VIEW ${viewName} AS ${selectStatement};`.replace(/`/g, '"'),
 			type: 'postgres'
-		}
+		},
+		mergeSchemas: true,
 	};
 };
 
