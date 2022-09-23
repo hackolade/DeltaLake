@@ -132,7 +132,7 @@ viewName
     ;
 
 subQuerySource
-    : LPAREN queryStatementExpression RPAREN KW_AS? identifier
+    : LPAREN queryStatementExpression RPAREN (KW_AS? identifier)?
     ;
 
 //---------------------- Rules for parsing PTF clauses -----------------------------
