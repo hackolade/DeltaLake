@@ -243,7 +243,7 @@ module.exports = {
 
 const buildScript = (...statements) => {
 	const script = statements.filter((statement) => statement).join('\n\n');
-	const formattedScript = sqlFormatter.format(script, { indent: '    ' }) + '\n';
+	const formattedScript = sqlFormatter.format(script, { indent: '    ', language: 'spark' }) + '\n';
 
 	return formattedScript.replace(/\{\ \{\ (.+)\ \}\ \}/g, '{{$1}}');
 };
