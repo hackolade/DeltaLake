@@ -144,7 +144,7 @@ const getCommentedDropScript = (scripts, data) => {
 };
 
 const builds = scripts => {
-	const formatScripts = sqlFormatter.format(scripts.filter(Boolean).join('\n\n'), { indent: '    ', language: 'spark' });
+	const formatScripts = sqlFormatter.format(scripts.filter(Boolean).join('\n\n'), { indent: '    ' });
 	return formatScripts.split(';').map(script => script.trim()).join(';\n\n');
 };
 
