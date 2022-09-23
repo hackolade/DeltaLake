@@ -1,4 +1,5 @@
 const { dependencies } = require('./appDependencies');
+const cleanUpSelectStatement = require('./helpers/cleanUpSelectStatement');
 const {
     set,
     findEntityIndex,
@@ -235,7 +236,7 @@ const updateField = (entitiesData, bucket, statementData) => {
 
 const createView = (entitiesData, bucket, statementData, originalScript) => {
     const { views } = entitiesData;
-    const selectStatement = originalScript.substring(statementData.select.start, statementData.select.stop);
+    const selectStatement = cleanUpSelectStatement(originalScript.substring(statementData.select.start, statementData.select.stop));
 
     return {
         ...entitiesData,
