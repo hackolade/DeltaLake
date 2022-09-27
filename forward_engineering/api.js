@@ -31,9 +31,6 @@ module.exports = {
 			const areColumnConstraintsAvailable = data.modelData[0].dbVersion.startsWith(
 				'3'
 			);
-			const areForeignPrimaryKeyConstraintsAvailable = !data.modelData[0].dbVersion.startsWith(
-				'1'
-			);
 			let scripts = '';
 
 			if (data.isUpdateScript) {
@@ -50,9 +47,7 @@ module.exports = {
 						internalDefinitions,
 						externalDefinitions,
 					],
-					null,
 					areColumnConstraintsAvailable,
-					areForeignPrimaryKeyConstraintsAvailable
 				);
 				scripts = buildScript(
 					databaseStatement,
@@ -75,9 +70,7 @@ module.exports = {
 				'DeltaLake Forward-Engineering Error'
 			);
 
-			setTimeout(() => {
-				callback({ message: e.message, stack: e.stack });
-			}, 150);
+			callback({ message: e.message, stack: e.stack });
 		}
 	},
 
@@ -95,9 +88,6 @@ module.exports = {
 			);
 			const areColumnConstraintsAvailable = data.modelData[0].dbVersion.startsWith(
 				'3'
-			);
-			const areForeignPrimaryKeyConstraintsAvailable = !data.modelData[0].dbVersion.startsWith(
-				'1'
 			);
 			
 			if (data.isUpdateScript) {
@@ -162,9 +152,7 @@ module.exports = {
 				'Hive Forward-Engineering Error'
 			);
 
-			setTimeout(() => {
-				callback({ message: e.message, stack: e.stack });
-			}, 150);
+			callback({ message: e.message, stack: e.stack });
 		}
 	},
 
