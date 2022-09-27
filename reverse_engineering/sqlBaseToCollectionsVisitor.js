@@ -164,9 +164,13 @@ class Visitor extends SqlBaseVisitor {
 	}
 
 	visitTablePropertyList(ctx){
+		return this.visit(ctx.tableProperty());
+	}
+
+	visitTableProperty(ctx) {
 		return {
-			start: ctx.start.start,
-			stop: ctx.stop.stop
+			propertyKey: getLabelValue(ctx, 'key'),
+			propertyValue: getLabelValue(ctx, 'value'),
 		}
 	}
 
