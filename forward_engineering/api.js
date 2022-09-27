@@ -5,7 +5,7 @@ const { getDatabaseStatement } = require('./helpers/databaseHelper');
 const { getTableStatement } = require('./helpers/tableHelper');
 const { getIndexes } = require('./helpers/indexHelper');
 const { getViewScript } = require('./helpers/viewHelper');
-const { getCleanedUrl } = require('./helpers/generalHelper');
+const { getCleanedUrl, getTab } = require('./helpers/generalHelper');
 let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')
@@ -123,23 +123,23 @@ module.exports = {
 			viewsScripts = viewsScripts.filter(script => !dependencies.lodash.isEmpty(script));
 
 			const entities = data.entities.reduce((result, entityId) => {
+				const entityData = data.entityData[entityId];
 				const args = [
 					containerData,
-					data.entityData[entityId],
+					entityData,
 					jsonSchema[entityId],
 					[
 						internalDefinitions[entityId],
 						modelDefinitions,
 						externalDefinitions,
 					],
-					true
 				];
+				const likeTableData = data.entityData[getTab(0, entityData)?.like];
 
 				const tableStatement = getTableStatement(
 					...args,
-					null,
 					areColumnConstraintsAvailable,
-					areForeignPrimaryKeyConstraintsAvailable
+					likeTableData,
 				)
 
 				return result.concat([
