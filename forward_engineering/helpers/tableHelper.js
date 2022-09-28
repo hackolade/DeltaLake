@@ -317,6 +317,7 @@ const getCorrectUsing = using => {
 }
 
 const getTablePropertiesClause = tableProperties => {
+	setDependencies(dependencies);
 	const isText = _.overEvery([value => _.isNaN(_.toNumber(value)), value => value !== 'true' && value !== 'false']);
 	const tablePropertyStatements = (tableProperties || []).map(({ propertyKey, propertyValue = undefined }) => {
 		let value = propertyValue;
