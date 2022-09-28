@@ -5,17 +5,17 @@
 		"dbVendor": "Delta Lake"
 	},
 	"container": {
-		"name": "New database",
+		"name": "New_database",
 		"indexes": []
 	},
 	"collection": {
-		"collectionName": "New table",
+		"collectionName": "New_table",
 		"collectionUsers": [],
 		"collation": {},
 		"tableIfNotExists": true
 	},
 	"field": {
-		"name": "New column"
+		"name": "New_column"
 	},
 	"patternField": {
 		"name": "^[a-zA-Z0-9_.-]+$"

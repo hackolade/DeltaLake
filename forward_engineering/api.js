@@ -5,7 +5,7 @@ const { getDatabaseStatement } = require('./helpers/databaseHelper');
 const { getTableStatement } = require('./helpers/tableHelper');
 const { getIndexes } = require('./helpers/indexHelper');
 const { getViewScript } = require('./helpers/viewHelper');
-const { getCleanedUrl } = require('./helpers/generalHelper');
+const { getCleanedUrl, getTab } = require('./helpers/generalHelper');
 let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')
@@ -31,9 +31,6 @@ module.exports = {
 			const areColumnConstraintsAvailable = data.modelData[0].dbVersion.startsWith(
 				'3'
 			);
-			const areForeignPrimaryKeyConstraintsAvailable = !data.modelData[0].dbVersion.startsWith(
-				'1'
-			);
 			let scripts = '';
 
 			if (data.isUpdateScript) {
@@ -50,9 +47,7 @@ module.exports = {
 						internalDefinitions,
 						externalDefinitions,
 					],
-					null,
 					areColumnConstraintsAvailable,
-					areForeignPrimaryKeyConstraintsAvailable
 				);
 				scripts = buildScript(
 					databaseStatement,
@@ -75,9 +70,7 @@ module.exports = {
 				'DeltaLake Forward-Engineering Error'
 			);
 
-			setTimeout(() => {
-				callback({ message: e.message, stack: e.stack });
-			}, 150);
+			callback({ message: e.message, stack: e.stack });
 		}
 	},
 
@@ -95,9 +88,6 @@ module.exports = {
 			);
 			const areColumnConstraintsAvailable = data.modelData[0].dbVersion.startsWith(
 				'3'
-			);
-			const areForeignPrimaryKeyConstraintsAvailable = !data.modelData[0].dbVersion.startsWith(
-				'1'
 			);
 			
 			if (data.isUpdateScript) {
@@ -123,23 +113,23 @@ module.exports = {
 			viewsScripts = viewsScripts.filter(script => !dependencies.lodash.isEmpty(script));
 
 			const entities = data.entities.reduce((result, entityId) => {
+				const entityData = data.entityData[entityId];
 				const args = [
 					containerData,
-					data.entityData[entityId],
+					entityData,
 					jsonSchema[entityId],
 					[
 						internalDefinitions[entityId],
 						modelDefinitions,
 						externalDefinitions,
 					],
-					true
 				];
+				const likeTableData = data.entityData[getTab(0, entityData)?.like];
 
 				const tableStatement = getTableStatement(
 					...args,
-					null,
 					areColumnConstraintsAvailable,
-					areForeignPrimaryKeyConstraintsAvailable
+					likeTableData,
 				)
 
 				return result.concat([
@@ -162,9 +152,7 @@ module.exports = {
 				'Hive Forward-Engineering Error'
 			);
 
-			setTimeout(() => {
-				callback({ message: e.message, stack: e.stack });
-			}, 150);
+			callback({ message: e.message, stack: e.stack });
 		}
 	},
 

@@ -68,14 +68,18 @@ module.exports = {
 		const columns = schema.properties || {};
 		const view = _.first(viewData) || {};
 
+		if (!view.isActivated) {
+			return;
+		}
+
 		const bucketName = replaceSpaceWithUnderscore(prepareName(retrieveContainerName(containerData)));
 		const viewName = replaceSpaceWithUnderscore(prepareName(view.code || view.name));
 		const isGlobal = schema.viewGlobal && schema.viewTemporary;
 		const isTemporary = schema.viewTemporary;
-		const orReplace = schema.viewOrReplace
-		const fromStatement = getFromStatement(collectionRefsDefinitionsMap, columns);
+		const orReplace = schema.viewOrReplace;
+		const ifNotExists = view.viewIfNotExist;
 		const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
-		const createStatement = `CREATE ${orReplace ? 'OR REPLACE ' : ''}${isGlobal ? 'GLOBAL ' : ''}${isTemporary ? 'TEMPORARY ' : ''}VIEW IF NOT EXISTS ${name}`;
+		const createStatement = `CREATE ${(orReplace && !ifNotExists) ? 'OR REPLACE ' : ''}${isGlobal ? 'GLOBAL ' : ''}${isTemporary ? 'TEMPORARY ' : ''}VIEW${ifNotExists ? ' IF NOT EXISTS' : ''} ${name}`;
 		const comment = schema.description;
 		script.push(createStatement);
 		if (schema.selectStatement) {
@@ -91,6 +95,7 @@ module.exports = {
 		}
 
 		if (!_.isEmpty(columns)) {
+			const fromStatement = getFromStatement(collectionRefsDefinitionsMap, columns);
 			const columnsNames = getColumnNames(collectionRefsDefinitionsMap, columns);
 			script.push(`AS SELECT ${columnsNames.join(', ')}`);
 			script.push(fromStatement);

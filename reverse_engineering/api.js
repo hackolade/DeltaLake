@@ -251,22 +251,40 @@ module.exports = {
 					return [...packages, ...tablesPackages];
 				}
 
-				const views = viewsNames[dbName].map((name) => {
-					progress({ message: 'Start processing data from view', containerName: dbName, entityName: name });
-					const ddl = ddlByEntity[`${dbName}.${name}`];
-					let viewData = {};
+				const views = await async.mapLimit(
+					viewsNames[dbName],
+					40,
+					async (name) => {
+						progress({ message: 'Start processing data from view', containerName: dbName, entityName: name });
+						const ddl = ddlByEntity[`${dbName}.${name}`];
+						let viewData = {};
+						let jsonSchema;
+						let documentTemplate;
+	
+						try {
+							const viewSchema = await fetchRequestHelper.fetchEntitySchema({ connectionInfo: connectionData, dbName, entityName: name, logger });
+							const viewSample = await fetchRequestHelper.fetchSample({ connectionInfo: connectionData, dbName, entityName: name, logger });
+							viewData = viewDDLHelper.getViewDataFromDDl(ddl);
+							jsonSchema = viewDDLHelper.getJsonSchema(viewSchema, viewSample);
 
-					try {
-						viewData = viewDDLHelper.getViewDataFromDDl(ddl);
-					} catch (e) {
-						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
-						return createViewPackage(name);
-					}
-
-					progress({ message: 'View data processed successfully', containerName: dbName, entityName: name });
-
-					return createViewPackage(name, viewData);
-				});
+							if (fieldInference.active === 'field') {
+								documentTemplate = getTemplateDocByJsonSchema(jsonSchema);
+							}
+						} catch (e) {
+							logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
+							return createViewPackage({ name });
+						}
+	
+						progress({ message: 'View data processed successfully', containerName: dbName, entityName: name });
+	
+						return createViewPackage({
+							name,
+							viewData,
+							jsonSchema,
+							documentTemplate,
+						});
+					},
+				);
 
 				const viewPackage = Promise.resolve({
 					dbName: dbName,
@@ -378,12 +396,14 @@ const handleError = (logger, error, cb) => {
 	cb(message);
 };
 
-const createViewPackage = (name, viewData = {}) => {
+const createViewPackage = ({ name, viewData = {}, jsonSchema, documentTemplate }) => {
 	const selectStatement = viewData.selectStatement || '';
 	const viewName = viewData.code || name;
 
 	return {
 		name,
+		documentTemplate,
+		jsonSchema,
 		data: {
 			...viewData,
 			selectStatement,
@@ -391,7 +411,8 @@ const createViewPackage = (name, viewData = {}) => {
 		ddl: {
 			script: `CREATE VIEW ${viewName} AS ${selectStatement};`.replace(/`/g, '"'),
 			type: 'postgres'
-		}
+		},
+		mergeSchemas: true,
 	};
 };
 
