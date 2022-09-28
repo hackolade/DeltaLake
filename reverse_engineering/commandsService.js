@@ -1,4 +1,5 @@
 const { dependencies } = require('./appDependencies');
+const cleanUpSelectStatement = require('./helpers/cleanUpSelectStatement');
 const {
     set,
     findEntityIndex,
@@ -70,11 +71,20 @@ const convertCommandsToEntities = (commands, originalScript) => {
 const convertCommandsToReDocs = (commands, originalScript) => {
     const reData = convertCommandsToEntities(commands, originalScript);
     const createBuckets = [];
+    let views = reData.views;
 
     let result = reData.entities.map((entity) => {
-        const relatedViews = reData.views.filter((view) => view.collectionName === entity.collectionName);
+        const { relatedViews, restViews } = views.reduce((result, view) => {
+            if (view.collectionName === entity.collectionName) {
+                return { ...result, relatedViews: [...result.relatedViews, view] };
+            } else {
+                return { ...result, restViews: [...result.restViews, view] };
+            }
+        }, { relatedViews: [], restViews: [] });
 
-        if (createBuckets.includes(entity.bucketName)) {
+        views = restViews;
+
+        if (!createBuckets.includes(entity.bucketName)) {
             createBuckets.push(entity.bucketName);
         }
 
@@ -93,8 +103,27 @@ const convertCommandsToReDocs = (commands, originalScript) => {
         };
     });
 
+    if (views.length) {
+        const viewDocs = views.map(view => {
+            if (!createBuckets.includes(view.bucketName)) {
+                createBuckets.push(view.bucketName);
+            }
+            
+            return {
+                doc: {
+                    dbName: view.bucketName,
+                    collectionName: view.collectionName,
+                    bucketInfo: reData.buckets[view.bucketName] || {},
+                    views: [view],
+                }
+            };
+        });
+
+        result = result.concat(viewDocs);
+    }
+
     if (Object.keys(reData.buckets || {}).length !== createBuckets.length) {
-        const emptyBuckets = Object.keys(reData.buckets).map((bucketName) => {
+        const emptyBuckets = Object.keys(reData.buckets).filter(bucketName => !createBuckets.includes(bucketName)).map((bucketName) => {
             return {
                 doc: {
                     dbName: bucketName,
@@ -235,7 +264,7 @@ const updateField = (entitiesData, bucket, statementData) => {
 
 const createView = (entitiesData, bucket, statementData, originalScript) => {
     const { views } = entitiesData;
-    const selectStatement = originalScript.substring(statementData.select.start, statementData.select.stop);
+    const selectStatement = cleanUpSelectStatement(originalScript.substring(statementData.select.start, statementData.select.stop));
 
     return {
         ...entitiesData,
