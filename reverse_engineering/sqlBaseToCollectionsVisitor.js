@@ -158,16 +158,19 @@ class Visitor extends SqlBaseVisitor {
 			createFileFormat: this.visitIfExists(ctx, 'createFileFormat', [])[0],
 			locationSpec: this.visitIfExists(ctx, 'locationSpec', [])[0],
 			commentSpec: this.visitIfExists(ctx, 'commentSpec', [])[0],
-			tableProperties: this.visitIfExists(ctx, 'tableProperties', {start:0, stop:-1})?.[0]?.[1],
+			tableProperties: this.visitIfExists(ctx, 'tableProperties', [])?.[0]?.[1],
 			tableOptions: this.visitIfExists(ctx, 'tableOptions', {start:0, stop:-1})?.[0]?.[1],
 		}
 	}
 
 	visitTablePropertyList(ctx){
-		return {
-			start: ctx.start.start,
-			stop: ctx.stop.stop
-		}
+		return this.visit(ctx.tableProperty());
+	}
+
+	visitTableProperty(ctx) {
+		const propertyKey = getName(ctx.key);
+		const propertyValue = getName(ctx.value);
+		return ctx.value === undefined ? { propertyKey } : { propertyKey, propertyValue };
 	}
 
 	visitLocationSpec(ctx) {

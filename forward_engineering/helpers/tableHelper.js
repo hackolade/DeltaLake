@@ -66,7 +66,7 @@ const getCreateUsingStatement = ({
 		(numBuckets && clusteredKeys, `INTO ${numBuckets} BUCKETS`)
 		(location, `LOCATION '${location}'`)
 		(comment, `COMMENT '${encodeStringLiteral(comment)}'`)
-		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
+		(tableProperties, `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)
 		(tableOptions, `OPTIONS ${tableOptions}`)
 		(selectStatement, `AS ${selectStatement}`)
 		(true, ';')
@@ -89,7 +89,7 @@ const getCreateHiveStatement = ({
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
 		(storedAsStatement, storedAsStatement)
 		(location, `LOCATION '${location}'`)
-		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
+		(tableProperties, `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)
 		(tableOptions, `OPTIONS ${tableOptions}`)
 		(selectStatement, `AS ${selectStatement}`)
 		(true, ';')
@@ -109,7 +109,7 @@ const getCreateLikeStatement = ({
 		(using, `USING ${getCorrectUsing(using)}`)
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
 		(storedAsStatement, storedAsStatement)
-		(tableProperties, `TBLPROPERTIES ${tableProperties}`)
+		(tableProperties, `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)
 		(tableOptions, `OPTIONS ${tableOptions}`)
 		(location, `LOCATION '${location}'`)
 		(true, ';')
@@ -325,7 +325,24 @@ const getCorrectUsing = using => {
 	}
 }
 
+const getTablePropertiesClause = tableProperties => {
+	setDependencies(dependencies);
+	const isText = _.overEvery([value => _.isNaN(_.toNumber(value)), value => value !== 'true' && value !== 'false']);
+	const tablePropertyStatements = (tableProperties || []).map(({ propertyKey, propertyValue = undefined }) => {
+		let value = propertyValue;
+		if (value === undefined) {
+			return propertyKey;
+		}
+		if (isText(value)) {
+			value = `'${value}'`;
+		}
+		return `${propertyKey} = ${value}`;
+	});
+	return tablePropertyStatements.join(', ');
+}
+
 
 module.exports = {
 	getTableStatement,
+	getTablePropertiesClause,
 };

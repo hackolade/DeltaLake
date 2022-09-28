@@ -300,7 +300,30 @@ class Visitor extends HiveParserVisitor {
     }
 
     visitTablePropertiesPrefixed(ctx) {
-        return ctx.tableProperties().getText();
+        return this.visit(ctx.tableProperties());
+    }
+
+    visitTableProperties(ctx) {
+        return this.visit(ctx.tablePropertiesList());
+    }
+
+    visitTablePropertiesList(ctx) {
+        const keyValueProperties = this.visitWhenExists(ctx, 'keyValueProperty', []);
+        const keyProperties = this.visitWhenExists(ctx, 'keyProperty', []);
+        return [
+            ...keyValueProperties,
+            ...keyProperties.map(propertyKey => ({ propertyKey })),
+        ]
+    }
+
+    visitKeyValueProperty(ctx) {
+        const propertyKey = this.visit(ctx.keyProperty());
+        const propertyValue = removeSingleDoubleQuotes(ctx.keyValue().getText());
+        return { propertyKey, propertyValue };
+    }
+
+    visitKeyProperty(ctx) {
+        return ctx.getText();
     }
 
     visitTableOptions(ctx) {
@@ -1101,10 +1124,6 @@ class Visitor extends HiveParserVisitor {
 
     visitColumnParenthesesList(ctx) {
         return this.visit(ctx.columnNameList());
-    }
-
-    visitTableProperties(ctx) {
-        return ctx.getText();
     }
 
     visitDropIndexStatement(ctx) {

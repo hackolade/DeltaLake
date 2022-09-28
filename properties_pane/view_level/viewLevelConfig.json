@@ -165,10 +165,22 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Table properties",
 				"propertyKeyword": "tableProperties",
-				"propertyType": "details",
-				"template": "textarea",
-				"markdown": false,
-				"valueType": "string"
+				"propertyType": "group",
+				"structure": [
+					{
+						"propertyName": "Name",
+						"propertyKeyword": "propertyKey",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "propertyValue",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"valueType": "string"
+					}
+				]
 			},
 			{
 				"propertyName": "Comments",
