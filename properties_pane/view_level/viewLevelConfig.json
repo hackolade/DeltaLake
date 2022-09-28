@@ -129,7 +129,11 @@ making sure that you maintain a proper JSON format.
 				"propertyName": "Or replace",
 				"propertyKeyword": "viewOrReplace",
 				"propertyType": "checkbox",
-				"propertyTooltip": "If specified, the resources for the view are reloaded. This is mainly useful to pick up any changes made to the implementation of the view. This parameter is mutually exclusive to IF NOT EXISTS and cannot be specified together."
+				"propertyTooltip": "If specified, the resources for the view are reloaded. This is mainly useful to pick up any changes made to the implementation of the view. This parameter is mutually exclusive to IF NOT EXISTS and cannot be specified together.",
+				"disabledOnCondition": {
+					"key": "viewIfNotExist",
+					"value": true
+				}
 			},
 			{
 				"propertyName": "Temporary",
@@ -152,7 +156,11 @@ making sure that you maintain a proper JSON format.
 				"propertyKeyword": "viewIfNotExist",
 				"propertyTooltip": "If specified, creates the view only when it does not exist. The creation of view succeeds (no error is thrown) if the specified view already exists in the system. This parameter is mutually exclusive to OR REPLACE and cannot be specified together.",
 				"defaultValue": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"disabledOnCondition": {
+					"key": "viewOrReplace",
+					"value": true
+				}
 			},
 			{
 				"propertyName": "Table properties",
