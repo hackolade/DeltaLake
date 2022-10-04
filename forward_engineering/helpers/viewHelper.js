@@ -30,14 +30,17 @@ const getFromStatement = (collectionRefsDefinitionsMap, columns) => {
 	const sourceCollections = _.uniq(Object.keys(columns).map(name => {
 		const refId = columns[name].refId;
 		const source = collectionRefsDefinitionsMap[refId];
-		const collection = _.first(source.collection) || {};
-		const bucket = _.first(source.bucket) || {};
+		if (!source) {
+			return;
+		}
+		const collection = _.first(source?.collection) || {};
+		const bucket = _.first(source?.bucket) || {};
 		const collectionName = prepareName(collection.collectionName || collection.code);
 		const bucketName = prepareName(bucket.name || bucket.code || '');
 		const fullCollectionName = bucketName ? `${bucketName}.${collectionName}` : `${collectionName}`;
 
 		return fullCollectionName;
-	}));
+	}).filter(Boolean));
 	if (_.isEmpty(sourceCollections)) {
 		return '';
 	}
@@ -97,8 +100,13 @@ module.exports = {
 		if (!_.isEmpty(columns)) {
 			const fromStatement = getFromStatement(collectionRefsDefinitionsMap, columns);
 			const columnsNames = getColumnNames(collectionRefsDefinitionsMap, columns);
-			script.push(`AS SELECT ${columnsNames.join(', ')}`);
-			script.push(fromStatement);
+
+			if (fromStatement && columnsNames?.length) {
+				script.push(`AS SELECT ${columnsNames.join(', ')}`);
+				script.push(fromStatement);
+			} else {
+				return;
+			}
 		}
 
 		return script.join('\n  ') + ';\n\n\n\n\n'
