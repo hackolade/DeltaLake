@@ -28,9 +28,6 @@ module.exports = {
 			const externalDefinitions = JSON.parse(data.externalDefinitions);
 			const containerData = data.containerData;
 			const entityData = data.entityData;
-			const areColumnConstraintsAvailable = data.modelData[0].dbVersion.startsWith(
-				'3'
-			);
 			let scripts = '';
 
 			if (data.isUpdateScript) {
@@ -47,7 +44,7 @@ module.exports = {
 						internalDefinitions,
 						externalDefinitions,
 					],
-					areColumnConstraintsAvailable,
+					true,
 				);
 				scripts = buildScript(
 					databaseStatement,
@@ -85,9 +82,6 @@ module.exports = {
 			const internalDefinitions = parseEntities(
 				data.entities,
 				data.internalDefinitions
-			);
-			const areColumnConstraintsAvailable = data.modelData[0].dbVersion.startsWith(
-				'3'
 			);
 			
 			if (data.isUpdateScript) {
@@ -128,7 +122,7 @@ module.exports = {
 
 				const tableStatement = getTableStatement(
 					...args,
-					areColumnConstraintsAvailable,
+					true,
 					likeTableData,
 				)
 

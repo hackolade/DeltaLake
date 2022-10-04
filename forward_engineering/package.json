@@ -4,7 +4,7 @@
   "description": "",
   "author": "Hackolade",
   "dependencies": {
-    "sql-formatter": "^8.0.0"
+    "sql-formatter": "^2.3.3"
   },
   "installed": true
 }
