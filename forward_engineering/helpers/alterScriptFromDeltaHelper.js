@@ -21,6 +21,7 @@ const {
 const { DROP_STATEMENTS } = require('./constants');
 const { commentDeactivatedStatements } = require('./generalHelper');
 const sqlFormatter = require('sql-formatter');
+const { getDBVersionNumber } = require('./alterScriptHelpers/common');
 
 const getItems = (entity, nameProperty, modify) =>
 	[]
@@ -46,7 +47,7 @@ const getAlterCollectionsScripts = ({ schema, definitions, provider, data }) => 
 		items.filter(item => item.compMod?.[compMode]).flatMap(getScript);
 
 	const getColumnScripts = (items, getScript) => items.filter(item => !item.compMod).flatMap(getScript);
-	const dbVersionNumber = ~~(data.modelData[0].dbVersion.split(' ')[1]);
+	const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
 	const getDeletedColumnsScriptsMethod = dbVersionNumber < 11 ? getDeleteColumnScripsForOlderRuntime : getDeleteColumnsScripts;
 	const getModifyColumnsScriptsMethod = dbVersionNumber < 11 ? getModifyColumnsScriptsForOlderRuntime : getModifyColumnsScripts;
 

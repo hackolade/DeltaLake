@@ -34,8 +34,11 @@ const compareProperties = ({new: newProperty, old: oldProperty}) => {
 const getIsChangeProperties = (compMod, properties) => 
 	properties.some(property => compareProperties(compMod[property] || {}));
 
+const getDBVersionNumber = dbVersionString => ~~(dbVersionString.split(' ')[1]);
+
 module.exports = {
 	hydrateTableProperties,
 	getDifferentItems,
-	getIsChangeProperties
+	getIsChangeProperties,
+	getDBVersionNumber,
 }
