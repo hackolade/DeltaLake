@@ -130,6 +130,18 @@ const fetchEntitySchema = async ({ connectionInfo, dbName, entityName, logger })
 		const schemaResult = await executeCommand(connectionInfo, sqlQuery, 'sql');
 		
 		logger.log('info', { message: `Execute query: ${sqlQuery}`, dbName, entityName }, 'Getting schema');
+
+		const truncatedColumns = schemaResult.map(([ name, dataType ], i) => /more fields>*$/.test(dataType) ? [ name, i ] : null).filter(Boolean);
+
+		if (truncatedColumns.length) {
+			await truncatedColumns.reduce(async (prev, [ columnName, position ]) => {
+				await prev;
+				const DATA_TYPE_COLUMN = 1;
+				const DATA_TYPE_ROW = 1;
+				const result = await executeCommand(connectionInfo, `${sqlQuery} \`${columnName}\``, 'sql');
+				schemaResult[position][DATA_TYPE_COLUMN] = result[DATA_TYPE_ROW][DATA_TYPE_COLUMN];
+			}, Promise.resolve());
+		}
 		
 		return schemaResult;
 	} catch (e) {
