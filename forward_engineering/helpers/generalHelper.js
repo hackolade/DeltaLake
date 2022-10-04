@@ -135,7 +135,7 @@ const getCleanedUrl = url => {
 }
 
 const encodeStringLiteral = (str = '') => {
-	return str.replace(/(')/gi, '\\$1').replace(/\n/gi, '\\n');
+	return str.replace(/(['\\])/gi, '\\$1').replace(/\n/gi, '\\n');
 }
 
 module.exports = {
