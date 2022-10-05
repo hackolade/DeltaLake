@@ -47,6 +47,8 @@ const prepareName = (name = '') => {
 		return `\`${name}\``;
 	} else if (RESERVED_WORDS.includes(name.toLowerCase())) {
 		return `\`${name}\``;
+	} else if (name === '') {
+		return '';
 	} else if (!isNaN(name)){
 		return `\`${name}\``;
 	}
@@ -135,7 +137,7 @@ const getCleanedUrl = url => {
 }
 
 const encodeStringLiteral = (str = '') => {
-	return str.replace(/(')/gi, '\\$1').replace(/\n/gi, '\\n');
+	return str.replace(/(['\\])/gi, '\\$1').replace(/\n/gi, '\\n');
 }
 
 module.exports = {
