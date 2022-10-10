@@ -21,6 +21,7 @@ const getMapSubtype = (type) => {
 		case "numeric": return subtype("num");
 		case "bool": return subtype("bool");
 		case "timestamp": return subtype("ts");
+		case "binary": return subtype("bin");
 		case "date": return subtype("date");
 		case "interval": return subtype("intrvl");
 		case "array": return subtype("array");
