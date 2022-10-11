@@ -852,11 +852,12 @@ class Visitor extends HiveParserVisitor {
         const isUnion = !items.type || Array.isArray(items.type);
         const itemType = isUnion ? 'union' : items.type;
         const key = this.visit(ctx.primitiveType());
+        const properties = Boolean(items?.properties) || Boolean(items?.items) ? { 'new_column': items } : {};
 
         return {
             type: 'map',
             subtype: schemaHelper.getMapSubtype(itemType),
-            properties: items.oneOf ? {} : { 'New column': items },
+            properties: items.oneOf ? {} : properties   ,
             ...(items.oneOf && { oneOf: getOneOf(items.oneOf, 'New column') }),
             ...schemaHelper.getMapKeyType(key),
         };
