@@ -124,8 +124,10 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "details",
 				"propertyTooltip": "select statement",
 				"template": "textarea",
-				"markdown": false
-			},				{
+				"markdown": false,
+				"generateProperties": true
+			},
+			{
 				"propertyName": "Or replace",
 				"propertyKeyword": "viewOrReplace",
 				"propertyType": "checkbox",
