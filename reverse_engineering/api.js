@@ -317,23 +317,7 @@ module.exports = {
 		try {
 			setDependencies(app);
 			const input = await handleFileData(data.filePath);
-			const chars = new antlr4.InputStream(input);
-			const lexer = new HiveLexer.HiveLexer(chars);
-
-			const tokens = new antlr4.CommonTokenStream(lexer);
-			const parser = new HiveParser.HiveParser(tokens);
-			parser.removeErrorListeners();
-			parser.addErrorListener(new ExprErrorListener());
-
-			const tree = parser.statements();
-
-			const hqlToCollectionsGenerator = new hqlToCollectionsVisitor();
-
-			const commands = tree.accept(hqlToCollectionsGenerator);
-			const { result, info, relationships } = commandsService.convertCommandsToReDocs(
-				dependencies.lodash.flatten(commands).filter(Boolean),
-				input
-			);
+			const { result, info, relationships } = parseDDLStatements(input);
 			callback(null, result, info, relationships, 'multipleSchema');
 		} catch (err) {
 			handleError(logger, err, callback);
@@ -369,6 +353,21 @@ module.exports = {
 			callback(err);
 		}
 	},
+
+	parseViewStatement(data, logger, callback, app) {
+		try {
+			setDependencies(app);
+			const statement = data.statement;
+			const { result } = parseDDLStatements('CREATE VIEW `db`.`name` AS ' + statement + ';\n');
+
+			callback(null, {
+				jsonSchema: {},
+				ddl: result?.[0]?.doc?.views?.[0]?.ddl,
+			});
+		} catch(err) {
+			handleError(logger, err, callback);
+		}
+	}
 };
 
 const handleFileData = filePath => {
@@ -464,4 +463,24 @@ const getArraySubtypeByChildren = (_, arraySchema) => {
 	if (item.properties) {
 		return subtype("struct");
 	}
+};
+
+const parseDDLStatements = (input) => {
+	const chars = new antlr4.InputStream(input);
+	const lexer = new HiveLexer.HiveLexer(chars);
+
+	const tokens = new antlr4.CommonTokenStream(lexer);
+	const parser = new HiveParser.HiveParser(tokens);
+	parser.removeErrorListeners();
+	parser.addErrorListener(new ExprErrorListener());
+
+	const tree = parser.statements();
+
+	const hqlToCollectionsGenerator = new hqlToCollectionsVisitor();
+
+	const commands = tree.accept(hqlToCollectionsGenerator);
+	return commandsService.convertCommandsToReDocs(
+		dependencies.lodash.flatten(commands).filter(Boolean),
+		input
+	);
 };
