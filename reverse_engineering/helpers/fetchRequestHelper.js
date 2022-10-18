@@ -147,7 +147,12 @@ const fetchEntitySchema = async ({ connectionInfo, dbName, entityName, logger })
 	} catch (e) {
 		logger.log('error', { message: e.message, stack: e.stack, dbName, entityName }, 'Getting schema');
 
-		return [];
+		throw {
+			type: 'warning',
+			code: 'VIEW_SCHEMA_ERROR',
+			dbName,
+			entityName,
+		};
 	}
 };
 
