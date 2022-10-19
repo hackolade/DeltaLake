@@ -179,6 +179,9 @@ module.exports = {
 			}, {})
 
 			progress({ message: 'Entities ddl retrieved successfully', containerName: 'databases', entityName: 'entities' });
+
+			let warnings = [];
+
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];
 				const packages = await packagesPromise;
@@ -262,8 +265,20 @@ module.exports = {
 						let documentTemplate;
 	
 						try {
-							const viewSchema = await fetchRequestHelper.fetchEntitySchema({ connectionInfo: connectionData, dbName, entityName: name, logger });
-							const viewSample = await fetchRequestHelper.fetchSample({ connectionInfo: connectionData, dbName, entityName: name, logger });
+							let viewSchema = [];
+							let viewSample = [];
+							
+							try {
+								viewSchema = await fetchRequestHelper.fetchEntitySchema({ connectionInfo: connectionData, dbName, entityName: name, logger });
+								viewSample = await fetchRequestHelper.fetchSample({ connectionInfo: connectionData, dbName, entityName: name, logger });
+							} catch (e) {
+								if (e.type === 'warning') {
+									warnings.push(e);
+								} else {
+									throw e;
+								}
+							}
+							
 							viewData = viewDDLHelper.getViewDataFromDDl(ddl);
 							jsonSchema = viewDDLHelper.getJsonSchema(viewSchema, viewSample);
 
@@ -298,6 +313,14 @@ module.exports = {
 			}, Promise.resolve([]))
 			const packages = await Promise.all(entitiesPromises);
 			fetchRequestHelper.destroyActiveContext();
+
+			if (warnings.length) {
+				modelData = {
+					...(modelData || {}),
+					warning: createWarning(warnings),
+				};
+			}
+
 			cb(null, packages, modelData);
 		} catch (err) {
 			const clusterState = modelData || await databricksHelper.getClusterStateInfo(connectionData, logger);
@@ -483,4 +506,18 @@ const parseDDLStatements = (input) => {
 		dependencies.lodash.flatten(commands).filter(Boolean),
 		input
 	);
+};
+
+const createWarning = (warnings) => {
+	const viewsWarnings = warnings.filter(warning => warning.code === 'VIEW_SCHEMA_ERROR');
+	const viewNames = viewsWarnings.slice(0, 3).map(warning => `\`${warning.dbName}\`.\`${warning.entityName}\``).join('\n') + (warnings.length > 3 ? '\n...' : '');
+
+	const viewWarningMessage = `The schema of view(s) cannot be retrieved:\n${viewNames}\nPlease, make sure you refreshed them in the database after updating table structure.\nPlease, see the log file for more details.`;
+
+	return {
+		title: 'Reverse-Engineering',
+		message: viewWarningMessage,
+		openLog: true,
+		size: 'middle'
+	};
 };
