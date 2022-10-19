@@ -512,7 +512,7 @@ const createWarning = (warnings) => {
 	const viewsWarnings = warnings.filter(warning => warning.code === 'VIEW_SCHEMA_ERROR');
 	const viewNames = viewsWarnings.slice(0, 3).map(warning => `\`${warning.dbName}\`.\`${warning.entityName}\``).join('\n') + (warnings.length > 3 ? '\n...' : '');
 
-	const viewWarningMessage = `The schema of the following view(s) cannot be retrieved:\n${viewNames}\n because there's an inconsistency with their underlying tables.\n You must refresh the view(s) in the database, then try this process again.\nSee the log file for more details.`;
+	const viewWarningMessage = `The schema of the following view(s) cannot be retrieved:\n${viewNames}\n because there's an inconsistency with their underlying tables.\n You must refresh the view(s) in the database, then try this process again.\n See the log file for more details.`;
 
 	return {
 		title: 'Reverse-Engineering',
