@@ -12,7 +12,7 @@
 # alias grun='java org.antlr.v4.gui.TestRig'
 
 # build parser
-antlr4 -Dlanguage=JavaScript \
+java -jar /usr/local/lib/antlr-4.9.2-complete.jar -Dlanguage=JavaScript \
     -lib grammars \
     -o parser/SQLBase \
     -visitor \
@@ -20,7 +20,7 @@ antlr4 -Dlanguage=JavaScript \
     -Xexact-output-dir \
     grammars/SqlBase.g4
 
-antlr4 -Dlanguage=JavaScript \
+java -jar /usr/local/lib/antlr-4.9.2-complete.jar -Dlanguage=JavaScript \
     -lib grammars \
     -o parser/Hive \
     -visitor \
