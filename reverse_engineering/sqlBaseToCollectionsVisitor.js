@@ -169,13 +169,13 @@ class Visitor extends SqlBaseVisitor {
 		if (!options) {
 			return '';
 		}
-		const regExp = /^OPTIONS\s*(\([\s\S]+\))$/;
+		const regExp = /^OPTIONS\s*(\([\s\S]+\))$/i;
 
 		if (!regExp.test(options)) {
 			return '';
 		}
 
-		return options.match(regExp)[1];
+		return options.match(regExp)[1] || '';
 	}
 
 	visitTablePropertyList(ctx){
