@@ -47,7 +47,6 @@ const getTableDataFromDDl = (statement) => {
 		parsedTableData.query = statement.substring(parsedTableData.query.select.start, parsedTableData.query.select.stop)
 	}
 	const properties = parsedTableData.colList.map(column => columnREHelper.reverseTableColumn(column));
-	const tableOptions = parsedTableData.tableOptions || { start: 0, stop: -1 }
 	return {
 		properties,
 		propertiesPane: {
@@ -75,8 +74,8 @@ const getTableDataFromDDl = (statement) => {
 			skewedOn: parsedTableData.skewedOn,
 			location: parsedTableData.location,
 			tableProperties: parsedTableData.tableProperties,
-			tableOptions: statement.slice(tableOptions.start, tableOptions.stop + 1),
 			comments: parsedTableData.commentSpec,
+			tableOptions: parsedTableData.tableOptions,
 		}
 	}
 }
