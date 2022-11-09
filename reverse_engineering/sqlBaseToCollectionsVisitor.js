@@ -159,7 +159,7 @@ class Visitor extends SqlBaseVisitor {
 			locationSpec: this.visitIfExists(ctx, 'locationSpec', [])[0],
 			commentSpec: this.visitIfExists(ctx, 'commentSpec', [])[0],
 			tableProperties: this.visitIfExists(ctx, 'tableProperties', [])?.[0]?.[1],
-			tableOptions: this.visitIfExists(ctx, 'tableOptions', '')?.[0],
+			tableOptions: this.visitIfExists(ctx, 'tableOptions', '')?.[0] || '',
 		}
 	}
 
