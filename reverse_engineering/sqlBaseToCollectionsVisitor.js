@@ -159,8 +159,23 @@ class Visitor extends SqlBaseVisitor {
 			locationSpec: this.visitIfExists(ctx, 'locationSpec', [])[0],
 			commentSpec: this.visitIfExists(ctx, 'commentSpec', [])[0],
 			tableProperties: this.visitIfExists(ctx, 'tableProperties', [])?.[0]?.[1],
-			tableOptions: this.visitIfExists(ctx, 'tableOptions', {start:0, stop:-1})?.[0]?.[1],
+			tableOptions: this.visitIfExists(ctx, 'tableOptions', '')?.[0],
 		}
+	}
+
+	visitTableOptions(ctx) {
+		const options = ctx.getText();
+
+		if (!options) {
+			return '';
+		}
+		const regExp = /^OPTIONS\s*(\([\s\S]+\))$/;
+
+		if (!regExp.test(options)) {
+			return '';
+		}
+
+		return options.match(regExp)[1];
 	}
 
 	visitTablePropertyList(ctx){
