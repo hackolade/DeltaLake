@@ -1,6 +1,7 @@
 'use strict'
 
 const RESERVED_WORDS = require('./reserverWords');
+const sqlFormatter = require('sql-formatter');
 const { dependencies } = require('./appDependencies');
 let _;
 
@@ -140,6 +141,13 @@ const encodeStringLiteral = (str = '') => {
 	return str.replace(/(['\\])/gi, '\\$1').replace(/\n/gi, '\\n');
 }
 
+const buildScript = (...statements) => {
+	const script = statements.filter((statement) => statement).join('\n\n');
+	const formattedScript = sqlFormatter.format(script, { indent: '    '}) + '\n';
+
+	return formattedScript.replace(/\{\ \{\ (.+?)\ \}\ \}/g, '{{$1}}');
+};
+
 module.exports = {
 	buildStatement,
 	getName,
@@ -153,4 +161,5 @@ module.exports = {
 	removeRedundantTrailingCommaFromStatement,
 	getCleanedUrl,
 	encodeStringLiteral,
+	buildScript,
 };
