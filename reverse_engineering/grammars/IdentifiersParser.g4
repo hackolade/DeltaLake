@@ -517,6 +517,7 @@ descFuncNames
 
 identifier
     : Identifier
+    | '{''{' (Identifier) '}''}'
     | nonReserved
     | databricksAllowedReservedNames
     ;

@@ -179,6 +179,9 @@ module.exports = {
 			}, {})
 
 			progress({ message: 'Entities ddl retrieved successfully', containerName: 'databases', entityName: 'entities' });
+
+			let warnings = [];
+
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];
 				const packages = await packagesPromise;
@@ -262,8 +265,20 @@ module.exports = {
 						let documentTemplate;
 	
 						try {
-							const viewSchema = await fetchRequestHelper.fetchEntitySchema({ connectionInfo: connectionData, dbName, entityName: name, logger });
-							const viewSample = await fetchRequestHelper.fetchSample({ connectionInfo: connectionData, dbName, entityName: name, logger });
+							let viewSchema = [];
+							let viewSample = [];
+							
+							try {
+								viewSchema = await fetchRequestHelper.fetchEntitySchema({ connectionInfo: connectionData, dbName, entityName: name, logger });
+								viewSample = await fetchRequestHelper.fetchSample({ connectionInfo: connectionData, dbName, entityName: name, logger });
+							} catch (e) {
+								if (e.type === 'warning') {
+									warnings.push(e);
+								} else {
+									throw e;
+								}
+							}
+							
 							viewData = viewDDLHelper.getViewDataFromDDl(ddl);
 							jsonSchema = viewDDLHelper.getJsonSchema(viewSchema, viewSample);
 
@@ -298,6 +313,14 @@ module.exports = {
 			}, Promise.resolve([]))
 			const packages = await Promise.all(entitiesPromises);
 			fetchRequestHelper.destroyActiveContext();
+
+			if (warnings.length) {
+				modelData = {
+					...(modelData || {}),
+					warning: createWarning(warnings),
+				};
+			}
+
 			cb(null, packages, modelData);
 		} catch (err) {
 			const clusterState = modelData || await databricksHelper.getClusterStateInfo(connectionData, logger);
@@ -317,23 +340,7 @@ module.exports = {
 		try {
 			setDependencies(app);
 			const input = await handleFileData(data.filePath);
-			const chars = new antlr4.InputStream(input);
-			const lexer = new HiveLexer.HiveLexer(chars);
-
-			const tokens = new antlr4.CommonTokenStream(lexer);
-			const parser = new HiveParser.HiveParser(tokens);
-			parser.removeErrorListeners();
-			parser.addErrorListener(new ExprErrorListener());
-
-			const tree = parser.statements();
-
-			const hqlToCollectionsGenerator = new hqlToCollectionsVisitor();
-
-			const commands = tree.accept(hqlToCollectionsGenerator);
-			const { result, info, relationships } = commandsService.convertCommandsToReDocs(
-				dependencies.lodash.flatten(commands).filter(Boolean),
-				input
-			);
+			const { result, info, relationships } = parseDDLStatements(input);
 			callback(null, result, info, relationships, 'multipleSchema');
 		} catch (err) {
 			handleError(logger, err, callback);
@@ -369,6 +376,21 @@ module.exports = {
 			callback(err);
 		}
 	},
+
+	parseViewStatement(data, logger, callback, app) {
+		try {
+			setDependencies(app);
+			const statement = data.statement;
+			const { result } = parseDDLStatements('CREATE VIEW `db`.`name` AS ' + statement + ';\n');
+
+			callback(null, {
+				jsonSchema: {},
+				ddl: result?.[0]?.doc?.views?.[0]?.ddl,
+			});
+		} catch(err) {
+			handleError(logger, err, callback);
+		}
+	}
 };
 
 const handleFileData = filePath => {
@@ -464,4 +486,38 @@ const getArraySubtypeByChildren = (_, arraySchema) => {
 	if (item.properties) {
 		return subtype("struct");
 	}
+};
+
+const parseDDLStatements = (input) => {
+	const chars = new antlr4.InputStream(input);
+	const lexer = new HiveLexer.HiveLexer(chars);
+
+	const tokens = new antlr4.CommonTokenStream(lexer);
+	const parser = new HiveParser.HiveParser(tokens);
+	parser.removeErrorListeners();
+	parser.addErrorListener(new ExprErrorListener());
+
+	const tree = parser.statements();
+
+	const hqlToCollectionsGenerator = new hqlToCollectionsVisitor();
+
+	const commands = tree.accept(hqlToCollectionsGenerator);
+	return commandsService.convertCommandsToReDocs(
+		dependencies.lodash.flatten(commands).filter(Boolean),
+		input
+	);
+};
+
+const createWarning = (warnings) => {
+	const viewsWarnings = warnings.filter(warning => warning.code === 'VIEW_SCHEMA_ERROR');
+	const viewNames = viewsWarnings.slice(0, 3).map(warning => `\`${warning.dbName}\`.\`${warning.entityName}\``).join('\n') + (warnings.length > 3 ? '\n...' : '');
+
+	const viewWarningMessage = `The schema of the following view(s) cannot be retrieved:\n${viewNames}\n because there's an inconsistency with their underlying tables.\n You must refresh the view(s) in the database, then try this process again.\n See the log file for more details.`;
+
+	return {
+		title: 'Reverse-Engineering',
+		message: viewWarningMessage,
+		openLog: true,
+		size: 'middle'
+	};
 };

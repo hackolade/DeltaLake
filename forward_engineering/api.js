@@ -5,13 +5,12 @@ const { getDatabaseStatement } = require('./helpers/databaseHelper');
 const { getTableStatement } = require('./helpers/tableHelper');
 const { getIndexes } = require('./helpers/indexHelper');
 const { getViewScript } = require('./helpers/viewHelper');
-const { getCleanedUrl, getTab } = require('./helpers/generalHelper');
+const { getCleanedUrl, getTab, buildScript } = require('./helpers/generalHelper');
 let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')
 const logHelper = require('../reverse_engineering/logHelper');
 const { getAlterScript } = require('./helpers/alterScriptFromDeltaHelper');
-const sqlFormatter = require('sql-formatter');
 const { DROP_STATEMENTS } = require('./helpers/constants');
 
 const setAppDependencies = ({ lodash }) => _ = lodash;
@@ -220,14 +219,6 @@ module.exports = {
 			callback({ message: e.message, stack: e.stack });
 		}
 	},
-};
-
-
-const buildScript = (...statements) => {
-	const script = statements.filter((statement) => statement).join('\n\n');
-	const formattedScript = sqlFormatter.format(script, { indent: '    '}) + '\n';
-
-	return formattedScript.replace(/\{\ \{\ (.+)\ \}\ \}/g, '{{$1}}');
 };
 
 const parseEntities = (entities, serializedItems) => {

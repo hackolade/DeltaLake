@@ -19,8 +19,7 @@ const {
 	getModifyViewsScripts,
 } = require('./alterScriptHelpers/alterViewHelper');
 const { DROP_STATEMENTS } = require('./constants');
-const { commentDeactivatedStatements } = require('./generalHelper');
-const sqlFormatter = require('sql-formatter');
+const { commentDeactivatedStatements, buildScript } = require('./generalHelper');
 const { getDBVersionNumber } = require('./alterScriptHelpers/common');
 
 const getItems = (entity, nameProperty, modify) =>
@@ -145,7 +144,7 @@ const getCommentedDropScript = (scripts, data) => {
 };
 
 const builds = scripts => {
-	const formatScripts = sqlFormatter.format(scripts.filter(Boolean).join('\n\n'), { indent: '    ' });
+	const formatScripts = buildScript(scripts);
 	return formatScripts.split(';').map(script => script.trim()).join(';\n\n');
 };
 

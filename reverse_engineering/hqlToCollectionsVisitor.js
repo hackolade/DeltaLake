@@ -338,6 +338,10 @@ class Visitor extends HiveParserVisitor {
             stop: ctx.selectStatementWithCTE().stop.stop + 1,
         };
         const { table } = this.visitWhenExists(ctx, 'selectStatementWithCTE', {});
+        const columns = this.visitWhenExists(ctx, 'columnNameCommentList', []);
+        const jsonSchema = convertColumnsToJsonSchema(columns);
+        const columnList = columns.map(column => column.name + (column.comment ? ` COMMENT '${column.comment}'` : '')).join(', ');
+        const columnNames = columns.map(column => column.name).join(', ');
 
         return {
             type: CREATE_VIEW_COMMAND,
@@ -345,10 +349,29 @@ class Visitor extends HiveParserVisitor {
             bucketName: database,
             collectionName: table,
             select,
+            jsonSchema,
+            columnNames,
             data: {
                 description,
+                columnList,
             },
         };
+    }
+
+    visitColumnNameCommentList(ctx) {
+        if (typeof ctx.columnNameComment !== 'function') {
+            return [];
+        }
+
+        return (ctx.columnNameComment() || []).map(column => {
+            const name = column.identifier()?.getText() || '';
+            const comment = column.KW_COMMENT() && column.StringLiteral() ? removeSingleDoubleQuotes(column.StringLiteral().getText()) : '';
+
+            return {
+                name,
+                comment,
+            };
+        });
     }
 
     visitCreateMaterializedViewStatement(ctx) {
@@ -852,11 +875,12 @@ class Visitor extends HiveParserVisitor {
         const isUnion = !items.type || Array.isArray(items.type);
         const itemType = isUnion ? 'union' : items.type;
         const key = this.visit(ctx.primitiveType());
+        const properties = Boolean(items?.properties) || Boolean(items?.items) ? { 'new_column': items } : {};
 
         return {
             type: 'map',
             subtype: schemaHelper.getMapSubtype(itemType),
-            properties: items.oneOf ? {} : { 'New column': items },
+            properties: items.oneOf ? {} : properties   ,
             ...(items.oneOf && { oneOf: getOneOf(items.oneOf, 'New column') }),
             ...schemaHelper.getMapKeyType(key),
         };
@@ -1590,6 +1614,21 @@ const getMappingType = (ctx) => {
     } else if (ctx.KW_APPLICATION()) {
         return 'application';
     }
+};
+
+const convertColumnsToJsonSchema = (columns) => {
+    const properties = columns.reduce((schema, column) => {
+        return {
+            ...schema,
+            [column.name]: {
+                description: column.comment,
+            },
+        };
+    }, {});
+
+    return {
+        properties,
+    };
 };
 
 module.exports = Visitor;

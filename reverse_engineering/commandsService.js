@@ -277,9 +277,11 @@ const createView = (entitiesData, bucket, statementData, originalScript) => {
                     selectStatement,
                 },
                 ddl: {
-                    script: `CREATE VIEW ${statementData.name} AS ${selectStatement};`.replace(/`/g, '"'),
+                    script: `CREATE VIEW ${statementData.name} ${statementData.columnNames ? `(${statementData.columnNames})` : ''} AS ${selectStatement};`.replace(/`/g, '"'),
                     type: 'postgres'
                 },
+                jsonSchema: statementData.jsonSchema,
+                mergeSchemas: true,
                 bucketName: statementData.bucketName || bucket,
             },
         ],
