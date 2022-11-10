@@ -119,6 +119,14 @@ making sure that you maintain a proper JSON format.
 		"lowerTab": "Details",
 		"structure": [
 			{
+				"propertyName": "Column list",
+				"propertyKeyword": "columnList",
+				"propertyType": "details",
+				"propertyTooltip": "Specify comma separated column names, which should be selected from select statement",
+				"template": "textarea",
+				"markdown": false
+			},
+			{
 				"propertyName": "Select Statement",
 				"propertyKeyword": "selectStatement",
 				"propertyType": "details",
