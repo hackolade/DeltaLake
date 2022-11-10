@@ -86,7 +86,8 @@ module.exports = {
 		const comment = schema.description;
 		script.push(createStatement);
 		if (schema.selectStatement) {
-			return createStatement + `${comment ? ' COMMENT \'' + encodeStringLiteral(comment) + '\'' : ''} AS ${schema.selectStatement};\n\n`;
+			const columnList = view.columnList ? ` (${view.columnList})` : ' ';
+			return createStatement + `${comment ? ' COMMENT \'' + encodeStringLiteral(comment) + '\'' : ''}${columnList} AS ${schema.selectStatement};\n\n`;
 		}
 
 		if (_.isEmpty(columns)) {
