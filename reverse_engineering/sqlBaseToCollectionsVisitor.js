@@ -303,19 +303,17 @@ class Visitor extends SqlBaseVisitor {
 }
 
 const getLabelValue = (context, label) => {
-	return context[label]?.text ? removeSingleDoubleQuotes(context[label]?.text) : '';
+	return context[label]?.text ? removeQuotes(context[label]?.text) : '';
 }
 
 const getName = context => {
 	if (!context || dependencies.lodash.isEmpty(context)) {
 		return '';
 	}
-	return removeSingleDoubleQuotes(context.getText());
+	return removeQuotes(context.getText());
 };
 
-const removeSingleDoubleQuotes = (string = '') => string.replace(/['`"]+/gm, '');
-
-const removeQuotes = (string = '') => string.replace(/^(['"`])([\s\S]*)\1$/, '$2');
+const removeQuotes = (string = '') => string.replace(/['`"]+/gm, '');
 
 const removeValueQuotes = (string = '') => string.replace(/^(['"`])([\s\S]*)\1$/, '$2')
 
