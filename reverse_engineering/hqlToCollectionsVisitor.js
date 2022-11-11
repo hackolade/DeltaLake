@@ -318,7 +318,7 @@ class Visitor extends HiveParserVisitor {
 
     visitKeyValueProperty(ctx) {
         const propertyKey = this.visit(ctx.keyProperty());
-        const propertyValue = removeSingleDoubleQuotes(ctx.keyValue().getText());
+        const propertyValue = removeValueQuotes(ctx.keyValue().getText());
         return { propertyKey, propertyValue };
     }
 
@@ -1478,7 +1478,9 @@ class Visitor extends HiveParserVisitor {
     }
 }
 
-const removeQuotes = (string) => string.replace(/^(`)(.*)\1$/, '$2');
+const removeQuotes = (string = '') => string.replace(/^(`)(.*)\1$/, '$2');
+
+const removeValueQuotes = (string = '') => string.replace(/^(['"])([\s\S]*)\1$/, '$2');
 
 const removeSingleDoubleQuotes = (string = '') => string.replace(/['"]+/g, '');
 

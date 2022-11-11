@@ -184,7 +184,7 @@ class Visitor extends SqlBaseVisitor {
 
 	visitTableProperty(ctx) {
 		const propertyKey = getName(ctx.key);
-		const propertyValue = getName(ctx.value);
+		const propertyValue = removeValueQuotes(ctx.value);
 		return ctx.value === undefined ? { propertyKey } : { propertyKey, propertyValue };
 	}
 
@@ -313,6 +313,8 @@ const getName = context => {
 	return removeQuotes(context.getText());
 };
 
-const removeQuotes = string => string.replace(/['`"]+/gm, '');
+const removeQuotes = (string = '') => string.replace(/['`"]+/gm, '');
+
+const removeValueQuotes = (string = '') => string.replace(/^(['"`])([\s\S]*)\1$/, '$2')
 
 module.exports = Visitor;
