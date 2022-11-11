@@ -342,6 +342,7 @@ class Visitor extends HiveParserVisitor {
         const jsonSchema = convertColumnsToJsonSchema(columns);
         const columnList = columns.map(column => column.name + (column.comment ? ` COMMENT '${column.comment}'` : '')).join(', ');
         const columnNames = columns.map(column => column.name).join(', ');
+        const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
 
         return {
             type: CREATE_VIEW_COMMAND,
@@ -353,6 +354,7 @@ class Visitor extends HiveParserVisitor {
             columnNames,
             data: {
                 description,
+                tableProperties,
                 columnList,
             },
         };

@@ -30,7 +30,7 @@ const getViewDataFromDDl = statement => {
 		viewTemporary: parsedViewData.temporary,
 		description: parsedViewData.comment,
 		selectStatement: parsedViewData.selectStatement,
-		tableProperties: parsedViewData.tblProperties
+		tableProperties: parsedViewData.tableProperties
 	}
 }
 
