@@ -318,7 +318,7 @@ class Visitor extends HiveParserVisitor {
 
     visitKeyValueProperty(ctx) {
         const propertyKey = this.visit(ctx.keyProperty());
-        const propertyValue = removeQuotes(ctx.keyValue().getText());
+        const propertyValue = removeValueQuotes(ctx.keyValue().getText());
         return { propertyKey, propertyValue };
     }
 
@@ -1019,7 +1019,7 @@ class Visitor extends HiveParserVisitor {
     }
 
     visitIdentifier(ctx) {
-        return removeQuotes(ctx.getText());
+        return removeIdentifierQuotes(ctx.getText());
     }
 
     visitStatementSeparator() {
@@ -1115,7 +1115,7 @@ class Visitor extends HiveParserVisitor {
         const { name, database, table, columns, SecIndxHandler } = this.visit(ctx.createIndexMainStatement());
         const SecIndxWithDeferredRebuild = Boolean(ctx.KW_WITH() && ctx.KW_DEFERRED() && ctx.KW_REBUILD());
         const SecIndxProperties = this.visitWhenExists(ctx, 'tableProperties');
-        const SecIndxTable = ctx.tableName() ? removeQuotes(ctx.tableName().getText()) : '';
+        const SecIndxTable = ctx.tableName() ? removeIdentifierQuotes(ctx.tableName().getText()) : '';
         const SecIndxComments = this.visitWhenExists(ctx, 'tableComment');
 
         return {
@@ -1478,7 +1478,9 @@ class Visitor extends HiveParserVisitor {
     }
 }
 
-const removeQuotes = (string = '') => string.replace(/^([`'"])([\s\S]*)\1$/, '$2');
+const removeIdentifierQuotes = (string = '') => string.replace(/^(`)(.*)\1$/, '$2');
+
+const removeValueQuotes = (string = '') => string.replace(/^(['"])([\s\S]*)\1$/, '$2');
 
 const removeSingleDoubleQuotes = (string = '') => string.replace(/['"]+/g, '');
 
