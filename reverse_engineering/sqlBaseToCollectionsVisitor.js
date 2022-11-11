@@ -184,8 +184,11 @@ class Visitor extends SqlBaseVisitor {
 
 	visitTableProperty(ctx) {
 		const propertyKey = getName(ctx.key);
-		const propertyValue = removeValueQuotes(ctx.value);
-		return ctx.value === undefined ? { propertyKey } : { propertyKey, propertyValue };
+		if (ctx.value) {
+			const propertyValue = removeValueQuotes(ctx.value.getText());
+			return { propertyKey, propertyValue };
+		}
+		return { propertyKey };
 	}
 
 	visitLocationSpec(ctx) {
