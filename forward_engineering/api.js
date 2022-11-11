@@ -45,7 +45,7 @@ module.exports = {
 					],
 					true,
 				);
-				scripts = buildScript(
+				scripts = buildScript([
 					databaseStatement,
 					tableStatements,
 					getIndexes(containerData, entityData, jsonSchema, [
@@ -53,7 +53,7 @@ module.exports = {
 						internalDefinitions,
 						externalDefinitions,
 					])
-				)
+				]);
 			}
 			callback(
 				null,
@@ -131,11 +131,11 @@ module.exports = {
 				]);
 			}, []);
 
-			const scripts = buildScript(
+			const scripts = buildScript([
 				databaseStatement,
 				...entities,
 				...viewsScripts
-			)
+			]);
 
 			callback(null, scripts);
 		} catch (e) {

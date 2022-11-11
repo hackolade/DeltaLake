@@ -141,7 +141,7 @@ const encodeStringLiteral = (str = '') => {
 	return str.replace(/(['\\])/gi, '\\$1').replace(/\n/gi, '\\n');
 }
 
-const buildScript = (...statements) => {
+const buildScript = (statements) => {
 	const script = statements.filter((statement) => statement).join('\n\n');
 	const formattedScript = sqlFormatter.format(script, { indent: '    '}) + '\n';
 
