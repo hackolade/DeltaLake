@@ -60,7 +60,7 @@ class Visitor extends SqlBaseVisitor {
 			colList: this.visitIfExists(ctx, 'identifierCommentList'),
 			comment: this.visitIfExists(ctx, 'commentSpec', '')[0] || '',
 			selectStatement: this.visitIfExists(ctx, 'query'),
-			tblProperties: getName(ctx.tablePropertyList()[0])
+			tableProperties: this.visitIfExists(ctx, 'tablePropertyList', '')?.[0],
 		}
 	}
 

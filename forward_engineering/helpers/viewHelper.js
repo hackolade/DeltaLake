@@ -3,6 +3,7 @@
 let _;
 const { dependencies } = require('./appDependencies');
 const { prepareName, encodeStringLiteral } = require('./generalHelper');
+const { getTablePropertiesClause } = require('./tableHelper');
 
 const setDependencies = ({ lodash }) => _ = lodash;
 
@@ -84,10 +85,11 @@ module.exports = {
 		const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
 		const createStatement = `CREATE ${(orReplace && !ifNotExists) ? 'OR REPLACE ' : ''}${isGlobal ? 'GLOBAL ' : ''}${isTemporary ? 'TEMPORARY ' : ''}VIEW${ifNotExists ? ' IF NOT EXISTS' : ''} ${name}`;
 		const comment = schema.description;
+		const tablePropertyStatements = schema.tableProperties ? ` TBLPROPERTIES (${getTablePropertiesClause(schema.tableProperties)})` : '';
 		script.push(createStatement);
 		if (schema.selectStatement) {
 			const columnList = view.columnList ? ` (${view.columnList})` : ' ';
-			return createStatement + `${comment ? ' COMMENT \'' + encodeStringLiteral(comment) + '\'' : ''}${columnList} AS ${schema.selectStatement};\n\n`;
+			return createStatement + `${columnList} ${comment ? ' COMMENT \'' + encodeStringLiteral(comment) + '\'' : ''} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n`;
 		}
 
 		if (_.isEmpty(columns)) {
@@ -96,6 +98,10 @@ module.exports = {
 
 		if (comment) {
 			script.push(`COMMENT '${encodeStringLiteral(comment)}'`);
+		}
+
+		if (tablePropertyStatements) {
+			script.push(tablePropertyStatements);
 		}
 
 		if (!_.isEmpty(columns)) {
