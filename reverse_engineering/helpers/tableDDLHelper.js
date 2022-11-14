@@ -74,7 +74,7 @@ const getTableDataFromDDl = (statement) => {
 			skewedOn: parsedTableData.skewedOn,
 			location: parsedTableData.location,
 			tableProperties: parsedTableData.tableProperties,
-			comments: parsedTableData.commentSpec,
+			description: parsedTableData.commentSpec,
 			tableOptions: parsedTableData.tableOptions,
 		}
 	}
