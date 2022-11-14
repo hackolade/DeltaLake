@@ -141,7 +141,7 @@
 		]
 	},
 	{
-		"lowerTab": "Configurations",
+		"lowerTab": "Azure Storage Access",
 		"structure": [
 			{
 				"inputLabel": "Storage account name",
@@ -151,7 +151,7 @@
 					"key": "provider",
 					"value": "Azure Databricks"
 				},
-				"description": "fs.azure.account.key.<storage_account_name>.dfs.core.windows.net"
+				"description": "As in Spark config fs.azure.account.key.<storage_account_name>.dfs.core.windows.net"
 			},
 			{
 				"inputLabel": "Storage account key",
@@ -162,7 +162,7 @@
 					"value": "Azure Databricks"
 				},
 				"isHiddenKey": true,
-				"description": "fs.azure.account.key.<storage_account_name>.dfs.core.windows.net"
+				"description": "As in Spark config fs.azure.account.key.<storage_account_name>.dfs.core.windows.net <storage_account_key>"
 			}
 		]
 	}
