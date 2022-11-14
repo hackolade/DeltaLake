@@ -139,5 +139,31 @@
 				}
 			}
 		]
+	},
+	{
+		"lowerTab": "Configurations",
+		"structure": [
+			{
+				"inputLabel": "Storage account name",
+				"inputKeyword": "azureStorageAccountName",
+				"inputType": "text",
+				"dependency": {
+					"key": "provider",
+					"value": "Azure Databricks"
+				},
+				"description": "fs.azure.account.key.<storage_account_name>.dfs.core.windows.net"
+			},
+			{
+				"inputLabel": "Storage account key",
+				"inputKeyword": "azureStorageAccountKey",
+				"inputType": "password",
+				"dependency": {
+					"key": "provider",
+					"value": "Azure Databricks"
+				},
+				"isHiddenKey": true,
+				"description": "fs.azure.account.key.<storage_account_name>.dfs.core.windows.net"
+			}
+		]
 	}
 ]
