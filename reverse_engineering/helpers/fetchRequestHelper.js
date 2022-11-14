@@ -385,48 +385,75 @@ const destroyContext = (connectionInfo, contextId) => {
 		});
 };
 
-const executeCommand = (connectionInfo, command, language = 'sql') => {
+const runCommand = (connectionInfo, contextId, command, language) => {
+	const query = connectionInfo.host + '/api/1.2/commands/execute';
+	const commandOptions = JSON.stringify({
+		language,
+		clusterId: connectionInfo.clusterId,
+		contextId,
+		command,
+	});
+	const options = postRequestOptions(connectionInfo, commandOptions)
 
-	let activeContextId;
+	return fetch(query, options)
+		.then(async response => {
+			const responseBody = await response.text();
+			if (response.ok) {
+				return responseBody;
+			}
+			throw {
+				message: response.statusText, code: response.status, description: commandOptions, responseBody
+			};
+		})
+		.then(body => {
 
-	return createContext(connectionInfo, language)
-		.then(contextId => {
-			activeContextId = contextId;
-			const query = connectionInfo.host + '/api/1.2/commands/execute';
-			const commandOptions = JSON.stringify({
-				language,
+			body = JSON.parse(body);
+
+			const query = new URL(connectionInfo.host + '/api/1.2/commands/status');
+			const params = {
 				clusterId: connectionInfo.clusterId,
-				contextId,
-				command
-			});
-			const options = postRequestOptions(connectionInfo, commandOptions)
+				contextId: contextId,
+				commandId: body.id
+			}
+			query.search = new URLSearchParams(params).toString();
+			const options = getRequestOptions(connectionInfo);
+			return getCommandExecutionResult(query, options, commandOptions);
+		});
+};
 
-			return fetch(query, options)
-				.then(async response => {
-					const responseBody = await response.text();
-					if (response.ok) {
-						return responseBody;
-					}
-					throw {
-						message: response.statusText, code: response.status, description: commandOptions, responseBody
-					};
-				})
-				.then(body => {
+const getSqlSparkConfig = (config) => {
+	return Object.keys(config).map((key) => {
+		return `SET ${key} = ${config[key]};`;
+	}).join('\n');
+};
 
-					body = JSON.parse(body);
+const getPythonSparkConfig = (config) => {
+	return Object.keys(config).map((key) => {
+		return `spark.conf.set("${key}", "${config[key]}")`;
+	}).join('\n');
+};
 
-					const query = new URL(connectionInfo.host + '/api/1.2/commands/status');
-					const params = {
-						clusterId: connectionInfo.clusterId,
-						contextId: activeContextId,
-						commandId: body.id
-					}
-					query.search = new URLSearchParams(params).toString();
-					const options = getRequestOptions(connectionInfo);
-					return getCommandExecutionResult(query, options, commandOptions);
-				})
-		}
-		)
+const executeCommand = (connectionInfo, command, language = 'sql', logger) => {
+	return createContext(connectionInfo, language)
+		.then(async contextId => {
+			if (connectionInfo.sparkConfig && Object.keys(connectionInfo.sparkConfig).length) {
+				let sparkConfig;
+	
+				if (language === 'sql') {
+					sparkConfig = getSqlSparkConfig(connectionInfo.sparkConfig);
+				} else if (language === 'python') {
+					sparkConfig = getPythonSparkConfig(connectionInfo.sparkConfig);
+				}
+
+				if (sparkConfig) {
+					await runCommand(connectionInfo, contextId, sparkConfig, language);
+				}
+			}
+		
+			const result = await runCommand(connectionInfo, contextId, command, language);
+
+			return result;
+		});
 };
 
 const getCommandExecutionResult = (query, options, commandOptions) => {
