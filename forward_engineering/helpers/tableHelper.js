@@ -334,12 +334,26 @@ const getTablePropertiesClause = tableProperties => {
 			return propertyKey;
 		}
 		if (isText(value)) {
-			value = `'${value}'`;
+			value = `'${adjustPropertyValue(value)}'`;
 		}
-		return `${propertyKey} = ${value}`;
+		return `${adjustPropertyKey(propertyKey)} = ${value}`;
 	});
 	return tablePropertyStatements.join(', ');
 }
+
+const adjustPropertyKey = (propertyKey) => {
+	if (/^\s*\(/.test(propertyKey) && !/\)\s*$/.test(propertyKey)) {
+		return propertyKey.replace(/^\s*\(([\s\S]+)/, '$1');
+	} else {
+		return propertyKey;
+	}
+};
+
+const adjustPropertyValue = (propertyValue) => {
+	if (/\)\s*$/.test(propertyValue) && !/^\s*\(/.test(propertyValue)) {
+		return propertyValue.replace(/([\s\S]+)\)\s*$/, '$1');
+	}
+};
 
 
 module.exports = {

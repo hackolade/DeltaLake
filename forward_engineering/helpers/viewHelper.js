@@ -85,7 +85,11 @@ module.exports = {
 		const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
 		const createStatement = `CREATE ${(orReplace && !ifNotExists) ? 'OR REPLACE ' : ''}${isGlobal ? 'GLOBAL ' : ''}${isTemporary ? 'TEMPORARY ' : ''}VIEW${ifNotExists ? ' IF NOT EXISTS' : ''} ${name}`;
 		const comment = schema.description;
-		const tablePropertyStatements = schema.tableProperties ? ` TBLPROPERTIES (${getTablePropertiesClause(schema.tableProperties)})` : '';
+		let tablePropertyStatements = '';
+		
+		if (schema.tableProperties && Array.isArray(schema.tableProperties)) {
+			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(schema.tableProperties)})`;
+		};
 		script.push(createStatement);
 		if (schema.selectStatement) {
 			const columnList = view.columnList ? ` (${view.columnList})` : ' ';
