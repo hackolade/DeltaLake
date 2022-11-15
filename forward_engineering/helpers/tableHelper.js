@@ -352,6 +352,8 @@ const adjustPropertyKey = (propertyKey) => {
 const adjustPropertyValue = (propertyValue) => {
 	if (/\)\s*$/.test(propertyValue) && !/^\s*\(/.test(propertyValue)) {
 		return propertyValue.replace(/([\s\S]+)\)\s*$/, '$1');
+	} else {
+		return propertyValue;
 	}
 };
 
