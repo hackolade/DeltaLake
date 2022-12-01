@@ -379,6 +379,31 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedColumn",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"foreignCollection",
 			"foreignField",
@@ -663,6 +688,31 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedColumn",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"foreignCollection",
 			"foreignField",
@@ -704,6 +754,31 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedColumn",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
 			},
 			"dependencies",
 			"sample",
@@ -940,6 +1015,31 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedColumn",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
 			},
 			"dependencies",
 			{
@@ -1179,6 +1279,31 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedColumn",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"sample",
 			{
@@ -1417,6 +1542,31 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedColumn",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"sample",
 			{
@@ -1653,6 +1803,31 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedColumn",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
 			},
 			"dependencies",
 			"sample",
@@ -1909,6 +2084,31 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedColumn",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
 			},
 			"dependencies",
 			"additionalItems",
@@ -2207,6 +2407,31 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedColumn",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"additionalProperties",
 			{
@@ -2444,6 +2669,31 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedColumn",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
 			},
 			"additionalProperties",
 			{
