@@ -382,7 +382,7 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Generated as",
 				"propertyTooltip": "",
-				"propertyKeyword": "generatedColumn",
+				"propertyKeyword": "generatedDefaultValue",
 				"propertyType": "block",
 				"structure": [
 					{
@@ -691,7 +691,7 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Generated as",
 				"propertyTooltip": "",
-				"propertyKeyword": "generatedColumn",
+				"propertyKeyword": "generatedDefaultValue",
 				"propertyType": "block",
 				"structure": [
 					{
@@ -758,7 +758,7 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Generated as",
 				"propertyTooltip": "",
-				"propertyKeyword": "generatedColumn",
+				"propertyKeyword": "generatedDefaultValue",
 				"propertyType": "block",
 				"structure": [
 					{
@@ -1019,7 +1019,7 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Generated as",
 				"propertyTooltip": "",
-				"propertyKeyword": "generatedColumn",
+				"propertyKeyword": "generatedDefaultValue",
 				"propertyType": "block",
 				"structure": [
 					{
@@ -1282,7 +1282,7 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Generated as",
 				"propertyTooltip": "",
-				"propertyKeyword": "generatedColumn",
+				"propertyKeyword": "generatedDefaultValue",
 				"propertyType": "block",
 				"structure": [
 					{
@@ -1545,7 +1545,7 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Generated as",
 				"propertyTooltip": "",
-				"propertyKeyword": "generatedColumn",
+				"propertyKeyword": "generatedDefaultValue",
 				"propertyType": "block",
 				"structure": [
 					{
@@ -1807,7 +1807,7 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Generated as",
 				"propertyTooltip": "",
-				"propertyKeyword": "generatedColumn",
+				"propertyKeyword": "generatedDefaultValue",
 				"propertyType": "block",
 				"structure": [
 					{
@@ -2088,7 +2088,7 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Generated as",
 				"propertyTooltip": "",
-				"propertyKeyword": "generatedColumn",
+				"propertyKeyword": "generatedDefaultValue",
 				"propertyType": "block",
 				"structure": [
 					{
@@ -2410,7 +2410,7 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Generated as",
 				"propertyTooltip": "",
-				"propertyKeyword": "generatedColumn",
+				"propertyKeyword": "generatedDefaultValue",
 				"propertyType": "block",
 				"structure": [
 					{
@@ -2673,7 +2673,7 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Generated as",
 				"propertyTooltip": "",
-				"propertyKeyword": "generatedColumn",
+				"propertyKeyword": "generatedDefaultValue",
 				"propertyType": "block",
 				"structure": [
 					{

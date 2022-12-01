@@ -10,7 +10,7 @@ const {
 	encodeStringLiteral,
 	prepareName
 } = require('./generalHelper');
-const { getColumnsStatement, getColumnStatement, getColumns } = require('./columnHelper');
+const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const { dependencies } = require('./appDependencies');
 
