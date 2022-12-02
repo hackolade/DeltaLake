@@ -88,7 +88,7 @@ class Visitor extends HiveParserVisitor {
         const _ = dependencies.lodash
         const [tableName, tableLikeName] = this.visit(ctx.tableName());
         const tableDataSource = this.visitWhenExists(ctx, 'tableUsingDataSource');
-        const compositePartitionKey = this.visitWhenExists(ctx, 'tablePartition', []);
+        const compositePartitionKey = this.visitWhenExists(ctx, 'tablePartition', [])?.[0] || [];
         const { compositeClusteringKey, numBuckets, sortedByKey } = this.visitWhenExists(ctx, 'tableBuckets', {});
         const { skewedby, skewedOn, skewStoredAsDir } = this.visitWhenExists(ctx, 'tableSkewed', {});
         const tableRowFormat = this.visitWhenExists(ctx, 'tableRowFormat', {});
@@ -120,7 +120,7 @@ class Visitor extends HiveParserVisitor {
                 schema: handleChoices({
                     collectionName: table,
                     type: 'object',
-                    properties: { ...convertKeysToProperties(compositePartitionKey), ...properties },
+                    properties: { ...convertKeysToProperties(compositePartitionKey, properties), ...properties },
                 }),
                 tableLikeName: (tableLikeName || {}).table,
                 entityLevelData: _.pickBy(
@@ -1600,11 +1600,15 @@ const handleChoices = (field) => {
     };
 };
 
-const convertKeysToProperties = (keys = []) => {
+const convertKeysToProperties = (keys = [], existed) => {
     return keys.reduce((properties, [ name, type ]) => {
+        if (existed?.[name]) {
+            return properties;
+        }
+
         return {
             ...properties,
-            [name]: type,
+            [name]: type || {},
         };
     }, {});
 };
