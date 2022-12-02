@@ -41,7 +41,7 @@ const getTableDataFromDDl = (statement) => {
 	parser.removeErrorListeners();
 	parser.addErrorListener(new ExprErrorListener());
 	const tree = parser.singleStatement();
-	const sqlBaseToCollectionVisitor = new SqlBaseToCollectionVisitor();
+	const sqlBaseToCollectionVisitor = new SqlBaseToCollectionVisitor(statement);
 	let parsedTableData = tree.accept(sqlBaseToCollectionVisitor);
 	if (!dependencies.lodash.isEmpty(parsedTableData.query)) {
 		parsedTableData.query = statement.substring(parsedTableData.query.select.start, parsedTableData.query.select.stop)
