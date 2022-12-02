@@ -502,7 +502,7 @@ const parseDDLStatements = (input) => {
 
 	const tree = parser.statements();
 
-	const hqlToCollectionsGenerator = new hqlToCollectionsVisitor();
+	const hqlToCollectionsGenerator = new hqlToCollectionsVisitor(input);
 
 	const commands = tree.accept(hqlToCollectionsGenerator);
 	return commandsService.convertCommandsToReDocs(

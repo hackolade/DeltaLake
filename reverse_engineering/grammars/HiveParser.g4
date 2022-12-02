@@ -1194,6 +1194,18 @@ columnNameTypeConstraint
     : identifier colType columnConstraint? (KW_COMMENT StringLiteral)?
     ;
 
+columnGeneratedAs
+    : KW_GENERATED ( generatedAsExpression | generatedAsIdentity )
+    ;
+
+generatedAsExpression
+    : KW_ALWAYS KW_AS LPAREN expression RPAREN
+    ;
+
+generatedAsIdentity
+    : (KW_ALWAYS | KW_BY KW_DEFAULT) KW_AS KW_IDENTITY (LPAREN (KW_START KW_WITH Number)? (KW_INCREMENT KW_BY Number)? RPAREN)?
+    ;
+
 partitionedColumnNameTypeConstraint
     : identifier colType?
     ;
@@ -1227,6 +1239,7 @@ alterColConstraint
 columnConstraintType
     : KW_NOT KW_NULL
     | KW_DEFAULT defaultVal
+    | columnGeneratedAs
     | checkConstraint
     | tableConstraintType
     ;
