@@ -126,31 +126,33 @@ class Visitor extends SqlBaseVisitor {
 			if (this.visitFlagValue(constraint, 'NULL')) {
 				return { ...result, isNotNull: true };
 			}
+
+			return result;
 		}, {});
 	}
 
 	visitColumnGeneratedAs(ctx) {
-        if (ctx.generatedAsExpression()) {
-            const expression = this.getText(ctx.generatedAsExpression().expression());
-            return {
-                generatedType: 'always',
-                expression: `(${expression})`,
-            };
-        }
+		if (ctx.generatedAsExpression()) {
+			const expression = this.getText(ctx.generatedAsExpression().expression());
+			return {
+				generatedType: 'always',
+				expression: `(${expression})`,
+			};
+		}
 
-        if (ctx.generatedAsIdentity()) {
-            const wholeExpression = this.getText(ctx.generatedAsIdentity());
-            const isDefault = /^\s*BY\s+DEFAULT\s+/i.test(wholeExpression);
-            const expression = wholeExpression.replace(/^\s*(ALWAYS|BY\s+DEFAULT)\s+AS\s+/i, '');
+		if (ctx.generatedAsIdentity()) {
+			const wholeExpression = this.getText(ctx.generatedAsIdentity());
+			const isDefault = /^\s*BY\s+DEFAULT\s+/i.test(wholeExpression);
+			const expression = wholeExpression.replace(/^\s*(ALWAYS|BY\s+DEFAULT)\s+AS\s+/i, '');
 
-            return {
-                generatedType: isDefault ? 'by default' : 'always',
-                expression,
-            };
-        }
+			return {
+				generatedType: isDefault ? 'by default' : 'always',
+				expression,
+			};
+		}
 
-        return;
-    }
+		return;
+	}
 
 	visitMapDataType(ctx) {
 		return {
@@ -351,9 +353,9 @@ class Visitor extends SqlBaseVisitor {
 		}
 	}
 
-    getText(expression) {
-        return this.originalText.slice(expression.start.start, expression.stop.stop + 1);
-    }
+	getText(expression) {
+		return this.originalText.slice(expression.start.start, expression.stop.stop + 1);
+	}
 }
 
 const getLabelValue = (context, label) => {
