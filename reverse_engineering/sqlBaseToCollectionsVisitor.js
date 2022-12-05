@@ -6,6 +6,11 @@ global.legacy_exponent_literal_as_decimal_enabled = true;
 global.legacy_setops_precedence_enabled = true;
 
 class Visitor extends SqlBaseVisitor {
+	constructor(originalText) {
+		super();
+		this.originalText = originalText;
+	}
+ 
 	visitSingleStatement(ctx) {
 		return this.visit(ctx.statement())
 	}
@@ -100,9 +105,53 @@ class Visitor extends SqlBaseVisitor {
 		return {
 			colName: getName(ctx.errorCapturingIdentifier()),
 			colType: this.visit(ctx.dataType()),
-			isNotNull: this.visitFlagValue(ctx, 'NULL'),
-			colComment: this.visitIfExists(ctx, 'commentSpec', '')
+			colComment: this.visitIfExists(ctx, 'commentSpec', ''),
+			...this.visitIfExists(ctx, 'columnConstraint', {}),
 		}
+	}
+
+	visitColumnConstraint(ctx) {
+		if (!Array.isArray(ctx.columnConstraintType())) {
+			return {};
+		}
+
+		return ctx.columnConstraintType().reduce((result, constraint) => {
+			if (constraint.columnGeneratedAs()) {
+				return {
+					...result,
+					generatedDefaultValue: this.visit(constraint.columnGeneratedAs()),
+				};
+			}
+			
+			if (this.visitFlagValue(constraint, 'NULL')) {
+				return { ...result, isNotNull: true };
+			}
+
+			return result;
+		}, {});
+	}
+
+	visitColumnGeneratedAs(ctx) {
+		if (ctx.generatedAsExpression()) {
+			const expression = this.getText(ctx.generatedAsExpression().expression());
+			return {
+				generatedType: 'always',
+				expression: `(${expression})`,
+			};
+		}
+
+		if (ctx.generatedAsIdentity()) {
+			const wholeExpression = this.getText(ctx.generatedAsIdentity());
+			const isDefault = /^\s*BY\s+DEFAULT\s+/i.test(wholeExpression);
+			const expression = wholeExpression.replace(/^\s*(ALWAYS|BY\s+DEFAULT)\s+AS\s+/i, '');
+
+			return {
+				generatedType: isDefault ? 'by default' : 'always',
+				expression,
+			};
+		}
+
+		return;
 	}
 
 	visitMapDataType(ctx) {
@@ -302,6 +351,10 @@ class Visitor extends SqlBaseVisitor {
 		} catch (e) {
 			return false;
 		}
+	}
+
+	getText(expression) {
+		return this.originalText.slice(expression.start.start, expression.stop.stop + 1);
 	}
 }
 

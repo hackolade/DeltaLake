@@ -1100,6 +1100,21 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
     return this.visitChildren(ctx);
   }
 
+  // Visit a parse tree produced by HiveParser#columnGeneratedAs.
+  visitColumnGeneratedAs(ctx) {
+    return this.visitChildren(ctx);
+  }
+
+  // Visit a parse tree produced by HiveParser#generatedAsExpression.
+  visitGeneratedAsExpression(ctx) {
+    return this.visitChildren(ctx);
+  }
+
+  // Visit a parse tree produced by HiveParser#generatedAsIdentity.
+  visitGeneratedAsIdentity(ctx) {
+    return this.visitChildren(ctx);
+  }
+
   // Visit a parse tree produced by HiveParser#partitionedColumnNameTypeConstraint.
   visitPartitionedColumnNameTypeConstraint(ctx) {
     return this.visitChildren(ctx);

@@ -888,7 +888,7 @@ qualifiedColTypeWithPositionList
     ;
 
 qualifiedColTypeWithPosition
-    : name=multipartIdentifier dataType (NOT NULL)? commentSpec? colPosition?
+    : name=multipartIdentifier dataType (columnConstraint)? commentSpec? colPosition?
     ;
 
 colTypeList
@@ -896,7 +896,28 @@ colTypeList
     ;
 
 colType
-    : colName=errorCapturingIdentifier dataType (NOT NULL)? commentSpec?
+    : colName=errorCapturingIdentifier dataType (columnConstraint)? commentSpec?
+    ;
+
+columnConstraint
+    : columnConstraintType columnConstraintType*
+    ;
+
+columnConstraintType
+    : NOT NULL
+    | columnGeneratedAs
+    ;
+
+columnGeneratedAs
+    : KW_GENERATED ( generatedAsExpression | generatedAsIdentity )
+    ;
+
+generatedAsExpression
+    : KW_ALWAYS AS '(' expression ')'
+    ;
+
+generatedAsIdentity
+    : (KW_ALWAYS | BY KW_DEFAULT) AS KW_IDENTITY ('(' (START WITH number)? (KW_INCREMENT BY number)? ')')?
     ;
 
 complexColTypeList
@@ -1341,6 +1362,7 @@ nonReserved
     | IS
     | ITEMS
     | KEYS
+    | KW_DEFAULT
     | LAST
     | LATERAL
     | LAZY
@@ -1734,6 +1756,13 @@ WHERE: W H E R E;
 WINDOW: W I N D O W;
 WITH: W I T H;
 ZONE: Z O N E;
+
+KW_GENERATED: G E N E R A T E D;
+KW_ALWAYS: A L W A Y S;
+KW_DEFAULT: D E F A U L T;
+KW_IDENTITY: I D E N T I T Y;
+KW_INCREMENT: I N C R E M E N T;
+
 //--SPARK-KEYWORD-LIST-END
 //============================
 // End of the keywords list

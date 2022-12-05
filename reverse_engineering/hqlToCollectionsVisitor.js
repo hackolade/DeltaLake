@@ -54,6 +54,11 @@ const ALLOWED_COMMANDS = [
 ];
 
 class Visitor extends HiveParserVisitor {
+    constructor(originalText) {
+        super();
+        this.originalText = originalText;
+    }
+
     visitStatement(ctx) {
         const execStatement = ctx.execStatement();
         if (execStatement) {
@@ -83,7 +88,7 @@ class Visitor extends HiveParserVisitor {
         const _ = dependencies.lodash
         const [tableName, tableLikeName] = this.visit(ctx.tableName());
         const tableDataSource = this.visitWhenExists(ctx, 'tableUsingDataSource');
-        const compositePartitionKey = this.visitWhenExists(ctx, 'tablePartition', []);
+        const compositePartitionKey = this.visitWhenExists(ctx, 'tablePartition', [])?.[0] || [];
         const { compositeClusteringKey, numBuckets, sortedByKey } = this.visitWhenExists(ctx, 'tableBuckets', {});
         const { skewedby, skewedOn, skewStoredAsDir } = this.visitWhenExists(ctx, 'tableSkewed', {});
         const tableRowFormat = this.visitWhenExists(ctx, 'tableRowFormat', {});
@@ -115,7 +120,7 @@ class Visitor extends HiveParserVisitor {
                 schema: handleChoices({
                     collectionName: table,
                     type: 'object',
-                    properties: { ...convertKeysToProperties(compositePartitionKey), ...properties },
+                    properties: { ...convertKeysToProperties(compositePartitionKey, properties), ...properties },
                 }),
                 tableLikeName: (tableLikeName || {}).table,
                 entityLevelData: _.pickBy(
@@ -695,6 +700,29 @@ class Visitor extends HiveParserVisitor {
         );
     }
 
+    visitColumnGeneratedAs(ctx) {
+        if (ctx.generatedAsExpression()) {
+            const expression = this.getText(ctx.generatedAsExpression().expression());
+            return {
+                generatedType: 'always',
+                expression: `(${expression})`,
+            };
+        }
+
+        if (ctx.generatedAsIdentity()) {
+            const wholeExpression = this.getText(ctx.generatedAsIdentity());
+            const isDefault = /^\s*BY\s+DEFAULT\s+/i.test(wholeExpression);
+            const expression = wholeExpression.replace(/^\s*(ALWAYS|BY\s+DEFAULT)\s+AS\s+/i, '');
+
+            return {
+                generatedType: isDefault ? 'by default' : 'always',
+                expression,
+            };
+        }
+
+        return;
+    }
+
     visitColumnNameTypeOrConstraint(ctx) {
         const nameTypeConstraint = ctx.columnNameTypeConstraint();
         if (nameTypeConstraint) {
@@ -974,6 +1002,7 @@ class Visitor extends HiveParserVisitor {
             ...(Boolean((ctx.tableConstraintType() || {}).KW_PRIMARY) ? { primaryKey: true } : {}),
             ...(Boolean(ctx.KW_DEFAULT()) ? { default: this.visit(ctx.defaultVal()) } : {}),
             ...(Boolean(ctx.checkConstraint()) ? { check: this.visitWhenExists(ctx, 'checkConstraint', '') } : {}),
+            ...(Boolean(ctx.columnGeneratedAs()) ? { generatedDefaultValue: this.visit(ctx.columnGeneratedAs()) } : {}),
         };
     }
 
@@ -1478,6 +1507,10 @@ class Visitor extends HiveParserVisitor {
             collectionName: table,
         };
     }
+
+    getText(expression) {
+        return this.originalText.slice(expression.start.start, expression.stop.stop + 1);
+    }
 }
 
 const removeQuotes = (string = '') => string.replace(/^(`)(.*)\1$/, '$2');
@@ -1567,11 +1600,15 @@ const handleChoices = (field) => {
     };
 };
 
-const convertKeysToProperties = (keys = []) => {
+const convertKeysToProperties = (keys = [], existed) => {
     return keys.reduce((properties, [ name, type ]) => {
+        if (existed?.[name]) {
+            return properties;
+        }
+
         return {
             ...properties,
-            [name]: type,
+            [name]: type || {},
         };
     }, {});
 };
@@ -1604,6 +1641,9 @@ const mergeConstraints = (constraints) => {
         }
         if (constraint.check) {
             return { ...mergedConstraint, check: constraint.check };
+        }
+        if (constraint.generatedDefaultValue) {
+            return { ...mergedConstraint, generatedDefaultValue: constraint.generatedDefaultValue };
         }
 
         return mergedConstraint;
