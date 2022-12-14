@@ -139,5 +139,34 @@
 				}
 			}
 		]
+	},
+	{
+		"lowerTab": "Azure Storage Access",
+		"structure": [
+			{
+				"inputLabel": "Storage account name",
+				"inputKeyword": "azureStorageAccountName",
+				"inputType": "text",
+				"dependency": {
+					"key": "provider",
+					"value": "Azure Databricks"
+				},
+				"inputSuffix": ".dfs.core.windows.net",
+				"inputPlaceholder": "<storage_account_name>",
+				"description": "As in Spark config fs.azure.account.key.<storage_account_name>.dfs.core.windows.net"
+			},
+			{
+				"inputLabel": "Storage account key",
+				"inputKeyword": "azureStorageAccountKey",
+				"inputType": "password",
+				"dependency": {
+					"key": "provider",
+					"value": "Azure Databricks"
+				},
+				"isHiddenKey": true,
+				"inputPlaceholder": "<storage_account_key>",
+				"description": "As in Spark config fs.azure.account.key.<storage_account_name>.dfs.core.windows.net <storage_account_key>"
+			}
+		]
 	}
 ]

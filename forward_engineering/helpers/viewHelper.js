@@ -85,7 +85,12 @@ module.exports = {
 		const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
 		const createStatement = `CREATE ${(orReplace && !ifNotExists) ? 'OR REPLACE ' : ''}${isGlobal ? 'GLOBAL ' : ''}${isTemporary ? 'TEMPORARY ' : ''}VIEW${ifNotExists ? ' IF NOT EXISTS' : ''} ${name}`;
 		const comment = schema.description;
-		const tablePropertyStatements = schema.tableProperties ? ` TBLPROPERTIES (${getTablePropertiesClause(schema.tableProperties)})` : '';
+		let tablePropertyStatements = '';
+		const tableProperties = schema.tableProperties && Array.isArray(schema.tableProperties) ? filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime']) : [];
+		
+		if (tableProperties.length) {
+			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`;
+		};
 		script.push(createStatement);
 		if (schema.selectStatement) {
 			const columnList = view.columnList ? ` (${view.columnList})` : ' ';
@@ -118,4 +123,12 @@ module.exports = {
 
 		return script.join('\n  ') + ';\n\n\n\n\n'
 	},
+};
+
+const filterRedundantProperties = (tableProperties, propertiesList) => {
+	if (!Array.isArray(tableProperties)) {
+		return tableProperties;
+	}
+
+	return tableProperties.filter(prop => !propertiesList.includes(prop.propertyKey));
 };

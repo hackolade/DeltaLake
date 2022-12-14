@@ -280,9 +280,26 @@ const getTypeByProperty = (definitions = []) => property => {
 	}
 };
 
-const getColumn = (name, type, comment, constraints, isActivated) => ({
-	[name]: { type, comment, constraints, isActivated }
+const getColumn = (name, type, comment, constraints, isActivated, generatedExpression) => ({
+	[name]: { type, comment, constraints, isActivated, generatedExpression }
 });
+
+const getGeneratedExpression = (expressionData) => {
+	if (!expressionData) {
+		return '';
+	}
+
+	if (!expressionData.expression || !expressionData.expression.trim()) {
+		return '';
+	}
+
+	const generatedType = ({
+		always: 'ALWAYS',
+		'by default': 'BY DEFAULT',
+	})[expressionData.generatedType || 'always'];
+
+	return ` GENERATED ${generatedType} AS ${expressionData.expression}`;
+};
 
 const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 	const deactivatedColumnNames = new Set();
@@ -307,7 +324,8 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 					check: property.check,
 					defaultValue: property.default
 				} : {},
-				property.isActivated
+				property.isActivated,
+				getGeneratedExpression(property.generatedDefaultValue),
 			)
 		);
 	}, {});
@@ -335,11 +353,11 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 	return { columns, deactivatedColumnNames };
 };
 
-const getColumnStatement = ({ name, type, comment, constraints, isActivated, isParentActivated }) => {
+const getColumnStatement = ({ name, type, comment, constraints, isActivated, isParentActivated, generatedExpression }) => {
 	const commentStatement = comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '';
 	const constraintsStaitment = constraints ? getColumnConstraintsStaitment(constraints) : '';
 	const isColumnActivated = isParentActivated ? isActivated : true;
-	return commentDeactivatedStatements(`${replaceSpaceWithUnderscore(name)} ${type}${constraintsStaitment}${commentStatement}`, isColumnActivated);
+	return commentDeactivatedStatements(`${replaceSpaceWithUnderscore(name)} ${type}${generatedExpression}${constraintsStaitment}${commentStatement}`, isColumnActivated);
 };
 
 const getColumnsStatement = (columns, isParentActivated) => {

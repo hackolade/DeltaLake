@@ -364,6 +364,10 @@ KW_CSV: C S V;
 KW_JSON: J S O N;
 KW_JSONFILE: J S O N F I L E;
 KW_BLOOMFILTER: B L O O M F I L T E R;
+KW_GENERATED: G E N E R A T E D;
+KW_ALWAYS: A L W A Y S;
+KW_IDENTITY: I D E N T I T Y;
+KW_INCREMENT: I N C R E M E N T;
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

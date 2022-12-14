@@ -1240,6 +1240,31 @@ class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
     return this.visitChildren(ctx);
   }
 
+  // Visit a parse tree produced by SqlBaseParser#columnConstraint.
+  visitColumnConstraint(ctx) {
+    return this.visitChildren(ctx);
+  }
+
+  // Visit a parse tree produced by SqlBaseParser#columnConstraintType.
+  visitColumnConstraintType(ctx) {
+    return this.visitChildren(ctx);
+  }
+
+  // Visit a parse tree produced by SqlBaseParser#columnGeneratedAs.
+  visitColumnGeneratedAs(ctx) {
+    return this.visitChildren(ctx);
+  }
+
+  // Visit a parse tree produced by SqlBaseParser#generatedAsExpression.
+  visitGeneratedAsExpression(ctx) {
+    return this.visitChildren(ctx);
+  }
+
+  // Visit a parse tree produced by SqlBaseParser#generatedAsIdentity.
+  visitGeneratedAsIdentity(ctx) {
+    return this.visitChildren(ctx);
+  }
+
   // Visit a parse tree produced by SqlBaseParser#complexColTypeList.
   visitComplexColTypeList(ctx) {
     return this.visitChildren(ctx);

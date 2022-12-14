@@ -35,6 +35,7 @@ module.exports = {
 				clusterId: connectionInfo.clusterId,
 				accessToken: connectionInfo.accessToken,
 				queryRequestTimeout: connectionInfo.queryRequestTimeout,
+				sparkConfig: getSparkConfigurations(connectionInfo),
 				logger,
 			}
 
@@ -73,6 +74,7 @@ module.exports = {
 					clusterId: connectionInfo.clusterId,
 					accessToken: connectionInfo.accessToken,
 					queryRequestTimeout: connectionInfo.queryRequestTimeout,
+					sparkConfig: getSparkConfigurations(connectionInfo),
 					logger,
 				};
 				dbNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionData);
@@ -107,6 +109,7 @@ module.exports = {
 				accessToken: connectionInfo.accessToken,
 				databaseName: connectionInfo.database,
 				queryRequestTimeout: connectionInfo.queryRequestTimeout,
+				sparkConfig: getSparkConfigurations(connectionInfo),
 				logger,
 			};
 
@@ -499,7 +502,7 @@ const parseDDLStatements = (input) => {
 
 	const tree = parser.statements();
 
-	const hqlToCollectionsGenerator = new hqlToCollectionsVisitor();
+	const hqlToCollectionsGenerator = new hqlToCollectionsVisitor(input);
 
 	const commands = tree.accept(hqlToCollectionsGenerator);
 	return commandsService.convertCommandsToReDocs(
@@ -520,4 +523,17 @@ const createWarning = (warnings) => {
 		openLog: true,
 		size: 'middle'
 	};
+};
+
+const getSparkConfigurations = (connectionInfo) => {
+	const { azureStorageAccountName, azureStorageAccountKey } = connectionInfo;
+	const config = {};
+
+	if (connectionInfo.provider === 'Azure Databricks') {
+		if (azureStorageAccountName && azureStorageAccountKey) {
+			config[`fs.azure.account.key.${azureStorageAccountName}.dfs.core.windows.net`] = azureStorageAccountKey;
+		}
+	}
+
+	return config;
 };

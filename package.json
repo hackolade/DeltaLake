@@ -1,7 +1,7 @@
 {
 	"name": "DeltaLake",
-	"version": "0.1.76",
-	"versionDate": "2022-11-10",
+	"version": "0.1.82",
+	"versionDate": "2022-12-05",
 	"author": "hackolade",
 	"engines": {
 		"hackolade": "6.5.3",
@@ -27,7 +27,7 @@
                 "disablePipelines": true
             },
 			"nestedCollections": false,
-			"disablePatternField": false,
+			"disablePatternField": true,
 			"enableForwardEngineering": true,
 			"disableMultipleTypes": false,
 			"enableReverseEngineering": true,
