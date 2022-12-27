@@ -520,7 +520,7 @@ class Visitor extends HiveParserVisitor {
         return {
             type: UPDATE_ENTITY_LEVEL_DATA_COMMAND,
             data: {
-                numBuckets: ctx.Number().getText(),
+                numBuckets: Number(ctx.Number().getText()),
             },
         };
     }
