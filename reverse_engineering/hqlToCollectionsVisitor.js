@@ -89,8 +89,8 @@ class Visitor extends HiveParserVisitor {
         const [tableName, tableLikeName] = this.visit(ctx.tableName());
         const tableDataSource = this.visitWhenExists(ctx, 'tableUsingDataSource');
         const compositePartitionKey = this.visitWhenExists(ctx, 'tablePartition', [])?.[0] || [];
-        const { compositeClusteringKey, numBuckets, sortedByKey } = this.visitWhenExists(ctx, 'tableBuckets', {});
-        const { skewedby, skewedOn, skewStoredAsDir } = this.visitWhenExists(ctx, 'tableSkewed', {});
+        const { compositeClusteringKey, numBuckets, sortedByKey } = this.visitWhenExists(ctx, 'tableBuckets', [])?.[0] || {};
+        const { skewedby, skewedOn, skewStoredAsDir } = this.visitWhenExists(ctx, 'tableSkewed', [])?.[0] || {};
         const tableRowFormat = this.visitWhenExists(ctx, 'tableRowFormat', {});
         const description = this.visitWhenExists(ctx, 'tableComment');
         const location = this.visitWhenExists(ctx, 'tableLocation');
@@ -142,7 +142,7 @@ class Visitor extends HiveParserVisitor {
                         ...storedAsTable,
                         ...tableRowFormat,
                     },
-                    (prop) => _.isBoolean(prop) || !_.isEmpty(prop)
+                    (prop) => _.isNumber(prop) || _.isBoolean(prop) || !_.isEmpty(prop)
                 ),
             },
             ...tableForeignKeys.map((fkData) => ({
