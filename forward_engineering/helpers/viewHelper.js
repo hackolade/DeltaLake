@@ -21,9 +21,11 @@ const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
 			return prepareName(itemData.name);
 		}
 		const collection = _.first(itemData.collection) || {};
-		const collectionName = collection.collectionName || collection.code;
+		const collectionName = collection.code || collection.collectionName;
+		const db = _.first(itemData.bucket) || {};
+		const dbName = db.code || db.name;
 
-		return `${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
+		return `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
 	})).filter(_.identity);
 };
 
