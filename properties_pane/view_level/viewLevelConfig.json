@@ -122,12 +122,12 @@ making sure that you maintain a proper JSON format.
 				"propertyName": "Column list",
 				"propertyKeyword": "columnList",
 				"propertyType": "details",
-				"propertyTooltip": "Specify comma separated column names, which should be selected from select statement",
+				"propertyTooltip": "An optional list of comma-separated column names to be used for columns of the view. The number of column aliases must match the number of expressions in the SELECT statement. In case no column list is specified aliases are derived from the SELECT STATEMENT.",
 				"template": "textarea",
 				"markdown": false
 			},
 			{
-				"propertyName": "Select Statement",
+				"propertyName": "SELECT Statement",
 				"propertyKeyword": "selectStatement",
 				"propertyType": "details",
 				"propertyTooltip": "select statement",
