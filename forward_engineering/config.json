@@ -4,7 +4,8 @@
 	"namePrefix": "DeltaLake",
 	"level": {
 		"entity": true,
-		"container": true
+		"container": true,
+		"view": true
 	},
 	"compMode": {
 		"entity": true,

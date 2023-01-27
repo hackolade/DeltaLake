@@ -70,6 +70,30 @@ module.exports = {
 		}
 	},
 
+	generateViewScript(data, logger, callback, app) {
+		try {
+			setDependencies(app);
+			setAppDependencies(dependencies);
+			const viewSchema = JSON.parse(data.jsonSchema || '{}');
+
+			const databaseStatement = getDatabaseStatement(data.containerData);
+
+			const script = getViewScript({
+				schema: viewSchema,
+				viewData: data.viewData,
+				containerData: data.containerData,
+				collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
+				isKeyspaceActivated: true,
+			});
+
+			callback(null, buildScript(databaseStatement, script));
+		} catch (error) {
+			logger.log('error', { message: e.message, stack: e.stack }, 'DeltaLake Forward-Engineering Error');
+
+			callback({ message: e.message, stack: e.stack });
+		}
+	},
+
 	generateContainerScript(data, logger, callback, app) {
 		try {
 			setDependencies(app);
@@ -142,7 +166,7 @@ module.exports = {
 			logger.log(
 				'error',
 				{ message: e.message, stack: e.stack },
-				'Hive Forward-Engineering Error'
+				'DeltaLake Forward-Engineering Error'
 			);
 
 			callback({ message: e.message, stack: e.stack });
