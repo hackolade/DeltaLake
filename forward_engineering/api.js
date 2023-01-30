@@ -86,8 +86,8 @@ module.exports = {
 				isKeyspaceActivated: true,
 			});
 
-			callback(null, buildScript(databaseStatement, script));
-		} catch (error) {
+			callback(null, buildScript([databaseStatement, script]));
+		} catch (e) {
 			logger.log('error', { message: e.message, stack: e.stack }, 'DeltaLake Forward-Engineering Error');
 
 			callback({ message: e.message, stack: e.stack });
