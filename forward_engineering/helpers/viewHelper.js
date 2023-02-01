@@ -17,7 +17,7 @@ const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
 			return definitionData.definitionId === id;
 		});
 		const itemData = collectionRefsDefinitionsMap[itemDataId] || {};
-		if (!itemData.name || itemData.name === name) {
+		if (!itemData.name) {
 			return prepareName(itemData.name);
 		}
 		const collection = _.first(itemData.collection) || {};
