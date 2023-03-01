@@ -59,6 +59,22 @@
                 "to": {
                     "unique": true
                 }
+            },
+            {
+                "from": {
+                    "type": "varchar"
+                },
+                "to": {
+                    "mode": "string"
+                }
+            },
+            {
+                "from": {
+                    "type": "nvarchar"
+                },
+                "to": {
+                    "mode": "string"
+                }
             }
         ]
     }
