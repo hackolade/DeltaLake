@@ -13,6 +13,7 @@ const {
 	prepareScript
 } = require('./generalHelper');
 const {wrapInSingleQuotes, prepareName} = require("../generalHelper");
+const {EntitiesThatSupportComments} = require("./enums/entityType");
 
 let _;
 const setDependencies = ({ lodash }) => _ = lodash;
@@ -105,24 +106,73 @@ const hydrateCollection = (entity, definitions) => {
 	return [[containerData], [entityData], { ...entityData, properties }, definitions];
 };
 
-const generateModifyCollectionScript = (entity, definitions, ddlProvider) => {
-	const compMod = _.get(entity, 'role.compMod', {});
+const getUpdatedCommentOnCollectionScript = (collection, ddlProvider) => {
+	const descriptionInfo = collection.compMod.description;
+	if (!descriptionInfo) {
+		return undefined;
+	}
+
+	const { old: oldComment, new: newComment } = descriptionInfo;
+	if (!newComment || newComment === oldComment) {
+		return undefined;
+	}
+
+	const scriptGenerationConfig = {
+		entityType: EntitiesThatSupportComments.TABLE,
+		entityName: generateFullEntityName(collection),
+		comment: wrapInSingleQuotes(newComment),
+	}
+	return ddlProvider.updateComment(scriptGenerationConfig);
+}
+
+const getDeletedCommentOnCollectionScript = (collection, ddlProvider) => {
+	const descriptionInfo = collection.compMod.description;
+	if (!descriptionInfo) {
+		return undefined;
+	}
+
+	const { old: oldComment, new: newComment } = descriptionInfo;
+	if (!oldComment || newComment) {
+		return undefined;
+	}
+
+	const scriptGenerationConfig = {
+		entityType: EntitiesThatSupportComments.TABLE,
+		entityName: generateFullEntityName(collection),
+	}
+	return ddlProvider.dropComment(scriptGenerationConfig);
+}
+
+const generateModifyCollectionScript = (collection, definitions, ddlProvider) => {
+	const compMod = _.get(collection, 'role.compMod', {});
 	const isChangedProperties = getIsChangeProperties(compMod, tableProperties);
-	const fullCollectionName = generateFullEntityName(entity);
+	const fullCollectionName = generateFullEntityName(collection);
 	if (isChangedProperties) {
 		const roleData = getEntityData(compMod, tableProperties.concat(otherTableProperties));
-		const hydratedCollection = hydrateCollection({...entity, role: { ...entity.role, ...roleData }}, definitions);
+		const hydratedCollection = hydrateCollection({...collection, role: { ...collection.role, ...roleData }}, definitions);
 		const addCollectionScript = getTableStatement(...hydratedCollection, true);
 		const deleteCollectionScript = ddlProvider.dropTable(fullCollectionName);
 		return { type: 'new', script: prepareScript(deleteCollectionScript, addCollectionScript) };
 	}
+
 	const dataProperties = _.get(compMod, 'tableProperties', '');
-	const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod))
+	const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
+	const updatedCommentScript = getUpdatedCommentOnCollectionScript(collection, ddlProvider);
+	const deletedCommentScript = getDeletedCommentOnCollectionScript(collection, ddlProvider);
 	const hydratedTableProperties = hydrateTableProperties(dataProperties, fullCollectionName);
 	const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
 	const tablePropertiesScript = ddlProvider.alterTableProperties(hydratedTableProperties);
 	const serDeProperties = ddlProvider.alterSerDeProperties(hydratedSerDeProperties)
-	return { type: 'modify', script: prepareScript(alterTableNameScript, ...tablePropertiesScript, serDeProperties) };
+	return {
+		type: 'modify',
+		script: prepareScript(
+			alterTableNameScript,
+			updatedCommentScript,
+			deletedCommentScript,
+			...tablePropertiesScript,
+			serDeProperties
+		)
+	};
 }
 
 const getAddCollectionsScripts = definitions => entity => {
@@ -146,11 +196,11 @@ const getDeleteCollectionsScripts = provider => entity => {
 	return prepareScript(indexScript, collectionScript);
 };
 
-const getModifyCollectionsScripts = (definitions, ddlProvider) => entity => {
+const getModifyCollectionsScripts = (definitions, ddlProvider) => collection => {
 	setDependencies(dependencies);
-	const properties = getEntityProperties(entity);
-	const { script } = generateModifyCollectionScript(entity, definitions, ddlProvider);
-	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
+	const properties = getEntityProperties(collection);
+	const { script } = generateModifyCollectionScript(collection, definitions, ddlProvider);
+	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(collection, properties, definitions);
 	const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 
