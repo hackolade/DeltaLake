@@ -17,6 +17,10 @@ module.exports = {
 
 	alterTableColumnName: 'ALTER TABLE ${collectionName} RENAME COLUMN ${oldName} TO ${newName};',
 
+	updateColumnComment: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} COMMENT ${comment};',
+
+	updateComment: 'COMMENT ON ${entityType} ${entityName} IS ${comment}',
+
 	addTableColumns: 'ALTER TABLE ${name} ADD COLUMNS (${columns});',
 
 	addTableColumn: 'ALTER TABLE ${name} ADD COLUMN (${column});',

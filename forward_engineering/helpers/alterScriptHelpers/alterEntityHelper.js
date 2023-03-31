@@ -3,15 +3,16 @@ const { getColumns, getColumnsStatement, getColumnsString, getColumnStatement } 
 const { getIndexes } = require('../indexHelper');
 const { getTableStatement } = require('../tableHelper');
 const { hydrateTableProperties, getDifferentItems, getIsChangeProperties } = require('./common');
-const { 
-	getFullEntityName, 
-	generateFullEntityName, 
-	getEntityProperties, 
-	getContainerName, 
-	getEntityData, 
-	getEntityName, 
-	prepareScript 
+const {
+	getFullEntityName,
+	generateFullEntityName,
+	getEntityProperties,
+	getContainerName,
+	getEntityData,
+	getEntityName,
+	prepareScript
 } = require('./generalHelper');
+const {wrapInSingleQuotes, prepareName} = require("../generalHelper");
 
 let _;
 const setDependencies = ({ lodash }) => _ = lodash;
@@ -44,8 +45,8 @@ const hydrateAlterColumnName = (entity, properties = {}) => {
 	const columns = Object.values(properties).map(property => {
 		const compMod = _.get(property, 'compMod', {});
 		const { newField = {}, oldField = {}} = compMod;
-		return newField.name && oldField.name && newField.name !== oldField.name 
-			? { oldName: oldField.name, newName: newField.name } 
+		return newField.name && oldField.name && newField.name !== oldField.name
+			? { oldName: oldField.name, newName: newField.name }
 			: '';
 	});
 	return { collectionName, columns: columns.filter(Boolean) };
@@ -56,15 +57,15 @@ const hydrateAlterColumnType = (properties = {}) => {
 	const columns = Object.values(properties).map(property => {
 		const compMod = _.get(property, 'compMod', {});
 		const { newField = {}, oldField = {}} = compMod;
-		return isChangedType(oldField, newField) || 
+		return isChangedType(oldField, newField) ||
 		(
-			newField.items && 
-			oldField.items && 
+			newField.items &&
+			oldField.items &&
 			newField.items.some((field, index) => isChangedType(field, oldField.items[index]))
 		) ||
 		(
-			newField.properties && 
-			oldField.properties && 
+			newField.properties &&
+			oldField.properties &&
 			Object.keys(newField.properties).some(key => isChangedType(newField.properties[key], oldField.properties[key]))
 		)
 			? { oldName: oldField.name, newName: newField.name }
@@ -90,7 +91,7 @@ const hydrateAddIndexes = (entity, BloomIndxs, properties, definitions) => {
 const hydrateIndex = (entity, properties, definitions) => {
 	const bloomIndex = _.get(entity, 'role.compMod.BloomIndxs', {});
 	const { drop, add } = getDifferentItems(bloomIndex.new, bloomIndex.old);
-	return { 
+	return {
 		hydratedDropIndex : hydrateDropIndexes({ ...entity, BloomIndxs: drop }),
 		hydratedAddIndex: hydrateAddIndexes(entity, add, properties, definitions),
 	};
@@ -104,7 +105,7 @@ const hydrateCollection = (entity, definitions) => {
 	return [[containerData], [entityData], { ...entityData, properties }, definitions];
 };
 
-const generateModifyCollectionScript = (entity, definitions, provider) => {
+const generateModifyCollectionScript = (entity, definitions, ddlProvider) => {
 	const compMod = _.get(entity, 'role.compMod', {});
 	const isChangedProperties = getIsChangeProperties(compMod, tableProperties);
 	const fullCollectionName = generateFullEntityName(entity);
@@ -112,15 +113,15 @@ const generateModifyCollectionScript = (entity, definitions, provider) => {
 		const roleData = getEntityData(compMod, tableProperties.concat(otherTableProperties));
 		const hydratedCollection = hydrateCollection({...entity, role: { ...entity.role, ...roleData }}, definitions);
 		const addCollectionScript = getTableStatement(...hydratedCollection, true);
-		const deleteCollectionScript = provider.dropTable(fullCollectionName);
+		const deleteCollectionScript = ddlProvider.dropTable(fullCollectionName);
 		return { type: 'new', script: prepareScript(deleteCollectionScript, addCollectionScript) };
 	}
 	const dataProperties = _.get(compMod, 'tableProperties', '');
-	const alterTableNameScript = provider.alterTableName(hydrateAlterTableName(compMod))
+	const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod))
 	const hydratedTableProperties = hydrateTableProperties(dataProperties, fullCollectionName);
 	const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
-	const tablePropertiesScript = provider.alterTableProperties(hydratedTableProperties);
-	const serDeProperties = provider.alterSerDeProperties(hydratedSerDeProperties)
+	const tablePropertiesScript = ddlProvider.alterTableProperties(hydratedTableProperties);
+	const serDeProperties = ddlProvider.alterSerDeProperties(hydratedSerDeProperties)
 	return { type: 'modify', script: prepareScript(alterTableNameScript, ...tablePropertiesScript, serDeProperties) };
 }
 
@@ -131,7 +132,7 @@ const getAddCollectionsScripts = definitions => entity => {
 	const hydratedCollection = hydrateCollection(entity, definitions);
 	const collectionScript = getTableStatement(...hydratedCollection, true);
 	const indexScript = getIndexes(...hydrateAddIndexes(entity, indexes, properties, definitions));
-	
+
 	return prepareScript(collectionScript, indexScript);
 };
 
@@ -145,12 +146,12 @@ const getDeleteCollectionsScripts = provider => entity => {
 	return prepareScript(indexScript, collectionScript);
 };
 
-const getModifyCollectionsScripts = (definitions, provider) => entity => {
+const getModifyCollectionsScripts = (definitions, ddlProvider) => entity => {
 	setDependencies(dependencies);
 	const properties = getEntityProperties(entity);
-	const { script } = generateModifyCollectionScript(entity, definitions, provider);
+	const { script } = generateModifyCollectionScript(entity, definitions, ddlProvider);
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
-	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
+	const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 
 	return prepareScript(dropIndexScript, ...script, addIndexScript);
@@ -169,15 +170,15 @@ const getAddColumnsScripts = (definitions, provider) => entity => {
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 	const addColumnScript = provider.addTableColumns({ name: fullCollectionName, columns: columnStatement });
 
-	return modifyScript.type === 'new' ? 
-		prepareScript(dropIndexScript, ...modifyScript.script, addIndexScript) : 
+	return modifyScript.type === 'new' ?
+		prepareScript(dropIndexScript, ...modifyScript.script, addIndexScript) :
 		prepareScript(dropIndexScript, addColumnScript, ...modifyScript.script, addIndexScript);
 };
 
 const getDeleteColumnsScripts = (definitions, provider) => entity => {
 	setDependencies(dependencies);
-	const entityData = { 
-		...entity, 
+	const entityData = {
+		...entity,
 		..._.omit(entity.role, ['properties']),
 		properties: _.pickBy(entity.properties || {}, column => !column.compMod)
 	};
@@ -191,8 +192,8 @@ const getDeleteColumnsScripts = (definitions, provider) => entity => {
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 	const deleteColumnScript = provider.dropTableColumns({ name: fullCollectionName, columns: columnStatement });
 
-	return modifyScript.type === 'new' ? 
-		prepareScript(dropIndexScript, ...modifyScript.script, addIndexScript) : 
+	return modifyScript.type === 'new' ?
+		prepareScript(dropIndexScript, ...modifyScript.script, addIndexScript) :
 		prepareScript(dropIndexScript, deleteColumnScript, ...modifyScript.script, addIndexScript);
 };
 
@@ -208,77 +209,136 @@ const getDeleteColumnScripsForOlderRuntime = (definitions, provider) => entity =
 	const deleteCollectionScript = provider.dropTable(fullCollectionName);
 	const hydratedCollection = hydrateCollection(entityData, definitions);
 	const addCollectionScript = getTableStatement(...hydratedCollection, true);
-	
+
 	return prepareScript(dropIndexScript, deleteCollectionScript, addCollectionScript, addIndexScript);
 };
 
-const getModifyColumnsScripts = (definitions, provider) => entity => {
+const getUpdatedCommentOnColumnScripts = (collection, ddlProvider) => {
+	const out = [];
+	for (const key of Object.keys(collection.properties)) {
+		const newComment = collection.properties[key].description;
+		const oldComment = collection.role.properties[key]?.description;
+		if (newComment) {
+			if (!oldComment || newComment !== oldComment) {
+				const scriptGenerationConfig = {
+					fullTableName: generateFullEntityName(collection),
+					columnName: prepareName(key),
+					comment: wrapInSingleQuotes(newComment),
+				}
+				const script = ddlProvider.updateCommentOnColumn(scriptGenerationConfig);
+				out.push(script);
+			}
+		}
+	}
+	return out;
+}
+
+const getDeletedCommentOnColumnScripts = (collection, ddlProvider) => {
+	const out = [];
+	for (const key of Object.keys(collection.role.properties)) {
+		const newComment = collection.properties[key]?.description;
+		const oldComment = collection.role.properties[key].description;
+		if (oldComment && !newComment) {
+			const scriptGenerationConfig = {
+				fullTableName: generateFullEntityName(collection),
+				columnName: prepareName(key),
+			}
+			const script = ddlProvider.dropCommentOnColumn(scriptGenerationConfig);
+			out.push(script);
+		}
+	}
+	return out;
+}
+
+const getModifiedCommentOnColumnScripts = (collection, ddlProvider) => {
+	const updatedCommentScripts = getUpdatedCommentOnColumnScripts(collection, ddlProvider);
+	const deletedCommentScripts = getDeletedCommentOnColumnScripts(collection, ddlProvider);
+	return [...updatedCommentScripts, ...deletedCommentScripts];
+}
+
+const getModifyColumnsScripts = (definitions, ddlProvider) => collection => {
 	setDependencies(dependencies);
-	const properties = _.get(entity, 'properties', {});
+	const properties = _.get(collection, 'properties', {});
 	const unionProperties = _.unionWith(
-		Object.entries(properties), 
-		Object.entries(_.get(entity, 'role.properties', {})), 
+		Object.entries(properties),
+		Object.entries(_.get(collection, 'role.properties', {})),
 		(firstProperty, secondProperty) => _.isEqual(_.get(firstProperty, '[1].GUID'), _.get(secondProperty, '[1].GUID'))
 	);
 	const entityData = {
-		role: { 
-			..._.omit(entity.role || {}, ['properties']), 
+		role: {
+			..._.omit(collection.role || {}, ['properties']),
 			properties: Object.fromEntries(unionProperties)
 		}
 	};
-	const hydratedAlterColumnName = hydrateAlterColumnName(entity, properties);
-	const alterColumnScripts = provider.alterTableColumnName(hydratedAlterColumnName);
-	const modifiedScript = generateModifyCollectionScript(entityData, definitions, provider);
-	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
-	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
+	const hydratedAlterColumnName = hydrateAlterColumnName(collection, properties);
+	const alterColumnScripts = ddlProvider.alterTableColumnName(hydratedAlterColumnName);
+	const modifiedScript = generateModifyCollectionScript(entityData, definitions, ddlProvider);
+	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(collection, properties, definitions);
+	const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 
-	const fullCollectionName = generateFullEntityName(entity);
+	const fullCollectionName = generateFullEntityName(collection);
+	const modifiedCommentOnColumnsScripts = getModifiedCommentOnColumnScripts(collection, ddlProvider);
 	const { columnsToDelete, columnsToAdd } = hydrateAlterColumnType(properties);
 	const { columns: columnsInfo } = getColumns(entityData.role, true, definitions);
-	const deleteColumnScripts = _.map(columnsToDelete, column => provider.dropTableColumn({ name: fullCollectionName, column }));
-	const addColumnScripts = _.map(columnsToAdd, column => 
-		provider.addTableColumn({ name: fullCollectionName, column: getColumnStatement({ name: column, ...columnsInfo[column] }) }));
+	const deleteColumnScripts = _.map(columnsToDelete, column => ddlProvider.dropTableColumn({ name: fullCollectionName, column }));
+	const addColumnScripts = _.map(columnsToAdd, column =>
+		ddlProvider.addTableColumn({ name: fullCollectionName, column: getColumnStatement({ name: column, ...columnsInfo[column] }) }));
 	const modifyPaired = _.flatten(_.zip(deleteColumnScripts, addColumnScripts));
-	return modifiedScript.type === 'new' ? 
-		prepareScript(dropIndexScript, ...modifiedScript.script, addIndexScript) : 
-		prepareScript(dropIndexScript, ...modifyPaired, ...alterColumnScripts, ...modifiedScript.script, addIndexScript);
+	return modifiedScript.type === 'new' ?
+		prepareScript(dropIndexScript, ...modifiedScript.script, addIndexScript) :
+		prepareScript(
+			dropIndexScript,
+			...modifyPaired,
+			...alterColumnScripts,
+			...modifiedCommentOnColumnsScripts,
+			...modifiedScript.script,
+			addIndexScript
+		);
 };
 
-const getModifyColumnsScriptsForOlderRuntime = (definitions, provider) => entity => {
+const getModifyColumnsScriptsForOlderRuntime = (definitions, ddlProvider) => collection => {
 	setDependencies(dependencies);
-	const properties = _.get(entity, 'properties', {});
+	const properties = _.get(collection, 'properties', {});
 	const unionProperties = _.unionWith(
-		Object.entries(properties), 
-		Object.entries(_.get(entity, 'role.properties', {})), 
+		Object.entries(properties),
+		Object.entries(_.get(collection, 'role.properties', {})),
 		(firstProperty, secondProperty) => _.isEqual(_.get(firstProperty, '[1].GUID'), _.get(secondProperty, '[1].GUID'))
 	);
 	const entityData = {
-		role: { 
-			..._.omit(entity.role || {}, ['properties']), 
+		role: {
+			..._.omit(collection.role || {}, ['properties']),
 			properties: Object.fromEntries(unionProperties)
 		}
 	};
-	const hydratedAlterColumnName = hydrateAlterColumnName(entity, properties);
-	const alterColumnScripts = provider.alterTableColumnName(hydratedAlterColumnName);
-	const modifiedScript = generateModifyCollectionScript(entityData, definitions, provider);
-	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(entity, properties, definitions);
-	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
+	const hydratedAlterColumnName = hydrateAlterColumnName(collection, properties);
+	const alterColumnScripts = ddlProvider.alterTableColumnName(hydratedAlterColumnName);
+	const modifiedScript = generateModifyCollectionScript(entityData, definitions, ddlProvider);
+	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(collection, properties, definitions);
+	const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 
 	const { columnsToDelete } = hydrateAlterColumnType(properties);
+	const modifiedCommentOnColumnsScripts = getModifiedCommentOnColumnScripts(collection, ddlProvider);
 	let tableModificationScripts = [];
 	if (!_.isEmpty(columnsToDelete)) {
-		const fullCollectionName = generateFullEntityName(entity);
-		const deleteCollectionScript = provider.dropTable(fullCollectionName);
+		const fullCollectionName = generateFullEntityName(collection);
+		const deleteCollectionScript = ddlProvider.dropTable(fullCollectionName);
 		const hydratedCollection = hydrateCollection(entityData, definitions);
 		const addCollectionScript = getTableStatement(...hydratedCollection, true);
 		tableModificationScripts = [deleteCollectionScript, addCollectionScript];
 	}
 
-	return modifiedScript.type === 'new' ? 
-		prepareScript(dropIndexScript, ...modifiedScript.script, addIndexScript) : 
-		prepareScript(dropIndexScript, ...tableModificationScripts, ...alterColumnScripts, ...modifiedScript.script, addIndexScript);
+	return modifiedScript.type === 'new' ?
+		prepareScript(dropIndexScript, ...modifiedScript.script, addIndexScript) :
+		prepareScript(
+			dropIndexScript,
+			...tableModificationScripts,
+			...alterColumnScripts,
+			...modifiedCommentOnColumnsScripts,
+			...modifiedScript.script,
+			addIndexScript
+		);
 }
 
 module.exports = {
