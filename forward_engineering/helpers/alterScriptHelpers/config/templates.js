@@ -19,7 +19,7 @@ module.exports = {
 
 	updateColumnComment: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} COMMENT ${comment};',
 
-	updateComment: 'COMMENT ON ${entityType} ${entityName} IS ${comment}',
+	updateComment: 'COMMENT ON ${entityType} ${entityName} IS ${comment};',
 
 	addTableColumns: 'ALTER TABLE ${name} ADD COLUMNS (${columns});',
 

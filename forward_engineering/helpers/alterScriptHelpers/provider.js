@@ -36,7 +36,7 @@ module.exports = app => {
 				columnName,
 				comment
 			}
-			return assignTemplates(templates.updateColumnComment, templatesConfig);
+			return assignTemplates(templates.updateColumnComment, templatesConfig).replace(';;', ';');
 		},
 
 		dropCommentOnColumn({ fullTableName, columnName }) {
@@ -45,7 +45,7 @@ module.exports = app => {
 				columnName,
 				comment: "''",
 			}
-			return assignTemplates(templates.updateColumnComment, templatesConfig);
+			return assignTemplates(templates.updateColumnComment, templatesConfig).replace(';;', ';');
 		},
 
 		updateComment({ entityType, entityName, comment }) {
@@ -54,7 +54,7 @@ module.exports = app => {
 				entityName,
 				comment,
 			}
-			return assignTemplates(templates.updateComment, templatesConfig);
+			return assignTemplates(templates.updateComment, templatesConfig).replace(';;', ';');
 		},
 
 		dropComment({ entityType, entityName }) {
@@ -63,7 +63,7 @@ module.exports = app => {
 				entityName,
 				comment: 'NULL',
 			}
-			return assignTemplates(templates.updateComment, templatesConfig);
+			return assignTemplates(templates.updateComment, templatesConfig).replace(';;', ';');
 		},
 
 		alterTableProperties({ dataProperties, name }) {
