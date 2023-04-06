@@ -107,7 +107,7 @@ const hydrateCollection = (entity, definitions) => {
 };
 
 const getUpdatedCommentOnCollectionScript = (collection, ddlProvider) => {
-	const descriptionInfo = collection.compMod.description;
+	const descriptionInfo = collection.compMod?.description;
 	if (!descriptionInfo) {
 		return undefined;
 	}
@@ -126,7 +126,7 @@ const getUpdatedCommentOnCollectionScript = (collection, ddlProvider) => {
 }
 
 const getDeletedCommentOnCollectionScript = (collection, ddlProvider) => {
-	const descriptionInfo = collection.compMod.description;
+	const descriptionInfo = collection.compMod?.description;
 	if (!descriptionInfo) {
 		return undefined;
 	}
