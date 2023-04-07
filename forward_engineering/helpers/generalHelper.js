@@ -142,7 +142,7 @@ const encodeStringLiteral = (str = '') => {
 }
 
 const wrapInSingleQuotes = (str = '') => {
-	return `'${encodeStringLiteral(str)}';`
+	return `'${encodeStringLiteral(str)}'`;
 }
 
 const buildScript = (statements) => {
