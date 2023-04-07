@@ -70,7 +70,7 @@ const getTypeDescriptor = (typeName) => {
 
 	try {
 		descriptors[typeName] = require(`../../types/${typeName}.json`);
-		
+
 		return descriptors[typeName];
 	} catch (e) {
 		return {};
@@ -113,7 +113,7 @@ const commentDeactivatedInlineKeys = (keys, deactivatedKeyNames) => {
 
 const removeRedundantTrailingCommaFromStatement = (statement) => {
 	setDependencies(dependencies);
-	
+
 	const splitedStatement = statement.split('\n');
 	if (splitedStatement.length < 4 || !splitedStatement[splitedStatement.length - 2].trim().startsWith('--')) {
 		return statement;
@@ -128,7 +128,7 @@ const removeRedundantTrailingCommaFromStatement = (statement) => {
 		return splitedStatement.join('\n');
 	}
 	return statement;
-} 
+}
 
 const getCleanedUrl = url => {
 	if(url.endsWith('/')){
@@ -139,6 +139,10 @@ const getCleanedUrl = url => {
 
 const encodeStringLiteral = (str = '') => {
 	return str.replace(/(['\\])/gi, '\\$1').replace(/\n/gi, '\\n');
+}
+
+const wrapInSingleQuotes = (str = '') => {
+	return `'${encodeStringLiteral(str)}'`;
 }
 
 const buildScript = (statements) => {
@@ -162,4 +166,5 @@ module.exports = {
 	getCleanedUrl,
 	encodeStringLiteral,
 	buildScript,
+	wrapInSingleQuotes,
 };

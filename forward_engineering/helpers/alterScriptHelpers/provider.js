@@ -24,10 +24,46 @@ module.exports = app => {
 			if (!collectionName) {
 				return '';
 			}
-			const columnsScripts = columns.map(({ oldName, newName }) => oldName && newName 
+			const columnsScripts = columns.map(({ oldName, newName }) => oldName && newName
 				? assignTemplates(templates.alterTableColumnName, { collectionName, oldName, newName }) : ''
 			);
 			return columnsScripts.filter(Boolean);
+		},
+
+		updateCommentOnColumn({ fullTableName, columnName, comment }) {
+			const templatesConfig = {
+				tableName: fullTableName,
+				columnName,
+				comment
+			}
+			return assignTemplates(templates.updateColumnComment, templatesConfig);
+		},
+
+		dropCommentOnColumn({ fullTableName, columnName }) {
+			const templatesConfig = {
+				tableName: fullTableName,
+				columnName,
+				comment: "''",
+			}
+			return assignTemplates(templates.updateColumnComment, templatesConfig);
+		},
+
+		updateComment({ entityType, entityName, comment }) {
+			const templatesConfig = {
+				entityType,
+				entityName,
+				comment,
+			}
+			return assignTemplates(templates.updateComment, templatesConfig);
+		},
+
+		dropComment({ entityType, entityName }) {
+			const templatesConfig = {
+				entityType,
+				entityName,
+				comment: 'NULL',
+			}
+			return assignTemplates(templates.updateComment, templatesConfig);
 		},
 
 		alterTableProperties({ dataProperties, name }) {
@@ -44,11 +80,11 @@ module.exports = app => {
 			}
 			return script;
 		},
-		
+
 		setTableProperties({ name, properties } = {}) {
 			return !name || !properties ? '' : assignTemplates(templates.setTableProperties, { name, properties });
 		},
-		
+
 		unsetTableProperties({ name, properties } = {}) {
 			return !name || !properties ? '' : assignTemplates(templates.unsetTableProperties, { name, properties });
 		},
@@ -78,7 +114,7 @@ module.exports = app => {
 				return '';
 			}
 			const serDeProperties = properties ? assignTemplates(templates.serDeProperties, { properties }) : '';
-			
+
 			return assignTemplates(templates.alterSerDeProperties, { name, serDeProperties, serDe });
 		},
 
