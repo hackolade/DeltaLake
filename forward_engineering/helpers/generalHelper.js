@@ -12,6 +12,8 @@ const dropCommentOnDatabaseEntityScriptRegex = new RegExp(
 	`COMMENT ON (${entitiesThatSupportCommentsAsRegexComponent}) .+ IS NULL;`, 'g');
 const dropCommentOnTableColumnRegex = /ALTER TABLE .+ ALTER COLUMN .+ COMMENT '';/g;
 
+const dropNotNullConstraintRegex = /ALTER TABLE .* ALTER COLUMN .* DROP NOT NULL;/g;
+
 let _;
 
 const setDependencies = ({ lodash }) => _ = lodash;
@@ -95,11 +97,11 @@ const isScriptADropStatement = (script) => {
 	if (containsDropStatement) {
 		return true;
 	}
-	const isADatabaseEntityDropStatement = dropCommentOnDatabaseEntityScriptRegex.test(script);
-	if (isADatabaseEntityDropStatement) {
-		return true;
-	}
-	return dropCommentOnTableColumnRegex.test(script);
+	return [
+		dropCommentOnDatabaseEntityScriptRegex,
+		dropCommentOnTableColumnRegex,
+		dropNotNullConstraintRegex
+	].some(regex => regex.test(script));
 }
 
 /**
