@@ -160,8 +160,6 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
 
     const dataProperties = _.get(compMod, 'tableProperties', '');
     const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
-    const updatedCommentScript = getUpdatedCommentOnCollectionScript(collection, ddlProvider);
-    const deletedCommentScript = getDeletedCommentOnCollectionScript(collection, ddlProvider);
     const hydratedTableProperties = hydrateTableProperties(dataProperties, fullCollectionName);
     const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
     const tablePropertiesScript = ddlProvider.alterTableProperties(hydratedTableProperties);
@@ -170,8 +168,6 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
         type: 'modify',
         script: prepareScript(
             alterTableNameScript,
-            updatedCommentScript,
-            deletedCommentScript,
             ...tablePropertiesScript,
             serDeProperties
         )
@@ -208,6 +204,20 @@ const getModifyCollectionsScripts = (definitions, ddlProvider) => collection => 
     const addIndexScript = getIndexes(...hydratedAddIndex);
 
     return prepareScript(dropIndexScript, ...script, addIndexScript);
+};
+
+/**
+ * @return {(x: Object) => Array<string>}
+ * */
+const getModifyCollectionCommentsScripts = (ddlProvider) => collection => {
+    setDependencies(dependencies);
+    const updatedCommentScript = getUpdatedCommentOnCollectionScript(collection, ddlProvider);
+    const deletedCommentScript = getDeletedCommentOnCollectionScript(collection, ddlProvider);
+
+    return prepareScript(
+        updatedCommentScript,
+        deletedCommentScript
+    );
 };
 
 const getAddColumnsScripts = (definitions, provider) => entity => {
@@ -403,6 +413,7 @@ module.exports = {
     getAddCollectionsScripts,
     getDeleteCollectionsScripts,
     getModifyCollectionsScripts,
+    getModifyCollectionCommentsScripts,
     getAddColumnsScripts,
     getDeleteColumnsScripts,
     getDeleteColumnScripsForOlderRuntime,
