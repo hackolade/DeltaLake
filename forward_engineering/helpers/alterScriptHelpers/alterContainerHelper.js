@@ -3,7 +3,7 @@ const {dependencies} = require('../appDependencies');
 const {getEntityData} = require('./generalHelper');
 const {getIsChangeProperties} = require('./common');
 const {EntitiesThatSupportComments} = require("./enums/entityType");
-const {wrapInSingleQuotes, replaceSpaceWithUnderscore, commentDeactivatedStatements} = require("../generalHelper");
+const {wrapInSingleQuotes, replaceSpaceWithUnderscore} = require("../generalHelper");
 
 let _;
 
@@ -71,12 +71,9 @@ const getDropCommentsScript = (container, ddlProvider) => {
 const getAlterCommentsScript = (container, ddlProvider) => {
     const upsertCommentScript = getUpsertCommentsScript(container, ddlProvider);
     const dropCommentScript = getDropCommentsScript(container, ddlProvider);
-    const commentedDropScript = dropCommentScript.length
-        ? commentDeactivatedStatements(dropCommentScript, false)
-        : '';
     return [
         upsertCommentScript,
-        commentedDropScript
+        dropCommentScript
     ].filter(Boolean).join('\n\n');
 }
 

@@ -1,9 +1,9 @@
-const { 
+const {
 	getAddContainerScript,
 	getDeleteContainerScript,
 	getModifyContainerScript,
 } = require('./alterScriptHelpers/alterContainerHelper');
-const { 
+const {
 	getAddCollectionsScripts,
 	getDeleteCollectionsScripts,
 	getModifyCollectionsScripts,
@@ -19,7 +19,7 @@ const {
 	getModifyViewsScripts,
 } = require('./alterScriptHelpers/alterViewHelper');
 const { DROP_STATEMENTS } = require('./constants');
-const { commentDeactivatedStatements, buildScript } = require('./generalHelper');
+const { commentDeactivatedStatements, buildScript, doesScriptContainDropStatement} = require('./generalHelper');
 const { getDBVersionNumber } = require('./alterScriptHelpers/common');
 
 const getItems = (entity, nameProperty, modify) =>
@@ -138,7 +138,7 @@ const getCommentedDropScript = (scripts, data) => {
 		return scripts;
 	}
 	return scripts.map(script => {
-		const isDrop = DROP_STATEMENTS.some(statement => script.includes(statement));
+		const isDrop = doesScriptContainDropStatement(script);
 		return !isDrop ? script : commentDeactivatedStatements(script, false);
 	});
 };

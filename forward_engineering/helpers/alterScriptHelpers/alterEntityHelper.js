@@ -12,7 +12,7 @@ const {
     getEntityName,
     prepareScript
 } = require('./generalHelper');
-const {wrapInSingleQuotes, prepareName, commentDeactivatedStatements} = require("../generalHelper");
+const {wrapInSingleQuotes, prepareName} = require("../generalHelper");
 const {EntitiesThatSupportComments} = require("./enums/entityType");
 
 let _;
@@ -162,9 +162,6 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
     const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
     const updatedCommentScript = getUpdatedCommentOnCollectionScript(collection, ddlProvider);
     const deletedCommentScript = getDeletedCommentOnCollectionScript(collection, ddlProvider);
-    const commentedDeletedCommentScript = deletedCommentScript.length
-        ? commentDeactivatedStatements(deletedCommentScript, false)
-        : '';
     const hydratedTableProperties = hydrateTableProperties(dataProperties, fullCollectionName);
     const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
     const tablePropertiesScript = ddlProvider.alterTableProperties(hydratedTableProperties);
@@ -174,7 +171,7 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
         script: prepareScript(
             alterTableNameScript,
             updatedCommentScript,
-            commentedDeletedCommentScript,
+            deletedCommentScript,
             ...tablePropertiesScript,
             serDeProperties
         )
@@ -308,8 +305,7 @@ const getDeletedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
 const getModifiedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
     const updatedCommentScripts = getUpdatedCommentOnColumnScripts(_)(collection, ddlProvider);
     const deletedCommentScripts = getDeletedCommentOnColumnScripts(_)(collection, ddlProvider);
-    const commentedDropComments = deletedCommentScripts.map(script => commentDeactivatedStatements(script, false));
-    return [...updatedCommentScripts, ...commentedDropComments];
+    return [...updatedCommentScripts, ...deletedCommentScripts];
 }
 
 const getModifyColumnsScripts = (definitions, ddlProvider) => collection => {
