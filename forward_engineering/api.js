@@ -5,13 +5,12 @@ const { getDatabaseStatement } = require('./helpers/databaseHelper');
 const { getTableStatement } = require('./helpers/tableHelper');
 const { getIndexes } = require('./helpers/indexHelper');
 const { getViewScript } = require('./helpers/viewHelper');
-const { getCleanedUrl, getTab, buildScript } = require('./helpers/generalHelper');
+const { getCleanedUrl, getTab, buildScript, doesScriptContainDropStatement} = require('./helpers/generalHelper');
 let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')
 const logHelper = require('../reverse_engineering/logHelper');
 const { getAlterScript } = require('./helpers/alterScriptFromDeltaHelper');
-const { DROP_STATEMENTS } = require('./helpers/constants');
 
 const setAppDependencies = ({ lodash }) => _ = lodash;
 
@@ -106,7 +105,7 @@ module.exports = {
 				data.entities,
 				data.internalDefinitions
 			);
-			
+
 			if (data.isUpdateScript) {
 				const deltaModelSchema = _.first(Object.values(jsonSchema)) || {};
 				const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
@@ -229,18 +228,18 @@ module.exports = {
 	isDropInStatements(data, logger, cb, app) {
 		try {
 			setDependencies(app);
-			
+
 			const callback = (error, script = '') => {
-				cb(error, DROP_STATEMENTS.some(statement => script.includes(statement)));
+				cb(error, doesScriptContainDropStatement(script));
 			};
-			
+
 			if (data.level === 'container') {
 				this.generateContainerScript(data, logger, callback, app);
 			} else if (data.level === 'entity') {
 				this.generateScript(data, logger, callback, app);
 			}
 		}	catch (e) {
-			callback({ message: e.message, stack: e.stack });
+			cb({ message: e.message, stack: e.stack });
 		}
 	},
 };

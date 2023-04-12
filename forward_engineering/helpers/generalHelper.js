@@ -3,6 +3,15 @@
 const RESERVED_WORDS = require('./reserverWords');
 const sqlFormatter = require('sql-formatter');
 const { dependencies } = require('./appDependencies');
+const {DROP_STATEMENTS} = require("./constants");
+const {EntitiesThatSupportComments} = require("./alterScriptHelpers/enums/entityType");
+
+const entitiesThatSupportCommentsAsRegexComponent = Object.values(EntitiesThatSupportComments)
+	.join('|');
+const dropCommentOnDatabaseEntityScriptRegex = new RegExp(
+	`COMMENT ON (${entitiesThatSupportCommentsAsRegexComponent}) .+ IS NULL;`, 'g');
+const dropCommentOnTableColumnRegex = /ALTER TABLE .+ ALTER COLUMN .+ COMMENT '';/g;
+
 let _;
 
 const setDependencies = ({ lodash }) => _ = lodash;
@@ -76,6 +85,32 @@ const getTypeDescriptor = (typeName) => {
 		return {};
 	}
 };
+
+/**
+ * @param script {string}
+ * @return boolean
+ * */
+const isScriptADropStatement = (script) => {
+	const containsDropStatement = DROP_STATEMENTS.some(statement => script.includes(statement));
+	if (containsDropStatement) {
+		return true;
+	}
+	const isADatabaseEntityDropStatement = dropCommentOnDatabaseEntityScriptRegex.test(script);
+	if (isADatabaseEntityDropStatement) {
+		return true;
+	}
+	return dropCommentOnTableColumnRegex.test(script);
+}
+
+/**
+ * @param script {string}
+ * @return boolean
+ * */
+const doesScriptContainDropStatement = (script) => {
+	return script.split('\n')
+		.filter(Boolean)
+		.some(scriptLine => isScriptADropStatement(scriptLine));
+}
 
 const commentDeactivatedStatements = (statement, isActivated = true) => {
 	if (isActivated) {
@@ -167,4 +202,5 @@ module.exports = {
 	encodeStringLiteral,
 	buildScript,
 	wrapInSingleQuotes,
+	doesScriptContainDropStatement
 };
