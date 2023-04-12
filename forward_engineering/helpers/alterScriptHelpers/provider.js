@@ -66,6 +66,30 @@ module.exports = app => {
 			return assignTemplates(templates.updateComment, templatesConfig);
 		},
 
+		/**
+		 * @param tableName {string}
+		 * @param columnName {string}
+		 * @return string
+		 * */
+		setNotNullConstraint(tableName, columnName) {
+			return assignTemplates(templates.addNotNullConstraint, {
+				tableName,
+				columnName
+			});
+		},
+
+		/**
+		 * @param tableName {string}
+		 * @param columnName {string}
+		 * @return string
+		 * */
+		dropNotNullConstraint(tableName, columnName) {
+			return assignTemplates(templates.dropNotNullConstraint, {
+				tableName,
+				columnName
+			});
+		},
+
 		alterTableProperties({ dataProperties, name }) {
 			if (!name) {
 				return [];

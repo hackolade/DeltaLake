@@ -318,6 +318,35 @@ const getModifiedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
     return [...updatedCommentScripts, ...deletedCommentScripts];
 }
 
+const getModifyNonNullColumnsScripts = (_) => (collection, ddlProvider) => {
+    const fullTableName = generateFullEntityName(collection);
+
+    const currentRequiredColumnNames = collection.required || [];
+    const previousRequiredColumnNames = collection.role.required || [];
+
+    const columnNamesToAddNotNullConstraint = _.difference(currentRequiredColumnNames, previousRequiredColumnNames);
+    const columnNamesToRemoveNotNullConstraint = _.difference(previousRequiredColumnNames, currentRequiredColumnNames);
+
+    const addNotNullConstraintsScript = _.toPairs(collection.properties)
+        .filter(([name, jsonSchema]) => {
+            const oldName = jsonSchema.compMod.oldField.name;
+            const shouldRemoveForOldName = columnNamesToRemoveNotNullConstraint.includes(oldName);
+            const shouldAddForNewName = columnNamesToAddNotNullConstraint.includes(name);
+            return shouldAddForNewName && !shouldRemoveForOldName;
+        })
+        .map(([columnName]) => ddlProvider.setNotNullConstraint(fullTableName, prepareName(columnName)));
+    const removeNotNullConstraint = _.toPairs(collection.properties)
+        .filter(([name, jsonSchema]) => {
+            const oldName = jsonSchema.compMod.oldField.name;
+            const shouldRemoveForOldName = columnNamesToRemoveNotNullConstraint.includes(oldName);
+            const shouldAddForNewName = columnNamesToAddNotNullConstraint.includes(name);
+            return shouldRemoveForOldName && !shouldAddForNewName;
+        })
+        .map(([name]) => ddlProvider.dropNotNullConstraint(fullTableName, prepareName(name)));
+
+    return [...addNotNullConstraintsScript, ...removeNotNullConstraint];
+}
+
 const getModifyColumnsScripts = (definitions, ddlProvider) => collection => {
     setDependencies(dependencies);
     const properties = _.get(collection, 'properties', {});
@@ -341,6 +370,7 @@ const getModifyColumnsScripts = (definitions, ddlProvider) => collection => {
 
     const fullCollectionName = generateFullEntityName(collection);
     const modifiedCommentOnColumnsScripts = getModifiedCommentOnColumnScripts(_)(collection, ddlProvider);
+    const modifyNotNullConstraintsScripts = getModifyNonNullColumnsScripts(_)(collection, ddlProvider);
     const {columnsToDelete, columnsToAdd} = hydrateAlterColumnType(properties);
     const {columns: columnsInfo} = getColumns(entityData.role, true, definitions);
     const deleteColumnScripts = _.map(columnsToDelete, column => ddlProvider.dropTableColumn({
@@ -360,6 +390,7 @@ const getModifyColumnsScripts = (definitions, ddlProvider) => collection => {
             ...modifyPaired,
             ...alterColumnScripts,
             ...modifiedCommentOnColumnsScripts,
+            ...modifyNotNullConstraintsScripts,
             ...modifiedScript.script,
             addIndexScript
         );
@@ -388,6 +419,7 @@ const getModifyColumnsScriptsForOlderRuntime = (definitions, ddlProvider) => col
 
     const {columnsToDelete} = hydrateAlterColumnType(properties);
     const modifiedCommentOnColumnsScripts = getModifiedCommentOnColumnScripts(_)(collection, ddlProvider);
+    const modifyNotNullConstraintsScripts = getModifyNonNullColumnsScripts(_)(collection, ddlProvider);
     let tableModificationScripts = [];
     if (!_.isEmpty(columnsToDelete)) {
         const fullCollectionName = generateFullEntityName(collection);
@@ -404,6 +436,7 @@ const getModifyColumnsScriptsForOlderRuntime = (definitions, ddlProvider) => col
             ...tableModificationScripts,
             ...alterColumnScripts,
             ...modifiedCommentOnColumnsScripts,
+            ...modifyNotNullConstraintsScripts,
             ...modifiedScript.script,
             addIndexScript
         );
