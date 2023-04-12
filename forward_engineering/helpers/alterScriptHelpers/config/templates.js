@@ -21,6 +21,10 @@ module.exports = {
 
 	updateComment: 'COMMENT ON ${entityType} ${entityName} IS ${comment};',
 
+	addNotNullConstraint: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} SET NOT NULL;',
+
+	dropNotNullConstraint: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} DROP NOT NULL;',
+
 	addTableColumns: 'ALTER TABLE ${name} ADD COLUMNS (${columns});',
 
 	addTableColumn: 'ALTER TABLE ${name} ADD COLUMN (${column});',
