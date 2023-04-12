@@ -9,8 +9,8 @@ const {EntitiesThatSupportComments} = require("./alterScriptHelpers/enums/entity
 const entitiesThatSupportCommentsAsRegexComponent = Object.values(EntitiesThatSupportComments)
 	.join('|');
 const dropCommentOnDatabaseEntityScriptRegex = new RegExp(
-	`^COMMENT ON (${entitiesThatSupportCommentsAsRegexComponent}) .+ IS NULL;$`, 'g');
-const dropCommentOnTableColumnRegex = /^ALTER TABLE .+ ALTER COLUMN .+ COMMENT '';$/g;
+	`COMMENT ON (${entitiesThatSupportCommentsAsRegexComponent}) .+ IS NULL;`, 'g');
+const dropCommentOnTableColumnRegex = /ALTER TABLE .+ ALTER COLUMN .+ COMMENT '';/g;
 
 let _;
 
