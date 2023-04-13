@@ -5,7 +5,8 @@
 		"name": "hql",
 		"extensions": [
 			"hql"
-		]
+		],
+		"useMultipleFileReverse": true
 	},
 	{
 		"errors": {
@@ -16,7 +17,7 @@
 			"id"
 		],
 		"type": "database",
-		"scenario": "connectToDB",
+		"scenario": "getDatabases",
 		"connectionList": [
 			"name",
 			"host",

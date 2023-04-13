@@ -2,11 +2,24 @@
 	"extension": "hql",
 	"filterName": "Hive Query Language",
 	"namePrefix": "DeltaLake",
-	"hasUpdateScript": true,
 	"level": {
+		"entity": true,
+		"container": true,
+		"view": true
+	},
+	"compMode": {
 		"entity": true,
 		"container": true
 	},
 	"applyScriptToInstance": true,
-	"mode": "mysql"
+	"mode": "mysql",
+	"additionalOptions": [
+		{
+			"id": "applyDropStatements",
+			"value": false,
+			"forUpdate": true,
+			"name": "Apply Drop Statements",
+			"isDropInStatements": true
+		}
+	]
 }

@@ -1,8 +1,8 @@
 const { dependencies } = require('./appDependencies');
+const cleanUpSelectStatement = require('./helpers/cleanUpSelectStatement');
 const {
     set,
     findEntityIndex,
-    getCaseInsensitiveKey,
     omitCaseInsensitive,
     isEqualCaseInsensitive,
     remove,
@@ -18,6 +18,8 @@ const REMOVE_BUCKET_COMMAND = 'removeBucket';
 const USE_BUCKET_COMMAND = 'useBucket';
 const ADD_FIELDS_TO_COLLECTION_COMMAND = 'addFieldsToCollection';
 const ADD_COLLECTION_LEVEL_INDEX_COMMAND = 'addCollectionLevelIndex';
+const ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND = 'addCollectionLevelBloomfilterIndex';
+const REMOVE_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND = 'removeCollectionLevelBloomfilterIndex';
 const UPDATE_FIELD_COMMAND = 'updateField';
 const CREATE_VIEW_COMMAND = 'createView';
 const REMOVE_VIEW_COMMAND = 'removeView';
@@ -68,9 +70,24 @@ const convertCommandsToEntities = (commands, originalScript) => {
 
 const convertCommandsToReDocs = (commands, originalScript) => {
     const reData = convertCommandsToEntities(commands, originalScript);
+    const createBuckets = [];
+    let views = reData.views;
 
-    const result = reData.entities.map((entity) => {
-        const relatedViews = reData.views.filter((view) => view.collectionName === entity.collectionName);
+    let result = reData.entities.map((entity) => {
+        const { relatedViews, restViews } = views.reduce((result, view) => {
+            if (view.collectionName === entity.collectionName) {
+                return { ...result, relatedViews: [...result.relatedViews, view] };
+            } else {
+                return { ...result, restViews: [...result.restViews, view] };
+            }
+        }, { relatedViews: [], restViews: [] });
+
+        views = restViews;
+
+        if (!createBuckets.includes(entity.bucketName)) {
+            createBuckets.push(entity.bucketName);
+        }
+
         return {
             objectNames: {
                 collectionName: entity.collectionName,
@@ -85,6 +102,40 @@ const convertCommandsToReDocs = (commands, originalScript) => {
             jsonSchema: entity.schema,
         };
     });
+
+    if (views.length) {
+        const viewDocs = views.map(view => {
+            if (!createBuckets.includes(view.bucketName)) {
+                createBuckets.push(view.bucketName);
+            }
+            
+            return {
+                doc: {
+                    dbName: view.bucketName,
+                    collectionName: view.collectionName,
+                    bucketInfo: reData.buckets[view.bucketName] || {},
+                    views: [view],
+                }
+            };
+        });
+
+        result = result.concat(viewDocs);
+    }
+
+    if (Object.keys(reData.buckets || {}).length !== createBuckets.length) {
+        const emptyBuckets = Object.keys(reData.buckets).filter(bucketName => !createBuckets.includes(bucketName)).map((bucketName) => {
+            return {
+                doc: {
+                    dbName: bucketName,
+                    bucketInfo: {
+                        additionalData: reData.buckets[bucketName] || {}
+                    },
+                    emptyBucket: true,
+                },
+            };
+        });
+        result = result.concat(emptyBuckets);
+    }
 
     return { result, info: reData.modelProperties, relationships: reData.relationships };
 };
@@ -213,7 +264,7 @@ const updateField = (entitiesData, bucket, statementData) => {
 
 const createView = (entitiesData, bucket, statementData, originalScript) => {
     const { views } = entitiesData;
-    const selectStatement = `AS ${originalScript.substring(statementData.select.start, statementData.select.stop)}`;
+    const selectStatement = cleanUpSelectStatement(originalScript.substring(statementData.select.start, statementData.select.stop));
 
     return {
         ...entitiesData,
@@ -225,6 +276,12 @@ const createView = (entitiesData, bucket, statementData, originalScript) => {
                     ...statementData.data,
                     selectStatement,
                 },
+                ddl: {
+                    script: `CREATE VIEW ${statementData.name} ${statementData.columnNames ? `(${statementData.columnNames})` : ''} AS ${selectStatement};`.replace(/`/g, '"'),
+                    type: 'postgres'
+                },
+                jsonSchema: statementData.jsonSchema,
+                mergeSchemas: true,
                 bucketName: statementData.bucketName || bucket,
             },
         ],
@@ -278,6 +335,97 @@ const addIndexToCollection = (entitiesData, bucket, statementData) => {
             entityLevelData: {
                 ...entityLevelData,
                 SecIndxs: indexes,
+            },
+        }),
+    };
+};
+
+const isAllIndexKeysHasSameOptions = (columnsData, indexOptions) => {
+    return columnsData.every(column => !column.options || column.options === indexOptions);
+};
+
+const createBloomfilterIndexes = (columnsData = [], indexOptions) => {
+    const _ = dependencies.lodash;
+    indexOptions = indexOptions || _.get(_.first(columnsData), 'options', '');
+    const useSameOptions = isAllIndexKeysHasSameOptions(columnsData, indexOptions);
+
+    if (useSameOptions) {
+        return [{
+            forColumns: columnsData.map(({ name }) => name),
+            options: indexOptions,
+        }];
+    }
+
+    return columnsData.map(column => {
+        return {
+            forColumns: [column.name],
+            options: column.options || indexOptions
+        };
+    });
+};
+
+const addBloomfilterIndexToCollection = (entitiesData, bucket, statementData) => {
+    const { entities } = entitiesData;
+    const entityIndex = findEntityIndex(entities, bucket, statementData.collectionName);
+    if (entityIndex === -1) {
+        return entitiesData;
+    }
+
+    const entity = entities[entityIndex];
+    const entityLevelData = entity.entityLevelData || {};
+    const indexes = [
+        ...(entityLevelData.BloomIndxs || []),
+        ...createBloomfilterIndexes(statementData.columns, statementData.options),
+    ];
+
+    return {
+        ...entitiesData,
+        entities: set(entities, entityIndex, {
+            ...entity,
+            entityLevelData: {
+                ...entityLevelData,
+                BloomIndxs: indexes,
+            },
+        }),
+    };
+};
+
+const filterCollectionBloomfilterIndexes = _ => (bloomIndexes, indexKeysToRemove) =>
+    _.chain(bloomIndexes || [])
+        .map(bloomIndex => {
+            const indexKeys = bloomIndex.forColumns.filter(key => !_.includes(indexKeysToRemove, key));
+            if (_.isEmpty(indexKeys)) {
+                return;
+            }
+
+            return {
+                ...bloomIndex,
+                forColumns: indexKeys,
+            }
+        })
+        .compact()
+        .value();
+
+const removeBloomfilterIndexFromCollection = (entitiesData, bucket, statementData) => {
+    const _ = dependencies.lodash;
+    const { entities } = entitiesData;
+    const entityIndex = findEntityIndex(entities, bucket, statementData.collectionName);
+    if (entityIndex === -1) {
+        return entitiesData;
+    }
+
+    const entity = entities[entityIndex];
+    const entityLevelData = entity.entityLevelData || {};
+    const indexKeysToRemove = statementData.columns.map(column => column.name);
+    const indexes = filterCollectionBloomfilterIndexes(_)(entityLevelData.BloomIndxs, indexKeysToRemove)
+
+    return {
+        ...entitiesData,
+        entities: set(entities, entityIndex, {
+            ...entity,
+            entityLevelData: {
+                ...entityLevelData,
+                BloomIndxs: indexes,
             },
         }),
     };
@@ -708,6 +856,8 @@ const COMMANDS_ACTION_MAP = {
     [USE_BUCKET_COMMAND]: useBucket,
     [ADD_FIELDS_TO_COLLECTION_COMMAND]: addFieldsToCollection,
     [ADD_COLLECTION_LEVEL_INDEX_COMMAND]: addIndexToCollection,
+    [ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND]: addBloomfilterIndexToCollection,
+    [REMOVE_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND]: removeBloomfilterIndexFromCollection,
     [UPDATE_FIELD_COMMAND]: updateField,
     [CREATE_VIEW_COMMAND]: createView,
     [REMOVE_VIEW_COMMAND]: removeView,
@@ -740,6 +890,8 @@ module.exports = {
     CREATE_VIEW_COMMAND,
     ADD_COLLECTION_LEVEL_INDEX_COMMAND,
     REMOVE_COLLECTION_LEVEL_INDEX_COMMAND,
+    ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
+    REMOVE_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
     ADD_RELATIONSHIP_COMMAND,
     UPDATE_ENTITY_COLUMN,
     CREATE_RESOURCE_PLAN,

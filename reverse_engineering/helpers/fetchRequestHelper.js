@@ -1,49 +1,114 @@
 'use strict'
-const fetch = require('node-fetch');
+const nodeFetch = require('node-fetch');
+const AbortController = require('abort-controller');
 const { dependencies } = require('../appDependencies');
-const { getClusterData } = require('./scalaScriptGeneratorHelper');
-const { getCount, prepareNamesForInsertionIntoScalaCode } = require('./utils');
+const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
+const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 let activeContexts = {};
 
+const fetch = (query, options, attempts = 10) => {
+	let { timeout, logger, ...fetchOptions } = (options || {});
+	let controller = createAbortController(timeout);
+
+	fetchOptions = {
+		...fetchOptions,
+		signal: controller.signal,
+	};
+
+	return nodeFetch(query, fetchOptions).then(response => {
+		controller.clear();
+
+		return response;
+	}).catch(error => {
+		controller.clear();
+
+		if (['ENOTFOUND', 'ECONNRESET'].includes(error?.code) && attempts) {
+			logger.log('info', { message: 'Failed to connect server: ' + error.message, code: error.code, attempts }, 'Execute request');
+
+			return new Promise((resolve, reject) => {
+				setTimeout(() => {
+					fetch(query, options, attempts - 1).then(resolve, reject);
+				}, 1000);
+			});
+		} else if (error.type === 'aborted') {
+			throw new Error('Request timeout exceeded, please try again or increase query request timeout in Tools > Options > Reverse-Engineering');
+		} else {
+			throw error;
+		}
+	});
+};
+
+const createAbortController = (timeout) => {
+	if (!timeout) {
+		return { signal: undefined, clear() {} };
+	}
+	let controller = new AbortController();
+
+	const timer = setTimeout(() => {
+		controller.abort();
+	}, timeout);
+
+	return {
+		signal: controller.signal,
+		clear() {
+			clearTimeout(timer);
+		}
+	};
+};
+
 const destroyActiveContext = () => {
+	let result = Promise.resolve();
 	if (activeContexts.scala) {
-		destroyContext(activeContexts.scala.connectionInfo, activeContexts.scala.id);
+		result = destroyContext(activeContexts.scala.connectionInfo, activeContexts.scala.id);
 	}
 	if (activeContexts.sql) {
-		destroyContext(activeContexts.sql.connectionInfo, activeContexts.sql.id);
+		result = destroyContext(activeContexts.sql.connectionInfo, activeContexts.sql.id);
 	}
 
 	activeContexts = {};
+
+	return result;
 };
 
 const fetchApplyToInstance = async (connectionInfo, logger) => {
-	const scriptWithoutNewLineSymb = connectionInfo.script.replaceAll(/[\s]+/g, " ");
-	const eachEntityScript = scriptWithoutNewLineSymb.split(';').filter(script => script !== '');
 	const progress = (message) => {
-		logger.log('info', message, 'Applying to instande');
+		logger.log('info', message, 'Applying to instance');
 		logger.progress(message);
 	};
-	for (let script of eachEntityScript) {
-		progress({ message: `Applying script: \n ${script}` });
-		const command = `var stmt = sqlContext.sql("${script}")`;
-		await Promise.race([executeCommand(connectionInfo, command), new Promise((_r, rej) => setTimeout(() => { throw new Error("Timeout exceeded for script\n" + script); }, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
-	}
+
+	progress({ message: `Applying script: \n ${connectionInfo.script}` });
+
+	await Promise.race([executeCommand(connectionInfo, connectionInfo.script, 'sql'), new Promise((_r, rej) => setTimeout(() => { throw new Error("Timeout exceeded for script\n" + script); }, connectionInfo.applyToInstanceQueryRequestTimeout || 120000))])
 };
 
-const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recordSamplingSettings }) => {
-	try {
-		const countResult = await executeCommand(connectionInfo, `SELECT COUNT(*) FROM \`${dbName}\`.\`${tableName}\``, 'sql');
-		const count = dependencies.lodash.get(countResult, '[0][0]', 0);
+const fetchCount = async ({ connectionInfo, dbName, tableName, recordSamplingSettings, logger }) => {
+	if (recordSamplingSettings.active === 'absolute') {
+		return Number(recordSamplingSettings.absolute.value);
+	}
+	
+	const countResult = await executeCommand(connectionInfo, `SELECT COUNT(*) FROM \`${dbName}\`.\`${tableName}\``, 'sql');
+	const count = dependencies.lodash.get(countResult, '[0][0]', 0);
 
-		if (count === 0) {
+	logger.log('info', { message: `Found ${count} records`, dbName, tableName }, 'Getting documents');
+
+	return Math.round(count / 100 * per);
+};
+
+const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recordSamplingSettings, logger }) => {
+	try {
+		const limit = await fetchCount({ connectionInfo, recordSamplingSettings, dbName, tableName, logger });
+
+		if (limit <= 0) {
 			return [];
 		}
 
 		const columnsToSelect = fields.map(field => field.name);
 		const columnsToSelectString = columnsToSelect.map(fieldName => `\`${fieldName}\``).join(', ');
-		const limit = getCount(count, recordSamplingSettings);
-
-		const documentsResult = await executeCommand(connectionInfo, `SELECT ${columnsToSelectString} FROM \`${dbName}\`.\`${tableName}\` LIMIT ${limit}`, 'sql');
+		const sqlQuery = `SELECT ${columnsToSelectString} FROM \`${dbName}\`.\`${tableName}\` LIMIT ${limit}`;
+		const documentsResult = await executeCommand(connectionInfo, sqlQuery, 'sql');
+		
+		logger.log('info', { message: `Execute query: ${sqlQuery}`, dbName, tableName }, 'Getting documents');
+		
 		return documentsResult.map(result =>
 			columnsToSelect.reduce((document, colName, index) => (
 				{
@@ -53,6 +118,55 @@ const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recor
 			), {})
 		);
 	} catch (e) {
+		logger.log('error', { message: e.message, stack: e.stack, dbName, tableName }, 'Getting documents');
+
+		return [];
+	}
+};
+
+const fetchEntitySchema = async ({ connectionInfo, dbName, entityName, logger }) => {
+	try {
+		const sqlQuery = `DESC \`${dbName}\`.\`${entityName}\``;
+		const schemaResult = await executeCommand(connectionInfo, sqlQuery, 'sql');
+		
+		logger.log('info', { message: `Execute query: ${sqlQuery}`, dbName, entityName }, 'Getting schema');
+
+		const truncatedColumns = schemaResult.map(([ name, dataType ], i) => /more fields>*$/.test(dataType) ? [ name, i ] : null).filter(Boolean);
+
+		if (truncatedColumns.length) {
+			await truncatedColumns.reduce(async (prev, [ columnName, position ]) => {
+				await prev;
+				const DATA_TYPE_COLUMN = 1;
+				const DATA_TYPE_ROW = 1;
+				const result = await executeCommand(connectionInfo, `${sqlQuery} \`${columnName}\``, 'sql');
+				schemaResult[position][DATA_TYPE_COLUMN] = result[DATA_TYPE_ROW][DATA_TYPE_COLUMN];
+			}, Promise.resolve());
+		}
+		
+		return schemaResult;
+	} catch (e) {
+		logger.log('error', { message: e.message, stack: e.stack, dbName, entityName }, 'Getting schema');
+
+		throw {
+			type: 'warning',
+			code: 'VIEW_SCHEMA_ERROR',
+			dbName,
+			entityName,
+		};
+	}
+};
+
+const fetchSample = async ({ connectionInfo, dbName, entityName, logger }) => {
+	try {
+		const sqlQuery = `SELECT * FROM \`${dbName}\`.\`${entityName}\` LIMIT 1`;
+		const schemaResult = await executeCommand(connectionInfo, sqlQuery, 'sql');
+		
+		logger.log('info', { message: `Execute query: ${sqlQuery}`, dbName, entityName }, 'Fetching sample');
+		
+		return schemaResult;
+	} catch (e) {
+		logger.log('error', { message: e.message, stack: e.stack, dbName, entityName }, 'Fetching sample');
+
 		return [];
 	}
 };
@@ -81,10 +195,13 @@ const fetchClusterDatabasesNames = async (connectionInfo) => {
 
 const fetchDatabaseViewsNames = (dbName, connectionInfo) => executeCommand(connectionInfo, `SHOW VIEWS IN \`${dbName}\``, 'sql');
 
+const fetchDatabaseViewsNamesViaPython = (dbName, connectionInfo) => executeCommand(connectionInfo, getViewNamesCommand(dbName), 'python');
+
 const fetchClusterTablesNames = (dbName, connectionInfo) => executeCommand(connectionInfo, `SHOW TABLES IN \`${dbName}\``, 'sql');
 
 const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames, logger) => {
-	const databasesPropertiesResult = await Promise.all(databasesNames.map(async dbName => {
+	const async = dependencies.async;
+	const databasesPropertiesResult = await async.mapLimit(databasesNames, 40, async dbName => {
 		logger.log('info', '', `Start describe database: ${dbName} `);
 		const dbInfoResult = await executeCommand(connectionInfo, `DESCRIBE DATABASE EXTENDED \`${dbName}\``, 'sql');
 		logger.log('info', '', `Database: ${dbName} successfully described`);
@@ -96,18 +213,17 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 				return { ...dbProperties, "description": row[1] }
 			}
 			if (row[0] === 'Properties') {
-				return { ...dbProperties, "dbProperties": row[1] }
+
+				return { ...dbProperties, "dbProperties": convertDbProperties(row[1]) }
 			}
 			return dbProperties;
 		}, {});
 		return { dbName, dbProperties }
-	}));
+	});
 
 	const databasesProperties = databasesPropertiesResult.reduce((properties, { dbName, dbProperties }) => ({ ...properties, [dbName]: dbProperties }), {})
-
-	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
 	
-	const databasesTablesInfo = await fetchFieldMetadata(dbNames, tableNames, connectionInfo, logger);
+	const databasesTablesInfo = await fetchFieldMetadata(databasesNames, collectionsNames, connectionInfo, logger);
 	return databasesNames.reduce((clusterData, dbName) => ({
 		...clusterData,
 		[dbName]: {
@@ -117,49 +233,41 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 	}), {});
 };
 
-const fetchFieldMetadata = async (dbNames, tableNames, connectionInfo, logger, previousData = {}) => {
+const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionInfo, logger, previousData = {}) => {
+	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
 	const getClusterDataCommand = getClusterData(tableNames.join(', '), dbNames.join(', '));
 	logger.log('info', '', `Start retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`);
-	const databasesTablesInfoResult = await executeCommand(connectionInfo, getClusterDataCommand);
+	const databasesTablesInfoResult = await executeCommand(connectionInfo, getClusterDataCommand, 'python');
 	logger.log('info', '', `Finish retrieving tables info: ${databasesTablesInfoResult}`);
-	const formattedResult = databasesTablesInfoResult.split('clusterData: String =')[1]
-		.replaceAll('\n', ' ')
-		.replaceAll('\\n', '')
-		.replaceAll('"{', '{')
-		.replaceAll('"[', '[')
-		.replaceAll('}"', '}')
-		.replaceAll('\\"', '"')
-		.replaceAll(']"', ']');
 
-	const isTruncatedResponse = /\.\.\.$/.test(formattedResult);
+	const isTruncatedResponse = /\*\*\* WARNING: skipped \d* bytes of output \*\*\*$/.test(databasesTablesInfoResult);
 
 	try {
 		if (!isTruncatedResponse) {
-			const parsedData = JSON.parse(formattedResult);
+			const parsedData = JSON.parse(databasesTablesInfoResult);
 			return mergeChunksOfData(previousData, parsedData);
 		}
 	
 		const delimiter = '}, {';
-		const splittedData = formattedResult.split(delimiter);
+		const splittedData = databasesTablesInfoResult.split(delimiter);
 		const fullCompletedData = splittedData.slice(0, splittedData.length - 1).join(delimiter);
 	
 		const parsedData = JSON.parse(fullCompletedData + '}]}');
 		const mergedDataChunks = mergeChunksOfData(previousData, parsedData);
-		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilteredEntities(tableNames, mergedDataChunks);
+		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilteredEntities(collectionsNames, mergedDataChunks);
 		
 		return fetchFieldMetadata(filteredDbNames, filteredTableNames, connectionInfo, logger, mergedDataChunks);
 		
 	} catch (error) {
-		logger.log('error', { error }, `\nDatabricks response: ${databasesTablesInfoResult}\n\nFormatted result: ${formattedResult}\n`);
+		logger.log('error', { error }, `\nDatabricks response: ${databasesTablesInfoResult}\n`);
 		throw error;
 	}
 };
 
 const getFilteredEntities = (tableNames, parsedData) => {
     return Object.keys(parsedData).reduce((resultEntities, dbName) => {
-        const parsedTableNames = parsedData[dbName].map(table => `"${table.name}"`);
-        const dbTableNames = getDbTableNames(tableNames, dbName);
-
+        const parsedTableNames = parsedData[dbName].map(table => table.name);
+        const dbTableNames = tableNames[dbName]
         const filteredTableNames = dbTableNames.filter(name => !parsedTableNames.includes(name));
         if (!filteredTableNames.length) {
             return resultEntities;
@@ -168,30 +276,14 @@ const getFilteredEntities = (tableNames, parsedData) => {
         return {
             dbNames: [
                 ...resultEntities.dbNames,
-                `"${dbName}"`,
+                dbName,
             ],
-            tableNames: [
+            tableNames: {
                 ...resultEntities.tableNames,
-                buildDbTableNamesString(dbName, filteredTableNames),
-            ]
+				[dbName]: filteredTableNames,
+			}
         };
-    }, { dbNames: [], tableNames: [] });
-};
-
-const getDbTableNames = (tableNames, dbName) => {
-    const allDatabaseTableNames = tableNames.find(dbTables => dbTables.startsWith(`"${dbName}"`));
-
-	if (!allDatabaseTableNames) {
-		return [];
-	}
-
-    const startNamesIndex = allDatabaseTableNames.indexOf('(');
-    const endNamesIndex = allDatabaseTableNames.indexOf(')');
-    return allDatabaseTableNames.slice(startNamesIndex + 1, endNamesIndex).split(', ');
-};
-
-const buildDbTableNamesString = (dbName, tableNames) => {
-    return `"${dbName}" -> List(${tableNames.join(', ')})`;
+    }, { dbNames: [], tableNames: {} });
 };
 
 const mergeChunksOfData = (leftObj, rightObj) => {
@@ -214,12 +306,14 @@ const fetchCreateStatementRequest = async (entityName, connectionInfo, logger) =
 
 const getRequestOptions = (connectionInfo) => {
 	const headers = {
-		'Authorization': 'Bearer ' + connectionInfo.accessToken
+		'Authorization': 'Bearer ' + connectionInfo.accessToken,
 	};
 
 	return {
 		'method': 'GET',
-		'headers': headers
+		'headers': headers,
+		'timeout': connectionInfo.queryRequestTimeout,
+		'logger': connectionInfo.logger || { log: () => {} },
 	};
 };
 
@@ -231,6 +325,8 @@ const postRequestOptions = (connectionInfo, body) => {
 
 	return {
 		'method': 'POST',
+		'timeout': connectionInfo.queryRequestTimeout,
+		'logger': connectionInfo.logger || { log: () => {} },
 		headers,
 		body
 	}
@@ -289,48 +385,75 @@ const destroyContext = (connectionInfo, contextId) => {
 		});
 };
 
-const executeCommand = (connectionInfo, command, language = "scala") => {
+const runCommand = (connectionInfo, contextId, command, language) => {
+	const query = connectionInfo.host + '/api/1.2/commands/execute';
+	const commandOptions = JSON.stringify({
+		language,
+		clusterId: connectionInfo.clusterId,
+		contextId,
+		command,
+	});
+	const options = postRequestOptions(connectionInfo, commandOptions)
 
-	let activeContextId;
+	return fetch(query, options)
+		.then(async response => {
+			const responseBody = await response.text();
+			if (response.ok) {
+				return responseBody;
+			}
+			throw {
+				message: response.statusText, code: response.status, description: commandOptions, responseBody
+			};
+		})
+		.then(body => {
 
-	return createContext(connectionInfo, language)
-		.then(contextId => {
-			activeContextId = contextId;
-			const query = connectionInfo.host + '/api/1.2/commands/execute';
-			const commandOptions = JSON.stringify({
-				language,
+			body = JSON.parse(body);
+
+			const query = new URL(connectionInfo.host + '/api/1.2/commands/status');
+			const params = {
 				clusterId: connectionInfo.clusterId,
-				contextId,
-				command
-			});
-			const options = postRequestOptions(connectionInfo, commandOptions)
+				contextId: contextId,
+				commandId: body.id
+			}
+			query.search = new URLSearchParams(params).toString();
+			const options = getRequestOptions(connectionInfo);
+			return getCommandExecutionResult(query, options, commandOptions);
+		});
+};
 
-			return fetch(query, options)
-				.then(async response => {
-					const responseBody = await response.text();
-					if (response.ok) {
-						return responseBody;
-					}
-					throw {
-						message: response.statusText, code: response.status, description: commandOptions, responseBody
-					};
-				})
-				.then(body => {
+const getSqlSparkConfig = (config) => {
+	return Object.keys(config).map((key) => {
+		return `SET ${key} = ${config[key]};`;
+	}).join('\n');
+};
 
-					body = JSON.parse(body);
+const getPythonSparkConfig = (config) => {
+	return Object.keys(config).map((key) => {
+		return `spark.conf.set("${key}", "${config[key]}")`;
+	}).join('\n');
+};
 
-					const query = new URL(connectionInfo.host + '/api/1.2/commands/status');
-					const params = {
-						clusterId: connectionInfo.clusterId,
-						contextId: activeContextId,
-						commandId: body.id
-					}
-					query.search = new URLSearchParams(params).toString();
-					const options = getRequestOptions(connectionInfo);
-					return getCommandExecutionResult(query, options, commandOptions);
-				})
-		}
-		)
+const executeCommand = (connectionInfo, command, language = 'sql', logger) => {
+	return createContext(connectionInfo, language)
+		.then(async contextId => {
+			if (connectionInfo.sparkConfig && Object.keys(connectionInfo.sparkConfig).length) {
+				let sparkConfig;
+	
+				if (language === 'sql') {
+					sparkConfig = getSqlSparkConfig(connectionInfo.sparkConfig);
+				} else if (language === 'python') {
+					sparkConfig = getPythonSparkConfig(connectionInfo.sparkConfig);
+				}
+
+				if (sparkConfig) {
+					await runCommand(connectionInfo, contextId, sparkConfig, language);
+				}
+			}
+		
+			const result = await runCommand(connectionInfo, contextId, command, language);
+
+			return result;
+		});
 };
 
 const getCommandExecutionResult = (query, options, commandOptions) => {
@@ -361,7 +484,64 @@ const getCommandExecutionResult = (query, options, commandOptions) => {
 				};
 			}
 			return getCommandExecutionResult(query, options, commandOptions);
+		});
+};
+
+const convertDbPropertyValue = value => {
+	const _ = dependencies.lodash;
+	const isNumber = value => !_.isNaN(_.toNumber(value));
+	const isBoolean = value => _.toLower(value) === 'false' || _.toLower(value) === 'true';
+	const convertToBoolean = value => {
+		switch (_.toLower(value)) {
+			case 'true':
+				return true;
+			case 'false':
+				return false;
+		}
+	}
+
+	if (isNumber(value)) {
+		return _.toNumber(value);
+	} else if (isBoolean(value)) {
+		return convertToBoolean(value);
+	} else {
+		return `'${value}'`;
+	}
+};
+
+const splitStatementsByBrackets = (statements) => {
+	const _ = dependencies.lodash;
+	let result = [];
+	let startIndex = 0;
+	let skippedBrackets = 0;
+	_.range(statements.length).forEach(index => {
+		const symbol = statements.charAt(index);
+		if (symbol === '(' && startIndex) {
+			skippedBrackets++
+		} else if (symbol === '(') {
+			startIndex = index + 1;
+		} else if (symbol === ')' && skippedBrackets) {
+			skippedBrackets--;
+		} else if (symbol === ')') {
+			const statement = statements.slice(startIndex, index);
+			result = result.concat(statement);
+			startIndex = 0;
+			skippedBrackets = 0;
+		}
+	});
+
+	return result;
+};
+
+const convertDbProperties = (dbProperties = '') => {
+	return splitStatementsByBrackets(removeParentheses(dbProperties))
+		.map(keyValueString => {
+			const splitterIndex = keyValueString.indexOf(',');
+			const keyword = keyValueString.slice(0, splitterIndex);
+			const value = keyValueString.slice(splitterIndex + 1, keyValueString.length);
+			return `'${keyword}'=${convertDbPropertyValue(value)}`;
 		})
+		.join(',\n')
 };
 
 module.exports = {
@@ -373,5 +553,8 @@ module.exports = {
 	fetchCreateStatementRequest,
 	fetchClusterDatabasesNames,
 	fetchDatabaseViewsNames,
-	fetchClusterTablesNames
+	fetchClusterTablesNames,
+	fetchDatabaseViewsNamesViaPython,
+	fetchEntitySchema,
+	fetchSample,
 };

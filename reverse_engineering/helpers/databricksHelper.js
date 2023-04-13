@@ -1,42 +1,91 @@
 'use strict'
 const { dependencies } = require('../appDependencies');
 const fetchRequestHelper = require('./fetchRequestHelper')
-const { splitTableAndViewNames, convertCustomTags } = require('./utils')
+const { convertCustomTags, cleanEntityName, isSupportGettingListOfViews } = require('./utils')
 
 
 const getEntityCreateStatement = (connectionInfo, dbName, entityName, logger) => {
 	return fetchRequestHelper.fetchCreateStatementRequest(`\`${dbName}\`.\`${entityName}\``, connectionInfo, logger);
 }
 
-const getDatabaseCollectionNames = async (connectionInfo) => {
+const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logger) => {
+	const _ = dependencies.lodash;
 	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
-	return await Promise.all(databasesNames.map(async dbName => {
+	logger.log('info', databasesNames, `Database list`);
+	if (_.isEmpty(databasesNames)) {
+		return;
+	}
 
-		const viewsResult = await fetchRequestHelper.fetchDatabaseViewsNames(dbName, connectionInfo);
-		const viewsNames = viewsResult.map(([namespace, viewName]) => viewName);
-		const views = viewsNames.map(viewName => `${viewName} (v)`);
+	const firstDatabaseName = _.first(databasesNames);
+	
+	const tableNames = await fetchRequestHelper.fetchClusterTablesNames(firstDatabaseName, connectionInfo);
+	logger.log('info', tableNames, `Tables list in ${firstDatabaseName} database`);
+	const viewNames = await getDatabaseViewNames(firstDatabaseName, connectionInfo, sparkVersion, logger);
+	logger.log('info', viewNames, `Views list in ${firstDatabaseName} database`);
+};
 
+const fetchViewNamesFallback = async (dbName, connectionInfo, logger) => {
+	try {
+		const viewNamesResponse = await fetchRequestHelper.fetchDatabaseViewsNamesViaPython(dbName, connectionInfo);
+		const viewNames = JSON.parse(viewNamesResponse);
+		return viewNames.map(name => [ dbName, name ]);
+	} catch (error) {
+		logger.log('warning', error, `Error getting view names from ${dbName} database via Python.`);
+		return [];
+	}
+};
+
+const fetchViewNames = (dbName, connectionInfo, logger) => {
+	try {
+		return fetchRequestHelper.fetchDatabaseViewsNames(dbName, connectionInfo);
+	} catch (error) {
+		logger.log('warning', error, `Error getting view names from ${dbName} database via SQL. Run fallback via Python.`);
+		return fetchViewNamesFallback(dbName, connectionInfo, logger);
+	}
+};
+
+const getDatabaseViewNames = async (dbName, connectionInfo, sparkVersion, logger) => {
+	let views = [];
+	let viewNames = [];
+	if (!isSupportGettingListOfViews(sparkVersion)) {
+		return { views, viewNames };
+	}
+	
+	const viewsResult = await fetchViewNames(dbName, connectionInfo, logger);
+	viewNames = viewsResult.map(([namespace, viewName]) => viewName);
+	views = viewNames.map(viewName => `${viewName} (v)`);
+	
+	return { views, viewNames };
+};
+
+const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) => {
+	const async = dependencies.async;
+	const databasesNames = connectionInfo.databaseName ? [connectionInfo.databaseName] : await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
+	
+	return await async.mapLimit(databasesNames, 30, async dbName => {
+		const { views, viewNames } = await getDatabaseViewNames(dbName, connectionInfo, sparkVersion, logger)
 		const tablesResult = await fetchRequestHelper.fetchClusterTablesNames(dbName, connectionInfo);
 		const tables = tablesResult.reduce((databaseTables, [dbName, tableName]) => {
-			if (viewsNames.includes(tableName)) {
+			if (viewNames.includes(tableName)) {
 				return databaseTables;
 			}
 			return [...databaseTables, tableName]
 		}, []);
 
 		const dbCollections = [...tables, ...views];
+
 		return {
 			dbName,
 			dbCollections,
 			isEmpty: dependencies.lodash.isEmpty(dbCollections)
 		}
-	}));
+	});
 }
 
 const getClusterStateInfo = async (connectionInfo, logger) => {
 	const clusterProperties = await fetchRequestHelper.fetchClusterProperties(connectionInfo);
 	return {
-		dbVersion: `Runtime ${clusterProperties.spark_version[0]}`,
+		dbVersion: getDatabricksRuntimeVersion(clusterProperties.spark_version),
 		modelName: clusterProperties.cluster_name,
 		author: clusterProperties.creator_user_name,
 		host: connectionInfo.host,
@@ -57,15 +106,29 @@ const getClusterStateInfo = async (connectionInfo, logger) => {
 	};
 }
 
-const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, logger) => {
-	const entitiesNames = databasesNames.reduce((entitiesNames, dbName) => {
-		const { tables, views } = splitTableAndViewNames(collectionsNames[dbName]);
-		const viewNames = views.map(viewName => ({ dbName, name: viewName }));
-		const tableNames = tables.map(tableName => ({ dbName, name: tableName }));
+const getDatabricksRuntimeVersion = (sparkVersion = '') => {
+	const runtimeVersion = sparkVersion.split('.')[0];
+	return `Runtime ${runtimeVersion}`;
+}
 
-		return [...entitiesNames, ...viewNames, ...tableNames]
-	}, []);
-	return entitiesNames.map(async entity => ({ [`${entity.dbName}.${entity.name}`]: await getEntityCreateStatement(connectionInfo, entity.dbName, entity.name, logger) }))
+const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkVersion, logger) => {
+	const async = dependencies.async;
+	const entitiesNames = dependencies.lodash.flatMap(databasesNames, dbName => {
+		return (collectionsNames[dbName] || []).map(entityName => ({ dbName, name: entityName }));
+	});
+	
+	return async.mapLimit(entitiesNames, 40, async entity => {
+		const entityName = cleanEntityName(sparkVersion, entity.name);
+		logger.log('info', { db: entity.dbName, entity: entityName }, 'Getting entity DDL');
+
+		const ddlStatement = await getEntityCreateStatement(connectionInfo, entity.dbName, entityName, logger);
+
+		logger.log('info', { db: entity.dbName, entity: entityName }, 'DDL retrieved successfully');
+
+		return {
+			[`${entity.dbName}.${entityName}`]: ddlStatement
+		};
+	});
 }
 
 const getClusterData = (connectionInfo, databasesNames, collectionsNames, logger) => {
@@ -73,6 +136,7 @@ const getClusterData = (connectionInfo, databasesNames, collectionsNames, logger
 }
 
 module.exports = {
+	getFirstDatabaseCollectionName,
 	getDatabaseCollectionNames,
 	getClusterStateInfo,
 	getClusterData,

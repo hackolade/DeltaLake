@@ -113,7 +113,6 @@ making sure that you maintain a proper JSON format.
 			}
 
 */
-
 {
 	"lowerTab": "JsonDetails",
 	"structure": {
@@ -147,9 +146,18 @@ making sure that you maintain a proper JSON format.
 				"propertyKeyword": "subtype",
 				"propertyType": "select",
 				"options": [
-					{ "name": " ", "value": "string" },
-					{ "name": "object", "value": "object" },
-					{ "name": "array", "value": "array" }
+					{
+						"name": " ",
+						"value": "string"
+					},
+					{
+						"name": "object",
+						"value": "object"
+					},
+					{
+						"name": "array",
+						"value": "array"
+					}
 				],
 				"defaultValue": "string",
 				"dependency": {
@@ -168,12 +176,200 @@ making sure that you maintain a proper JSON format.
 				"enableForReference": true,
 				"propertyType": "checkbox"
 			},
-			"primaryKey",
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "compositePrimaryKey",
+				"propertyType": "checkbox",
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
+							"dependency": {
+								"key": "compositePrimaryKey",
+								"value": true 
+							}
+						},
+						{
+							"tooltip": "Remove the existing composite primary key definition prior to unlock the possibility to mark this single column as the new primary key for this table",
+							"dependency": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"tooltip": "Another column has already been selected as primary key.  You must unselect it prior to either selecting this column, or creating a compound primary key.",
+							"dependency": {
+								"level": "siblings",
+								"key": "primaryKey",
+								"value": true
+							}
+						}
+					]
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"value": {
+								"type": "and",
+								"values": [
+									{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "primaryKey",
+				"enableForReference": true,
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "not",
+							"values": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"type": "not",
+							"values": [{
+								"level": "siblings",
+								"value": {
+									"type": "and",
+									"values": [{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}]
+								}
+							}]
+						},
+						{
+							"type": "and",
+							"values": [
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositePrimaryKey",
+											"value": false
+										},
+										{
+											"key": "compositePrimaryKey",
+											"exist": false
+										}
+									]
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositeUniqueKey",
+											"value": false
+										},
+										{
+											"key": "compositeUniqueKey",
+											"exist": false
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
 			{
 				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -183,17 +379,36 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
-			
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedDefaultValue",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"foreignCollection",
 			"foreignField",
 			"relationshipType",
 			"sample",
-			{
-				"propertyName": "Not null",
-				"propertyKeyword": "required",
-				"propertyType": "checkbox"
-			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -270,12 +485,200 @@ making sure that you maintain a proper JSON format.
 				"enableForReference": true,
 				"propertyType": "checkbox"
 			},
-			"primaryKey",
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "compositePrimaryKey",
+				"propertyType": "checkbox",
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
+							"dependency": {
+								"key": "compositePrimaryKey",
+								"value": true 
+							}
+						},
+						{
+							"tooltip": "Remove the existing composite primary key definition prior to unlock the possibility to mark this single column as the new primary key for this table",
+							"dependency": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"tooltip": "Another column has already been selected as primary key.  You must unselect it prior to either selecting this column, or creating a compound primary key.",
+							"dependency": {
+								"level": "siblings",
+								"key": "primaryKey",
+								"value": true
+							}
+						}
+					]
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"value": {
+								"type": "and",
+								"values": [
+									{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "primaryKey",
+				"enableForReference": true,
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "not",
+							"values": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"type": "not",
+							"values": [{
+								"level": "siblings",
+								"value": {
+									"type": "and",
+									"values": [{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}]
+								}
+							}]
+						},
+						{
+							"type": "and",
+							"values": [
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositePrimaryKey",
+											"value": false
+										},
+										{
+											"key": "compositePrimaryKey",
+											"exist": false
+										}
+									]
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositeUniqueKey",
+											"value": false
+										},
+										{
+											"key": "compositeUniqueKey",
+											"exist": false
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
 			{
 				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -285,16 +688,36 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedDefaultValue",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"foreignCollection",
 			"foreignField",
 			"relationshipType",
 			"sample",
-			{
-				"propertyName": "Not null",
-				"propertyKeyword": "required",
-				"propertyType": "checkbox"
-			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -332,13 +755,33 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedDefaultValue",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"sample",
-			{
-				"propertyName": "Not null",
-				"propertyKeyword": "required",
-				"propertyType": "checkbox"
-			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -370,12 +813,200 @@ making sure that you maintain a proper JSON format.
 				"enableForReference": true,
 				"propertyType": "checkbox"
 			},
-			"primaryKey",
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "compositePrimaryKey",
+				"propertyType": "checkbox",
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
+							"dependency": {
+								"key": "compositePrimaryKey",
+								"value": true 
+							}
+						},
+						{
+							"tooltip": "Remove the existing composite primary key definition prior to unlock the possibility to mark this single column as the new primary key for this table",
+							"dependency": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"tooltip": "Another column has already been selected as primary key.  You must unselect it prior to either selecting this column, or creating a compound primary key.",
+							"dependency": {
+								"level": "siblings",
+								"key": "primaryKey",
+								"value": true
+							}
+						}
+					]
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"value": {
+								"type": "and",
+								"values": [
+									{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "primaryKey",
+				"enableForReference": true,
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "not",
+							"values": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"type": "not",
+							"values": [{
+								"level": "siblings",
+								"value": {
+									"type": "and",
+									"values": [{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}]
+								}
+							}]
+						},
+						{
+							"type": "and",
+							"values": [
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositePrimaryKey",
+											"value": false
+										},
+										{
+											"key": "compositePrimaryKey",
+											"exist": false
+										}
+									]
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositeUniqueKey",
+											"value": false
+										},
+										{
+											"key": "compositeUniqueKey",
+											"exist": false
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
 			{
 				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -385,12 +1016,32 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
-			"dependencies",
 			{
-				"propertyName": "Not null",
-				"propertyKeyword": "required",
-				"propertyType": "checkbox"
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedDefaultValue",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
 			},
+			"dependencies",
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -425,12 +1076,200 @@ making sure that you maintain a proper JSON format.
 				"enableForReference": true,
 				"propertyType": "checkbox"
 			},
-			"primaryKey",
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "compositePrimaryKey",
+				"propertyType": "checkbox",
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
+							"dependency": {
+								"key": "compositePrimaryKey",
+								"value": true 
+							}
+						},
+						{
+							"tooltip": "Remove the existing composite primary key definition prior to unlock the possibility to mark this single column as the new primary key for this table",
+							"dependency": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"tooltip": "Another column has already been selected as primary key.  You must unselect it prior to either selecting this column, or creating a compound primary key.",
+							"dependency": {
+								"level": "siblings",
+								"key": "primaryKey",
+								"value": true
+							}
+						}
+					]
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"value": {
+								"type": "and",
+								"values": [
+									{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "primaryKey",
+				"enableForReference": true,
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "not",
+							"values": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"type": "not",
+							"values": [{
+								"level": "siblings",
+								"value": {
+									"type": "and",
+									"values": [{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}]
+								}
+							}]
+						},
+						{
+							"type": "and",
+							"values": [
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositePrimaryKey",
+											"value": false
+										},
+										{
+											"key": "compositePrimaryKey",
+											"exist": false
+										}
+									]
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositeUniqueKey",
+											"value": false
+										},
+										{
+											"key": "compositeUniqueKey",
+											"exist": false
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
 			{
 				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -440,13 +1279,33 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedDefaultValue",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"sample",
-			{
-				"propertyName": "Not null",
-				"propertyKeyword": "required",
-				"propertyType": "checkbox"
-			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -480,12 +1339,200 @@ making sure that you maintain a proper JSON format.
 				"enableForReference": true,
 				"propertyType": "checkbox"
 			},
-			"primaryKey",
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "compositePrimaryKey",
+				"propertyType": "checkbox",
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
+							"dependency": {
+								"key": "compositePrimaryKey",
+								"value": true 
+							}
+						},
+						{
+							"tooltip": "Remove the existing composite primary key definition prior to unlock the possibility to mark this single column as the new primary key for this table",
+							"dependency": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"tooltip": "Another column has already been selected as primary key.  You must unselect it prior to either selecting this column, or creating a compound primary key.",
+							"dependency": {
+								"level": "siblings",
+								"key": "primaryKey",
+								"value": true
+							}
+						}
+					]
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"value": {
+								"type": "and",
+								"values": [
+									{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "primaryKey",
+				"enableForReference": true,
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "not",
+							"values": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"type": "not",
+							"values": [{
+								"level": "siblings",
+								"value": {
+									"type": "and",
+									"values": [{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}]
+								}
+							}]
+						},
+						{
+							"type": "and",
+							"values": [
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositePrimaryKey",
+											"value": false
+										},
+										{
+											"key": "compositePrimaryKey",
+											"exist": false
+										}
+									]
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositeUniqueKey",
+											"value": false
+										},
+										{
+											"key": "compositeUniqueKey",
+											"exist": false
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
 			{
 				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -495,13 +1542,33 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedDefaultValue",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"sample",
-			{
-				"propertyName": "Not null",
-				"propertyKeyword": "required",
-				"propertyType": "checkbox"
-			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -534,12 +1601,200 @@ making sure that you maintain a proper JSON format.
 				"enableForReference": true,
 				"propertyType": "checkbox"
 			},
-			"primaryKey",
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "compositePrimaryKey",
+				"propertyType": "checkbox",
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
+							"dependency": {
+								"key": "compositePrimaryKey",
+								"value": true 
+							}
+						},
+						{
+							"tooltip": "Remove the existing composite primary key definition prior to unlock the possibility to mark this single column as the new primary key for this table",
+							"dependency": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"tooltip": "Another column has already been selected as primary key.  You must unselect it prior to either selecting this column, or creating a compound primary key.",
+							"dependency": {
+								"level": "siblings",
+								"key": "primaryKey",
+								"value": true
+							}
+						}
+					]
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"value": {
+								"type": "and",
+								"values": [
+									{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "primaryKey",
+				"enableForReference": true,
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "not",
+							"values": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"type": "not",
+							"values": [{
+								"level": "siblings",
+								"value": {
+									"type": "and",
+									"values": [{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}]
+								}
+							}]
+						},
+						{
+							"type": "and",
+							"values": [
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositePrimaryKey",
+											"value": false
+										},
+										{
+											"key": "compositePrimaryKey",
+											"exist": false
+										}
+									]
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositeUniqueKey",
+											"value": false
+										},
+										{
+											"key": "compositeUniqueKey",
+											"exist": false
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
 			{
 				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			"default",
 			{
@@ -549,13 +1804,33 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedDefaultValue",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"sample",
-			{
-				"propertyName": "Not null",
-				"propertyKeyword": "required",
-				"propertyType": "checkbox"
-			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -608,12 +1883,200 @@ making sure that you maintain a proper JSON format.
 				"enableForReference": true,
 				"propertyType": "checkbox"
 			},
-			"primaryKey",
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "compositePrimaryKey",
+				"propertyType": "checkbox",
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
+							"dependency": {
+								"key": "compositePrimaryKey",
+								"value": true 
+							}
+						},
+						{
+							"tooltip": "Remove the existing composite primary key definition prior to unlock the possibility to mark this single column as the new primary key for this table",
+							"dependency": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"tooltip": "Another column has already been selected as primary key.  You must unselect it prior to either selecting this column, or creating a compound primary key.",
+							"dependency": {
+								"level": "siblings",
+								"key": "primaryKey",
+								"value": true
+							}
+						}
+					]
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"value": {
+								"type": "and",
+								"values": [
+									{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "primaryKey",
+				"enableForReference": true,
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "not",
+							"values": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"type": "not",
+							"values": [{
+								"level": "siblings",
+								"value": {
+									"type": "and",
+									"values": [{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}]
+								}
+							}]
+						},
+						{
+							"type": "and",
+							"values": [
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositePrimaryKey",
+											"value": false
+										},
+										{
+											"key": "compositePrimaryKey",
+											"exist": false
+										}
+									]
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositeUniqueKey",
+											"value": false
+										},
+										{
+											"key": "compositeUniqueKey",
+											"exist": false
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
 			{
 				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			{
 				"propertyName": "Check",
@@ -622,13 +2085,33 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea",
 				"markdown": false
 			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedDefaultValue",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
 			"dependencies",
 			"additionalItems",
-			{
-				"propertyName": "Not null",
-				"propertyKeyword": "required",
-				"propertyType": "checkbox"
-			},
 			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
@@ -722,12 +2205,200 @@ making sure that you maintain a proper JSON format.
 				"enableForReference": true,
 				"propertyType": "checkbox"
 			},
-			"primaryKey",
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "compositePrimaryKey",
+				"propertyType": "checkbox",
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
+							"dependency": {
+								"key": "compositePrimaryKey",
+								"value": true 
+							}
+						},
+						{
+							"tooltip": "Remove the existing composite primary key definition prior to unlock the possibility to mark this single column as the new primary key for this table",
+							"dependency": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"tooltip": "Another column has already been selected as primary key.  You must unselect it prior to either selecting this column, or creating a compound primary key.",
+							"dependency": {
+								"level": "siblings",
+								"key": "primaryKey",
+								"value": true
+							}
+						}
+					]
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"value": {
+								"type": "and",
+								"values": [
+									{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "primaryKey",
+				"enableForReference": true,
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "not",
+							"values": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"type": "not",
+							"values": [{
+								"level": "siblings",
+								"value": {
+									"type": "and",
+									"values": [{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}]
+								}
+							}]
+						},
+						{
+							"type": "and",
+							"values": [
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositePrimaryKey",
+											"value": false
+										},
+										{
+											"key": "compositePrimaryKey",
+											"exist": false
+										}
+									]
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositeUniqueKey",
+											"value": false
+										},
+										{
+											"key": "compositeUniqueKey",
+											"exist": false
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
 			{
 				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			{
 				"propertyName": "Check",
@@ -735,6 +2406,31 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedDefaultValue",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
 			},
 			"dependencies",
 			"additionalProperties",
@@ -772,12 +2468,200 @@ making sure that you maintain a proper JSON format.
 				"enableForReference": true,
 				"propertyType": "checkbox"
 			},
-			"primaryKey",
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "compositePrimaryKey",
+				"propertyType": "checkbox",
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
+							"dependency": {
+								"key": "compositePrimaryKey",
+								"value": true 
+							}
+						},
+						{
+							"tooltip": "Remove the existing composite primary key definition prior to unlock the possibility to mark this single column as the new primary key for this table",
+							"dependency": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"tooltip": "Another column has already been selected as primary key.  You must unselect it prior to either selecting this column, or creating a compound primary key.",
+							"dependency": {
+								"level": "siblings",
+								"key": "primaryKey",
+								"value": true
+							}
+						}
+					]
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"value": {
+								"type": "and",
+								"values": [
+									{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "primaryKey",
+				"enableForReference": true,
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "not",
+							"values": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"type": "not",
+							"values": [{
+								"level": "siblings",
+								"value": {
+									"type": "and",
+									"values": [{
+										"key": "primaryKey",
+										"value": true
+									},
+									{
+										"type": "or",
+										"values": [
+											{
+												"key": "compositeUniqueKey",
+												"value": false
+											},
+											{
+												"key": "compositeUniqueKey",
+												"exist": false
+											}
+										]
+									}]
+								}
+							}]
+						},
+						{
+							"type": "and",
+							"values": [
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositePrimaryKey",
+											"value": false
+										},
+										{
+											"key": "compositePrimaryKey",
+											"exist": false
+										}
+									]
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "compositeUniqueKey",
+											"value": false
+										},
+										{
+											"key": "compositeUniqueKey",
+											"exist": false
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
 			{
 				"propertyName": "Unique",
 				"propertyKeyword": "unique",
 				"enableForReference": true,
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
 			},
 			{
 				"propertyName": "Check",
@@ -785,6 +2669,31 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedDefaultValue",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": [
+							"always",
+							"by default"
+						],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
 			},
 			"additionalProperties",
 			{
@@ -798,4 +2707,4 @@ making sure that you maintain a proper JSON format.
 			}
 		]
 	}
-} 
+}

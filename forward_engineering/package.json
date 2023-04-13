@@ -4,8 +4,6 @@
   "description": "",
   "author": "Hackolade",
   "dependencies": {
-    "fs": "0.0.1-security",
-    "path": "0.12.7",
     "sql-formatter": "^2.3.3"
   },
   "installed": true

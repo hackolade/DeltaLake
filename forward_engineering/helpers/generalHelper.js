@@ -1,7 +1,17 @@
 'use strict'
 
 const RESERVED_WORDS = require('./reserverWords');
+const sqlFormatter = require('sql-formatter');
 const { dependencies } = require('./appDependencies');
+const {DROP_STATEMENTS} = require("./constants");
+const {EntitiesThatSupportComments} = require("./alterScriptHelpers/enums/entityType");
+
+const entitiesThatSupportCommentsAsRegexComponent = Object.values(EntitiesThatSupportComments)
+	.join('|');
+const dropCommentOnDatabaseEntityScriptRegex = new RegExp(
+	`COMMENT ON (${entitiesThatSupportCommentsAsRegexComponent}) .+ IS NULL;`, 'g');
+const dropCommentOnTableColumnRegex = /ALTER TABLE .+ ALTER COLUMN .+ COMMENT '';/g;
+
 let _;
 
 const setDependencies = ({ lodash }) => _ = lodash;
@@ -22,7 +32,7 @@ const buildStatement = (mainStatement, isActivated) => {
 	};
 
 	const getStatement = (condition, statement) => {
-		if (statement === ')') {
+		if (condition && statement === ')') {
 			return '\n)';
 		}
 		if (statement === ';') {
@@ -41,12 +51,14 @@ const buildStatement = (mainStatement, isActivated) => {
 
 const isEscaped = (name) => /\`[\s\S]*\`/.test(name);
 
-const prepareName = name => {
-	const containSpaces = /\s/g;
+const prepareName = (name = '') => {
+	const containSpaces = /[\s-]/g;
 	if (containSpaces.test(name) && !isEscaped(name)) {
 		return `\`${name}\``;
 	} else if (RESERVED_WORDS.includes(name.toLowerCase())) {
 		return `\`${name}\``;
+	} else if (name === '') {
+		return '';
 	} else if (!isNaN(name)){
 		return `\`${name}\``;
 	}
@@ -67,12 +79,38 @@ const getTypeDescriptor = (typeName) => {
 
 	try {
 		descriptors[typeName] = require(`../../types/${typeName}.json`);
-		
+
 		return descriptors[typeName];
 	} catch (e) {
 		return {};
 	}
 };
+
+/**
+ * @param script {string}
+ * @return boolean
+ * */
+const isScriptADropStatement = (script) => {
+	const containsDropStatement = DROP_STATEMENTS.some(statement => script.includes(statement));
+	if (containsDropStatement) {
+		return true;
+	}
+	const isADatabaseEntityDropStatement = dropCommentOnDatabaseEntityScriptRegex.test(script);
+	if (isADatabaseEntityDropStatement) {
+		return true;
+	}
+	return dropCommentOnTableColumnRegex.test(script);
+}
+
+/**
+ * @param script {string}
+ * @return boolean
+ * */
+const doesScriptContainDropStatement = (script) => {
+	return script.split('\n')
+		.filter(Boolean)
+		.some(scriptLine => isScriptADropStatement(scriptLine));
+}
 
 const commentDeactivatedStatements = (statement, isActivated = true) => {
 	if (isActivated) {
@@ -110,7 +148,7 @@ const commentDeactivatedInlineKeys = (keys, deactivatedKeyNames) => {
 
 const removeRedundantTrailingCommaFromStatement = (statement) => {
 	setDependencies(dependencies);
-	
+
 	const splitedStatement = statement.split('\n');
 	if (splitedStatement.length < 4 || !splitedStatement[splitedStatement.length - 2].trim().startsWith('--')) {
 		return statement;
@@ -125,7 +163,7 @@ const removeRedundantTrailingCommaFromStatement = (statement) => {
 		return splitedStatement.join('\n');
 	}
 	return statement;
-} 
+}
 
 const getCleanedUrl = url => {
 	if(url.endsWith('/')){
@@ -135,8 +173,19 @@ const getCleanedUrl = url => {
 }
 
 const encodeStringLiteral = (str = '') => {
-	return str.replace(/(')/gi, '\\$1').replace(/\n/gi, '\\n');
+	return str.replace(/(['\\])/gi, '\\$1').replace(/\n/gi, '\\n');
 }
+
+const wrapInSingleQuotes = (str = '') => {
+	return `'${encodeStringLiteral(str)}'`;
+}
+
+const buildScript = (statements) => {
+	const script = statements.filter((statement) => statement).join('\n\n');
+	const formattedScript = sqlFormatter.format(script, { indent: '    '}) + '\n';
+
+	return formattedScript.replace(/\{\ \{\ (.+?)\ \}\ \}/g, '{{$1}}');
+};
 
 module.exports = {
 	buildStatement,
@@ -150,5 +199,8 @@ module.exports = {
 	commentDeactivatedInlineKeys,
 	removeRedundantTrailingCommaFromStatement,
 	getCleanedUrl,
-	encodeStringLiteral
+	encodeStringLiteral,
+	buildScript,
+	wrapInSingleQuotes,
+	doesScriptContainDropStatement
 };

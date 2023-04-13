@@ -241,6 +241,7 @@ KW_UNARCHIVE: U N A R C H I V E;
 KW_COMPUTE: C O M P U T E;
 KW_STATISTICS: S T A T I S T I C S;
 KW_USE: U S E;
+KW_OPTIONS: O P T I O N S;
 KW_OPTION: O P T I O N;
 KW_CONCATENATE: C O N C A T E N A T E;
 KW_SHOW_DATABASE: S H O W '_' D A T A B A S E;
@@ -357,8 +358,16 @@ KW_TEXTFILE: T E X T F I L E;
 KW_RCFILE: R C F I L E;
 KW_ORC: O R C;
 KW_PARQUET: P A R Q U E T;
+KW_DELTA: D E L T A;
 KW_AVRO: A V R O;
+KW_CSV: C S V;
+KW_JSON: J S O N;
 KW_JSONFILE: J S O N F I L E;
+KW_BLOOMFILTER: B L O O M F I L T E R;
+KW_GENERATED: G E N E R A T E D;
+KW_ALWAYS: A L W A Y S;
+KW_IDENTITY: I D E N T I T Y;
+KW_INCREMENT: I N C R E M E N T;
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

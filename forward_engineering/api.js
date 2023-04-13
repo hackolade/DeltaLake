@@ -1,18 +1,18 @@
 'use strict';
 
 const { setDependencies, dependencies } = require('./helpers/appDependencies');
-const { getDatabaseStatement, getDatabaseAlterStatement } = require('./helpers/databaseHelper');
-const { getTableStatement, getTableAlterStatements } = require('./helpers/tableHelper');
+const { getDatabaseStatement } = require('./helpers/databaseHelper');
+const { getTableStatement } = require('./helpers/tableHelper');
 const { getIndexes } = require('./helpers/indexHelper');
-const { getViewScript, getViewAlterScripts } = require('./helpers/viewHelper');
-const { getCleanedUrl } = require('./helpers/generalHelper');
+const { getViewScript } = require('./helpers/viewHelper');
+const { getCleanedUrl, getTab, buildScript, doesScriptContainDropStatement} = require('./helpers/generalHelper');
 let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')
 const logHelper = require('../reverse_engineering/logHelper');
+const { getAlterScript } = require('./helpers/alterScriptFromDeltaHelper');
 
 const setAppDependencies = ({ lodash }) => _ = lodash;
-const sqlFormatter = require('sql-formatter');
 
 
 module.exports = {
@@ -26,37 +26,14 @@ module.exports = {
 			const externalDefinitions = JSON.parse(data.externalDefinitions);
 			const containerData = data.containerData;
 			const entityData = data.entityData;
-			const areColumnConstraintsAvailable = data.modelData[0].dbVersion.startsWith(
-				'3'
-			);
-			const areForeignPrimaryKeyConstraintsAvailable = !data.modelData[0].dbVersion.startsWith(
-				'1'
-			);
-			const needMinify = (
-				dependencies.lodash.get(data, 'options.additionalOptions', []).find(
-					(option) => option.id === 'minify'
-				) || {}
-			).value;
+			let scripts = '';
 
-			const databaseStatement = data.isUpdateScript ? getDatabaseAlterStatement(containerData) : getDatabaseStatement(containerData);
-			let tableStatements = [];
 			if (data.isUpdateScript) {
-				const tableAlterStatements = getTableAlterStatements(
-					containerData,
-					entityData,
-					jsonSchema,
-					[
-						modelDefinitions,
-						internalDefinitions,
-						externalDefinitions,
-					],
-					null,
-					areColumnConstraintsAvailable,
-					areForeignPrimaryKeyConstraintsAvailable
-				)
-				tableStatements = [...tableStatements, ...tableAlterStatements]
+				const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
+				scripts = getAlterScript(jsonSchema, definitions, data, app);
 			} else {
-				const tableStatement = getTableStatement(
+				const databaseStatement = getDatabaseStatement(containerData);
+				const tableStatements = getTableStatement(
 					containerData,
 					entityData,
 					jsonSchema,
@@ -65,24 +42,21 @@ module.exports = {
 						internalDefinitions,
 						externalDefinitions,
 					],
-					null,
-					areColumnConstraintsAvailable,
-					areForeignPrimaryKeyConstraintsAvailable
-				)
-				tableStatements.push(tableStatement)
-			}
-			callback(
-				null,
-				buildScript(needMinify)(
+					true,
+				);
+				scripts = buildScript([
 					databaseStatement,
-					...tableStatements
-					,
+					tableStatements,
 					getIndexes(containerData, entityData, jsonSchema, [
 						modelDefinitions,
 						internalDefinitions,
 						externalDefinitions,
 					])
-				)
+				]);
+			}
+			callback(
+				null,
+				scripts
 			);
 		} catch (e) {
 			logger.log(
@@ -91,9 +65,31 @@ module.exports = {
 				'DeltaLake Forward-Engineering Error'
 			);
 
-			setTimeout(() => {
-				callback({ message: e.message, stack: e.stack });
-			}, 150);
+			callback({ message: e.message, stack: e.stack });
+		}
+	},
+
+	generateViewScript(data, logger, callback, app) {
+		try {
+			setDependencies(app);
+			setAppDependencies(dependencies);
+			const viewSchema = JSON.parse(data.jsonSchema || '{}');
+
+			const databaseStatement = getDatabaseStatement(data.containerData);
+
+			const script = getViewScript({
+				schema: viewSchema,
+				viewData: data.viewData,
+				containerData: data.containerData,
+				collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
+				isKeyspaceActivated: true,
+			});
+
+			callback(null, buildScript([databaseStatement, script]));
+		} catch (e) {
+			logger.log('error', { message: e.message, stack: e.stack }, 'DeltaLake Forward-Engineering Error');
+
+			callback({ message: e.message, stack: e.stack });
 		}
 	},
 
@@ -104,135 +100,75 @@ module.exports = {
 			const containerData = data.containerData;
 			const modelDefinitions = JSON.parse(data.modelDefinitions);
 			const externalDefinitions = JSON.parse(data.externalDefinitions);
-			const databaseStatement = data.isUpdateScript ? getDatabaseAlterStatement(containerData) : getDatabaseStatement(containerData);
 			const jsonSchema = parseEntities(data.entities, data.jsonSchema);
 			const internalDefinitions = parseEntities(
 				data.entities,
 				data.internalDefinitions
 			);
-			const areColumnConstraintsAvailable = data.modelData[0].dbVersion.startsWith(
-				'3'
-			);
-			const areForeignPrimaryKeyConstraintsAvailable = !data.modelData[0].dbVersion.startsWith(
-				'1'
-			);
-			const needMinify = (
-				dependencies.lodash.get(data, 'options.additionalOptions', []).find(
-					(option) => option.id === 'minify'
-				) || {}
-			).value;
 
-			let viewsScripts = [];
+			if (data.isUpdateScript) {
+				const deltaModelSchema = _.first(Object.values(jsonSchema)) || {};
+				const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
+				const scripts = getAlterScript(deltaModelSchema, definitions, data, app);
+				callback(null, scripts);
+				return;
+			}
 
-	
-
-			data.views.map(viewId => {
+			const databaseStatement = getDatabaseStatement(containerData);
+			let viewsScripts = data.views.map(viewId => {
 				const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
-				if (data.isUpdateScript) {
-					const viewAlterScripts = getViewAlterScripts({
-						schema: viewSchema,
-						viewData: data.viewData[viewId],
-						containerData: data.containerData,
-						collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
-						isKeyspaceActivated: true
-					})
-					viewsScripts = [...viewsScripts, ...viewAlterScripts];
-				} else {
-					const viewScript = getViewScript({
-						schema: viewSchema,
-						viewData: data.viewData[viewId],
-						containerData: data.containerData,
-						collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
-						isKeyspaceActivated: true
-					})
-					viewsScripts.push(viewScript);
-				}
-			})
-
-			viewsScripts = viewsScripts.filter(script => !dependencies.lodash.isEmpty(script));
-
-			data.views.map(viewId => {
-				const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
-				if (data.isUpdateScript) {
-					const viewAlterScripts = getViewAlterScripts({
-						schema: viewSchema,
-						viewData: data.viewData[viewId],
-						containerData: data.containerData,
-						collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
-						isKeyspaceActivated: true
-					})
-					viewsScripts = [...viewsScripts, ...viewAlterScripts];
-				} else {
-					const viewScript = getViewScript({
-						schema: viewSchema,
-						viewData: data.viewData[viewId],
-						containerData: data.containerData,
-						collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
-						isKeyspaceActivated: true
-					})
-					viewsScripts.push(viewScript);
-				}
+				return getViewScript({
+					schema: viewSchema,
+					viewData: data.viewData[viewId],
+					containerData: data.containerData,
+					collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
+					isKeyspaceActivated: true
+				})
 			})
 
 			viewsScripts = viewsScripts.filter(script => !dependencies.lodash.isEmpty(script));
 
 			const entities = data.entities.reduce((result, entityId) => {
+				const entityData = data.entityData[entityId];
 				const args = [
 					containerData,
-					data.entityData[entityId],
+					entityData,
 					jsonSchema[entityId],
 					[
 						internalDefinitions[entityId],
 						modelDefinitions,
 						externalDefinitions,
 					],
-					true
 				];
+				const likeTableData = data.entityData[getTab(0, entityData)?.like];
 
-				let tableStatements = [];
-
-				if (data.isUpdateScript) {
-					const tableAlterStatement = getTableAlterStatements(
-						...args,
-						null,
-						areColumnConstraintsAvailable,
-						areForeignPrimaryKeyConstraintsAvailable
-					)
-					tableStatements = [...tableStatements, ...tableAlterStatement]
-				} else {
-					const tableStatement = getTableStatement(
-						...args,
-						null,
-						areColumnConstraintsAvailable,
-						areForeignPrimaryKeyConstraintsAvailable
-					)
-					tableStatements.push(tableStatement)
-				}
+				const tableStatement = getTableStatement(
+					...args,
+					true,
+					likeTableData,
+				)
 
 				return result.concat([
-					...tableStatements,
+					tableStatement,
 					getIndexes(...args),
 				]);
 			}, []);
 
-			callback(
-				null,
-				buildScript(needMinify)(
-					databaseStatement,
-					...entities,
-					...viewsScripts
-				)
-			);
+			const scripts = buildScript([
+				databaseStatement,
+				...entities,
+				...viewsScripts
+			]);
+
+			callback(null, scripts);
 		} catch (e) {
 			logger.log(
 				'error',
 				{ message: e.message, stack: e.stack },
-				'Hive Forward-Engineering Error'
+				'DeltaLake Forward-Engineering Error'
 			);
 
-			setTimeout(() => {
-				callback({ message: e.message, stack: e.stack });
-			}, 150);
+			callback({ message: e.message, stack: e.stack });
 		}
 	},
 
@@ -287,13 +223,25 @@ module.exports = {
 			);
 			cb({ message: err.message, stack: err.stack });
 		}
-	}
-};
+	},
 
+	isDropInStatements(data, logger, cb, app) {
+		try {
+			setDependencies(app);
 
-const buildScript = (needMinify) => (...statements) => {
-	const script = statements.filter((statement) => statement).join('\n\n');
-	return sqlFormatter.format(script, { indent: '    ' }) + '\n';
+			const callback = (error, script = '') => {
+				cb(error, doesScriptContainDropStatement(script));
+			};
+
+			if (data.level === 'container') {
+				this.generateContainerScript(data, logger, callback, app);
+			} else if (data.level === 'entity') {
+				this.generateScript(data, logger, callback, app);
+			}
+		}	catch (e) {
+			cb({ message: e.message, stack: e.stack });
+		}
+	},
 };
 
 const parseEntities = (entities, serializedItems) => {

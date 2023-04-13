@@ -20,7 +20,7 @@ const prepareNamesForInsertionIntoScalaCode = (databasesNames, collectionsNames)
 		const tableNames = tables.map(tableName => `\"${tableName}\"`).join(', ');
 
 		return {
-			tableNames: [...entities.tableNames, `\"${dbName}\" -> List(${tableNames})`],
+			tableNames: [...entities.tableNames, `\"${dbName}\": [${tableNames}]`],
 			dbNames: databasesNames.map(name => `\"${name}\"`)
 		}
 	}, { viewNames: [], tableNames: [] })
@@ -37,6 +37,18 @@ const convertCustomTags = (custom_tags, logger) => {
 }
 
 const isView = name => name.slice(-4) === ' (v)';
+const isViewDdl = (statement = '') => /^create (or replace |global |temporary ){0,1}view/.test(statement.toLocaleLowerCase());
+const isTableDdl = (statement = '') => /^create (or replace ){0,1}table/.test(statement.toLocaleLowerCase());
+
+const cleanEntityName = (sparkVersion, name = '') => {
+	return isSupportGettingListOfViews(sparkVersion) ? name.replace(/ \(v\)$/, '') : name;
+}
+
+const isSupportGettingListOfViews = (sparkVersionString = '') => {
+	const MAX_NOT_SUPPORT_VERSION = 6;
+	const databricksRuntimeMajorVersion = parseInt(sparkVersionString.slice(0, sparkVersionString.indexOf('.')));
+	return databricksRuntimeMajorVersion > MAX_NOT_SUPPORT_VERSION;
+}
 
 const getErrorMessage = (error = {}) => {
 	if (typeof error === 'string') {
@@ -50,10 +62,47 @@ const getErrorMessage = (error = {}) => {
 	return error.message || 'Reverse Engineering error';
 };
 
+const removeParentheses = string => string.replace(/^\(|\)$/g, '');
+
+const getTemplateDocByJsonSchema = (schema) => {
+	if (!schema) {
+		return;
+	}
+
+	if (schema.type === 'numeric') {
+		return 1;
+	}
+
+	if (schema.type === 'boolean') {
+		return true;
+	}
+
+	if (schema.type === 'array') {
+		return [];
+	}
+	
+	if (!schema.properties) {
+		return '';
+	}
+
+	return Object.keys(schema?.properties || {}).reduce((result, name) => {
+		return {
+			...result,
+			[name]: getTemplateDocByJsonSchema(schema?.properties[name]),
+		};
+	}, {});
+};
+
 module.exports = {
 	prepareNamesForInsertionIntoScalaCode,
 	splitTableAndViewNames,
 	convertCustomTags,
 	getErrorMessage,
-	getCount
+	getCount,
+	isViewDdl,
+	isTableDdl,
+	cleanEntityName,
+	isSupportGettingListOfViews,
+	removeParentheses,
+	getTemplateDocByJsonSchema,
 };

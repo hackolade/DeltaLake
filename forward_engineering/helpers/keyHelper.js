@@ -5,7 +5,7 @@ const jsonSchemaHelper = require('./jsonSchemaHelper');
 const filterPaths = (keys, paths) => paths.filter(path => keys.find(key => path[path.length - 1] === key.keyId));
 const sortedKey = getNameByPath => (keys, paths) => {
 	return keys.map(key => {
-		const path = paths.find(path => path[path.length - 1] === key.keyId);
+		const path = paths.find(path => path[path.length - 1] === key.keyId) || [];
 
 		return {
 			name: getNameByPath(path),

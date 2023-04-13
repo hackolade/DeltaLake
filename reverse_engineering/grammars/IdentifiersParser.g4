@@ -148,7 +148,7 @@ castExpression
     LPAREN
           expression
           KW_AS
-          primitiveType
+          (primitiveType | structType)
     RPAREN
     ;
 
@@ -517,7 +517,9 @@ descFuncNames
 
 identifier
     : Identifier
+    | '{''{' (Identifier) '}''}'
     | nonReserved
+    | databricksAllowedReservedNames
     ;
 
 functionIdentifier
@@ -584,10 +586,15 @@ nonReserved
     | KW_REOPTIMIZATION
     | KW_RESOURCE | KW_PLAN | KW_PLANS | KW_QUERY_PARALLELISM | KW_ACTIVATE | KW_MOVE | KW_DO
     | KW_POOL | KW_ALLOC_FRACTION | KW_SCHEDULING_POLICY | KW_PATH | KW_MAPPING | KW_WORKLOAD | KW_MANAGEMENT | KW_ACTIVE | KW_UNMANAGED
-
+    | KW_DELTA | KW_CSV | KW_JSON | KW_BLOOMFILTER
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.
 sql11ReservedKeywordsUsedAsFunctionName
     : KW_IF | KW_ARRAY | KW_MAP | KW_BIGINT | KW_BINARY | KW_BOOLEAN | KW_CURRENT_DATE | KW_CURRENT_TIMESTAMP | KW_DATE | KW_DOUBLE | KW_FLOAT | KW_GROUPING | KW_INT | KW_SMALLINT | KW_TIMESTAMP
+    ;
+
+databricksAllowedReservedNames
+    : sql11ReservedKeywordsUsedAsFunctionName
+    | KW_TIME
     ;

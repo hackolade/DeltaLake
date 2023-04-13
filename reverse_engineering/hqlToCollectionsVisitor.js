@@ -11,6 +11,8 @@ const {
     CREATE_VIEW_COMMAND,
     ADD_COLLECTION_LEVEL_INDEX_COMMAND,
     REMOVE_COLLECTION_LEVEL_INDEX_COMMAND,
+    ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
+    REMOVE_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
     UPDATE_ENTITY_LEVEL_DATA_COMMAND,
     UPDATE_VIEW_LEVEL_DATA_COMMAND,
     RENAME_VIEW_COMMAND,
@@ -30,6 +32,7 @@ const {
 
 const schemaHelper = require('./thriftService/schemaHelper');
 const { dependencies } = require('./appDependencies');
+const { removeParentheses } = require('./helpers/utils');
 
 const ALLOWED_COMMANDS = [
     HiveParser.RULE_createTableStatement,
@@ -46,9 +49,16 @@ const ALLOWED_COMMANDS = [
     HiveParser.RULE_resourcePlanDdlStatements,
     HiveParser.RULE_createIndexStatement,
     HiveParser.RULE_dropIndexStatement,
+    HiveParser.RULE_createBloomfilterIndexStatement,
+    HiveParser.RULE_dropBloomfilterIndexStatement,
 ];
 
 class Visitor extends HiveParserVisitor {
+    constructor(originalText) {
+        super();
+        this.originalText = originalText;
+    }
+
     visitStatement(ctx) {
         const execStatement = ctx.execStatement();
         if (execStatement) {
@@ -77,16 +87,20 @@ class Visitor extends HiveParserVisitor {
     visitCreateTableStatement(ctx) {
         const _ = dependencies.lodash
         const [tableName, tableLikeName] = this.visit(ctx.tableName());
-        const compositePartitionKey = this.visitWhenExists(ctx, 'tablePartition', []);
-        const { compositeClusteringKey, numBuckets, sortedByKey } = this.visitWhenExists(ctx, 'tableBuckets', {});
-        const { skewedby, skewedOn, skewStoredAsDir } = this.visitWhenExists(ctx, 'tableSkewed', {});
+        const tableDataSource = this.visitWhenExists(ctx, 'tableUsingDataSource');
+        const compositePartitionKey = this.visitWhenExists(ctx, 'tablePartition', [])?.[0] || [];
+        const { compositeClusteringKey, numBuckets, sortedByKey } = this.visitWhenExists(ctx, 'tableBuckets', [])?.[0] || {};
+        const { skewedby, skewedOn, skewStoredAsDir } = this.visitWhenExists(ctx, 'tableSkewed', [])?.[0] || {};
         const tableRowFormat = this.visitWhenExists(ctx, 'tableRowFormat', {});
         const description = this.visitWhenExists(ctx, 'tableComment');
         const location = this.visitWhenExists(ctx, 'tableLocation');
         const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
+        let tableOptions = this.visitWhenExists(ctx, 'tableOptions');
+        tableOptions =  Array.isArray(tableOptions) ? tableOptions?.[0] || '' : tableOptions;
         const temporaryTable = Boolean(ctx.KW_TEMPORARY());
         const externalTable = Boolean(ctx.KW_EXTERNAL());
-        const storedAsTable = this.visitWhenExists(ctx, 'tableFileFormat', {});
+        let storedAsTable = this.visitWhenExists(ctx, 'tableFileFormat', {});
+        storedAsTable = Array.isArray(storedAsTable) ? storedAsTable?.[0] || {} : storedAsTable;
         const { database, table } = tableName;
         const { properties, foreignKeys } = this.visitWhenExists(ctx, 'columnNameTypeOrConstraintList', {
             properties: {},
@@ -106,27 +120,29 @@ class Visitor extends HiveParserVisitor {
                 schema: handleChoices({
                     collectionName: table,
                     type: 'object',
-                    properties: { ...properties, ...convertKeysToProperties(compositePartitionKey) },
+                    properties: { ...convertKeysToProperties(compositePartitionKey, properties), ...properties },
                 }),
                 tableLikeName: (tableLikeName || {}).table,
                 entityLevelData: _.pickBy(
                     {
                         temporaryTable,
                         externalTable,
-                        description,
-                        compositePartitionKey: compositePartitionKey.map((key) => ({ name: key.name })),
+                        description: Array.isArray(description) ? description[0] || '' : String(description),
+                        compositePartitionKey: compositePartitionKey.map(([ name ]) => ({ name })),
                         compositeClusteringKey,
                         numBuckets,
                         sortedByKey,
                         skewedby,
                         skewedOn,
                         skewStoredAsDir,
-                        location,
-                        tableProperties,
+                        tableOptions,
+                        location: Array.isArray(location) ? location[0] || '' : String(location),
+                        tableProperties: Array.isArray(tableProperties) ? tableProperties[0] || '' : String(tableProperties),
+                        using: getUsingProperty(Array.isArray(tableDataSource) ? tableDataSource[0] || '' : String(tableDataSource)),
                         ...storedAsTable,
                         ...tableRowFormat,
                     },
-                    (prop) => _.isBoolean(prop) || !_.isEmpty(prop)
+                    (prop) => _.isNumber(prop) || _.isBoolean(prop) || !_.isEmpty(prop)
                 ),
             },
             ...tableForeignKeys.map((fkData) => ({
@@ -134,6 +150,10 @@ class Visitor extends HiveParserVisitor {
                 type: ADD_RELATIONSHIP_COMMAND,
             })),
         ];
+    }
+
+    visitTableUsingDataSource(ctx) {
+        return ctx.tableDataSource().getText();
     }
 
     visitAtomSelectStatement(ctx) {
@@ -173,7 +193,7 @@ class Visitor extends HiveParserVisitor {
     }
 
     visitTablePartition(ctx) {
-        return this.visit(ctx.columnNameTypeConstraint());
+        return this.visit(ctx.partitionedColumnNameTypeConstraint());
     }
 
     visitTableComment(ctx) {
@@ -285,6 +305,33 @@ class Visitor extends HiveParserVisitor {
     }
 
     visitTablePropertiesPrefixed(ctx) {
+        return this.visit(ctx.tableProperties());
+    }
+
+    visitTableProperties(ctx) {
+        return this.visit(ctx.tablePropertiesList());
+    }
+
+    visitTablePropertiesList(ctx) {
+        const keyValueProperties = this.visitWhenExists(ctx, 'keyValueProperty', []);
+        const keyProperties = this.visitWhenExists(ctx, 'keyProperty', []);
+        return [
+            ...keyValueProperties,
+            ...keyProperties.map(propertyKey => ({ propertyKey })),
+        ]
+    }
+
+    visitKeyValueProperty(ctx) {
+        const propertyKey = this.visit(ctx.keyProperty());
+        const propertyValue = removeValueQuotes(ctx.keyValue().getText());
+        return { propertyKey, propertyValue };
+    }
+
+    visitKeyProperty(ctx) {
+        return ctx.getText();
+    }
+
+    visitTableOptions(ctx) {
         return ctx.tableProperties().getText();
     }
 
@@ -296,18 +343,42 @@ class Visitor extends HiveParserVisitor {
             stop: ctx.selectStatementWithCTE().stop.stop + 1,
         };
         const { table } = this.visitWhenExists(ctx, 'selectStatementWithCTE', {});
+        const columns = this.visitWhenExists(ctx, 'columnNameCommentList', []);
+        const jsonSchema = convertColumnsToJsonSchema(columns);
+        const columnList = columns.map(column => column.name + (column.comment ? ` COMMENT '${column.comment}'` : '')).join(', ');
+        const columnNames = columns.map(column => column.name).join(', ');
+        const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
 
         return {
             type: CREATE_VIEW_COMMAND,
             name,
             bucketName: database,
             collectionName: table,
-            jsonSchema: { properties: {} },
             select,
+            jsonSchema,
+            columnNames,
             data: {
                 description,
+                tableProperties,
+                columnList,
             },
         };
+    }
+
+    visitColumnNameCommentList(ctx) {
+        if (typeof ctx.columnNameComment !== 'function') {
+            return [];
+        }
+
+        return (ctx.columnNameComment() || []).map(column => {
+            const name = column.identifier()?.getText() || '';
+            const comment = column.KW_COMMENT() && column.StringLiteral() ? removeSingleDoubleQuotes(column.StringLiteral().getText()) : '';
+
+            return {
+                name,
+                comment,
+            };
+        });
     }
 
     visitCreateMaterializedViewStatement(ctx) {
@@ -449,7 +520,7 @@ class Visitor extends HiveParserVisitor {
         return {
             type: UPDATE_ENTITY_LEVEL_DATA_COMMAND,
             data: {
-                numBuckets: ctx.Number().getText(),
+                numBuckets: Number(ctx.Number().getText()),
             },
         };
     }
@@ -627,6 +698,29 @@ class Visitor extends HiveParserVisitor {
             },
             { properties: {}, foreignKeys: [] }
         );
+    }
+
+    visitColumnGeneratedAs(ctx) {
+        if (ctx.generatedAsExpression()) {
+            const expression = this.getText(ctx.generatedAsExpression().expression());
+            return {
+                generatedType: 'always',
+                expression: `(${expression})`,
+            };
+        }
+
+        if (ctx.generatedAsIdentity()) {
+            const wholeExpression = this.getText(ctx.generatedAsIdentity());
+            const isDefault = /^\s*BY\s+DEFAULT\s+/i.test(wholeExpression);
+            const expression = wholeExpression.replace(/^\s*(ALWAYS|BY\s+DEFAULT)\s+AS\s+/i, '');
+
+            return {
+                generatedType: isDefault ? 'by default' : 'always',
+                expression,
+            };
+        }
+
+        return;
     }
 
     visitColumnNameTypeOrConstraint(ctx) {
@@ -811,11 +905,12 @@ class Visitor extends HiveParserVisitor {
         const isUnion = !items.type || Array.isArray(items.type);
         const itemType = isUnion ? 'union' : items.type;
         const key = this.visit(ctx.primitiveType());
+        const properties = Boolean(items?.properties) || Boolean(items?.items) ? { 'new_column': items } : {};
 
         return {
             type: 'map',
             subtype: schemaHelper.getMapSubtype(itemType),
-            properties: items.oneOf ? {} : { 'New column': items },
+            properties: items.oneOf ? {} : properties   ,
             ...(items.oneOf && { oneOf: getOneOf(items.oneOf, 'New column') }),
             ...schemaHelper.getMapKeyType(key),
         };
@@ -907,6 +1002,7 @@ class Visitor extends HiveParserVisitor {
             ...(Boolean((ctx.tableConstraintType() || {}).KW_PRIMARY) ? { primaryKey: true } : {}),
             ...(Boolean(ctx.KW_DEFAULT()) ? { default: this.visit(ctx.defaultVal()) } : {}),
             ...(Boolean(ctx.checkConstraint()) ? { check: this.visitWhenExists(ctx, 'checkConstraint', '') } : {}),
+            ...(Boolean(ctx.columnGeneratedAs()) ? { generatedDefaultValue: this.visit(ctx.columnGeneratedAs()) } : {}),
         };
     }
 
@@ -1013,12 +1109,16 @@ class Visitor extends HiveParserVisitor {
     visitCreateDatabaseStatement(ctx) {
         const name = this.visit(ctx.identifier());
         const description = this.visitWhenExists(ctx, 'databaseComment');
+        const location = removeSingleDoubleQuotes(ctx?.dbLocation()?.StringLiteral()?.getText() || '');
+        const dbProperties = removeParentheses(ctx?.dbProperties()?.getText() || '');
 
         return {
             type: CREATE_BUCKET_COMMAND,
             name,
             data: {
                 description,
+                location,
+                dbProperties,
             },
         };
     }
@@ -1081,10 +1181,6 @@ class Visitor extends HiveParserVisitor {
         return this.visit(ctx.columnNameList());
     }
 
-    visitTableProperties(ctx) {
-        return ctx.getText();
-    }
-
     visitDropIndexStatement(ctx) {
         const { database, table } = this.visit(ctx.tableName());
         return {
@@ -1093,6 +1189,67 @@ class Visitor extends HiveParserVisitor {
             collectionName: table,
             bucketName: database,
         };
+    }
+
+    visitCreateBloomfilterIndexStatement(ctx) {
+        const { collectionName, bucketName } = this.visit(ctx.createBloomfilterIndexMainStatement());
+        const columns = this.visitWhenExists(ctx, 'bloomfilterColumnParenthesesList')
+        const options = this.visitWhenExists(ctx, 'bloomfilterIndexOptions');
+
+        return {
+            type: ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
+            bucketName,
+            collectionName,
+            columns,
+            options,
+        };
+    }
+
+    visitCreateBloomfilterIndexMainStatement(ctx) {
+        const { database, table } = this.visit(ctx.tableName());
+        return {
+            collectionName: table,
+            bucketName: database,
+        }
+    }
+
+    visitBloomfilterColumnParenthesesList(ctx) {
+        return this.visit(ctx.bloomfilterColumnNameList());
+    }
+
+    visitBloomfilterColumnNameList(ctx) {
+        return this.visit(ctx.bloomfilterColumnName());
+    }
+
+    visitBloomfilterColumnName(ctx) {
+        return {
+            name: this.visit(ctx.identifier()),
+            options: this.visitWhenExists(ctx, 'bloomfilterIndexOptions'),
+        }
+    }
+
+    visitBloomfilterIndexOptions(ctx) {
+        return removeParentheses(ctx.tableProperties().getText());
+    }
+
+    visitDropBloomfilterIndexStatement(ctx) {
+        const { collectionName, bucketName } = this.visit(ctx.dropBloomfilterIndexMainStatement());
+        const columns = this.visitWhenExists(ctx, 'bloomfilterColumnParenthesesList')
+
+        return {
+            type: REMOVE_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
+            bucketName,
+            collectionName,
+            columns,
+        };
+    }
+
+    visitDropBloomfilterIndexMainStatement(ctx) {
+        const { database, table } = this.visit(ctx.tableName());
+        return {
+            collectionName: table,
+            bucketName: database,
+        }
     }
 
     visitResourcePlanDdlStatements(ctx) {
@@ -1350,9 +1507,15 @@ class Visitor extends HiveParserVisitor {
             collectionName: table,
         };
     }
+
+    getText(expression) {
+        return this.originalText.slice(expression.start.start, expression.stop.stop + 1);
+    }
 }
 
-const removeQuotes = (string) => string.replace(/^(`)(.*)\1$/, '$2');
+const removeQuotes = (string = '') => string.replace(/^(`)(.*)\1$/, '$2');
+
+const removeValueQuotes = (string = '') => string.replace(/^(['"])([\s\S]*)\1$/, '$2');
 
 const removeSingleDoubleQuotes = (string = '') => string.replace(/['"]+/g, '');
 
@@ -1384,6 +1547,21 @@ const getStoredAsTable = (storedAsTable) => {
         case 'jsonfile':
             return 'JSONfile';
     }
+};
+
+const getUsingProperty = (using) => {
+    return {
+        delta: "delta",
+        csvfile: "CSVfile",
+        csv: "CSVfile",
+        hive: "Hive",
+        jsonfile: "JSONfile",
+        jdbc: "JDBC",
+        orc: "ORC",
+        parquet: "Parquet",
+        libsvm: "LIBSVM",
+        textfile: "textfile",
+    }[String(using).toLowerCase()] || 'delta';
 };
 
 const handleChoices = (field) => {
@@ -1422,11 +1600,15 @@ const handleChoices = (field) => {
     };
 };
 
-const convertKeysToProperties = (keys = []) => {
-    return keys.reduce((properties, key) => {
+const convertKeysToProperties = (keys = [], existed) => {
+    return keys.reduce((properties, [ name, type ]) => {
+        if (existed?.[name]) {
+            return properties;
+        }
+
         return {
             ...properties,
-            [key.name]: key.type,
+            [name]: type || {},
         };
     }, {});
 };
@@ -1460,6 +1642,9 @@ const mergeConstraints = (constraints) => {
         if (constraint.check) {
             return { ...mergedConstraint, check: constraint.check };
         }
+        if (constraint.generatedDefaultValue) {
+            return { ...mergedConstraint, generatedDefaultValue: constraint.generatedDefaultValue };
+        }
 
         return mergedConstraint;
     }, {});
@@ -1473,6 +1658,21 @@ const getMappingType = (ctx) => {
     } else if (ctx.KW_APPLICATION()) {
         return 'application';
     }
+};
+
+const convertColumnsToJsonSchema = (columns) => {
+    const properties = columns.reduce((schema, column) => {
+        return {
+            ...schema,
+            [column.name]: {
+                description: column.comment,
+            },
+        };
+    }, {});
+
+    return {
+        properties,
+    };
 };
 
 module.exports = Visitor;

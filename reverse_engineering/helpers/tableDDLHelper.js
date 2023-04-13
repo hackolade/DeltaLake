@@ -16,7 +16,7 @@ const getTableData = async (table, data, logger) => {
 		return {};
 	}
 	const BloomIndxs = convertIndexes(indexes)
-	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: nullableMap[property.name] !== 'true' }))
+	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: ![true, 'true'].includes(nullableMap[property.name]) }))
 	const tableSchema = tablePropertiesWithNotNullConstraints.reduce((schema, property) => ({ ...schema, [property.name]: property }), {})
 	const requiredColumns = tablePropertiesWithNotNullConstraints.filter(column => column.required).map(column => column.name);
 	tableData = {
@@ -41,13 +41,12 @@ const getTableDataFromDDl = (statement) => {
 	parser.removeErrorListeners();
 	parser.addErrorListener(new ExprErrorListener());
 	const tree = parser.singleStatement();
-	const sqlBaseToCollectionVisitor = new SqlBaseToCollectionVisitor();
+	const sqlBaseToCollectionVisitor = new SqlBaseToCollectionVisitor(statement);
 	let parsedTableData = tree.accept(sqlBaseToCollectionVisitor);
 	if (!dependencies.lodash.isEmpty(parsedTableData.query)) {
 		parsedTableData.query = statement.substring(parsedTableData.query.select.start, parsedTableData.query.select.stop)
 	}
 	const properties = parsedTableData.colList.map(column => columnREHelper.reverseTableColumn(column));
-	const tableProperties = parsedTableData.tableProperties[0] || { start: 0, stop: 0 }
 	return {
 		properties,
 		propertiesPane: {
@@ -74,8 +73,9 @@ const getTableDataFromDDl = (statement) => {
 			skewedby: parsedTableData.skewedBy?.map(key => ({ name: key })),
 			skewedOn: parsedTableData.skewedOn,
 			location: parsedTableData.location,
-			tableProperties: statement.slice(tableProperties.start + 1, tableProperties.stop),
-			comments: parsedTableData.commentSpec,
+			tableProperties: parsedTableData.tableProperties,
+			description: parsedTableData.commentSpec,
+			tableOptions: parsedTableData.tableOptions,
 		}
 	}
 }
@@ -103,9 +103,16 @@ const getTableProvider = (provider) => {
 	}
 }
 
+const isValidIndex = (indexObject) => (
+	indexObject['delta.bloomFilter.enabled'] ||
+	indexObject['delta.bloomFilter.numItems'] ||
+	indexObject['delta.bloomFilter.fpp'] ||
+	indexObject['delta.bloomFilter.maxExpectedFpp']
+);
+
 const convertIndexes = indexes => {
 	const indexMap = Object.keys(indexes)
-		.filter(columnName => !dependencies.lodash.isEmpty(indexes[columnName]))
+		.filter(columnName => !dependencies.lodash.isEmpty(indexes[columnName]) && isValidIndex(indexes[columnName]))
 		.reduce((indexMap, columnName) => {
 			const indexObject = indexes[columnName];
 			const indexString = `fpp = ${indexObject['delta.bloomFilter.fpp']}, numItems = ${indexObject['delta.bloomFilter.numItems']}, maxExpectedFpp = ${indexObject['delta.bloomFilter.maxExpectedFpp']}, enabled = ${indexObject['delta.bloomFilter.enabled']}`
@@ -119,5 +126,6 @@ const convertIndexes = indexes => {
 
 
 module.exports = {
-	getTableData
+	getTableData,
+	getTableDataFromDDl,
 };
