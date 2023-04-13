@@ -207,10 +207,6 @@ const getSkewedKeyStatement = (skewedKeys, skewedOn, asDirectories, deactivatedC
 };
 
 const getRowFormat = (tableData) => {
-	if (tableData.storedAsTable !== 'textfile') {
-		return '';
-	}
-
 	if (tableData.rowFormat === 'delimited') {
 		return buildStatement(`DELIMITED`)
 			(tableData.fieldsTerminatedBy, `FIELDS TERMINATED BY '${tableData.fieldsTerminatedBy}'`)
@@ -220,11 +216,14 @@ const getRowFormat = (tableData) => {
 			(tableData.linesTerminatedBy, `LINES TERMINATED BY '${tableData.linesTerminatedBy}'`)
 			(tableData.nullDefinedAs, `NULL DEFINED AS '${tableData.nullDefinedAs}'`)
 			();
-	} else if (tableData.rowFormat === 'SerDe') {
+	}
+	if (tableData.rowFormat === 'SerDe') {
 		return buildStatement(`SERDE '${tableData.serDeLibrary}'`)
 			(tableData.serDeProperties, `WITH SERDEPROPERTIES (${tableData.serDeProperties})`)
 			();
 	}
+
+	return '';
 };
 
 const getLikeStatement = (likeTableData) => {
@@ -245,9 +244,6 @@ const getStoredAsStatement = (tableData) => {
 	if (tableData.storedAsTable === 'input/output format') {
 		let statement = [];
 
-		if (tableData.serDeLibrary) {
-			statement.push(`ROW FORMAT SERDE '${tableData.serDeLibrary}'`);
-		}
 		statement.push(`STORED AS INPUTFORMAT '${tableData.inputFormatClassname}'`);
 		statement.push(`OUTPUTFORMAT '${tableData.outputFormatClassname}'`);
 

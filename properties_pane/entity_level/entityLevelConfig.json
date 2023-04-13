@@ -214,11 +214,7 @@ making sure that you maintain a proper JSON format.
 					"",
 					"delimited",
 					"SerDe"
-				],
-				"dependency": {
-					"key": "storedAsTable",
-					"value": "textfile"
-				}
+				]
 			},
 			{
 				"propertyName": "Fields terminated by",
