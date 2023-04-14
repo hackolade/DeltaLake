@@ -4,17 +4,6 @@ const RESERVED_WORDS = require('./reserverWords');
 const sqlFormatter = require('sql-formatter');
 const { dependencies } = require('./appDependencies');
 const {DROP_STATEMENTS} = require("./constants");
-const {EntitiesThatSupportComments} = require("./alterScriptHelpers/enums/entityType");
-
-const entitiesThatSupportCommentsAsRegexComponent = Object.values(EntitiesThatSupportComments)
-	.join('|');
-const dropCommentOnDatabaseEntityScriptRegex = new RegExp(
-	`COMMENT ON (${entitiesThatSupportCommentsAsRegexComponent}) .+ IS NULL;`, 'g');
-const dropCommentOnTableColumnRegex = /ALTER TABLE .+ ALTER COLUMN .+ COMMENT '';/g;
-
-const dropNotNullConstraintRegex = /ALTER TABLE .+ ALTER COLUMN .+ DROP NOT NULL;/g;
-
-const dropCheckConstraintRegex = /ALTER TABLE .* DROP CONSTRAINT IF EXISTS .*;/g;
 
 let _;
 
@@ -95,16 +84,7 @@ const getTypeDescriptor = (typeName) => {
  * @return boolean
  * */
 const isScriptADropStatement = (script) => {
-	const containsDropStatement = DROP_STATEMENTS.some(statement => script.includes(statement));
-	if (containsDropStatement) {
-		return true;
-	}
-	return [
-		dropCommentOnDatabaseEntityScriptRegex,
-		dropCommentOnTableColumnRegex,
-		dropNotNullConstraintRegex,
-		dropCheckConstraintRegex
-	].some(regex => regex.test(script));
+	return DROP_STATEMENTS.some(statement => script.includes(statement));
 }
 
 /**
