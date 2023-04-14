@@ -1,7 +1,7 @@
 [
 	{
 		"type": "file",
-		"menu_label": "HQL File",
+		"menu_label": "HQL File...",
 		"name": "hql",
 		"extensions": [
 			"hql"
