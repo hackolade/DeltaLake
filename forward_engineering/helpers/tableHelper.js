@@ -221,7 +221,7 @@ const getRowFormat = (tableData) => {
 	}
 	if (tableData.rowFormat === 'SerDe') {
 		return buildStatement(`SERDE '${tableData.serDeLibrary}'`)
-			(tableData.serDeProperties, `WITH SERDEPROPERTIES (${tableData.serDeProperties})`)
+			(tableData.serDeProperties, `WITH SERDEPROPERTIES ${tableData.serDeProperties}`)
 			();
 	}
 
