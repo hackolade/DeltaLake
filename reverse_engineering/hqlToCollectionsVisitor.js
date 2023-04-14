@@ -91,7 +91,7 @@ class Visitor extends HiveParserVisitor {
         const compositePartitionKey = this.visitWhenExists(ctx, 'tablePartition', [])?.[0] || [];
         const { compositeClusteringKey, numBuckets, sortedByKey } = this.visitWhenExists(ctx, 'tableBuckets', [])?.[0] || {};
         const { skewedby, skewedOn, skewStoredAsDir } = this.visitWhenExists(ctx, 'tableSkewed', [])?.[0] || {};
-        const tableRowFormat = this.visitWhenExists(ctx, 'tableRowFormat', {});
+        const tableRowFormat = this.visitWhenExists(ctx, 'tableRowFormat', {})?.[0] || {};
         const description = this.visitWhenExists(ctx, 'tableComment');
         const location = this.visitWhenExists(ctx, 'tableLocation');
         const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
