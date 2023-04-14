@@ -12,7 +12,9 @@ const dropCommentOnDatabaseEntityScriptRegex = new RegExp(
 	`COMMENT ON (${entitiesThatSupportCommentsAsRegexComponent}) .+ IS NULL;`, 'g');
 const dropCommentOnTableColumnRegex = /ALTER TABLE .+ ALTER COLUMN .+ COMMENT '';/g;
 
-const dropNotNullConstraintRegex = /ALTER TABLE .* ALTER COLUMN .* DROP NOT NULL;/g;
+const dropNotNullConstraintRegex = /ALTER TABLE .+ ALTER COLUMN .+ DROP NOT NULL;/g;
+
+const dropCheckConstraintRegex = /ALTER TABLE .* DROP CONSTRAINT IF EXISTS .*;/g;
 
 let _;
 
@@ -100,7 +102,8 @@ const isScriptADropStatement = (script) => {
 	return [
 		dropCommentOnDatabaseEntityScriptRegex,
 		dropCommentOnTableColumnRegex,
-		dropNotNullConstraintRegex
+		dropNotNullConstraintRegex,
+		dropCheckConstraintRegex
 	].some(regex => regex.test(script));
 }
 
@@ -182,6 +185,10 @@ const wrapInSingleQuotes = (str = '') => {
 	return `'${encodeStringLiteral(str)}'`;
 }
 
+const wrapInTicks = (str = '') => {
+	return `\`${str}\``;
+}
+
 const buildScript = (statements) => {
 	const script = statements.filter((statement) => statement).join('\n\n');
 	const formattedScript = sqlFormatter.format(script, { indent: '    '}) + '\n';
@@ -204,5 +211,6 @@ module.exports = {
 	encodeStringLiteral,
 	buildScript,
 	wrapInSingleQuotes,
+	wrapInTicks,
 	doesScriptContainDropStatement
 };

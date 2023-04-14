@@ -90,6 +90,32 @@ module.exports = app => {
 			});
 		},
 
+		/**
+		 * @param tableName {string}
+		 * @param constraintName {string}
+		 * @param check {string}
+		 * @return string
+		 * */
+		setCheckConstraint(tableName, constraintName, check) {
+			return assignTemplates(templates.addCheckConstraint, {
+				tableName,
+				constraintName,
+				check
+			});
+		},
+
+		/**
+		 * @param tableName {string}
+		 * @param constraintName {string}
+		 * @return string
+		 * */
+		dropCheckConstraint(tableName, constraintName) {
+			return assignTemplates(templates.dropCheckConstraint, {
+				tableName,
+				constraintName
+			});
+		},
+
 		alterTableProperties({ dataProperties, name }) {
 			if (!name) {
 				return [];
