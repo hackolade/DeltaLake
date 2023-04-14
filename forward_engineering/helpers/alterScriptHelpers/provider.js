@@ -66,56 +66,6 @@ module.exports = app => {
 			return assignTemplates(templates.updateComment, templatesConfig);
 		},
 
-		/**
-		 * @param tableName {string}
-		 * @param columnName {string}
-		 * @return string
-		 * */
-		setNotNullConstraint(tableName, columnName) {
-			return assignTemplates(templates.addNotNullConstraint, {
-				tableName,
-				columnName
-			});
-		},
-
-		/**
-		 * @param tableName {string}
-		 * @param columnName {string}
-		 * @return string
-		 * */
-		dropNotNullConstraint(tableName, columnName) {
-			return assignTemplates(templates.dropNotNullConstraint, {
-				tableName,
-				columnName
-			});
-		},
-
-		/**
-		 * @param tableName {string}
-		 * @param constraintName {string}
-		 * @param check {string}
-		 * @return string
-		 * */
-		setCheckConstraint(tableName, constraintName, check) {
-			return assignTemplates(templates.addCheckConstraint, {
-				tableName,
-				constraintName,
-				check
-			});
-		},
-
-		/**
-		 * @param tableName {string}
-		 * @param constraintName {string}
-		 * @return string
-		 * */
-		dropCheckConstraint(tableName, constraintName) {
-			return assignTemplates(templates.dropCheckConstraint, {
-				tableName,
-				constraintName
-			});
-		},
-
 		alterTableProperties({ dataProperties, name }) {
 			if (!name) {
 				return [];

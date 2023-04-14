@@ -12,7 +12,7 @@ const {
     getEntityName,
     prepareScript
 } = require('./generalHelper');
-const {wrapInSingleQuotes, prepareName, wrapInTicks} = require("../generalHelper");
+const {wrapInSingleQuotes, prepareName} = require("../generalHelper");
 const {EntitiesThatSupportComments} = require("./enums/entityType");
 
 let _;
@@ -160,6 +160,8 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
 
     const dataProperties = _.get(compMod, 'tableProperties', '');
     const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
+    const updatedCommentScript = getUpdatedCommentOnCollectionScript(collection, ddlProvider);
+    const deletedCommentScript = getDeletedCommentOnCollectionScript(collection, ddlProvider);
     const hydratedTableProperties = hydrateTableProperties(dataProperties, fullCollectionName);
     const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
     const tablePropertiesScript = ddlProvider.alterTableProperties(hydratedTableProperties);
@@ -168,6 +170,8 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
         type: 'modify',
         script: prepareScript(
             alterTableNameScript,
+            updatedCommentScript,
+            deletedCommentScript,
             ...tablePropertiesScript,
             serDeProperties
         )
@@ -204,20 +208,6 @@ const getModifyCollectionsScripts = (definitions, ddlProvider) => collection => 
     const addIndexScript = getIndexes(...hydratedAddIndex);
 
     return prepareScript(dropIndexScript, ...script, addIndexScript);
-};
-
-/**
- * @return {(x: Object) => Array<string>}
- * */
-const getModifyCollectionCommentsScripts = (ddlProvider) => collection => {
-    setDependencies(dependencies);
-    const updatedCommentScript = getUpdatedCommentOnCollectionScript(collection, ddlProvider);
-    const deletedCommentScript = getDeletedCommentOnCollectionScript(collection, ddlProvider);
-
-    return prepareScript(
-        updatedCommentScript,
-        deletedCommentScript
-    );
 };
 
 const getAddColumnsScripts = (definitions, provider) => entity => {
@@ -318,95 +308,6 @@ const getModifiedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
     return [...updatedCommentScripts, ...deletedCommentScripts];
 }
 
-const getModifyNonNullColumnsScripts = (_) => (collection, ddlProvider) => {
-    const fullTableName = generateFullEntityName(collection);
-
-    const currentRequiredColumnNames = collection.required || [];
-    const previousRequiredColumnNames = collection.role.required || [];
-
-    const columnNamesToAddNotNullConstraint = _.difference(currentRequiredColumnNames, previousRequiredColumnNames);
-    const columnNamesToRemoveNotNullConstraint = _.difference(previousRequiredColumnNames, currentRequiredColumnNames);
-
-    const addNotNullConstraintsScript = _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const oldName = jsonSchema.compMod.oldField.name;
-            const shouldRemoveForOldName = columnNamesToRemoveNotNullConstraint.includes(oldName);
-            const shouldAddForNewName = columnNamesToAddNotNullConstraint.includes(name);
-            return shouldAddForNewName && !shouldRemoveForOldName;
-        })
-        .map(([columnName]) => ddlProvider.setNotNullConstraint(fullTableName, prepareName(columnName)));
-    const removeNotNullConstraint = _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const oldName = jsonSchema.compMod.oldField.name;
-            const shouldRemoveForOldName = columnNamesToRemoveNotNullConstraint.includes(oldName);
-            const shouldAddForNewName = columnNamesToAddNotNullConstraint.includes(name);
-            return shouldRemoveForOldName && !shouldAddForNewName;
-        })
-        .map(([name]) => ddlProvider.dropNotNullConstraint(fullTableName, prepareName(name)));
-
-    return [...addNotNullConstraintsScript, ...removeNotNullConstraint];
-}
-
-/**
- * @param columnName {string}
- * @return string
- * */
-const getCheckConstraintNameForDdlProvider = (columnName) => {
-    const columnNameNoTicks = columnName.replaceAll('`', '');
-    const constraintName = `${columnNameNoTicks}_constraint`;
-    return wrapInTicks(constraintName);
-}
-
-const getModifyCheckConstraintsScripts = (_) => (collection, ddlProvider) => {
-    const fullTableName = generateFullEntityName(collection);
-
-    const addCheckConstraintsScripts = _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const oldName = jsonSchema.compMod.oldField.name;
-            const currentCheckConstraintOnColumn = jsonSchema.check;
-            const previousCheckConstraintOnColumn = collection.role.properties[oldName]?.check;
-            return currentCheckConstraintOnColumn && !previousCheckConstraintOnColumn;
-        })
-        .map(([columnName, jsonSchema]) => {
-            const constraintName = getCheckConstraintNameForDdlProvider(columnName);
-            return ddlProvider.setCheckConstraint(fullTableName, constraintName, jsonSchema.check);
-        });
-
-    const modifyCheckConstraintsScripts = _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const oldName = jsonSchema.compMod.oldField.name;
-            const currentCheckConstraintOnColumn = jsonSchema.check;
-            const previousCheckConstraintOnColumn = collection.role.properties[oldName]?.check;
-            return currentCheckConstraintOnColumn && previousCheckConstraintOnColumn
-                && currentCheckConstraintOnColumn !== previousCheckConstraintOnColumn;
-        })
-        .map(([columnName, jsonSchema]) => {
-            const oldColumnName = jsonSchema.compMod.oldField.name;
-            const oldConstraintName = getCheckConstraintNameForDdlProvider(oldColumnName);
-            const dropOldConstraint = ddlProvider.dropCheckConstraint(fullTableName, oldConstraintName);
-
-            const newConstraintName = getCheckConstraintNameForDdlProvider(columnName);
-            const createNewConstraint = ddlProvider.setCheckConstraint(fullTableName, newConstraintName, jsonSchema.check);
-
-            return [dropOldConstraint, createNewConstraint];
-        })
-        .flat();
-
-    const removeCheckConstraintScripts = _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const oldName = jsonSchema.compMod.oldField.name;
-            const currentCheckConstraintOnColumn = jsonSchema.check;
-            const previousCheckConstraintOnColumn = collection.role.properties[oldName]?.check;
-            return previousCheckConstraintOnColumn && !currentCheckConstraintOnColumn;
-        })
-        .map(([name]) => {
-            const constraintName = getCheckConstraintNameForDdlProvider(name);
-            return ddlProvider.dropCheckConstraint(fullTableName, constraintName);
-        });
-
-    return [...addCheckConstraintsScripts, ...modifyCheckConstraintsScripts, ...removeCheckConstraintScripts];
-}
-
 const getModifyColumnsScripts = (definitions, ddlProvider) => collection => {
     setDependencies(dependencies);
     const properties = _.get(collection, 'properties', {});
@@ -430,8 +331,6 @@ const getModifyColumnsScripts = (definitions, ddlProvider) => collection => {
 
     const fullCollectionName = generateFullEntityName(collection);
     const modifiedCommentOnColumnsScripts = getModifiedCommentOnColumnScripts(_)(collection, ddlProvider);
-    const modifyNotNullConstraintsScripts = getModifyNonNullColumnsScripts(_)(collection, ddlProvider);
-    const modifyCheckConstraintsScripts = getModifyCheckConstraintsScripts(_)(collection, ddlProvider);
     const {columnsToDelete, columnsToAdd} = hydrateAlterColumnType(properties);
     const {columns: columnsInfo} = getColumns(entityData.role, true, definitions);
     const deleteColumnScripts = _.map(columnsToDelete, column => ddlProvider.dropTableColumn({
@@ -451,8 +350,6 @@ const getModifyColumnsScripts = (definitions, ddlProvider) => collection => {
             ...modifyPaired,
             ...alterColumnScripts,
             ...modifiedCommentOnColumnsScripts,
-            ...modifyNotNullConstraintsScripts,
-            ...modifyCheckConstraintsScripts,
             ...modifiedScript.script,
             addIndexScript
         );
@@ -481,8 +378,6 @@ const getModifyColumnsScriptsForOlderRuntime = (definitions, ddlProvider) => col
 
     const {columnsToDelete} = hydrateAlterColumnType(properties);
     const modifiedCommentOnColumnsScripts = getModifiedCommentOnColumnScripts(_)(collection, ddlProvider);
-    const modifyNotNullConstraintsScripts = getModifyNonNullColumnsScripts(_)(collection, ddlProvider);
-    const modifyCheckConstraintsScripts = getModifyCheckConstraintsScripts(_)(collection, ddlProvider);
     let tableModificationScripts = [];
     if (!_.isEmpty(columnsToDelete)) {
         const fullCollectionName = generateFullEntityName(collection);
@@ -499,8 +394,6 @@ const getModifyColumnsScriptsForOlderRuntime = (definitions, ddlProvider) => col
             ...tableModificationScripts,
             ...alterColumnScripts,
             ...modifiedCommentOnColumnsScripts,
-            ...modifyNotNullConstraintsScripts,
-            ...modifyCheckConstraintsScripts,
             ...modifiedScript.script,
             addIndexScript
         );
@@ -510,7 +403,6 @@ module.exports = {
     getAddCollectionsScripts,
     getDeleteCollectionsScripts,
     getModifyCollectionsScripts,
-    getModifyCollectionCommentsScripts,
     getAddColumnsScripts,
     getDeleteColumnsScripts,
     getDeleteColumnScripsForOlderRuntime,
