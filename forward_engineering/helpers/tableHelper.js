@@ -325,7 +325,7 @@ const getCorrectUsing = using => {
 		case 'textfile':
 			return 'TEXT'
 		default:
-			return 'delta';
+			return 'DELTA';
 	}
 }
 
