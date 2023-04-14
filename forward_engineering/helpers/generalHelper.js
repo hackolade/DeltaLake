@@ -4,13 +4,6 @@ const RESERVED_WORDS = require('./reserverWords');
 const sqlFormatter = require('sql-formatter');
 const { dependencies } = require('./appDependencies');
 const {DROP_STATEMENTS} = require("./constants");
-const {EntitiesThatSupportComments} = require("./alterScriptHelpers/enums/entityType");
-
-const entitiesThatSupportCommentsAsRegexComponent = Object.values(EntitiesThatSupportComments)
-	.join('|');
-const dropCommentOnDatabaseEntityScriptRegex = new RegExp(
-	`COMMENT ON (${entitiesThatSupportCommentsAsRegexComponent}) .+ IS NULL;`, 'g');
-const dropCommentOnTableColumnRegex = /ALTER TABLE .+ ALTER COLUMN .+ COMMENT '';/g;
 
 let _;
 
@@ -91,15 +84,7 @@ const getTypeDescriptor = (typeName) => {
  * @return boolean
  * */
 const isScriptADropStatement = (script) => {
-	const containsDropStatement = DROP_STATEMENTS.some(statement => script.includes(statement));
-	if (containsDropStatement) {
-		return true;
-	}
-	const isADatabaseEntityDropStatement = dropCommentOnDatabaseEntityScriptRegex.test(script);
-	if (isADatabaseEntityDropStatement) {
-		return true;
-	}
-	return dropCommentOnTableColumnRegex.test(script);
+	return DROP_STATEMENTS.some(statement => script.includes(statement));
 }
 
 /**
@@ -180,6 +165,10 @@ const wrapInSingleQuotes = (str = '') => {
 	return `'${encodeStringLiteral(str)}'`;
 }
 
+const wrapInTicks = (str = '') => {
+	return `\`${str}\``;
+}
+
 const buildScript = (statements) => {
 	const script = statements.filter((statement) => statement).join('\n\n');
 	const formattedScript = sqlFormatter.format(script, { indent: '    '}) + '\n';
@@ -202,5 +191,6 @@ module.exports = {
 	encodeStringLiteral,
 	buildScript,
 	wrapInSingleQuotes,
+	wrapInTicks,
 	doesScriptContainDropStatement
 };
