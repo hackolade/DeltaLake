@@ -356,10 +356,6 @@ making sure that you maintain a proper JSON format.
 						{
 							"key": "rowFormat",
 							"value": "SerDe"
-						},
-						{
-							"key": "storedAsTable",
-							"value": "textfile"
 						}
 					]
 				}

@@ -54,12 +54,14 @@ const getCreateStatement = ({
 const getCreateUsingStatement = ({
 	tempExtStatement, fullTableName, using, columnStatement, primaryKeyStatement, comment, partitionedByKeys,
 	clusteredKeys, sortedKeys, numBuckets, location, tableProperties, selectStatement,
-	isActivated, tableOptions, isNotExistsStatement,
+	isActivated, tableOptions, isNotExistsStatement, rowFormatStatement, storedAsStatement,
 }) => {
 	return buildStatement(`CREATE${tempExtStatement}TABLE${isNotExistsStatement} ${fullTableName} (`, isActivated)
 		(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))
 		(true, ')')
-		(using, `USING ${getCorrectUsing(using)}`)
+		(using, `${getUsing(using)}`)
+		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
+		(storedAsStatement, storedAsStatement)
 		(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)
 		(clusteredKeys, `CLUSTERED BY (${clusteredKeys})`)
 		(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)
@@ -106,7 +108,7 @@ const getCreateLikeStatement = ({
 		(primaryKeyStatement, primaryKeyStatement)
 		(foreignKeyStatement, foreignKeyStatement)
 		(true, ')')
-		(using, `USING ${getCorrectUsing(using)}`)
+		(using, `${getUsing(using)}`)
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
 		(storedAsStatement, storedAsStatement)
 		(tableProperties, `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)
@@ -296,10 +298,16 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, a
 	return removeRedundantTrailingCommaFromStatement(tableStatement);
 };
 
+const getUsing = using => {
+	if (using === 'delta') {
+		return '';
+	}
+
+	return `USING ${getCorrectUsing(using)}`;
+};
+
 const getCorrectUsing = using => {
 	switch (using) {
-		case 'delta':
-			return 'DELTA'
 		case 'CSVfile':
 			return 'CSV'
 		case 'Hive':
@@ -317,7 +325,7 @@ const getCorrectUsing = using => {
 		case 'textfile':
 			return 'TEXT'
 		default:
-			return '';
+			return 'DELTA';
 	}
 }
 
