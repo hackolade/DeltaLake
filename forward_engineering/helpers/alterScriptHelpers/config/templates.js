@@ -25,6 +25,10 @@ module.exports = {
 
 	dropNotNullConstraint: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} DROP NOT NULL;',
 
+	addCheckConstraint: 'ALTER TABLE ${tableName} ADD CONSTRAINT ${constraintName} CHECK (${check});',
+
+	dropCheckConstraint: 'ALTER TABLE ${tableName} DROP CONSTRAINT IF EXISTS ${constraintName};',
+
 	addTableColumns: 'ALTER TABLE ${name} ADD COLUMNS (${columns});',
 
 	addTableColumn: 'ALTER TABLE ${name} ADD COLUMN (${column});',
