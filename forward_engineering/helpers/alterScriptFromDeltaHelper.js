@@ -11,13 +11,14 @@ const {
 	getDeleteColumnScripsForOlderRuntime,
 	getModifyColumnsScriptsForOlderRuntime,
 	getAddColumnsScripts,
-	getModifyColumnsScripts, getModifyCollectionCommentsScripts
+	getModifyColumnsScripts
 } = require('./alterScriptHelpers/alterEntityHelper');
 const {
 	getAddViewsScripts,
 	getDeleteViewsScripts,
 	getModifyViewsScripts,
 } = require('./alterScriptHelpers/alterViewHelper');
+const { DROP_STATEMENTS } = require('./constants');
 const { commentDeactivatedStatements, buildScript, doesScriptContainDropStatement} = require('./generalHelper');
 const { getDBVersionNumber } = require('./alterScriptHelpers/common');
 
@@ -64,8 +65,6 @@ const getAlterCollectionsScripts = ({ schema, definitions, provider, data }) => 
 		'modified',
 		getModifyCollectionsScripts(definitions, provider)
 	);
-	const modifiedCollectionCommentsScripts = getItems(schema, 'entities', 'modified')
-		.flatMap(item => getModifyCollectionCommentsScripts(provider)(item));
 
 	const addedColumnsScripts = getColumnScripts(
 		getItems(schema, 'entities', 'added'),
@@ -84,7 +83,6 @@ const getAlterCollectionsScripts = ({ schema, definitions, provider, data }) => 
 		...deletedCollectionsScripts,
 		...addedCollectionsScripts,
 		...modifiedCollectionsScripts,
-		...modifiedCollectionCommentsScripts,
 		...deletedColumnsScripts,
 		...addedColumnsScripts,
 		...modifiedColumnsScripts,
