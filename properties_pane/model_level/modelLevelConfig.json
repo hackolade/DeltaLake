@@ -146,6 +146,17 @@ making sure that you maintain a proper JSON format.
 				]
 			},
 			{
+				"propertyName": "Modeling methodology",
+				"propertyKeyword": "modelingMethodology",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"Relational",
+					"Dimensional",
+					"Vault"
+				]
+			},
+			{
 				"propertyName": "Host",
 				"propertyKeyword": "host",
 				"shouldValidate": false,
