@@ -106,7 +106,7 @@ const getAddPkScripts = (_, ddlProvider) => (collection) => {
         .filter(([name, jsonSchema]) => {
             const isRegularPrimaryKey = jsonSchema.primaryKey && !jsonSchema.compositePrimaryKey;
             const oldName = jsonSchema.compMod.oldField.name;
-            const wasTheFieldAPrimaryKey = collection.role.properties[oldName]?.primaryKey;
+            const wasTheFieldAPrimaryKey = Boolean(collection.role.properties[oldName]?.primaryKey);
             return isRegularPrimaryKey && !wasTheFieldAPrimaryKey;
         })
         .map(([name, jsonSchema]) => {
@@ -125,10 +125,11 @@ const getDropPkScripts = (_, ddlProvider) => (collection) => {
     return _.toPairs(collection.properties)
         .filter(([name, jsonSchema]) => {
             const oldName = jsonSchema.compMod.oldField.name;
-            const wasTheFieldAPrimaryKey = Boolean(collection.role.properties[oldName]?.primaryKey);
+            const oldJsonSchema = collection.role.properties[oldName];
+            const wasTheFieldARegularPrimaryKey = oldJsonSchema?.primaryKey && !oldJsonSchema?.compositePrimaryKey;
 
             const isNotAPrimaryKey = !jsonSchema.primaryKey && !jsonSchema.compositePrimaryKey;
-            return wasTheFieldAPrimaryKey && isNotAPrimaryKey;
+            return wasTheFieldARegularPrimaryKey && isNotAPrimaryKey;
         })
         .map(([name, jsonSchema]) => {
             return ddlProvider.dropPkConstraint(fullTableName);
