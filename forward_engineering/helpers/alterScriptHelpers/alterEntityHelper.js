@@ -124,8 +124,6 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
         return {type: 'new', script: prepareScript(deleteCollectionScript, addCollectionScript)};
     }
 
-    const alterPkConstraintsScripts = getModifyPkConstraintsScripts(_, ddlProvider)(collection);
-
     const dataProperties = _.get(compMod, 'tableProperties', '');
     const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
     const hydratedTableProperties = hydrateTableProperties(dataProperties, fullCollectionName);
@@ -137,7 +135,6 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
         script: prepareScript(
             alterTableNameScript,
             ...tablePropertiesScript,
-            ...alterPkConstraintsScripts,
             serDeProperties
         )
     };
@@ -335,6 +332,7 @@ module.exports = {
     getDeleteCollectionsScripts,
     getModifyCollectionsScripts,
     getModifyCollectionCommentsScripts,
+    getModifyPkConstraintsScripts,
     getAddColumnsScripts,
     getDeleteColumnsScripts,
     getDeleteColumnScripsForOlderRuntime,

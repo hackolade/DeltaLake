@@ -98,11 +98,66 @@ const getModifyCompositePkScripts = (_, ddlProvider) => (collection) => {
 /**
  * @return {(collection: Object) => Array<string>}
  * */
+const getAddPkScripts = (_, ddlProvider) => (collection) => {
+    const fullTableName = generateFullEntityName(collection);
+    const constraintName = getEntityNameFromCollection(collection) + '_pk';
+
+    return _.toPairs(collection.properties)
+        .filter(([name, jsonSchema]) => {
+            const isRegularPrimaryKey = jsonSchema.primaryKey && !jsonSchema.compositePrimaryKey;
+            const oldName = jsonSchema.compMod.oldField.name;
+            const wasTheFieldAPrimaryKey = collection.role.properties[oldName]?.primaryKey;
+            return isRegularPrimaryKey && !wasTheFieldAPrimaryKey;
+        })
+        .map(([name, jsonSchema]) => {
+            const nameForDDl = prepareName(name);
+            const columnNamesForDDL = [nameForDDl];
+            return ddlProvider.addPkConstraint(fullTableName, constraintName, columnNamesForDDL);
+        });
+}
+
+/**
+ * @return {(collection: Object) => Array<string>}
+ * */
+const getDropPkScripts = (_, ddlProvider) => (collection) => {
+    const fullTableName = generateFullEntityName(collection);
+
+    return _.toPairs(collection.properties)
+        .filter(([name, jsonSchema]) => {
+            const oldName = jsonSchema.compMod.oldField.name;
+            const wasTheFieldAPrimaryKey = Boolean(collection.role.properties[oldName]?.primaryKey);
+
+            const isNotAPrimaryKey = !jsonSchema.primaryKey && !jsonSchema.compositePrimaryKey;
+            return wasTheFieldAPrimaryKey && isNotAPrimaryKey;
+        })
+        .map(([name, jsonSchema]) => {
+            return ddlProvider.dropPkConstraint(fullTableName);
+        });
+}
+
+/**
+ * @return {(collection: Object) => Array<string>}
+ * */
+const getModifyPkScripts = (_, ddlProvider) => (collection) => {
+    const dropPkScripts = getDropPkScripts(_, ddlProvider)(collection);
+    const addPkScripts = getAddPkScripts(_, ddlProvider)(collection);
+
+    return [
+        ...dropPkScripts,
+        ...addPkScripts,
+    ];
+}
+
+/**
+ * @return {(collection: Object) => Array<string>}
+ * */
 const getModifyPkConstraintsScripts = (_, ddlProvider) => (collection) => {
     const modifyCompositePkScripts = getModifyCompositePkScripts(_, ddlProvider)(collection);
+    const modifyPkScripts = getModifyPkScripts(_, ddlProvider)(collection);
 
     return [
         ...modifyCompositePkScripts,
+        ...modifyPkScripts,
     ]
 }
 

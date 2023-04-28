@@ -20,6 +20,7 @@ const {
 } = require('./alterScriptHelpers/alterViewHelper');
 const { commentDeactivatedStatements, buildScript, doesScriptContainDropStatement} = require('./generalHelper');
 const { getDBVersionNumber } = require('./alterScriptHelpers/common');
+const {getModifyPkConstraintsScripts} = require("./alterScriptHelpers/entityHelpers/primaryKeyHelper");
 
 const getItems = (entity, nameProperty, modify) =>
 	[]
@@ -40,7 +41,7 @@ const getAlterContainersScripts = (schema, provider) => {
 	return [...deletedScripts, ...addedScripts, ...modifiedScripts];
 };
 
-const getAlterCollectionsScripts = ({ schema, definitions, provider, data }) => {
+const getAlterCollectionsScripts = ({ schema, definitions, provider, data, _ }) => {
 	const getCollectionScripts = (items, compMode, getScript) =>
 		items.filter(item => item.compMod?.[compMode]).flatMap(getScript);
 
@@ -66,6 +67,8 @@ const getAlterCollectionsScripts = ({ schema, definitions, provider, data }) => 
 	);
 	const modifiedCollectionCommentsScripts = getItems(schema, 'entities', 'modified')
 		.flatMap(item => getModifyCollectionCommentsScripts(provider)(item));
+	const modifiedCollectionPrimaryKeysScripts = getItems(schema, 'entities', 'modified')
+		.flatMap(item => getModifyPkConstraintsScripts(_, provider)(item));
 
 	const addedColumnsScripts = getColumnScripts(
 		getItems(schema, 'entities', 'added'),
@@ -85,6 +88,7 @@ const getAlterCollectionsScripts = ({ schema, definitions, provider, data }) => 
 		...addedCollectionsScripts,
 		...modifiedCollectionsScripts,
 		...modifiedCollectionCommentsScripts,
+		...modifiedCollectionPrimaryKeysScripts,
 		...deletedColumnsScripts,
 		...addedColumnsScripts,
 		...modifiedColumnsScripts,
@@ -125,8 +129,9 @@ const getAlterViewsScripts = (schema, provider) => {
 
 const getAlterScript = (schema, definitions, data, app) => {
 	const provider = require('./alterScriptHelpers/provider')(app);
+	const _ = app.require('lodash');
 	const containersScripts = getAlterContainersScripts(schema, provider);
-	const collectionsScripts = getAlterCollectionsScripts({ schema, definitions, provider, data });
+	const collectionsScripts = getAlterCollectionsScripts({ schema, definitions, provider, data, _ });
 	const viewsScripts = getAlterViewsScripts(schema, provider);
 	let scripts = containersScripts.concat(collectionsScripts, viewsScripts).filter(Boolean).map(script => script.trim());
 	scripts = getCommentedDropScript(scripts, data);
