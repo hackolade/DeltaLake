@@ -12,8 +12,10 @@ const {
     getEntityName,
     prepareScript
 } = require('./generalHelper');
-const {wrapInSingleQuotes, prepareName, wrapInTicks} = require("../generalHelper");
-const {EntitiesThatSupportComments} = require("./enums/entityType");
+const {getModifyCollectionCommentsScripts} = require('./entityHelpers/commentsHelper');
+const {getModifyCheckConstraintsScripts} = require("./columnHelpers/checkConstraintHelper");
+const {getModifyNonNullColumnsScripts} = require("./columnHelpers/nonNullConstraintHelper");
+const {getModifiedCommentOnColumnScripts} = require("./columnHelpers/commentsHelper");
 
 let _;
 const setDependencies = ({lodash}) => _ = lodash;
@@ -106,43 +108,6 @@ const hydrateCollection = (entity, definitions) => {
     return [[containerData], [entityData], {...entityData, properties}, definitions];
 };
 
-const getUpdatedCommentOnCollectionScript = (collection, ddlProvider) => {
-    const descriptionInfo = collection?.role.compMod?.description;
-    if (!descriptionInfo) {
-        return '';
-    }
-
-    const {old: oldComment, new: newComment} = descriptionInfo;
-    if (!newComment || newComment === oldComment) {
-        return '';
-    }
-
-    const scriptGenerationConfig = {
-        entityType: EntitiesThatSupportComments.TABLE,
-        entityName: generateFullEntityName(collection),
-        comment: wrapInSingleQuotes(newComment),
-    }
-    return ddlProvider.updateComment(scriptGenerationConfig);
-}
-
-const getDeletedCommentOnCollectionScript = (collection, ddlProvider) => {
-    const descriptionInfo = collection?.role.compMod?.description;
-    if (!descriptionInfo) {
-        return '';
-    }
-
-    const {old: oldComment, new: newComment} = descriptionInfo;
-    if (!oldComment || newComment) {
-        return '';
-    }
-
-    const scriptGenerationConfig = {
-        entityType: EntitiesThatSupportComments.TABLE,
-        entityName: generateFullEntityName(collection),
-    }
-    return ddlProvider.dropComment(scriptGenerationConfig);
-}
-
 const generateModifyCollectionScript = (collection, definitions, ddlProvider) => {
     const compMod = _.get(collection, 'role.compMod', {});
     const isChangedProperties = getIsChangeProperties(compMod, tableProperties);
@@ -206,20 +171,6 @@ const getModifyCollectionsScripts = (definitions, ddlProvider) => collection => 
     return prepareScript(dropIndexScript, ...script, addIndexScript);
 };
 
-/**
- * @return {(x: Object) => Array<string>}
- * */
-const getModifyCollectionCommentsScripts = (ddlProvider) => collection => {
-    setDependencies(dependencies);
-    const updatedCommentScript = getUpdatedCommentOnCollectionScript(collection, ddlProvider);
-    const deletedCommentScript = getDeletedCommentOnCollectionScript(collection, ddlProvider);
-
-    return prepareScript(
-        updatedCommentScript,
-        deletedCommentScript
-    );
-};
-
 const getAddColumnsScripts = (definitions, provider) => entity => {
     setDependencies(dependencies);
     const entityData = {...entity, ..._.omit(entity.role, ['properties'])};
@@ -275,137 +226,6 @@ const getDeleteColumnScripsForOlderRuntime = (definitions, provider) => entity =
 
     return prepareScript(dropIndexScript, deleteCollectionScript, addCollectionScript, addIndexScript);
 };
-
-const getUpdatedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
-    return _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const newComment = jsonSchema.description;
-            const oldName = jsonSchema.compMod.oldField.name;
-            const oldComment = collection.role.properties[oldName]?.description;
-            return newComment && (!oldComment || newComment !== oldComment);
-        })
-        .map(([name, jsonSchema]) => {
-            const newComment = jsonSchema.description;
-            const scriptGenerationConfig = {
-                fullTableName: generateFullEntityName(collection),
-                columnName: prepareName(name),
-                comment: wrapInSingleQuotes(newComment),
-            }
-            return ddlProvider.updateCommentOnColumn(scriptGenerationConfig);
-        });
-}
-
-const getDeletedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
-    return _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const newComment = jsonSchema.description;
-            const oldName = jsonSchema.compMod.oldField.name;
-            const oldComment = collection.role.properties[oldName]?.description;
-            return oldComment && !newComment;
-        })
-        .map(([name, jsonSchema]) => {
-            const scriptGenerationConfig = {
-                fullTableName: generateFullEntityName(collection),
-                columnName: prepareName(name),
-            }
-            return ddlProvider.dropCommentOnColumn(scriptGenerationConfig);
-        });
-}
-
-const getModifiedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
-    const updatedCommentScripts = getUpdatedCommentOnColumnScripts(_)(collection, ddlProvider);
-    const deletedCommentScripts = getDeletedCommentOnColumnScripts(_)(collection, ddlProvider);
-    return [...updatedCommentScripts, ...deletedCommentScripts];
-}
-
-const getModifyNonNullColumnsScripts = (_) => (collection, ddlProvider) => {
-    const fullTableName = generateFullEntityName(collection);
-
-    const currentRequiredColumnNames = collection.required || [];
-    const previousRequiredColumnNames = collection.role.required || [];
-
-    const columnNamesToAddNotNullConstraint = _.difference(currentRequiredColumnNames, previousRequiredColumnNames);
-    const columnNamesToRemoveNotNullConstraint = _.difference(previousRequiredColumnNames, currentRequiredColumnNames);
-
-    const addNotNullConstraintsScript = _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const oldName = jsonSchema.compMod.oldField.name;
-            const shouldRemoveForOldName = columnNamesToRemoveNotNullConstraint.includes(oldName);
-            const shouldAddForNewName = columnNamesToAddNotNullConstraint.includes(name);
-            return shouldAddForNewName && !shouldRemoveForOldName;
-        })
-        .map(([columnName]) => ddlProvider.setNotNullConstraint(fullTableName, prepareName(columnName)));
-    const removeNotNullConstraint = _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const oldName = jsonSchema.compMod.oldField.name;
-            const shouldRemoveForOldName = columnNamesToRemoveNotNullConstraint.includes(oldName);
-            const shouldAddForNewName = columnNamesToAddNotNullConstraint.includes(name);
-            return shouldRemoveForOldName && !shouldAddForNewName;
-        })
-        .map(([name]) => ddlProvider.dropNotNullConstraint(fullTableName, prepareName(name)));
-
-    return [...addNotNullConstraintsScript, ...removeNotNullConstraint];
-}
-
-/**
- * @param columnName {string}
- * @return string
- * */
-const getCheckConstraintNameForDdlProvider = (columnName) => {
-    const columnNameNoTicks = columnName.replaceAll('`', '');
-    const constraintName = `${columnNameNoTicks}_constraint`;
-    return wrapInTicks(constraintName);
-}
-
-const getModifyCheckConstraintsScripts = (_) => (collection, ddlProvider) => {
-    const fullTableName = generateFullEntityName(collection);
-
-    const addCheckConstraintsScripts = _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const oldName = jsonSchema.compMod.oldField.name;
-            const currentCheckConstraintOnColumn = jsonSchema.check;
-            const previousCheckConstraintOnColumn = collection.role.properties[oldName]?.check;
-            return currentCheckConstraintOnColumn && !previousCheckConstraintOnColumn;
-        })
-        .map(([columnName, jsonSchema]) => {
-            const constraintName = getCheckConstraintNameForDdlProvider(columnName);
-            return ddlProvider.setCheckConstraint(fullTableName, constraintName, jsonSchema.check);
-        });
-
-    const modifyCheckConstraintsScripts = _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const oldName = jsonSchema.compMod.oldField.name;
-            const currentCheckConstraintOnColumn = jsonSchema.check;
-            const previousCheckConstraintOnColumn = collection.role.properties[oldName]?.check;
-            return currentCheckConstraintOnColumn && previousCheckConstraintOnColumn
-                && currentCheckConstraintOnColumn !== previousCheckConstraintOnColumn;
-        })
-        .map(([columnName, jsonSchema]) => {
-            const oldColumnName = jsonSchema.compMod.oldField.name;
-            const oldConstraintName = getCheckConstraintNameForDdlProvider(oldColumnName);
-            const dropOldConstraint = ddlProvider.dropCheckConstraint(fullTableName, oldConstraintName);
-
-            const newConstraintName = getCheckConstraintNameForDdlProvider(columnName);
-            const createNewConstraint = ddlProvider.setCheckConstraint(fullTableName, newConstraintName, jsonSchema.check);
-
-            return [dropOldConstraint, createNewConstraint];
-        })
-        .flat();
-
-    const removeCheckConstraintScripts = _.toPairs(collection.properties)
-        .filter(([name, jsonSchema]) => {
-            const oldName = jsonSchema.compMod.oldField.name;
-            const currentCheckConstraintOnColumn = jsonSchema.check;
-            const previousCheckConstraintOnColumn = collection.role.properties[oldName]?.check;
-            return previousCheckConstraintOnColumn && !currentCheckConstraintOnColumn;
-        })
-        .map(([name]) => {
-            const constraintName = getCheckConstraintNameForDdlProvider(name);
-            return ddlProvider.dropCheckConstraint(fullTableName, constraintName);
-        });
-
-    return [...addCheckConstraintsScripts, ...modifyCheckConstraintsScripts, ...removeCheckConstraintScripts];
-}
 
 const getModifyColumnsScripts = (definitions, ddlProvider) => collection => {
     setDependencies(dependencies);
