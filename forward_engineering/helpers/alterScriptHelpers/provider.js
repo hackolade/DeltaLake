@@ -191,7 +191,42 @@ module.exports = app => {
 			}
 
 			return script;
-		}
+		},
+
+		/**
+		 * @param tableName {string}
+		 * @param constraintName {string}
+		 * @param pkColumnNames {Array<string>}
+		 * @return string
+		 * */
+		addPkConstraint(tableName, constraintName, pkColumnNames) {
+			const pkColumns = pkColumnNames.join(', ');
+			const templateConfig = {
+				tableName,
+				constraintName,
+				pkColumns,
+			}
+			return assignTemplates(
+				templates.addPkConstraint,
+				templateConfig,
+			);
+		},
+
+		/**
+		 * @param tableName {string}
+		 * @param dropPkOption {undefined | 'RESTRICT' | 'CASCADE'}
+		 * @return string
+		 * */
+		dropPkConstraint(tableName, dropPkOption) {
+			const templateConfig = {
+				tableName,
+				dropPkOption: dropPkOption || '',
+			}
+			return assignTemplates(
+				templates.dropPkConstraint,
+				templateConfig,
+			).trim();
+		},
 
 	}
 };

@@ -1,7 +1,7 @@
 const {generateFullEntityName} = require("../generalHelper");
 const {prepareName, wrapInSingleQuotes} = require("../../generalHelper");
 
-const getUpdatedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
+const getUpdatedCommentOnColumnScripts = (_, ddlProvider) => (collection) => {
     return _.toPairs(collection.properties)
         .filter(([name, jsonSchema]) => {
             const newComment = jsonSchema.description;
@@ -20,7 +20,7 @@ const getUpdatedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
         });
 }
 
-const getDeletedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
+const getDeletedCommentOnColumnScripts = (_, ddlProvider) => (collection) => {
     return _.toPairs(collection.properties)
         .filter(([name, jsonSchema]) => {
             const newComment = jsonSchema.description;
@@ -37,9 +37,9 @@ const getDeletedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
         });
 }
 
-const getModifiedCommentOnColumnScripts = (_) => (collection, ddlProvider) => {
-    const updatedCommentScripts = getUpdatedCommentOnColumnScripts(_)(collection, ddlProvider);
-    const deletedCommentScripts = getDeletedCommentOnColumnScripts(_)(collection, ddlProvider);
+const getModifiedCommentOnColumnScripts = (_, ddlProvider) => (collection) => {
+    const updatedCommentScripts = getUpdatedCommentOnColumnScripts(_, ddlProvider)(collection);
+    const deletedCommentScripts = getDeletedCommentOnColumnScripts(_, ddlProvider)(collection);
     return [...updatedCommentScripts, ...deletedCommentScripts];
 }
 

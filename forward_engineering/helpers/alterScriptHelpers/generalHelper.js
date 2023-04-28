@@ -6,7 +6,7 @@ const setDependencies = ({ lodash }) => _ = lodash;
 
 const getContainerName = compMod => compMod.keyspaceName;
 
-const getEntityData = (object, properties = [], type = 'new') => 
+const getEntityData = (object, properties = [], type = 'new') =>
 	properties.reduce((transformObject, property) => {
 		const value = object[property]?.[type];
 		return {
@@ -25,6 +25,12 @@ const generateFullEntityName = entity => {
 	const entityName = replaceSpaceWithUnderscore(getName(entityData));
 	return getFullEntityName(dbName, entityName);
 };
+
+const getEntityNameFromCollection = (collection) => {
+	setDependencies(dependencies);
+	const entityData = _.get(collection, 'role', {});
+	return replaceSpaceWithUnderscore(getName(entityData));
+}
 
 const getEntityProperties = entity => {
 	setDependencies(dependencies);
@@ -46,6 +52,7 @@ module.exports = {
 	getEntityData,
 	getFullEntityName,
 	generateFullEntityName,
+	getEntityNameFromCollection,
 	getEntityProperties,
 	getContainerName,
 	getEntityName,

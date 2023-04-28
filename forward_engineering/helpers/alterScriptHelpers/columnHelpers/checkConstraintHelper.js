@@ -12,7 +12,7 @@ const getCheckConstraintNameForDdlProvider = (columnName) => {
 }
 
 
-const getModifyCheckConstraintsScripts = (_) => (collection, ddlProvider) => {
+const getModifyCheckConstraintsScripts = (_, ddlProvider) => (collection) => {
     const fullTableName = generateFullEntityName(collection);
 
     const addCheckConstraintsScripts = _.toPairs(collection.properties)

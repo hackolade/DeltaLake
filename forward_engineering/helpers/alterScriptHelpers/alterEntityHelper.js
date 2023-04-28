@@ -16,6 +16,7 @@ const {getModifyCollectionCommentsScripts} = require('./entityHelpers/commentsHe
 const {getModifyCheckConstraintsScripts} = require("./columnHelpers/checkConstraintHelper");
 const {getModifyNonNullColumnsScripts} = require("./columnHelpers/nonNullConstraintHelper");
 const {getModifiedCommentOnColumnScripts} = require("./columnHelpers/commentsHelper");
+const {getModifyPkConstraintsScripts} = require("./entityHelpers/primaryKeyHelper");
 
 let _;
 const setDependencies = ({lodash}) => _ = lodash;
@@ -123,6 +124,8 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
         return {type: 'new', script: prepareScript(deleteCollectionScript, addCollectionScript)};
     }
 
+    const alterPkConstraintsScripts = getModifyPkConstraintsScripts(_, ddlProvider)(collection);
+
     const dataProperties = _.get(compMod, 'tableProperties', '');
     const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
     const hydratedTableProperties = hydrateTableProperties(dataProperties, fullCollectionName);
@@ -134,6 +137,7 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
         script: prepareScript(
             alterTableNameScript,
             ...tablePropertiesScript,
+            ...alterPkConstraintsScripts,
             serDeProperties
         )
     };
@@ -249,9 +253,9 @@ const getModifyColumnsScripts = (definitions, ddlProvider) => collection => {
     const addIndexScript = getIndexes(...hydratedAddIndex);
 
     const fullCollectionName = generateFullEntityName(collection);
-    const modifiedCommentOnColumnsScripts = getModifiedCommentOnColumnScripts(_)(collection, ddlProvider);
-    const modifyNotNullConstraintsScripts = getModifyNonNullColumnsScripts(_)(collection, ddlProvider);
-    const modifyCheckConstraintsScripts = getModifyCheckConstraintsScripts(_)(collection, ddlProvider);
+    const modifiedCommentOnColumnsScripts = getModifiedCommentOnColumnScripts(_, ddlProvider)(collection);
+    const modifyNotNullConstraintsScripts = getModifyNonNullColumnsScripts(_, ddlProvider)(collection);
+    const modifyCheckConstraintsScripts = getModifyCheckConstraintsScripts(_, ddlProvider)(collection);
     const {columnsToDelete, columnsToAdd} = hydrateAlterColumnType(properties);
     const {columns: columnsInfo} = getColumns(entityData.role, true, definitions);
     const deleteColumnScripts = _.map(columnsToDelete, column => ddlProvider.dropTableColumn({
@@ -300,9 +304,9 @@ const getModifyColumnsScriptsForOlderRuntime = (definitions, ddlProvider) => col
     const addIndexScript = getIndexes(...hydratedAddIndex);
 
     const {columnsToDelete} = hydrateAlterColumnType(properties);
-    const modifiedCommentOnColumnsScripts = getModifiedCommentOnColumnScripts(_)(collection, ddlProvider);
-    const modifyNotNullConstraintsScripts = getModifyNonNullColumnsScripts(_)(collection, ddlProvider);
-    const modifyCheckConstraintsScripts = getModifyCheckConstraintsScripts(_)(collection, ddlProvider);
+    const modifiedCommentOnColumnsScripts = getModifiedCommentOnColumnScripts(_, ddlProvider)(collection);
+    const modifyNotNullConstraintsScripts = getModifyNonNullColumnsScripts(_, ddlProvider)(collection);
+    const modifyCheckConstraintsScripts = getModifyCheckConstraintsScripts(_, ddlProvider)(collection);
     let tableModificationScripts = [];
     if (!_.isEmpty(columnsToDelete)) {
         const fullCollectionName = generateFullEntityName(collection);

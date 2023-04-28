@@ -44,7 +44,7 @@ const getModifyContainerScript = provider => container => {
     const didPropertiesChange = getIsChangeProperties({...compMod, name: names}, otherContainerProperties);
     const containerData = {...getContainerData(compMod), name: names.new};
     if (!didPropertiesChange) {
-        const alterCommentsScript = getAlterCommentsScript(container, provider);
+        const alterCommentsScript = getAlterCommentsScript(provider)(container);
         const alterDatabaseScript = getDatabaseAlterStatement([containerData]);
         return [
             alterCommentsScript,

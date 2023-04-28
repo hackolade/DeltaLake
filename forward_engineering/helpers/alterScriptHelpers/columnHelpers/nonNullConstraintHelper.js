@@ -2,7 +2,7 @@ const {generateFullEntityName} = require("../generalHelper");
 const {prepareName} = require("../../generalHelper");
 
 
-const getModifyNonNullColumnsScripts = (_) => (collection, ddlProvider) => {
+const getModifyNonNullColumnsScripts = (_, ddlProvider) => (collection) => {
     const fullTableName = generateFullEntityName(collection);
 
     const currentRequiredColumnNames = collection.required || [];

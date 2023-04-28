@@ -40,7 +40,7 @@ const getDropCommentsScript = (container, ddlProvider) => {
     return '';
 }
 
-const getAlterCommentsScript = (container, ddlProvider) => {
+const getAlterCommentsScript = (ddlProvider) => (container) => {
     const upsertCommentScript = getUpsertCommentsScript(container, ddlProvider);
     const dropCommentScript = getDropCommentsScript(container, ddlProvider);
     return [
