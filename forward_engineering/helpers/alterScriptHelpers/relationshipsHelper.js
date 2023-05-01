@@ -19,7 +19,34 @@ const getEntityColumns = (entity) => {
 }
 
 /**
- * @return {(schema: Object[], deletedRelationships: Array<Object>) => Array<string>}
+ * @return {(modifiedEntities: Object[], addedRelationships: Array<Object>) => Array<string>}
+ * */
+const getAddForeignKeyScripts = (ddlProvider, _) => (modifiedEntities, addedRelationships) => {
+    return addedRelationships
+        .map(relationship => {
+            const childTableId = relationship.role?.childCollection;
+            const childEntity = getEntityById(modifiedEntities, childTableId);
+            if (!childEntity) {
+                return '';
+            }
+            const childEntityName = generateFullEntityName(childEntity);
+            const childEntityColumns = getEntityColumns(childEntity);
+
+            // const addFkConstraintDto = {
+            //     childTableName: childEntityName,
+            //     fkConstraintName,
+            //     childColumns: childEntityColumns,
+            //     parentTableName,
+            //     parentColumns
+            // };
+            // return ddlProvider.addFkConstraint(addFkConstraintDto);
+            return '';
+        })
+        .filter(Boolean);
+}
+
+/**
+ * @return {(modifiedEntities: Object[], deletedRelationships: Array<Object>) => Array<string>}
  * */
 const getDeleteForeignKeyScripts = (ddlProvider, _) => (modifiedEntities, deletedRelationships) => {
     return deletedRelationships
@@ -38,4 +65,5 @@ const getDeleteForeignKeyScripts = (ddlProvider, _) => (modifiedEntities, delete
 
 module.exports = {
     getDeleteForeignKeyScripts,
+    getAddForeignKeyScripts,
 }

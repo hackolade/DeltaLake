@@ -175,7 +175,7 @@ module.exports = app => {
 				const fullNewName = getFullEntityName(dbName, newName);
 				const fullOldName = getFullEntityName(dbName, oldName);
 				script = script.concat(assignTemplates(templates.alterViewName, { oldName: fullOldName, newName: fullNewName }));
-			};
+			}
 			if (!fullName) {
 				return script;
 			}
@@ -229,14 +229,39 @@ module.exports = app => {
 		},
 
 		/**
-		 * @param tableName {string}
-		 * @param fkColumns {Array<string>}
+		 * @param addFkConstraintDto {{
+		 *      childTableName: string,
+		 *      fkConstraintName: string,
+		 *      childColumns: Array<string>,
+		 *      parentTableName: string,
+		 * 	    parentColumns: Array<string>
+		 * }}
 		 * @return string
 		 * */
-		dropFkConstraint(tableName, fkColumns) {
+		addFkConstraint(addFkConstraintDto) {
+			const {childTableName, fkConstraintName, childColumns, parentTableName, parentColumns} = addFkConstraintDto;
+            const templateConfig = {
+				childTableName,
+                fkConstraintName,
+				childColumns: childColumns.join(', ') || '',
+                parentTableName,
+                parentColumns: parentColumns.join(', ') || '',
+			}
+			return assignTemplates(
+				templates.addFkConstraint,
+				templateConfig,
+			);
+		},
+
+		/**
+		 * @param childTableName {string}
+		 * @param childColumns {Array<string>}
+		 * @return string
+		 * */
+		dropFkConstraint(childTableName, childColumns) {
 			const templateConfig = {
-				tableName,
-				fkColumns: fkColumns.join(', ') || '',
+				childTableName,
+				childColumns: childColumns.join(', ') || '',
 			}
 			return assignTemplates(
 				templates.dropFkConstraint,

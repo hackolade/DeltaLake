@@ -33,7 +33,9 @@ module.exports = {
 
 	dropPkConstraint: 'ALTER TABLE ${tableName} DROP PRIMARY KEY IF EXISTS ${dropPkOption};',
 
-	dropFkConstraint: 'ALTER TABLE ${tableName} DROP FOREIGN KEY IF EXISTS (${fkColumns});',
+	addFkConstraint: 'ALTER TABLE ${childTableName} ADD CONSTRAINT ${fkConstraintName} FOREIGN KEY (${childColumns}) REFERENCES ${parentTableName}(${parentColumns});',
+
+	dropFkConstraint: 'ALTER TABLE ${childTableName} DROP FOREIGN KEY IF EXISTS (${childColumns});',
 
 	addTableColumns: 'ALTER TABLE ${name} ADD COLUMNS (${columns});',
 
