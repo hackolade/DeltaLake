@@ -228,5 +228,21 @@ module.exports = app => {
 			).trim();
 		},
 
+		/**
+		 * @param tableName {string}
+		 * @param fkColumns {Array<string>}
+		 * @return string
+		 * */
+		dropFkConstraint(tableName, fkColumns) {
+			const templateConfig = {
+				tableName,
+				fkColumns: fkColumns.join(', ') || '',
+			}
+			return assignTemplates(
+				templates.dropFkConstraint,
+				templateConfig,
+			);
+		},
+
 	}
 };

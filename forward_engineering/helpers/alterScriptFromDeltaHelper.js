@@ -21,7 +21,14 @@ const {
 const { commentDeactivatedStatements, buildScript, doesScriptContainDropStatement} = require('./generalHelper');
 const { getDBVersionNumber } = require('./alterScriptHelpers/common');
 const {getModifyPkConstraintsScripts} = require("./alterScriptHelpers/entityHelpers/primaryKeyHelper");
+const {getDeleteForeignKeyScripts} = require("./alterScriptHelpers/relationshipsHelper");
 
+/**
+ * @param entity {Object}
+ * @param nameProperty {string}
+ * @param modify {'added' | 'deleted' | 'modified'}
+ * @return Array<Object>
+ * */
 const getItems = (entity, nameProperty, modify) =>
 	[]
 		.concat(entity.properties?.[nameProperty]?.properties?.[modify]?.items)
@@ -127,13 +134,36 @@ const getAlterViewsScripts = (schema, provider) => {
 	];
 };
 
+/**
+ * @return Array<string>
+ * */
+const getAlterRelationshipsScripts = ({ schema, ddlProvider, _ }) => {
+	const modifiedEntities = getItems(schema, 'entities', 'modified');
+
+	const deletedRelationships = getItems(schema, 'relationships', 'deleted')
+		.filter(relationship => relationship.role?.compMod?.deleted);
+	const addedRelationships = getItems(schema, 'relationships', 'added')
+		.filter(relationship => relationship.role?.compMod?.created);
+	const modifiedRelationships = getItems(schema, 'relationships', 'modified');
+
+	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider, _)(modifiedEntities, deletedRelationships);
+
+	return [
+		...deleteFkScripts,
+	];
+}
+
 const getAlterScript = (schema, definitions, data, app) => {
 	const provider = require('./alterScriptHelpers/provider')(app);
 	const _ = app.require('lodash');
 	const containersScripts = getAlterContainersScripts(schema, provider);
 	const collectionsScripts = getAlterCollectionsScripts({ schema, definitions, provider, data, _ });
 	const viewsScripts = getAlterViewsScripts(schema, provider);
-	let scripts = containersScripts.concat(collectionsScripts, viewsScripts).filter(Boolean).map(script => script.trim());
+	const relationshipsScripts = getAlterRelationshipsScripts({ schema, ddlProvider: provider, _ });
+	let scripts = containersScripts
+		.concat(collectionsScripts, viewsScripts, relationshipsScripts)
+		.filter(Boolean)
+		.map(script => script.trim());
 	scripts = getCommentedDropScript(scripts, data);
 	return builds(scripts)
 };
