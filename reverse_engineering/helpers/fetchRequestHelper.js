@@ -291,7 +291,7 @@ const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionIn
 			return mergeChunksOfData(previousData, parsedData);
 		}
 
-        const fullCompletedData = filterCorruptedData(databasesTablesInfoResult, isTruncatedInMiddle);
+		const fullCompletedData = filterCorruptedData(databasesTablesInfoResult, isTruncatedInMiddle);
 		const parsedData = JSON.parse(fullCompletedData);
 		const mergedDataChunks = mergeChunksOfData(previousData, parsedData);
 		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilteredEntities(collectionsNames, mergedDataChunks);
