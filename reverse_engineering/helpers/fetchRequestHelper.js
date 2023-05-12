@@ -4,6 +4,9 @@ const AbortController = require('abort-controller');
 const { dependencies } = require('../appDependencies');
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
+
+const JSON_OBJECTS_DELIMITER = '}, {';
+
 let activeContexts = {};
 
 const fetch = (query, options, attempts = 10) => {
@@ -233,6 +236,45 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 	}), {});
 };
 
+/**
+ * @param {string} jsonString
+ * @return {string[]}
+ */
+const splitJsonObjects = (jsonString = '') => jsonString.split(JSON_OBJECTS_DELIMITER);
+
+/**
+ * @param {string} corruptedJsonData
+ * @return {string}
+ */
+const filterCorruptedEnd = (corruptedJsonData) => {
+    const splittedData = splitJsonObjects(corruptedJsonData);
+	return splittedData.slice(0, splittedData.length - 1).join(JSON_OBJECTS_DELIMITER);
+};
+
+/**
+ * @param {string} corruptedJsonData
+ * @return {string}
+ */
+const filterCorruptedStart = (corruptedJsonData) => {
+    const splittedData = splitJsonObjects(corruptedJsonData);
+	return splittedData.slice(1).join(JSON_OBJECTS_DELIMITER);
+};
+
+/**
+ * @param {string} databasesTablesInfoResult
+ * @param {boolean} isTruncatedInMiddle
+ * @return {string}
+ */
+const filterCorruptedData = (databasesTablesInfoResult, isTruncatedInMiddle) => {
+	if (isTruncatedInMiddle) {
+		const warningDelimiter = '*** WARNING: max output size exceeded, skipping output. ***';
+		const [ firstChunk, lastChunk ] = databasesTablesInfoResult.split(warningDelimiter);
+		return [ filterCorruptedEnd(firstChunk), filterCorruptedStart(lastChunk) ].join(', ');
+	}
+
+	return filterCorruptedEnd(databasesTablesInfoResult) + '}]}';
+};
+
 const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionInfo, logger, previousData = {}) => {
 	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
 	const getClusterDataCommand = getClusterData(tableNames.join(', '), dbNames.join(', '));
@@ -241,23 +283,21 @@ const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionIn
 	logger.log('info', '', `Finish retrieving tables info: ${databasesTablesInfoResult}`);
 
 	const isTruncatedResponse = /\*\*\* WARNING: skipped \d* bytes of output \*\*\*$/.test(databasesTablesInfoResult);
+	const isTruncatedInMiddle = /\*\*\* WARNING: max output size exceeded, skipping output. \*\*\*/.test(databasesTablesInfoResult);
 
 	try {
-		if (!isTruncatedResponse) {
+		if (!isTruncatedResponse && !isTruncatedInMiddle) {
 			const parsedData = JSON.parse(databasesTablesInfoResult);
 			return mergeChunksOfData(previousData, parsedData);
 		}
-	
-		const delimiter = '}, {';
-		const splittedData = databasesTablesInfoResult.split(delimiter);
-		const fullCompletedData = splittedData.slice(0, splittedData.length - 1).join(delimiter);
-	
-		const parsedData = JSON.parse(fullCompletedData + '}]}');
+
+        const fullCompletedData = filterCorruptedData(databasesTablesInfoResult, isTruncatedInMiddle);
+		const parsedData = JSON.parse(fullCompletedData);
 		const mergedDataChunks = mergeChunksOfData(previousData, parsedData);
 		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilteredEntities(collectionsNames, mergedDataChunks);
-		
+
 		return fetchFieldMetadata(filteredDbNames, filteredTableNames, connectionInfo, logger, mergedDataChunks);
-		
+
 	} catch (error) {
 		logger.log('error', { error }, `\nDatabricks response: ${databasesTablesInfoResult}\n`);
 		throw error;
