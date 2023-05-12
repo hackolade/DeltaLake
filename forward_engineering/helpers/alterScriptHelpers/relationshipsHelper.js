@@ -1,4 +1,5 @@
-const {generateFullEntityName} = require("./generalHelper");
+const {generateFullEntityName, getFullEntityName} = require("./generalHelper");
+const {replaceSpaceWithUnderscore, getName, prepareName} = require("../generalHelper");
 
 
 /**
@@ -32,15 +33,20 @@ const getAddForeignKeyScripts = (ddlProvider, _) => (modifiedEntities, addedRela
             const childEntityName = generateFullEntityName(childEntity);
             const childEntityColumns = getEntityColumns(childEntity);
 
-            // const addFkConstraintDto = {
-            //     childTableName: childEntityName,
-            //     fkConstraintName,
-            //     childColumns: childEntityColumns,
-            //     parentTableName,
-            //     parentColumns
-            // };
-            // return ddlProvider.addFkConstraint(addFkConstraintDto);
-            return '';
+            const compMod = relationship.role.compMod;
+
+            const parentDBName = replaceSpaceWithUnderscore(compMod.parentBucket.newName);
+            const parentEntityName = replaceSpaceWithUnderscore(compMod.parentCollection.newName);
+            const parentTableName = getFullEntityName(parentDBName, parentEntityName);
+
+            const addFkConstraintDto = {
+                childTableName: childEntityName,
+                fkConstraintName: prepareName(relationship.role.name),
+                childColumns: childEntityColumns.map(c => prepareName(c)),
+                parentTableName,
+                parentColumns: compMod.parentFields.map(field => prepareName(field.newName)),
+            };
+            return ddlProvider.addFkConstraint(addFkConstraintDto);
         })
         .filter(Boolean);
 }
