@@ -247,7 +247,7 @@ const splitJsonObjects = (jsonString = '') => jsonString.split(JSON_OBJECTS_DELI
  * @return {string}
  */
 const filterCorruptedEnd = (corruptedJsonData) => {
-    const splittedData = splitJsonObjects(corruptedJsonData);
+	const splittedData = splitJsonObjects(corruptedJsonData);
 	return splittedData.slice(0, splittedData.length - 1).join(JSON_OBJECTS_DELIMITER);
 };
 
@@ -256,7 +256,7 @@ const filterCorruptedEnd = (corruptedJsonData) => {
  * @return {string}
  */
 const filterCorruptedStart = (corruptedJsonData) => {
-    const splittedData = splitJsonObjects(corruptedJsonData);
+	const splittedData = splitJsonObjects(corruptedJsonData);
 	return splittedData.slice(1).join(JSON_OBJECTS_DELIMITER);
 };
 
