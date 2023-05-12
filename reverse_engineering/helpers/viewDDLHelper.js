@@ -56,7 +56,7 @@ const getJsonSchema = (viewSchema, viewSample) => {
 		return {
 			...result,
 			[row[COL_NAME]]: {
-				comments: row[COL_COMMENT],
+				...(row[COL_COMMENT] && { comments: row[COL_COMMENT] }),
 				...schemaHelper.getJsonSchema(row[COL_TYPE], viewSample?.[i])
 			},
 		};
