@@ -21,7 +21,8 @@ const {
 const { commentDeactivatedStatements, buildScript, doesScriptContainDropStatement} = require('./generalHelper');
 const { getDBVersionNumber } = require('./alterScriptHelpers/common');
 const {getModifyPkConstraintsScripts} = require("./alterScriptHelpers/entityHelpers/primaryKeyHelper");
-const {getDeleteForeignKeyScripts, getAddForeignKeyScripts} = require("./alterScriptHelpers/relationshipsHelper");
+const {getDeleteForeignKeyScripts, getAddForeignKeyScripts, getModifyForeignKeyScripts} = require("./alterScriptHelpers/relationshipsHelper");
+const {getModifiedCommentOnColumnScripts} = require("./alterScriptHelpers/columnHelpers/commentsHelper");
 
 /**
  * @param entity {Object}
@@ -148,10 +149,12 @@ const getAlterRelationshipsScripts = ({ schema, ddlProvider, _ }) => {
 
 	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider, _)(modifiedEntities, deletedRelationships);
 	const addFkScripts = getAddForeignKeyScripts(ddlProvider, _)(modifiedEntities, addedRelationships);
+	const modifiedFkScripts = getModifyForeignKeyScripts(ddlProvider, _)(modifiedEntities, modifiedRelationships);
 
 	return [
 		...deleteFkScripts,
 		...addFkScripts,
+		...modifiedFkScripts,
 	];
 }
 

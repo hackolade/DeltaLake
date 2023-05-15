@@ -255,13 +255,13 @@ module.exports = app => {
 
 		/**
 		 * @param childTableName {string}
-		 * @param childColumns {Array<string>}
+		 * @param fkConstraintName {string}
 		 * @return string
 		 * */
-		dropFkConstraint(childTableName, childColumns) {
+		dropFkConstraint(childTableName, fkConstraintName) {
 			const templateConfig = {
 				childTableName,
-				childColumns: childColumns.join(', ') || '',
+				fkConstraintName,
 			}
 			return assignTemplates(
 				templates.dropFkConstraint,
