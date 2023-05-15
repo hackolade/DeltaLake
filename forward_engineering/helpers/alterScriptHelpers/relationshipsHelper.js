@@ -1,5 +1,5 @@
 const {generateFullEntityName, getFullEntityName} = require("./generalHelper");
-const {replaceSpaceWithUnderscore, getName, prepareName} = require("../generalHelper");
+const {replaceSpaceWithUnderscore, prepareName} = require("../generalHelper");
 
 
 /**
