@@ -61,6 +61,8 @@ const getAddForeignKeyScripts = (ddlProvider, _) => (addedRelationships) => {
  * @return {(relationship: Object) => string}
  * */
 const getDeleteSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
+    const compMod = relationship.role.compMod;
+
     const childDBName = replaceSpaceWithUnderscore(compMod.childBucket.newName);
     const childEntityName = replaceSpaceWithUnderscore(compMod.childCollection.newName);
     const childTableName = getFullEntityName(childDBName, childEntityName);
