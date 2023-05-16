@@ -9,7 +9,7 @@ const {
 	removeRedundantTrailingCommaFromStatement,
 	encodeStringLiteral,
 	prepareName
-} = require('./generalHelper');
+} = require('../utils/generalUtils');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const { dependencies } = require('./appDependencies');

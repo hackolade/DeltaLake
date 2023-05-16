@@ -5,7 +5,7 @@ const { getDatabaseStatement } = require('./helpers/databaseHelper');
 const { getTableStatement } = require('./helpers/tableHelper');
 const { getIndexes } = require('./helpers/indexHelper');
 const { getViewScript } = require('./helpers/viewHelper');
-const { getCleanedUrl, getTab, buildScript, doesScriptContainDropStatement} = require('./helpers/generalHelper');
+const { getCleanedUrl, getTab, buildScript, doesScriptContainDropStatement} = require('./utils/generalUtils');
 let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')

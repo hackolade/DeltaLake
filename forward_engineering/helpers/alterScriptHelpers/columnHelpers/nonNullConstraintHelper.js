@@ -1,5 +1,4 @@
-const {generateFullEntityName} = require("../../../utils/generalUtils");
-const {prepareName} = require("../../generalHelper");
+const {generateFullEntityName, prepareName} = require("../../../utils/generalUtils");
 
 
 const getModifyNonNullColumnsScripts = (_, ddlProvider) => (collection) => {

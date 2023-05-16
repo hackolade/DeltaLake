@@ -1,6 +1,6 @@
 'use strict'
 
-const { getTab, buildStatement,prepareName, getName, replaceSpaceWithUnderscore } = require('./generalHelper');
+const { getTab, buildStatement,prepareName, getName, replaceSpaceWithUnderscore } = require('../utils/generalUtils');
 const schemaHelper = require('./jsonSchemaHelper');
 const { getItemByPath } = require('./jsonSchemaHelper');
 const { dependencies } = require('./appDependencies');
@@ -31,7 +31,7 @@ const getIndexKeys = (keys, jsonSchema, definitions) => {
 		return paths
 			.map(path => prepareName(replaceSpaceWithUnderscore(schemaHelper.getNameByPath(idToNameHashTable, path))))
 			.join(', ');
-	}; 
+	};
 	const columns = joinColumnNamesByPath(paths);
 	if (deactivatedKeys.length === 0) {
 		return { isIndexActivated: true, columns };

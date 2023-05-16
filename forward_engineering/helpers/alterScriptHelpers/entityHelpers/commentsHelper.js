@@ -1,6 +1,5 @@
-const {prepareScript, generateFullEntityName} = require("../../../utils/generalUtils");
+const {prepareScript, generateFullEntityName, wrapInSingleQuotes} = require("../../../utils/generalUtils");
 const {EntitiesThatSupportComments} = require("../../../enums/entityType");
-const {wrapInSingleQuotes} = require("../../generalHelper");
 
 const getUpdatedCommentOnCollectionScript = (collection, ddlProvider) => {
     const descriptionInfo = collection?.role.compMod?.description;

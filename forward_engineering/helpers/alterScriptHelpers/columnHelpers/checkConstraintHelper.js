@@ -1,5 +1,4 @@
-const {generateFullEntityName} = require("../../../utils/generalUtils");
-const {wrapInTicks} = require("../../generalHelper");
+const {generateFullEntityName, wrapInTicks} = require("../../../utils/generalUtils");
 
 /**
  * @param columnName {string}

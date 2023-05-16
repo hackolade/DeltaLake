@@ -1,6 +1,6 @@
 'use strict'
 
-const { buildStatement, getName, getTab, replaceSpaceWithUnderscore, encodeStringLiteral } = require('./generalHelper');
+const { buildStatement, getName, getTab, replaceSpaceWithUnderscore, encodeStringLiteral } = require('../utils/generalUtils');
 
 const getCreateStatement = ({
 	name, comment, location, dbProperties, isActivated

@@ -1,5 +1,4 @@
-const {getFullEntityName} = require("../../utils/generalUtils");
-const {replaceSpaceWithUnderscore, prepareName} = require("../generalHelper");
+const {getFullEntityName, replaceSpaceWithUnderscore, prepareName} = require("../../utils/generalUtils");
 
 /**
  * @return {(relationship: Object) => string}

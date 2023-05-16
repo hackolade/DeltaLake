@@ -1,5 +1,4 @@
-const {generateFullEntityName, getEntityNameFromCollection} = require("../../../utils/generalUtils");
-const {prepareName} = require("../../generalHelper");
+const {generateFullEntityName, getEntityNameFromCollection, prepareName} = require("../../../utils/generalUtils");
 
 /**
  * @return {(collection: Object, guid: string) => Object | undefined}
