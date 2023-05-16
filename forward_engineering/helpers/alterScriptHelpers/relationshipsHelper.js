@@ -2,14 +2,6 @@ const {getFullEntityName} = require("./generalHelper");
 const {replaceSpaceWithUnderscore, prepareName} = require("../generalHelper");
 
 /**
- * @param relationship {Object}
- * @return {string}
- * */
-const getRelationshipName = (relationship) => {
-    return relationship.role.name;
-}
-
-/**
  * @return {(modifiedEntities: Object[], relationship: Object) => string}
  * */
 const getAddSingleForeignKeyScript = (ddlProvider, _) => (modifiedEntities, relationship) => {
