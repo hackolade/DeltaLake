@@ -1,5 +1,5 @@
 const {prepareScript, generateFullEntityName} = require("../generalHelper");
-const {EntitiesThatSupportComments} = require("../enums/entityType");
+const {EntitiesThatSupportComments} = require("../../../enums/entityType");
 const {wrapInSingleQuotes} = require("../../generalHelper");
 
 const getUpdatedCommentOnCollectionScript = (collection, ddlProvider) => {

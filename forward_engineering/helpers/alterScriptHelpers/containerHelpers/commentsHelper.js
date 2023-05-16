@@ -1,4 +1,4 @@
-const {EntitiesThatSupportComments} = require("../enums/entityType");
+const {EntitiesThatSupportComments} = require("../../../enums/entityType");
 const {replaceSpaceWithUnderscore, wrapInSingleQuotes} = require("../../generalHelper");
 
 /**
