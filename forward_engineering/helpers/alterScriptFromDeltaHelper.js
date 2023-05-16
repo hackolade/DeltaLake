@@ -22,7 +22,6 @@ const { commentDeactivatedStatements, buildScript, doesScriptContainDropStatemen
 const { getDBVersionNumber } = require('./alterScriptHelpers/common');
 const {getModifyPkConstraintsScripts} = require("./alterScriptHelpers/entityHelpers/primaryKeyHelper");
 const {getDeleteForeignKeyScripts, getAddForeignKeyScripts, getModifyForeignKeyScripts} = require("./alterScriptHelpers/relationshipsHelper");
-const {getModifiedCommentOnColumnScripts} = require("./alterScriptHelpers/columnHelpers/commentsHelper");
 
 /**
  * @param entity {Object}
@@ -139,17 +138,15 @@ const getAlterViewsScripts = (schema, provider) => {
  * @return Array<string>
  * */
 const getAlterRelationshipsScripts = ({ schema, ddlProvider, _ }) => {
-	const modifiedEntities = getItems(schema, 'entities', 'modified');
-
 	const deletedRelationships = getItems(schema, 'relationships', 'deleted')
 		.filter(relationship => relationship.role?.compMod?.deleted);
 	const addedRelationships = getItems(schema, 'relationships', 'added')
 		.filter(relationship => relationship.role?.compMod?.created);
 	const modifiedRelationships = getItems(schema, 'relationships', 'modified');
 
-	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider, _)(modifiedEntities, deletedRelationships);
-	const addFkScripts = getAddForeignKeyScripts(ddlProvider, _)(modifiedEntities, addedRelationships);
-	const modifiedFkScripts = getModifyForeignKeyScripts(ddlProvider, _)(modifiedEntities, modifiedRelationships);
+	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider, _)(deletedRelationships);
+	const addFkScripts = getAddForeignKeyScripts(ddlProvider, _)(addedRelationships);
+	const modifiedFkScripts = getModifyForeignKeyScripts(ddlProvider, _)(modifiedRelationships);
 
 	return [
 		...deleteFkScripts,

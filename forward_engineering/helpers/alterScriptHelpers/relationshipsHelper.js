@@ -2,9 +2,9 @@ const {getFullEntityName} = require("./generalHelper");
 const {replaceSpaceWithUnderscore, prepareName} = require("../generalHelper");
 
 /**
- * @return {(modifiedEntities: Object[], relationship: Object) => string}
+ * @return {(relationship: Object) => string}
  * */
-const getAddSingleForeignKeyScript = (ddlProvider, _) => (modifiedEntities, relationship) => {
+const getAddSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
     const compMod = relationship.role.compMod;
 
     const parentDBName = replaceSpaceWithUnderscore(compMod.parentBucket.newName);
@@ -50,17 +50,17 @@ const canRelationshipBeAdded = (relationship) => {
 /**
  * @return {(modifiedEntities: Object[], addedRelationships: Array<Object>) => Array<string>}
  * */
-const getAddForeignKeyScripts = (ddlProvider, _) => (modifiedEntities, addedRelationships) => {
+const getAddForeignKeyScripts = (ddlProvider, _) => (addedRelationships) => {
     return addedRelationships
         .filter((relationship) => canRelationshipBeAdded(relationship))
-        .map(relationship => getAddSingleForeignKeyScript(ddlProvider, _)(modifiedEntities, relationship))
+        .map(relationship => getAddSingleForeignKeyScript(ddlProvider, _)(relationship))
         .filter(Boolean);
 }
 
 /**
- * @return {(modifiedEntities: Object[], relationship: Object) => string}
+ * @return {(relationship: Object) => string}
  * */
-const getDeleteSingleForeignKeyScript = (ddlProvider, _) => (modifiedEntities, relationship) => {
+const getDeleteSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
     const childDBName = replaceSpaceWithUnderscore(compMod.childBucket.newName);
     const childEntityName = replaceSpaceWithUnderscore(compMod.childCollection.newName);
     const childTableName = getFullEntityName(childDBName, childEntityName);
@@ -83,22 +83,22 @@ const canRelationshipBeDeleted = (relationship) => {
 }
 
 /**
- * @return {(modifiedEntities: Object[], deletedRelationships: Array<Object>) => Array<string>}
+ * @return {(deletedRelationships: Array<Object>) => Array<string>}
  * */
-const getDeleteForeignKeyScripts = (ddlProvider, _) => (modifiedEntities, deletedRelationships) => {
+const getDeleteForeignKeyScripts = (ddlProvider, _) => (deletedRelationships) => {
     return deletedRelationships
         .filter((relationship) => canRelationshipBeDeleted(relationship))
-        .map(relationship => getDeleteSingleForeignKeyScript(ddlProvider, _)(modifiedEntities, relationship))
+        .map(relationship => getDeleteSingleForeignKeyScript(ddlProvider, _)(relationship))
         .filter(Boolean);
 }
 
 /**
- * @return {(modifiedEntities: Object[], deletedRelationships: Array<Object>) => Array<string>}
+ * @return {(deletedRelationships: Array<Object>) => Array<string>}
  * */
-const getModifyForeignKeyScripts = (ddlProvider, _) => (modifiedEntities, modifiedRelationships) => {
+const getModifyForeignKeyScripts = (ddlProvider, _) => (modifiedRelationships) => {
     return modifiedRelationships.map(relationship => {
-        const deleteScript = getDeleteSingleForeignKeyScript(ddlProvider, _)(modifiedEntities, relationship);
-        const addScript = getAddSingleForeignKeyScript(ddlProvider, _)(modifiedEntities, relationship);
+        const deleteScript = getDeleteSingleForeignKeyScript(ddlProvider, _)(relationship);
+        const addScript = getAddSingleForeignKeyScript(ddlProvider, _)(relationship);
         return [
             deleteScript,
             addScript,
