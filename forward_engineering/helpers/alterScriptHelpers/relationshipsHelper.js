@@ -1,27 +1,5 @@
-const {generateFullEntityName, getFullEntityName} = require("./generalHelper");
+const {getFullEntityName} = require("./generalHelper");
 const {replaceSpaceWithUnderscore, prepareName} = require("../generalHelper");
-
-
-/**
- * @param modifiedEntities {Object[]}
- * @param id {string}
- * @return {Object | undefined}
- * */
-const getEntityById = (modifiedEntities, id) => {
-    return modifiedEntities.find(entity => entity.role?.id === id);
-}
-
-/**
- * @param entity {Object}
- * @param ids {Array<string>}
- * @return {string[]}
- * */
-const getChildColumnNames = (entity, ids) => {
-    const properties = entity.role.properties || {};
-    return Object.values(properties)
-        .filter(property => ids.includes(property.GUID))
-        .map(property => property.compMod.newField.name)
-}
 
 /**
  * @param relationship {Object}
@@ -35,29 +13,22 @@ const getRelationshipName = (relationship) => {
  * @return {(modifiedEntities: Object[], relationship: Object) => string}
  * */
 const getAddSingleForeignKeyScript = (ddlProvider, _) => (modifiedEntities, relationship) => {
-    const childTableId = relationship.role?.childCollection;
-    const childEntity = getEntityById(modifiedEntities, childTableId);
-    if (!childEntity) {
-        return '';
-    }
-    const childEntityName = generateFullEntityName(childEntity);
-    const childField = relationship.role.childField || [];
-    const childColumnIds = childField.map((path) => {
-        return path.filter(id => id !== childTableId);
-    })
-        .flat();
-    const childEntityColumns = getChildColumnNames(childEntity, childColumnIds);
-
     const compMod = relationship.role.compMod;
 
     const parentDBName = replaceSpaceWithUnderscore(compMod.parentBucket.newName);
     const parentEntityName = replaceSpaceWithUnderscore(compMod.parentCollection.newName);
     const parentTableName = getFullEntityName(parentDBName, parentEntityName);
 
+    const childDBName = replaceSpaceWithUnderscore(compMod.childBucket.newName);
+    const childEntityName = replaceSpaceWithUnderscore(compMod.childCollection.newName);
+    const childTableName = getFullEntityName(childDBName, childEntityName);
+
+    const relationshipName = relationship.role.compMod.name?.new || '';
+
     const addFkConstraintDto = {
-        childTableName: childEntityName,
-        fkConstraintName: prepareName(relationship.role.name),
-        childColumns: childEntityColumns.map(c => prepareName(c)),
+        childTableName,
+        fkConstraintName: prepareName(relationshipName),
+        childColumns: compMod.childFields.map(field => prepareName(field.newName)),
         parentTableName,
         parentColumns: compMod.parentFields.map(field => prepareName(field.newName)),
     };
@@ -65,10 +36,31 @@ const getAddSingleForeignKeyScript = (ddlProvider, _) => (modifiedEntities, rela
 }
 
 /**
+ * @param relationship {Object}
+ * @return boolean
+ * */
+const canRelationshipBeAdded = (relationship) => {
+    const compMod = relationship.role.compMod;
+    if (!compMod) {
+        return false;
+    }
+    return [
+        compMod.name?.new,
+        compMod.parentBucket,
+        compMod.parentCollection,
+        compMod.parentFields,
+        compMod.childBucket,
+        compMod.childCollection,
+        compMod.childFields,
+    ].every(property => Boolean(property));
+}
+
+/**
  * @return {(modifiedEntities: Object[], addedRelationships: Array<Object>) => Array<string>}
  * */
 const getAddForeignKeyScripts = (ddlProvider, _) => (modifiedEntities, addedRelationships) => {
     return addedRelationships
+        .filter((relationship) => canRelationshipBeAdded(relationship))
         .map(relationship => getAddSingleForeignKeyScript(ddlProvider, _)(modifiedEntities, relationship))
         .filter(Boolean);
 }
@@ -77,15 +69,25 @@ const getAddForeignKeyScripts = (ddlProvider, _) => (modifiedEntities, addedRela
  * @return {(modifiedEntities: Object[], relationship: Object) => string}
  * */
 const getDeleteSingleForeignKeyScript = (ddlProvider, _) => (modifiedEntities, relationship) => {
-    const childTableId = relationship.role?.childCollection;
-    const childEntity = getEntityById(modifiedEntities, childTableId);
-    if (!childEntity) {
-        return '';
-    }
-    const childEntityName = generateFullEntityName(childEntity);
-    const relationshipName = getRelationshipName(relationship);
+    const childDBName = replaceSpaceWithUnderscore(compMod.childBucket.newName);
+    const childEntityName = replaceSpaceWithUnderscore(compMod.childCollection.newName);
+    const childTableName = getFullEntityName(childDBName, childEntityName);
+
+    const relationshipName = relationship.role.compMod.name?.old || '';
     const relationshipNameForDDL = prepareName(relationshipName);
-    return ddlProvider.dropFkConstraint(childEntityName, relationshipNameForDDL);
+    return ddlProvider.dropFkConstraint(childTableName, relationshipNameForDDL);
+}
+
+const canRelationshipBeDeleted = (relationship) => {
+    const compMod = relationship.role.compMod;
+    if (!compMod) {
+        return false;
+    }
+    return [
+        compMod.name?.old,
+        compMod.childBucket,
+        compMod.childCollection,
+    ].every(property => Boolean(property));
 }
 
 /**
@@ -93,6 +95,7 @@ const getDeleteSingleForeignKeyScript = (ddlProvider, _) => (modifiedEntities, r
  * */
 const getDeleteForeignKeyScripts = (ddlProvider, _) => (modifiedEntities, deletedRelationships) => {
     return deletedRelationships
+        .filter((relationship) => canRelationshipBeDeleted(relationship))
         .map(relationship => getDeleteSingleForeignKeyScript(ddlProvider, _)(modifiedEntities, relationship))
         .filter(Boolean);
 }
