@@ -1,7 +1,6 @@
 const {getDatabaseStatement, getDatabaseAlterStatement} = require('../databaseHelper')
 const {dependencies} = require('../appDependencies');
-const {getEntityData} = require('../../utils/generalUtils');
-const {getIsChangeProperties} = require('./common');
+const {getEntityData, getIsChangeProperties} = require('../../utils/generalUtils');
 const {getAlterCommentsScript} = require("./containerHelpers/commentsHelper");
 
 let _;
@@ -41,7 +40,7 @@ const getModifyContainerScript = provider => container => {
     const compMod = _.get(container, 'role.compMod', {});
     const names = extractNamesFromCompMod(compMod);
 
-    const didPropertiesChange = getIsChangeProperties({...compMod, name: names}, otherContainerProperties);
+    const didPropertiesChange = getIsChangeProperties(_)({...compMod, name: names}, otherContainerProperties);
     const containerData = {...getContainerData(compMod), name: names.new};
     if (!didPropertiesChange) {
         const alterCommentsScript = getAlterCommentsScript(provider)(container);

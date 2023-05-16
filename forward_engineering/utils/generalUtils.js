@@ -38,7 +38,7 @@ const buildStatement = (mainStatement, isActivated) => {
     return chain;
 };
 
-const isEscaped = (name) => /\`[\s\S]*\`/.test(name);
+const isEscaped = (name) => /`[\s\S]*`/.test(name);
 
 const prepareName = (name = '') => {
     const containSpaces = /[\s-]/g;
@@ -165,7 +165,7 @@ const buildScript = (statements) => {
     const script = statements.filter((statement) => statement).join('\n\n');
     const formattedScript = sqlFormatter.format(script, {indent: '    '}) + '\n';
 
-    return formattedScript.replace(/\{\ \{\ (.+?)\ \}\ \}/g, '{{$1}}');
+    return formattedScript.replace(/\{ \{ (.+?) } }/g, '{{$1}}');
 };
 
 const getContainerName = compMod => compMod.keyspaceName;
@@ -209,6 +209,26 @@ const getEntityName = (compMod = {}, type = 'collectionName') => {
 
 const prepareScript = (...scripts) => scripts.filter(Boolean);
 
+const getDBVersionNumber = dbVersionString => ~~(dbVersionString.split(' ')[1]);
+
+const getDifferentItems = (_) => (newItems = [], oldItems = []) => {
+    const intersection = _.intersectionWith(newItems, oldItems, _.isEqual);
+    return {
+        add: _.xorWith(newItems, intersection, _.isEqual),
+        drop: _.xorWith(oldItems, intersection, _.isEqual)
+    };
+};
+
+const compareProperties = (_) => ({new: newProperty, old: oldProperty}) => {
+    if (!newProperty && !oldProperty) {
+        return;
+    }
+    return !_.isEqual(newProperty, oldProperty);
+};
+
+const getIsChangeProperties = (_) => (compMod, properties) =>
+    properties.some(property => compareProperties(_)(compMod[property] || {}));
+
 module.exports = {
     buildStatement,
     getName,
@@ -234,4 +254,7 @@ module.exports = {
     getContainerName,
     getEntityName,
     prepareScript,
+    getDBVersionNumber,
+    getIsChangeProperties,
+    getDifferentItems,
 };

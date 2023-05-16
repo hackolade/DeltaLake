@@ -8,7 +8,8 @@ const {
 	commentDeactivatedInlineKeys,
 	removeRedundantTrailingCommaFromStatement,
 	encodeStringLiteral,
-	prepareName
+	prepareName,
+	getDifferentItems
 } = require('../utils/generalUtils');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
@@ -345,6 +346,16 @@ const getTablePropertiesClause = tableProperties => {
 	return tablePropertyStatements.join(', ');
 }
 
+const hydrateTableProperties = (_) => ({new: newItems, old: oldItems}, name) => {
+	const preparePropertiesName = properties => _.map(properties, ({propertyKey}) => propertyKey).join(', ');
+	const {add, drop} = getDifferentItems(_)(newItems, oldItems);
+	const dataProperties = {
+		add: getTablePropertiesClause(add),
+		drop: preparePropertiesName(drop),
+	};
+	return {dataProperties, name};
+};
+
 const adjustPropertyKey = (propertyKey) => {
 	if (/^\s*\(/.test(propertyKey) && !/\)\s*$/.test(propertyKey)) {
 		return propertyKey.replace(/^\s*\(([\s\S]+)/, '$1');
@@ -365,4 +376,5 @@ const adjustPropertyValue = (propertyValue) => {
 module.exports = {
 	getTableStatement,
 	getTablePropertiesClause,
+	hydrateTableProperties,
 };

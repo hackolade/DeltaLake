@@ -18,8 +18,7 @@ const {
 	getDeleteViewsScripts,
 	getModifyViewsScripts,
 } = require('./alterScriptHelpers/alterViewHelper');
-const { commentDeactivatedStatements, buildScript, doesScriptContainDropStatement} = require('../utils/generalUtils');
-const { getDBVersionNumber } = require('./alterScriptHelpers/common');
+const { commentDeactivatedStatements, buildScript, doesScriptContainDropStatement, getDBVersionNumber} = require('../utils/generalUtils');
 const {getModifyPkConstraintsScripts} = require("./alterScriptHelpers/entityHelpers/primaryKeyHelper");
 const {getDeleteForeignKeyScripts, getAddForeignKeyScripts, getModifyForeignKeyScripts} = require("./alterScriptHelpers/alterRelationshipsHelper");
 

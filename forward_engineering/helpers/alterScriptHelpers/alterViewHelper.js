@@ -1,6 +1,6 @@
 const { dependencies } = require('../appDependencies');
 const { getViewScript } = require('../viewHelper');
-const { hydrateTableProperties } = require('./common');
+const { hydrateTableProperties } = require('../tableHelper');
 const {
 	getEntityData,
 	getEntityProperties,
@@ -64,7 +64,7 @@ const hydrateAlterView = view => {
 	const fullName = getFullEntityName(dbName, rename.newName);
 	const tableProperties = _.get(compMod, 'tableProperties', '');
 	const { new: newSelect, old: oldSelect } = _.get(compMod, 'selectStatement', '');
-	const { dataProperties } = hydrateTableProperties(tableProperties, fullName);
+	const { dataProperties } = hydrateTableProperties(_)(tableProperties, fullName);
 
 	return {
 		selectStatement: !_.isEqual(newSelect, oldSelect) && newSelect ? newSelect : '',
@@ -88,7 +88,7 @@ const getDeleteViewsScripts = provider => view => {
 
 const getModifyViewsScripts = provider => view => {
 	setDependencies(dependencies);
-	const comparedProperties = compareProperties(view, viewProperties);
+	const comparedProperties = compareProperties(_)(view, viewProperties);
 	if (comparedProperties) {
 		const hydratedAlterView = hydrateAlterView(view);
 		return prepareScript(...provider.alterView(hydratedAlterView));

@@ -1,8 +1,7 @@
 const {dependencies} = require('../appDependencies');
 const {getColumns, getColumnsStatement, getColumnsString, getColumnStatement} = require('../columnHelper');
 const {getIndexes} = require('../indexHelper');
-const {getTableStatement} = require('../tableHelper');
-const {hydrateTableProperties, getDifferentItems, getIsChangeProperties} = require('./common');
+const {getTableStatement, hydrateTableProperties} = require('../tableHelper');
 const {
     getFullEntityName,
     generateFullEntityName,
@@ -10,7 +9,9 @@ const {
     getContainerName,
     getEntityData,
     getEntityName,
-    prepareScript
+    prepareScript,
+    getIsChangeProperties,
+    getDifferentItems,
 } = require('../../utils/generalUtils');
 const {getModifyCollectionCommentsScripts} = require('./entityHelpers/commentsHelper');
 const {getModifyCheckConstraintsScripts} = require("./columnHelpers/checkConstraintHelper");
@@ -94,7 +95,7 @@ const hydrateAddIndexes = (entity, BloomIndxs, properties, definitions) => {
 
 const hydrateIndex = (entity, properties, definitions) => {
     const bloomIndex = _.get(entity, 'role.compMod.BloomIndxs', {});
-    const {drop, add} = getDifferentItems(bloomIndex.new, bloomIndex.old);
+    const {drop, add} = getDifferentItems(_)(bloomIndex.new, bloomIndex.old);
     return {
         hydratedDropIndex: hydrateDropIndexes({...entity, BloomIndxs: drop}),
         hydratedAddIndex: hydrateAddIndexes(entity, add, properties, definitions),
@@ -111,7 +112,7 @@ const hydrateCollection = (entity, definitions) => {
 
 const generateModifyCollectionScript = (collection, definitions, ddlProvider) => {
     const compMod = _.get(collection, 'role.compMod', {});
-    const isChangedProperties = getIsChangeProperties(compMod, tableProperties);
+    const isChangedProperties = getIsChangeProperties(_)(compMod, tableProperties);
     const fullCollectionName = generateFullEntityName(collection);
     if (isChangedProperties) {
         const roleData = getEntityData(compMod, tableProperties.concat(otherTableProperties));
@@ -126,7 +127,7 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
 
     const dataProperties = _.get(compMod, 'tableProperties', '');
     const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
-    const hydratedTableProperties = hydrateTableProperties(dataProperties, fullCollectionName);
+    const hydratedTableProperties = hydrateTableProperties(_)(dataProperties, fullCollectionName);
     const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
     const tablePropertiesScript = ddlProvider.alterTableProperties(hydratedTableProperties);
     const serDeProperties = ddlProvider.alterSerDeProperties(hydratedSerDeProperties)
