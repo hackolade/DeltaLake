@@ -1,8 +1,8 @@
 'use strict'
 
 const sqlFormatter = require('sql-formatter');
-const RESERVED_WORDS = require('../enums/reservedWords');
-const {DROP_STATEMENTS} = require("../enums/constants");
+const {RESERVED_WORDS_AS_ARRAY} = require('../enums/reservedWords');
+const {DropStatements} = require("../enums/dropStatements");
 
 
 const buildStatement = (mainStatement, isActivated) => {
@@ -44,7 +44,7 @@ const prepareName = (name = '') => {
     const containSpaces = /[\s-]/g;
     if (containSpaces.test(name) && !isEscaped(name)) {
         return `\`${name}\``;
-    } else if (RESERVED_WORDS.includes(name.toLowerCase())) {
+    } else if (RESERVED_WORDS_AS_ARRAY.includes(name.toLowerCase())) {
         return `\`${name}\``;
     } else if (name === '') {
         return '';
@@ -80,7 +80,7 @@ const getTypeDescriptor = (typeName) => {
  * @return boolean
  * */
 const isScriptADropStatement = (script) => {
-    return DROP_STATEMENTS.some(statement => script.includes(statement));
+    return Object.values(DropStatements).some(statement => script.includes(statement));
 }
 
 /**
