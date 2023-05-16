@@ -1,7 +1,15 @@
 const { dependencies } = require('../appDependencies');
 const { getViewScript } = require('../viewHelper');
 const { hydrateTableProperties } = require('./common');
-const { getEntityData, getEntityProperties, getContainerName, generateFullEntityName, getEntityName, prepareScript, getFullEntityName } = require('./generalHelper');
+const {
+	getEntityData,
+	getEntityProperties,
+	getContainerName,
+	generateFullEntityName,
+	getEntityName,
+	prepareScript,
+	getFullEntityName
+} = require('../../utils/generalUtils');
 
 let _;
 const setDependencies = ({ lodash }) => _ = lodash;
@@ -17,7 +25,7 @@ const compareProperties = (view, properties) => {
 	});
 };
 
-const prepareColumnGuids = columns => 
+const prepareColumnGuids = columns =>
 	Object.entries(columns).reduce((columns, [name, value = {}]) => ({
 			...columns,
 			[name]: {
@@ -26,7 +34,7 @@ const prepareColumnGuids = columns =>
 			}
 		}), {});
 
-const prepareRefsDefinitionsMap = definitions => 
+const prepareRefsDefinitionsMap = definitions =>
 	Object.entries(definitions).reduce((columns, [definitionId, value = {}]) => ({
 		...columns,
 		[definitionId]: {
@@ -57,7 +65,7 @@ const hydrateAlterView = view => {
 	const tableProperties = _.get(compMod, 'tableProperties', '');
 	const { new: newSelect, old: oldSelect } = _.get(compMod, 'selectStatement', '');
 	const { dataProperties } = hydrateTableProperties(tableProperties, fullName);
-	
+
 	return {
 		selectStatement: !_.isEqual(newSelect, oldSelect) && newSelect ? newSelect : '',
 		dataProperties,

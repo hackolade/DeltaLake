@@ -1,9 +1,9 @@
 'use strict'
 
-const RESERVED_WORDS = require('./reserverWords');
+const RESERVED_WORDS = require('../enums/reservedWords');
 const sqlFormatter = require('sql-formatter');
 const { dependencies } = require('./appDependencies');
-const {DROP_STATEMENTS} = require("./constants");
+const {DROP_STATEMENTS} = require("../enums/constants");
 
 let _;
 
@@ -110,10 +110,10 @@ const commentDeactivatedStatements = (statement, isActivated = true) => {
 	return insertBeforeEachLine(statement, '-- ');
 }
 
-const commentDeactivatedInlineKeys = (keys, deactivatedKeyNames) => {
+const commentDeactivatedInlineKeys = (_) => (keys, deactivatedKeyNames) => {
 	setDependencies(dependencies);
 
-	const [activatedKeys, deactivatedKeys] = dependencies.lodash.partition(
+	const [activatedKeys, deactivatedKeys] = _.partition(
 		keys,
 		(key) =>
 			!(
@@ -131,14 +131,12 @@ const commentDeactivatedInlineKeys = (keys, deactivatedKeyNames) => {
 	return { isAllKeysDeactivated: false, keysString: `${activatedKeys.join(', ')} /*, ${deactivatedKeys.join(', ')} */` }
 }
 
-const removeRedundantTrailingCommaFromStatement = (statement) => {
-	setDependencies(dependencies);
-
+const removeRedundantTrailingCommaFromStatement = (_) => (statement) => {
 	const splitedStatement = statement.split('\n');
 	if (splitedStatement.length < 4 || !splitedStatement[splitedStatement.length - 2].trim().startsWith('--')) {
 		return statement;
 	}
-	const lineWithTrailingCommaIndex = dependencies.lodash.findLastIndex(splitedStatement, line => {
+	const lineWithTrailingCommaIndex = _.findLastIndex(splitedStatement, line => {
 		if (line.trim() !== ');' && !line.trim().startsWith('--')) {
 			return true;
 		}

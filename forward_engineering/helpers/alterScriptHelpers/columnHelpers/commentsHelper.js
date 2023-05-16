@@ -1,4 +1,4 @@
-const {generateFullEntityName} = require("../generalHelper");
+const {generateFullEntityName} = require("../../../utils/generalUtils");
 const {prepareName, wrapInSingleQuotes} = require("../../generalHelper");
 
 const getUpdatedCommentOnColumnScripts = (_, ddlProvider) => (collection) => {

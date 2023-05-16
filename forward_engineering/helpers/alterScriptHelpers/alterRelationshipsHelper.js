@@ -1,4 +1,4 @@
-const {getFullEntityName} = require("./generalHelper");
+const {getFullEntityName} = require("../../utils/generalUtils");
 const {replaceSpaceWithUnderscore, prepareName} = require("../generalHelper");
 
 /**

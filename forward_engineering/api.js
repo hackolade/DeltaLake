@@ -18,6 +18,7 @@ const setAppDependencies = ({ lodash }) => _ = lodash;
 module.exports = {
 	generateScript(data, logger, callback, app) {
 		try {
+			const _ = app.require('lodash');
 			setDependencies(app);
 			setAppDependencies(dependencies);
 			const jsonSchema = JSON.parse(data.jsonSchema);
@@ -33,7 +34,7 @@ module.exports = {
 				scripts = getAlterScript(jsonSchema, definitions, data, app);
 			} else {
 				const databaseStatement = getDatabaseStatement(containerData);
-				const tableStatements = getTableStatement(
+				const tableStatements = getTableStatement(_)(
 					containerData,
 					entityData,
 					jsonSchema,
@@ -95,6 +96,7 @@ module.exports = {
 
 	generateContainerScript(data, logger, callback, app) {
 		try {
+			const _ = app.require('lodash');
 			setDependencies(app);
 			setAppDependencies(dependencies);
 			const containerData = data.containerData;
@@ -142,7 +144,7 @@ module.exports = {
 				];
 				const likeTableData = data.entityData[getTab(0, entityData)?.like];
 
-				const tableStatement = getTableStatement(
+				const tableStatement = getTableStatement(_)(
 					...args,
 					true,
 					likeTableData,

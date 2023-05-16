@@ -1,4 +1,4 @@
-const {prepareScript, generateFullEntityName} = require("../generalHelper");
+const {prepareScript, generateFullEntityName} = require("../../../utils/generalUtils");
 const {EntitiesThatSupportComments} = require("../../../enums/entityType");
 const {wrapInSingleQuotes} = require("../../generalHelper");
 

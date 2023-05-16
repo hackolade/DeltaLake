@@ -11,7 +11,7 @@ const {
     getEntityData,
     getEntityName,
     prepareScript
-} = require('./generalHelper');
+} = require('../../utils/generalUtils');
 const {getModifyCollectionCommentsScripts} = require('./entityHelpers/commentsHelper');
 const {getModifyCheckConstraintsScripts} = require("./columnHelpers/checkConstraintHelper");
 const {getModifyNonNullColumnsScripts} = require("./columnHelpers/nonNullConstraintHelper");
@@ -119,7 +119,7 @@ const generateModifyCollectionScript = (collection, definitions, ddlProvider) =>
             ...collection,
             role: {...collection.role, ...roleData}
         }, definitions);
-        const addCollectionScript = getTableStatement(...hydratedCollection, true);
+        const addCollectionScript = getTableStatement(_)(...hydratedCollection, true);
         const deleteCollectionScript = ddlProvider.dropTable(fullCollectionName);
         return {type: 'new', script: prepareScript(deleteCollectionScript, addCollectionScript)};
     }
@@ -145,7 +145,7 @@ const getAddCollectionsScripts = definitions => entity => {
     const properties = getEntityProperties(entity);
     const indexes = _.get(entity, 'role.BloomIndxs', [])
     const hydratedCollection = hydrateCollection(entity, definitions);
-    const collectionScript = getTableStatement(...hydratedCollection, true);
+    const collectionScript = getTableStatement(_)(...hydratedCollection, true);
     const indexScript = getIndexes(...hydrateAddIndexes(entity, indexes, properties, definitions));
 
     return prepareScript(collectionScript, indexScript);
@@ -223,7 +223,7 @@ const getDeleteColumnScripsForOlderRuntime = (definitions, provider) => entity =
     const addIndexScript = getIndexes(...hydratedAddIndex);
     const deleteCollectionScript = provider.dropTable(fullCollectionName);
     const hydratedCollection = hydrateCollection(entityData, definitions);
-    const addCollectionScript = getTableStatement(...hydratedCollection, true);
+    const addCollectionScript = getTableStatement(_)(...hydratedCollection, true);
 
     return prepareScript(dropIndexScript, deleteCollectionScript, addCollectionScript, addIndexScript);
 };
@@ -309,7 +309,7 @@ const getModifyColumnsScriptsForOlderRuntime = (definitions, ddlProvider) => col
         const fullCollectionName = generateFullEntityName(collection);
         const deleteCollectionScript = ddlProvider.dropTable(fullCollectionName);
         const hydratedCollection = hydrateCollection(entityData, definitions);
-        const addCollectionScript = getTableStatement(...hydratedCollection, true);
+        const addCollectionScript = getTableStatement(_)(...hydratedCollection, true);
         tableModificationScripts = [deleteCollectionScript, addCollectionScript];
     }
 

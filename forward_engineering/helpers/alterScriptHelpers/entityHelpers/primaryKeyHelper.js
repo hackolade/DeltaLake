@@ -1,4 +1,4 @@
-const {generateFullEntityName, getEntityNameFromCollection} = require("../generalHelper");
+const {generateFullEntityName, getEntityNameFromCollection} = require("../../../utils/generalUtils");
 const {prepareName} = require("../../generalHelper");
 
 /**

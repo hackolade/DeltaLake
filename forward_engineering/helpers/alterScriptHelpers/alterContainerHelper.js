@@ -1,6 +1,6 @@
 const {getDatabaseStatement, getDatabaseAlterStatement} = require('../databaseHelper')
 const {dependencies} = require('../appDependencies');
-const {getEntityData} = require('./generalHelper');
+const {getEntityData} = require('../../utils/generalUtils');
 const {getIsChangeProperties} = require('./common');
 const {getAlterCommentsScript} = require("./containerHelpers/commentsHelper");
 

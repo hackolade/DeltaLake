@@ -125,7 +125,7 @@ const getClusteringKeys = (clusteredKeys, deactivatedColumnNames, isParentItemAc
 	if (!isParentItemActivated) {
 		return clusteredKeys.join(', ');
 	}
-	const { keysString } = commentDeactivatedInlineKeys(clusteredKeys, deactivatedColumnNames);
+	const { keysString } = commentDeactivatedInlineKeys(_)(clusteredKeys, deactivatedColumnNames);
 	return keysString;
 };
 
@@ -201,7 +201,7 @@ const getSkewedKeyStatement = (skewedKeys, skewedOn, asDirectories, deactivatedC
 		return getStatement(skewedKeys.join(', '));
 	}
 
-	const { isAllKeysDeactivated, keysString } = commentDeactivatedInlineKeys(skewedKeys, deactivatedColumnNames);
+	const { isAllKeysDeactivated, keysString } = commentDeactivatedInlineKeys(_)(skewedKeys, deactivatedColumnNames);
 	if (isAllKeysDeactivated) {
 		return '-- ' + getStatement(keysString);
 	}
@@ -255,7 +255,7 @@ const getStoredAsStatement = (tableData) => {
 	return `STORED AS ${tableData.storedAsTable.toUpperCase()}`;
 };
 
-const getTableStatement = (containerData, entityData, jsonSchema, definitions, areColumnConstraintsAvailable, likeTableData) => {
+const getTableStatement = (_) => (containerData, entityData, jsonSchema, definitions, areColumnConstraintsAvailable, likeTableData) => {
 	setDependencies(dependencies);
 
 	const dbName = replaceSpaceWithUnderscore(getName(getTab(0, containerData)));
@@ -295,7 +295,7 @@ const getTableStatement = (containerData, entityData, jsonSchema, definitions, a
 	if (!_.isEmpty(constraintsStatements)) {
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + ';\n';
 	}
-	return removeRedundantTrailingCommaFromStatement(tableStatement);
+	return removeRedundantTrailingCommaFromStatement(_)(tableStatement);
 };
 
 const getUsing = using => {
