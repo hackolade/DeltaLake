@@ -11,6 +11,12 @@
 		"entity": true,
 		"container": true
 	},
+	"feLevelSelector": {
+		"entity": {
+			"separateBucket": true
+		},
+		"container": true
+	},
 	"applyScriptToInstance": true,
 	"mode": "mysql",
 	"additionalOptions": [
