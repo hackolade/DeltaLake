@@ -9,20 +9,10 @@ const doesTableHaveAnyPK = (entityJsonSchema) => {
     return columnJsonSchemas.some(property => Boolean(property.primaryKey));
 }
 
-
-/**
- * @param entityJsonSchema {Object}
- * @return {boolean}
- * */
-const doesTableHaveCompositePK = (entityJsonSchema) => {
-    const columnJsonSchemas = Object.values(entityJsonSchema.properties);
-    return columnJsonSchemas.some(property => Boolean(property.compositePrimaryKey));
-}
-
 /**
  * @return {(entitiesJsonSchema: Object, dbName: string) => string}
  * */
-const getCreateRegularPKScript = (_, ddlProvider) => (entityJsonSchema, dbName) => {
+const getCreatePKConstraintScript = (_, ddlProvider) => (entityJsonSchema, dbName) => {
     const pkColumnNames = _.toPairs(entityJsonSchema.properties)
         .filter(([name, jsonSchema]) => Boolean(jsonSchema.primaryKey))
         .map(([name]) => name)
@@ -46,11 +36,7 @@ const getCreatePKConstraintsScript = (app) => (entityJsonSchema, dbName) => {
     const _ = app.require('lodash');
     const ddlProvider = require('../../ddlProvider/ddlProvider')(app);
 
-    if (doesTableHaveCompositePK(entityJsonSchema)) {
-        return '';
-    }
-
-    return getCreateRegularPKScript(_, ddlProvider)(entityJsonSchema, dbName);
+    return getCreatePKConstraintScript(_, ddlProvider)(entityJsonSchema, dbName);
 }
 
 module.exports = {
