@@ -15,7 +15,7 @@ const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const { dependencies } = require('./appDependencies');
 const {getCheckConstraintsScripts} = require("./entityHelpers/checkConstraintHelper");
-const {getCreatePKConstraintsScripts} = require("./entityHelpers/primaryKeyHelper");
+const {getCreatePKConstraintsScript} = require("./entityHelpers/primaryKeyHelper");
 
 let _;
 const setDependencies = ({ lodash }) => _ = lodash;
@@ -258,7 +258,7 @@ const getStoredAsStatement = (tableData) => {
 	return `STORED AS ${tableData.storedAsTable.toUpperCase()}`;
 };
 
-const getTableStatement = (app) => (containerData, entityData, jsonSchema, definitions, areColumnConstraintsAvailable, likeTableData) => {
+const getTableStatement = (app) => (containerData, entityData, entityJsonSchema, definitions, areColumnConstraintsAvailable, likeTableData) => {
 	const _ = app.require('lodash');
 
 	const dbName = replaceSpaceWithUnderscore(getName(getTab(0, containerData)));
@@ -266,8 +266,8 @@ const getTableStatement = (app) => (containerData, entityData, jsonSchema, defin
 	const container = getTab(0, containerData);
 	const isTableActivated = tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
 	const tableName = replaceSpaceWithUnderscore(getName(tableData));
-	const { columns, deactivatedColumnNames } = getColumns(jsonSchema, areColumnConstraintsAvailable, definitions);
-	const keyNames = keyHelper.getKeyNames(tableData, jsonSchema, definitions);
+	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, areColumnConstraintsAvailable, definitions);
+	const keyNames = keyHelper.getKeyNames(tableData, entityJsonSchema, definitions);
 	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
 	let tableStatement = getCreateStatement({
 		dbName,
@@ -294,11 +294,16 @@ const getTableStatement = (app) => (containerData, entityData, jsonSchema, defin
 		tableOptions: tableData.tableOptions,
 	});
 
-	const constraintsStatements = getCheckConstraintsScripts(columns, tableName).join(';\n');
+	const statementsDelimiter = ';\n';
+
+	const constraintsStatements = getCheckConstraintsScripts(columns, tableName).join(statementsDelimiter);
 	if (!_.isEmpty(constraintsStatements)) {
-		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + ';\n';
+		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + statementsDelimiter;
 	}
-	const createPrimaryKeysScript = getCreatePKConstraintsScripts(app)();
+	const createPrimaryKeysScript = getCreatePKConstraintsScript(app)(entityJsonSchema, dbName);
+	if (!_.isEmpty(createPrimaryKeysScript)) {
+		tableStatement = tableStatement  + '\n\n' + createPrimaryKeysScript;
+	}
 	return removeRedundantTrailingCommaFromStatement(_)(tableStatement);
 };
 
