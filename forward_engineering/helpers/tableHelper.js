@@ -14,6 +14,8 @@ const {
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const { dependencies } = require('./appDependencies');
+const {getCheckConstraintsScripts} = require("./entityHelpers/checkConstraintHelper");
+const {getCreatePKConstraintsScripts} = require("./entityHelpers/primaryKeyHelper");
 
 let _;
 const setDependencies = ({ lodash }) => _ = lodash;
@@ -292,10 +294,11 @@ const getTableStatement = (_) => (containerData, entityData, jsonSchema, definit
 		tableOptions: tableData.tableOptions,
 	});
 
-	const constraintsStatements = Object.keys(columns).map(colName => ({ colName: colName.replaceAll('`', ''), ...columns[colName] })).filter(column => column.constraints.check).map(column => `ALTER TABLE ${tableName} ADD CONSTRAINT \`${column.colName}_constraint\` CHECK (${column.constraints.check})`).join(';\n')
+	const constraintsStatements = getCheckConstraintsScripts(columns, tableName).join(';\n');
 	if (!_.isEmpty(constraintsStatements)) {
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + ';\n';
 	}
+	const createPrimaryKeysScript = getCreatePKConstraintsScripts();
 	return removeRedundantTrailingCommaFromStatement(_)(tableStatement);
 };
 
