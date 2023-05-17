@@ -14,7 +14,7 @@
 		"uniqueItems": false
 	},
 	"subtypes": {
-		"array<str>": {
+		"array<txt>": {
 			"childValueType": "text"
 		},
 		"array<num>": {
