@@ -35,7 +35,7 @@ module.exports = {
                 scripts = getAlterScript(jsonSchema, definitions, data, app);
             } else {
                 const databaseStatement = getDatabaseStatement(containerData);
-                const tableStatements = getTableStatement(_)(
+                const tableStatements = getTableStatement(app)(
                     containerData,
                     entityData,
                     jsonSchema,
@@ -144,7 +144,7 @@ module.exports = {
                 ];
                 const likeTableData = data.entityData[getTab(0, entityData)?.like];
 
-                const tableStatement = getTableStatement(_)(
+                const tableStatement = getTableStatement(app)(
                     ...args,
                     true,
                     likeTableData,

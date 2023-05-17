@@ -47,7 +47,7 @@ const getAlterContainersScripts = (schema, provider) => {
 	return [...deletedScripts, ...addedScripts, ...modifiedScripts];
 };
 
-const getAlterCollectionsScripts = ({ schema, definitions, provider, data, _ }) => {
+const getAlterCollectionsScripts = ({ schema, definitions, provider, data, _, app }) => {
 	const getCollectionScripts = (items, compMode, getScript) =>
 		items.filter(item => item.compMod?.[compMode]).flatMap(getScript);
 
@@ -59,7 +59,7 @@ const getAlterCollectionsScripts = ({ schema, definitions, provider, data, _ }) 
 	const addedCollectionsScripts = getCollectionScripts(
 		getItems(schema, 'entities', 'added'),
 		'created',
-		getAddCollectionsScripts(definitions)
+		getAddCollectionsScripts(app, definitions)
 	);
 	const deletedCollectionsScripts = getCollectionScripts(
 		getItems(schema, 'entities', 'deleted'),
@@ -69,7 +69,7 @@ const getAlterCollectionsScripts = ({ schema, definitions, provider, data, _ }) 
 	const modifiedCollectionsScripts = getCollectionScripts(
 		getItems(schema, 'entities', 'modified'),
 		'modified',
-		getModifyCollectionsScripts(definitions, provider)
+		getModifyCollectionsScripts(app, definitions, provider)
 	);
 	const modifiedCollectionCommentsScripts = getItems(schema, 'entities', 'modified')
 		.flatMap(item => getModifyCollectionCommentsScripts(provider)(item));
@@ -78,15 +78,15 @@ const getAlterCollectionsScripts = ({ schema, definitions, provider, data, _ }) 
 
 	const addedColumnsScripts = getColumnScripts(
 		getItems(schema, 'entities', 'added'),
-		getAddColumnsScripts(definitions, provider)
+		getAddColumnsScripts(app, definitions, provider)
 	);
 	const deletedColumnsScripts = getColumnScripts(
 		getItems(schema, 'entities', 'deleted'),
-		getDeletedColumnsScriptsMethod(definitions, provider)
+		getDeletedColumnsScriptsMethod(app, definitions, provider)
 	);
 	const modifiedColumnsScripts = getColumnScripts(
 		getItems(schema, 'entities', 'modified'),
-		getModifyColumnsScriptsMethod(definitions, provider)
+		getModifyColumnsScriptsMethod(app, definitions, provider)
 	);
 
 	return [
@@ -158,7 +158,7 @@ const getAlterScript = (schema, definitions, data, app) => {
 	const provider = require('../ddlProvider/ddlProvider')(app);
 	const _ = app.require('lodash');
 	const containersScripts = getAlterContainersScripts(schema, provider);
-	const collectionsScripts = getAlterCollectionsScripts({ schema, definitions, provider, data, _ });
+	const collectionsScripts = getAlterCollectionsScripts({ schema, definitions, provider, data, _, app });
 	const viewsScripts = getAlterViewsScripts(schema, provider);
 	const relationshipsScripts = getAlterRelationshipsScripts({ schema, ddlProvider: provider, _ });
 	let scripts = containersScripts

@@ -258,8 +258,8 @@ const getStoredAsStatement = (tableData) => {
 	return `STORED AS ${tableData.storedAsTable.toUpperCase()}`;
 };
 
-const getTableStatement = (_) => (containerData, entityData, jsonSchema, definitions, areColumnConstraintsAvailable, likeTableData) => {
-	setDependencies(dependencies);
+const getTableStatement = (app) => (containerData, entityData, jsonSchema, definitions, areColumnConstraintsAvailable, likeTableData) => {
+	const _ = app.require('lodash');
 
 	const dbName = replaceSpaceWithUnderscore(getName(getTab(0, containerData)));
 	const tableData = getTab(0, entityData);
@@ -298,7 +298,7 @@ const getTableStatement = (_) => (containerData, entityData, jsonSchema, definit
 	if (!_.isEmpty(constraintsStatements)) {
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + ';\n';
 	}
-	const createPrimaryKeysScript = getCreatePKConstraintsScripts();
+	const createPrimaryKeysScript = getCreatePKConstraintsScripts(app)();
 	return removeRedundantTrailingCommaFromStatement(_)(tableStatement);
 };
 
