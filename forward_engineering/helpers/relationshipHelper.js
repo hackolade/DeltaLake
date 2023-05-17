@@ -16,18 +16,29 @@ const getCollectionPropertyNamesByIds = (_) => (collection, propertiesIds) => {
         .map(([name]) => name);
 }
 
+/**
+ * @param relationship {Object}
+ * @return {Array<string>}
+ **/
 const getChildFieldIds = (relationship) => {
     return relationship.childField
         .map(path => path.filter(elementId => elementId !== relationship.childCollection))
         .flat();
 }
 
+/**
+ * @param relationship {Object}
+ * @return {Array<string>}
+ **/
 const getParentFieldIds = (relationship) => {
     return relationship.parentField
         .map(path => path.filter(elementId => elementId !== relationship.parentCollection))
         .flat();
 }
 
+/**
+ * @return {(relationship: Object, entitiesJsonSchema: Object) => string}
+ **/
 const createSingleRelationship = (_, ddlProvider) => (relationship, entitiesJsonSchema) => {
     const parentTable = entitiesJsonSchema[relationship.parentCollection];
     const childTable = entitiesJsonSchema[relationship.childCollection];
@@ -60,6 +71,9 @@ const createSingleRelationship = (_, ddlProvider) => (relationship, entitiesJson
     });
 }
 
+/**
+ * @return {(relationships: Array<Object>, entitiesJsonSchema: Object) => Array<string>}
+ **/
 const getCreateRelationshipScripts = (app) => (relationships, entitiesJsonSchema) => {
     const _ = app.require('lodash');
     const ddlProvider = require('../ddlProvider/ddlProvider')(app);
