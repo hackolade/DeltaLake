@@ -17,11 +17,17 @@ const hydrateDrop = container => {
     return role?.code || role?.name;
 };
 
+/**
+ * @return {string}
+ * */
 const getAddContainerScript = container => {
     const dataContainer = [container.role || {}]
     return getDatabaseStatement(dataContainer);
 };
 
+/**
+ * @return {(container: Object) => string}
+ * */
 const getDeleteContainerScript = provider => container => {
     const hydratedDrop = hydrateDrop(container);
     return provider.dropDatabase(hydratedDrop);
@@ -35,6 +41,9 @@ const extractNamesFromCompMod = (compMod) => {
     };
 }
 
+/**
+ * @return {(container: Object) => Array<string>}
+ * */
 const getModifyContainerScript = provider => container => {
     setDependencies(dependencies);
     const compMod = _.get(container, 'role.compMod', {});

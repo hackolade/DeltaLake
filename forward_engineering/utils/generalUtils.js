@@ -4,7 +4,13 @@ const sqlFormatter = require('sql-formatter');
 const {RESERVED_WORDS_AS_ARRAY} = require('../enums/reservedWords');
 const {DropStatements} = require("../enums/dropStatements");
 
+/**
+ * @typedef {((args: any) => string) | ((args: any) => ChainFunction)} ChainFunction
+ * */
 
+/**
+ * @return {ChainFunction}
+ * */
 const buildStatement = (mainStatement, isActivated) => {
     let composeStatements = (...statements) => {
         return statements.reduce((result, statement) => result + statement, mainStatement);
@@ -20,6 +26,11 @@ const buildStatement = (mainStatement, isActivated) => {
         return commentDeactivatedStatements(composeStatements(), isActivated);
     };
 
+    /**
+     * @param condition {boolean}
+     * @param statement {string}
+     * @return {string}
+     * */
     const getStatement = (condition, statement) => {
         if (condition && statement === ')') {
             return '\n)';
@@ -96,6 +107,11 @@ const doesScriptContainDropStatement = (script) => {
         .some(scriptLine => isScriptADropStatement(scriptLine));
 }
 
+/**
+ * @param statement {string}
+ * @param isActivated {boolean}
+ * @return {string}
+ * */
 const commentDeactivatedStatements = (statement, isActivated = true) => {
     if (isActivated) {
         return statement;

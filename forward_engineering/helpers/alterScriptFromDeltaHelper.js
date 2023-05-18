@@ -48,6 +48,9 @@ const getItems = (entity, nameProperty, modify) =>
         .filter(Boolean)
         .map(items => Object.values(items.properties)[0]);
 
+/**
+ * @return Array<string>
+ * */
 const getAlterContainersScripts = (schema, provider) => {
     const addedScripts = getItems(schema, 'containers', 'added').map(
         getAddContainerScript
@@ -150,7 +153,7 @@ const getAlterViewsScripts = (schema, provider) => {
 /**
  * @return Array<RelationshipAlterScriptDto>
  * */
-const getAlterRelationshipsScripts = ({schema, ddlProvider, _}) => {
+const getAlterRelationshipsScriptDtos = ({schema, ddlProvider, _}) => {
     const deletedRelationships = getItems(schema, 'relationships', 'deleted')
         .filter(relationship => relationship.role?.compMod?.deleted);
     const addedRelationships = getItems(schema, 'relationships', 'added')
@@ -193,15 +196,17 @@ const getAlterScript = (schema, definitions, data, app) => {
     const containersScripts = getAlterContainersScripts(schema, provider);
     const collectionsScripts = getAlterCollectionsScripts({schema, definitions, provider, data, _, app});
     const viewsScripts = getAlterViewsScripts(schema, provider);
-    const relationshipsScriptDtos = getAlterRelationshipsScripts({schema, ddlProvider: provider, _});
-    const relationshipScripts = getRelationshipScriptsWithCommentedDDL(relationshipsScriptDtos);
 
     let scripts = containersScripts
         .concat(collectionsScripts, viewsScripts)
         .filter(Boolean)
         .map(script => script.trim());
     scripts = getCommentedDropScript(scripts, data);
+
+    const relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
+    const relationshipScripts = getRelationshipScriptsWithCommentedDDL(relationshipsScriptDtos);
     scripts = scripts.concat(relationshipScripts);
+
     return builds(scripts)
 };
 
