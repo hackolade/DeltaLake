@@ -80,7 +80,11 @@ const getDeleteSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
 
     const relationshipName = compMod.name?.old || getRelationshipName(relationship) || '';
     const relationshipNameForDDL = prepareName(relationshipName);
-    return ddlProvider.dropFkConstraint(childTableName, relationshipNameForDDL);
+    const dropFkConstraintScript = ddlProvider.dropFkConstraint(childTableName, relationshipNameForDDL);
+    if (compMod.isActivated?.new === true) {
+        return dropFkConstraintScript;
+    }
+    return commentDeactivatedStatements(dropFkConstraintScript, false);
 }
 
 const canRelationshipBeDeleted = (relationship) => {
