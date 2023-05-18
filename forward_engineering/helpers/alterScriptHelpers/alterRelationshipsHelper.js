@@ -55,7 +55,6 @@ const canRelationshipBeAdded = (relationship) => {
         compMod.child?.bucketName,
         compMod.child?.collectionName,
         compMod.child?.fieldNames?.length,
-        compMod.isActivated?.new,
     ].every(property => Boolean(property));
 }
 
@@ -93,7 +92,6 @@ const canRelationshipBeDeleted = (relationship) => {
         (compMod.name?.old || getRelationshipName(relationship)),
         compMod.child?.bucketName,
         compMod.child?.collectionName,
-        compMod.isActivated?.new,
     ].every(property => Boolean(property));
 }
 
