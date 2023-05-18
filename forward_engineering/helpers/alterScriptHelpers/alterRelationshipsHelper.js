@@ -1,4 +1,4 @@
-const {getFullEntityName, replaceSpaceWithUnderscore, prepareName} = require("../../utils/generalUtils");
+const {getFullEntityName, replaceSpaceWithUnderscore, prepareName, commentDeactivatedStatements} = require("../../utils/generalUtils");
 
 /**
  * @return {(relationship: Object) => string}
@@ -23,7 +23,11 @@ const getAddSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
         parentTableName,
         parentColumns: compMod.parent.fieldNames.map(name => prepareName(name)),
     };
-    return ddlProvider.addFkConstraint(addFkConstraintDto);
+    const addFkConstraintScript = ddlProvider.addFkConstraint(addFkConstraintDto);
+    if (compMod.isActivated?.new === true) {
+        return addFkConstraintScript;
+    }
+    return commentDeactivatedStatements(addFkConstraintScript, false);
 }
 
 /**
@@ -68,7 +72,11 @@ const getDeleteSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
 
     const relationshipName = compMod.name?.old || '';
     const relationshipNameForDDL = prepareName(relationshipName);
-    return ddlProvider.dropFkConstraint(childTableName, relationshipNameForDDL);
+    const deleteFKConstraintScript = ddlProvider.dropFkConstraint(childTableName, relationshipNameForDDL);
+    if (compMod.isActivated?.new === true) {
+        return deleteFKConstraintScript;
+    }
+    return commentDeactivatedStatements(deleteFKConstraintScript, false);
 }
 
 const canRelationshipBeDeleted = (relationship) => {
