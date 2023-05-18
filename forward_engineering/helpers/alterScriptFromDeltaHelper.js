@@ -32,9 +32,8 @@ const {
 } = require("./alterScriptHelpers/alterRelationshipsHelper");
 
 /**
- * @typedef {import('./alterScriptHelpers/alterRelationshipsHelper').RelationshipAlterScriptDto} RelationshipAlterScriptDto
+ * @typedef {import('./alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
  * */
-
 
 /**
  * @param entity {Object}
@@ -64,6 +63,9 @@ const getAlterContainersScripts = (schema, provider) => {
     return [...deletedScripts, ...addedScripts, ...modifiedScripts];
 };
 
+/**
+ * @return Array<string>
+ * */
 const getAlterCollectionsScripts = ({schema, definitions, provider, data, _, app}) => {
     const getCollectionScripts = (items, compMode, getScript) =>
         items.filter(item => item.compMod?.[compMode]).flatMap(getScript);
@@ -118,6 +120,9 @@ const getAlterCollectionsScripts = ({schema, definitions, provider, data, _, app
     ];
 };
 
+/**
+ * @return Array<string>
+ * */
 const getAlterViewsScripts = (schema, provider) => {
     const getViewScripts = (views, compMode, getScript) =>
         views
@@ -151,7 +156,7 @@ const getAlterViewsScripts = (schema, provider) => {
 };
 
 /**
- * @return Array<RelationshipAlterScriptDto>
+ * @return Array<AlterScriptDto>
  * */
 const getAlterRelationshipsScriptDtos = ({schema, ddlProvider, _}) => {
     const deletedRelationships = getItems(schema, 'relationships', 'deleted')
@@ -172,23 +177,55 @@ const getAlterRelationshipsScriptDtos = ({schema, ddlProvider, _}) => {
 }
 
 /**
- * @param relationshipScriptDtos {Array<RelationshipAlterScriptDto>}
+ * @param scriptDtos {Array<AlterScriptDto>}
  * @return {Array<string>}
  * */
-const getRelationshipScriptsWithCommentedDDL = (relationshipScriptDtos) => {
-    return relationshipScriptDtos.map((dto) => {
+const getScriptsWithCommentedDDL = (scriptDtos) => {
+    const {additionalOptions = []} = data.options || {};
+    const applyDropStatements = (additionalOptions.find(option => option.id === 'applyDropStatements') || {}).value;
+
+    return scriptDtos.map((dto) => {
         if (dto.isActivated) {
             return dto.scripts
                 .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, scriptDto.isDropScript));
         }
-        return dto.scripts
-            .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, false));
+        if (!applyDropStatements) {
+            return dto.scripts
+                .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, false));
+        }
+        return dto.scripts.map((scriptDto) => scriptDto.script);
     })
         .flat()
         .filter(Boolean)
         .map(script => script.trim());
 };
 
+/**
+ * @return {Array<AlterScriptDto>}
+ * */
+const getAlterScriptDtos = (schema, definitions, data, app) => {
+    const provider = require('../ddlProvider/ddlProvider')(app);
+    const _ = app.require('lodash');
+    const containersScripts = getAlterContainersScripts(schema, provider);
+    const collectionsScripts = getAlterCollectionsScripts({schema, definitions, provider, data, _, app});
+    const viewsScripts = getAlterViewsScripts(schema, provider);
+
+    const scripts = containersScripts
+        .concat(collectionsScripts, viewsScripts)
+        .filter(Boolean)
+        .map(script => script.trim())
+        .map(script => ({
+            isActivated: true,
+            scripts: [{
+                isDropScript: doesScriptContainDropStatement(script),
+                script
+            }]
+        }));
+
+    const relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
+
+    return scripts.concat(relationshipsScriptDtos);
+};
 
 const getAlterScript = (schema, definitions, data, app) => {
     const provider = require('../ddlProvider/ddlProvider')(app);
@@ -204,7 +241,7 @@ const getAlterScript = (schema, definitions, data, app) => {
     scripts = getCommentedDropScript(scripts, data);
 
     const relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
-    const relationshipScripts = getRelationshipScriptsWithCommentedDDL(relationshipsScriptDtos);
+    const relationshipScripts = getScriptsWithCommentedDDL(relationshipsScriptDtos);
     scripts = scripts.concat(relationshipScripts);
 
     return builds(scripts)

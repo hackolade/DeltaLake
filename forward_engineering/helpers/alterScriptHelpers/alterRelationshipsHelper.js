@@ -4,29 +4,9 @@ const {
     prepareName,
 } = require("../../utils/generalUtils");
 
-class RelationshipModificationScript {
-    /**
-     * @type string
-     * */
-    script
-
-    /**
-     * @type boolean
-     * */
-    isDropScript
-}
-
-class RelationshipAlterScriptDto {
-    /**
-     * @type {boolean}
-     * */
-    isActivated
-
-    /**
-     * @type {Array<RelationshipModificationScript>}
-     * */
-    scripts
-}
+/**
+ * @typedef {import('./types/AlterScriptDto').AlterScriptDto} AlterScriptDto
+ * */
 
 /**
  * @param relationship {Object}
@@ -83,7 +63,7 @@ const canRelationshipBeAdded = (relationship) => {
 }
 
 /**
- * @return {(modifiedEntities: Object[], addedRelationships: Array<Object>) => Array<RelationshipAlterScriptDto>}
+ * @return {(addedRelationships: Array<Object>) => Array<AlterScriptDto>}
  * */
 const getAddForeignKeyScripts = (ddlProvider, _) => (addedRelationships) => {
     return addedRelationships
@@ -129,7 +109,7 @@ const canRelationshipBeDeleted = (relationship) => {
 }
 
 /**
- * @return {(deletedRelationships: Array<Object>) => Array<RelationshipAlterScriptDto>}
+ * @return {(deletedRelationships: Array<Object>) => Array<AlterScriptDto>}
  * */
 const getDeleteForeignKeyScripts = (ddlProvider, _) => (deletedRelationships) => {
     return deletedRelationships
@@ -148,7 +128,7 @@ const getDeleteForeignKeyScripts = (ddlProvider, _) => (deletedRelationships) =>
 }
 
 /**
- * @return {(modifiedRelationships: Array<Object>) => Array<RelationshipAlterScriptDto>}
+ * @return {(modifiedRelationships: Array<Object>) => Array<AlterScriptDto>}
  * */
 const getModifyForeignKeyScripts = (ddlProvider, _) => (modifiedRelationships) => {
     return modifiedRelationships
@@ -174,6 +154,4 @@ module.exports = {
     getDeleteForeignKeyScripts,
     getModifyForeignKeyScripts,
     getAddForeignKeyScripts,
-    RelationshipModificationScript,
-    RelationshipAlterScriptDto,
 }
