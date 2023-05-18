@@ -1,6 +1,14 @@
 const {getFullEntityName, replaceSpaceWithUnderscore, prepareName, commentDeactivatedStatements} = require("../../utils/generalUtils");
 
 /**
+ * @param relationship {Object}
+ * @return string
+ * */
+const getRelationshipName = (relationship) => {
+    return relationship.role.name;
+}
+
+/**
  * @return {(relationship: Object) => string}
  * */
 const getAddSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
@@ -14,7 +22,7 @@ const getAddSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
     const childEntityName = replaceSpaceWithUnderscore(compMod.child.collectionName);
     const childTableName = getFullEntityName(childDBName, childEntityName);
 
-    const relationshipName = compMod.name?.new || relationship.name || '';
+    const relationshipName = compMod.name?.new || getRelationshipName(relationship) || '';
 
     const addFkConstraintDto = {
         childTableName,
@@ -40,7 +48,7 @@ const canRelationshipBeAdded = (relationship) => {
         return false;
     }
     return [
-        (compMod.name?.new || relationship.name),
+        (compMod.name?.new || getRelationshipName(relationship)),
         compMod.parent?.bucketName,
         compMod.parent?.collectionName,
         compMod.parent?.fieldNames?.length,
@@ -71,7 +79,7 @@ const getDeleteSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
     const childEntityName = replaceSpaceWithUnderscore(compMod.child.collectionName);
     const childTableName = getFullEntityName(childDBName, childEntityName);
 
-    const relationshipName = compMod.name?.old || relationship.name || '';
+    const relationshipName = compMod.name?.old || getRelationshipName(relationship) || '';
     const relationshipNameForDDL = prepareName(relationshipName);
     return ddlProvider.dropFkConstraint(childTableName, relationshipNameForDDL);
 }
@@ -82,7 +90,7 @@ const canRelationshipBeDeleted = (relationship) => {
         return false;
     }
     return [
-        (compMod.name?.old || relationship.name),
+        (compMod.name?.old || getRelationshipName(relationship)),
         compMod.child?.bucketName,
         compMod.child?.collectionName,
         compMod.isActivated?.new,
