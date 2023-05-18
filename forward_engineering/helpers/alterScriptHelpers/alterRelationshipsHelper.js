@@ -14,7 +14,7 @@ const getAddSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
     const childEntityName = replaceSpaceWithUnderscore(compMod.child.collectionName);
     const childTableName = getFullEntityName(childDBName, childEntityName);
 
-    const relationshipName = compMod.name?.new || '';
+    const relationshipName = compMod.name?.new || relationship.name || '';
 
     const addFkConstraintDto = {
         childTableName,
@@ -40,13 +40,14 @@ const canRelationshipBeAdded = (relationship) => {
         return false;
     }
     return [
-        compMod.name?.new,
+        (compMod.name?.new || relationship.name),
         compMod.parent?.bucketName,
         compMod.parent?.collectionName,
         compMod.parent?.fieldNames?.length,
         compMod.child?.bucketName,
         compMod.child?.collectionName,
         compMod.child?.fieldNames?.length,
+        compMod.isActivated?.new,
     ].every(property => Boolean(property));
 }
 
@@ -70,13 +71,9 @@ const getDeleteSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
     const childEntityName = replaceSpaceWithUnderscore(compMod.child.collectionName);
     const childTableName = getFullEntityName(childDBName, childEntityName);
 
-    const relationshipName = compMod.name?.old || '';
+    const relationshipName = compMod.name?.old || relationship.name || '';
     const relationshipNameForDDL = prepareName(relationshipName);
-    const deleteFKConstraintScript = ddlProvider.dropFkConstraint(childTableName, relationshipNameForDDL);
-    if (compMod.isActivated?.new === true) {
-        return deleteFKConstraintScript;
-    }
-    return commentDeactivatedStatements(deleteFKConstraintScript, false);
+    return ddlProvider.dropFkConstraint(childTableName, relationshipNameForDDL);
 }
 
 const canRelationshipBeDeleted = (relationship) => {
@@ -85,9 +82,10 @@ const canRelationshipBeDeleted = (relationship) => {
         return false;
     }
     return [
-        compMod.name?.old,
+        (compMod.name?.old || relationship.name),
         compMod.child?.bucketName,
         compMod.child?.collectionName,
+        compMod.isActivated?.new,
     ].every(property => Boolean(property));
 }
 
