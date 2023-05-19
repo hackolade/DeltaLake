@@ -177,21 +177,27 @@ const getAlterRelationshipsScriptDtos = ({schema, ddlProvider, _}) => {
 }
 
 /**
- * @param scriptDtos {Array<AlterScriptDto>}
+ * @param scriptDtos {Array<AlterScriptDto>},
+ * @param data {{
+ *     options: {
+ *         id: string,
+ *         value: any,
+ *     },
+ * }}
  * @return {Array<string>}
  * */
-const getScriptsWithCommentedDDL = (scriptDtos) => {
+const getScriptsWithCommentedDDL = (scriptDtos, data) => {
     const {additionalOptions = []} = data.options || {};
     const applyDropStatements = (additionalOptions.find(option => option.id === 'applyDropStatements') || {}).value;
 
     return scriptDtos.map((dto) => {
-        if (dto.isActivated) {
+        if (!dto.isActivated) {
             return dto.scripts
-                .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, scriptDto.isDropScript));
+                .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, false));
         }
         if (!applyDropStatements) {
             return dto.scripts
-                .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, false));
+                .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, scriptDto.isDropScript));
         }
         return dto.scripts.map((scriptDto) => scriptDto.script);
     })
@@ -228,43 +234,9 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
 };
 
 const getAlterScript = (schema, definitions, data, app) => {
-    const provider = require('../ddlProvider/ddlProvider')(app);
-    const _ = app.require('lodash');
-    const containersScripts = getAlterContainersScripts(schema, provider);
-    const collectionsScripts = getAlterCollectionsScripts({schema, definitions, provider, data, _, app});
-    const viewsScripts = getAlterViewsScripts(schema, provider);
-
-    let scripts = containersScripts
-        .concat(collectionsScripts, viewsScripts)
-        .filter(Boolean)
-        .map(script => script.trim());
-    scripts = getCommentedDropScript(scripts, data);
-
-    const relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
-    const relationshipScripts = getScriptsWithCommentedDDL(relationshipsScriptDtos);
-    scripts = scripts.concat(relationshipScripts);
-
-    return builds(scripts)
-};
-
-/**
- * @deprecated It is absurd how we create scripts and then parse them to figure out
- * if they contain "drop" statements. A better approach is to add some metadata to scripts during generation process
- * and use that metadata to both comment out statements and determining if we should display "apply drop statements"
- * checkbox. See getRelationshipScriptsWithCommentedHarmfulDDL for reference
- *
- * @return {Array<string>}
- * */
-const getCommentedDropScript = (scripts, data) => {
-    const {additionalOptions = []} = data.options || {};
-    const applyDropStatements = (additionalOptions.find(option => option.id === 'applyDropStatements') || {}).value;
-    if (applyDropStatements) {
-        return scripts;
-    }
-    return scripts.map(script => {
-        const isDrop = doesScriptContainDropStatement(script);
-        return !isDrop ? script : commentDeactivatedStatements(script, false);
-    });
+    const alterScriptDtos = getAlterScriptDtos(schema, definitions, data, app);
+    const scripts = getScriptsWithCommentedDDL(alterScriptDtos, data);
+    return builds(scripts);
 };
 
 const builds = scripts => {
