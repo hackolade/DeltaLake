@@ -230,7 +230,7 @@ const getAlterStatementsWithCommentedUnwantedDDL = (scriptDtos, data) => {
         }
         if (!applyDropStatements) {
             return dto.scripts
-                .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, scriptDto.isDropScript));
+                .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, !scriptDto.isDropScript));
         }
         return dto.scripts.map((scriptDto) => scriptDto.script);
     })
