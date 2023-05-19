@@ -18,14 +18,6 @@ class App {
     require
 }
 
-/**
- * @param error {PluginError | null}
- * @param result {any | null}
- * @return {void}
- * */
-const PluginCallback = (error, result) => {
-};
-
 class Logger {
 
     /**
@@ -149,5 +141,4 @@ module.exports = {
     CoreData,
     Logger,
     PluginError,
-    PluginCallback,
 }

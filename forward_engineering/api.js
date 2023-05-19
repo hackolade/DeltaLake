@@ -16,9 +16,10 @@ const {getCreateRelationshipScripts} = require("./helpers/relationshipHelper");
  * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
  * @typedef {import('./types/coreApplicationTypes').App} App
  * @typedef {import('./types/coreApplicationTypes').Logger} Logger
- * @typedef {import('./types/coreApplicationTypes').PluginCallback} PluginCallback
  * @typedef {import('./types/coreApplicationTypes').CoreData} CoreData
  * @typedef {import('./types/coreApplicationTypes').PluginError} PluginError
+ *
+ * @typedef {(error?: PluginError | null, result?: any | null) => void} PluginCallback
  * */
 
 
