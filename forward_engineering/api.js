@@ -86,7 +86,8 @@ const generateEntityLevelAlterScript = (data, app) => {
 const doesEntityLevelAlterScriptContainDropStatements = (data, app) => {
     const alterScriptDtos = getEntityLevelAlterScriptDtos(data, app);
     return alterScriptDtos
-        .some(alterScriptDto => alterScriptDto.scripts.some(scriptModificationDto => scriptModificationDto.isDropScript));
+        .some(alterScriptDto => alterScriptDto.isActivated && alterScriptDto
+            .scripts.some(scriptModificationDto => scriptModificationDto.isDropScript));
 }
 
 
@@ -192,7 +193,8 @@ const generateContainerLevelAlterScript = (data, app) => {
 const doesContainerLevelAlterScriptContainDropStatements = (data, app) => {
     const alterScriptDtos = getContainerLevelAlterScriptDtos(data, app);
     return alterScriptDtos
-        .some(alterScriptDto => alterScriptDto.scripts.some(scriptModificationDto => scriptModificationDto.isDropScript));
+        .some(alterScriptDto => alterScriptDto.isActivated && alterScriptDto
+            .scripts.some(scriptModificationDto => scriptModificationDto.isDropScript));
 }
 
 /**

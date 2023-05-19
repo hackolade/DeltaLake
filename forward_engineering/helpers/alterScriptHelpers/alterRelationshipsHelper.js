@@ -71,7 +71,7 @@ const getAddForeignKeyScripts = (ddlProvider, _) => (addedRelationships) => {
         .map(relationship => {
             const script = getAddSingleForeignKeyScript(ddlProvider, _)(relationship);
             return {
-                isActivated: Boolean(relationship.isActivated?.new),
+                isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
                 scripts: [{
                     script,
                     isDropScript: false,
@@ -117,7 +117,7 @@ const getDeleteForeignKeyScripts = (ddlProvider, _) => (deletedRelationships) =>
         .map(relationship => {
             const script = getDeleteSingleForeignKeyScript(ddlProvider, _)(relationship);
             return {
-                isActivated: Boolean(relationship.isActivated?.new),
+                isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
                 scripts: [{
                     script,
                     isDropScript: true,
@@ -137,7 +137,7 @@ const getModifyForeignKeyScripts = (ddlProvider, _) => (modifiedRelationships) =
             const deleteScript = getDeleteSingleForeignKeyScript(ddlProvider, _)(relationship);
             const addScript = getAddSingleForeignKeyScript(ddlProvider, _)(relationship);
             return {
-                isActivated: Boolean(relationship.isActivated?.new),
+                isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
                 scripts: [{
                     script: deleteScript,
                     isDropScript: true,
