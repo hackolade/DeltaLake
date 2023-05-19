@@ -1,7 +1,7 @@
 const {
-    getAddContainerScript,
-    getDeleteContainerScript,
-    getModifyContainerScript,
+    getDeleteContainerScriptDto,
+    getModifyContainerScriptDtos,
+    getAddContainerScriptDto,
 } = require('./alterScriptHelpers/alterContainerHelper');
 const {
     getAddCollectionsScripts,
@@ -51,7 +51,7 @@ const getItems = (entity, nameProperty, modify) =>
  * This function is an adapter from our old way of dealing with scripts as strings
  * to our new way of treating them as objects.
  *
- * @param script {string | AlterScriptDto}
+ * @param script {string}
  * @return {AlterScriptDto}
  * */
 const mapScriptToAlterScriptDto = (script) => {
@@ -78,24 +78,22 @@ const assertNoEmptyStatements = (scripts) => {
 /**
  * @return Array<AlterScriptDto>
  * */
-const getAlterContainersScriptDtos = (schema, provider) => {
-    const addedScripts = getItems(schema, 'containers', 'added').map(
-        getAddContainerScript
-    );
-    const deletedScripts = getItems(schema, 'containers', 'deleted').map(
-        getDeleteContainerScript(provider)
-    );
-    const modifiedScripts = getItems(schema, 'containers', 'modified').flatMap(
-        getModifyContainerScript(provider)
-    );
+const getAlterContainersScriptDtos = (schema, provider, _) => {
+    const addedScriptDtos = getItems(schema, 'containers', 'added').map(
+        getAddContainerScriptDto
+    ).filter(Boolean);
+    const deletedScriptDtos = getItems(schema, 'containers', 'deleted').map(
+        getDeleteContainerScriptDto(provider)
+    ).filter(Boolean);
+    const modifiedScriptDtos = getItems(schema, 'containers', 'modified').flatMap(
+        getModifyContainerScriptDtos(provider, _)
+    ).filter(Boolean);
 
-    const resultScripts = [
-        ...deletedScripts,
-        ...addedScripts,
-        ...modifiedScripts
+    return [
+        ...deletedScriptDtos,
+        ...addedScriptDtos,
+        ...modifiedScriptDtos
     ];
-    const resultWithNoEmptyStatements = assertNoEmptyStatements(resultScripts);
-    return resultWithNoEmptyStatements.map(script => mapScriptToAlterScriptDto(script));
 };
 
 /**
@@ -265,7 +263,7 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
     const provider = require('../ddlProvider/ddlProvider')(app);
     const _ = app.require('lodash');
 
-    const containersScriptDtos = getAlterContainersScriptDtos(schema, provider);
+    const containersScriptDtos = getAlterContainersScriptDtos(schema, provider, _);
     const collectionsScriptDtos = getAlterCollectionsScriptDtos({schema, definitions, provider, data, _, app});
     const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider);
     const relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});

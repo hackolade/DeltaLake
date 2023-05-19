@@ -2,6 +2,10 @@ const {EntitiesThatSupportComments} = require("../../../enums/entityType");
 const {replaceSpaceWithUnderscore, wrapInSingleQuotes} = require("../../../utils/generalUtils");
 
 /**
+ * @typedef {import('../types/AlterScriptDto').AlterScriptDto} AlterScriptDto
+ * */
+
+/**
  * @return {{
  *     old?: string,
  *     new?: string,
@@ -12,43 +16,58 @@ const extractDescription = (container) => {
 }
 
 /**
- * @return string
+ * @return {(container: Object) => AlterScriptDto | undefined}
  * */
-const getUpsertCommentsScript = (container, ddlProvider) => {
+const getUpsertCommentsScriptDto = (ddlProvider) => (container) => {
     const description = extractDescription(container);
     if (description.new && description.new !== description.old) {
-        return ddlProvider.updateComment({
+        const script = ddlProvider.updateComment({
             entityType: EntitiesThatSupportComments.SCHEMA,
             entityName: replaceSpaceWithUnderscore(container.role.name),
             comment: wrapInSingleQuotes(description.new),
-        })
+        });
+        return {
+            scripts: [{
+                isDropScript: false,
+                script,
+            }]
+        }
     }
-    return '';
+    return undefined;
 }
 
 /**
- * @return string
+ * @return {(container: Object) => AlterScriptDto | undefined}
  * */
-const getDropCommentsScript = (container, ddlProvider) => {
+const getDropCommentsScriptDto = (ddlProvider) => (container) => {
     const description = extractDescription(container);
     if (description.old && !description.new) {
-        return ddlProvider.dropComment({
+        const script = ddlProvider.dropComment({
             entityType: EntitiesThatSupportComments.SCHEMA,
             entityName: replaceSpaceWithUnderscore(container.role.name)
-        })
+        });
+        return {
+            scripts: [{
+                isDropScript: true,
+                script,
+            }]
+        }
     }
-    return '';
+    return undefined;
 }
 
-const getAlterCommentsScript = (ddlProvider) => (container) => {
-    const upsertCommentScript = getUpsertCommentsScript(container, ddlProvider);
-    const dropCommentScript = getDropCommentsScript(container, ddlProvider);
+/**
+ * @return {(container: Object) => Array<AlterScriptDto>}
+ * */
+const getAlterCommentsScriptDtos = (ddlProvider) => (container) => {
+    const upsertCommentScriptDto = getUpsertCommentsScriptDto(ddlProvider)(container);
+    const dropCommentScriptDto = getDropCommentsScriptDto(ddlProvider)(container);
     return [
-        upsertCommentScript,
-        dropCommentScript
-    ].filter(Boolean).join('\n\n');
+        upsertCommentScriptDto,
+        dropCommentScriptDto
+    ].filter(Boolean);
 }
 
 module.exports = {
-    getAlterCommentsScript,
+    getAlterCommentsScriptDtos,
 }

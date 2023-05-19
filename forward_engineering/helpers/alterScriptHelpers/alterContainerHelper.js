@@ -1,38 +1,64 @@
 const {getDatabaseStatement, getDatabaseAlterStatement} = require('../databaseHelper')
-const {dependencies} = require('../appDependencies');
 const {getEntityData, getIsChangeProperties} = require('../../utils/generalUtils');
-const {getAlterCommentsScript} = require("./containerHelpers/commentsHelper");
+const {getAlterCommentsScriptDtos} = require("./containerHelpers/commentsHelper");
 
-let _;
+/**
+ * @typedef {import('./types/AlterScriptDto').AlterScriptDto} AlterScriptDto
+ * */
 
 const containerProperties = ['comment', 'location', 'dbProperties', 'description'];
 const otherContainerProperties = ['name', 'location'];
 
-const setDependencies = ({lodash}) => _ = lodash;
-
 const getContainerData = compMod => getEntityData(compMod, containerProperties);
 
-const hydrateDrop = container => {
+/**
+ * @param container {Object}
+ * @return {string | undefined}
+ * */
+const getDatabaseName = container => {
     const {role} = container;
     return role?.code || role?.name;
 };
 
 /**
- * @return {string}
+ * @param container {Object}
+ * @return {AlterScriptDto | undefined}
  * */
-const getAddContainerScript = container => {
+const getAddContainerScriptDto = container => {
     const dataContainer = [container.role || {}]
-    return getDatabaseStatement(dataContainer);
+    const script = getDatabaseStatement(dataContainer);
+    if (!script?.length) {
+        return undefined;
+    }
+    return {
+        scripts: [{
+            isDropScript: false,
+            script,
+        }]
+    }
 };
 
 /**
- * @return {(container: Object) => string}
+ * @return {(container: Object) => AlterScriptDto}
  * */
-const getDeleteContainerScript = provider => container => {
-    const hydratedDrop = hydrateDrop(container);
-    return provider.dropDatabase(hydratedDrop);
+const getDeleteContainerScriptDto = provider => container => {
+    const databaseName = getDatabaseName(container);
+    const script = provider.dropDatabase(databaseName);
+    return {
+        scripts: [{
+            isDropScript: true,
+            script,
+        }]
+    }
 };
 
+/**
+ * @param compMod {Object}
+ * @return {{
+ *     new: string,
+ *     old: string,
+ * }}
+ * */
 const extractNamesFromCompMod = (compMod) => {
     const extractName = type => compMod.code?.[type] || compMod.name?.[type];
     return {
@@ -42,32 +68,47 @@ const extractNamesFromCompMod = (compMod) => {
 }
 
 /**
- * @return {(container: Object) => Array<string>}
+ * @return {(container: Object) => Array<AlterScriptDto>}
  * */
-const getModifyContainerScript = provider => container => {
-    setDependencies(dependencies);
+const getModifyContainerScriptDtos = (provider, _) => container => {
     const compMod = _.get(container, 'role.compMod', {});
     const names = extractNamesFromCompMod(compMod);
 
     const didPropertiesChange = getIsChangeProperties(_)({...compMod, name: names}, otherContainerProperties);
     const containerData = {...getContainerData(compMod), name: names.new};
     if (!didPropertiesChange) {
-        const alterCommentsScript = getAlterCommentsScript(provider)(container);
+        const alterCommentsScriptDtos = getAlterCommentsScriptDtos(provider)(container);
         const alterDatabaseScript = getDatabaseAlterStatement([containerData]);
+        if (!alterDatabaseScript?.length) {
+            return alterCommentsScriptDtos;
+        }
         return [
-            alterCommentsScript,
-            alterDatabaseScript,
-        ].filter(Boolean).join('\n\n');
+            ...alterCommentsScriptDtos,
+            {
+                scripts: [{
+                    script: alterCommentsScriptDtos,
+                    isDropScript: false,
+                }]
+            },
+        ];
     }
-    const hydratedDrop = hydrateDrop({role: {...containerData, name: names.old}});
-    const deletedScript = provider.dropDatabase(hydratedDrop);
-    const addedScript = getAddContainerScript({role: containerData});
+    const databaseName = getDatabaseName({role: {...containerData, name: names.old}});
+    const deletedScript = provider.dropDatabase(databaseName);
+    const addedScriptDto = getAddContainerScriptDto({role: containerData});
 
-    return [deletedScript, addedScript];
+    return [
+        {
+            scripts: [{
+                script: deletedScript,
+                isDropScript: true,
+            }]
+        },
+        addedScriptDto
+    ].filter(Boolean);
 };
 
 module.exports = {
-    getAddContainerScript,
-    getDeleteContainerScript,
-    getModifyContainerScript
+    getAddContainerScriptDto,
+    getDeleteContainerScriptDto,
+    getModifyContainerScriptDtos
 }
