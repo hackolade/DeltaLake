@@ -14,54 +14,13 @@ const {getCreateRelationshipScripts} = require("./helpers/relationshipHelper");
 
 /**
  * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
+ * @typedef {import('./types/coreApplicationTypes').App} App
+ * @typedef {import('./types/coreApplicationTypes').Logger} Logger
+ * @typedef {import('./types/coreApplicationTypes').PluginCallback} PluginCallback
+ * @typedef {import('./types/coreApplicationTypes').CoreData} CoreData
+ * @typedef {import('./types/coreApplicationTypes').PluginError} PluginError
  * */
 
-
-/**
- * @typedef {{
- *     message: string,
- *     stack?: string,
- * }} PluginError
- * */
-
-/**
- * @typedef {{
- *     jsonSchema: string,
- *     modelDefinitions: string,
- *     internalDefinitions: string,
- *     externalDefinitions: string,
- *     containerData: any,
- *     entityData: any,
- *     entities: any,
- *     views: Array<any>,
- *     viewData?: Object,
- *     relationships: Array<any>,
- *     collectionRefsDefinitionsMap?: Object,
- *     isUpdateScript: boolean,
- *     level: 'container' | 'entity',
- *     host?: string,
- *     clusterId?: string,
- *     accessToken?: string,
- *     applyToInstanceQueryRequestTimeout?: string | number,
- *     script?: string,
- *     hiddenKeys?: any,
- *     options: {
- *         id: string,
- *         value: any,
- *     },
- * }} CoreData
- *
- * @typedef {{
- *     log: (level: string, additionalInfoDto: Object, message: string, hiddenKeys?: any) => void,
- *     clear: () => void,
- * }} Logger
- *
- * @typedef {(error?: PluginError | null, result?: any | null) => void} PluginCallback
- *
- * @typedef {{
- *     require: (library: string) => any
- * }} App
- * */
 
 /**
  * @param data {CoreData}
