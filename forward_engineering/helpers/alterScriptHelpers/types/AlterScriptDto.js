@@ -12,7 +12,7 @@ class ModificationScript {
 
 class AlterScriptDto {
     /**
-     * @type {boolean}
+     * @type {boolean | undefined}
      * */
     isActivated
 

@@ -1,15 +1,24 @@
-const {prepareScript, generateFullEntityName, wrapInSingleQuotes} = require("../../../utils/generalUtils");
+const {generateFullEntityName, wrapInSingleQuotes} = require("../../../utils/generalUtils");
 const {EntitiesThatSupportComments} = require("../../../enums/entityType");
 
-const getUpdatedCommentOnCollectionScript = (collection, ddlProvider) => {
+
+/**
+ * @typedef {import('../types/AlterScriptDto').AlterScriptDto} AlterScriptDto
+ * */
+
+
+/**
+ * @return {(collection: Object) => AlterScriptDto | undefined}
+ * */
+const getUpdatedCommentOnCollectionScriptDto = (ddlProvider) => (collection) => {
     const descriptionInfo = collection?.role.compMod?.description;
     if (!descriptionInfo) {
-        return '';
+        return undefined;
     }
 
     const {old: oldComment, new: newComment} = descriptionInfo;
     if (!newComment || newComment === oldComment) {
-        return '';
+        return undefined;
     }
 
     const scriptGenerationConfig = {
@@ -17,40 +26,54 @@ const getUpdatedCommentOnCollectionScript = (collection, ddlProvider) => {
         entityName: generateFullEntityName(collection),
         comment: wrapInSingleQuotes(newComment),
     }
-    return ddlProvider.updateComment(scriptGenerationConfig);
+    const script = ddlProvider.updateComment(scriptGenerationConfig);
+    return {
+        scripts: [{
+            isDropScript: false,
+            script,
+        }]
+    }
 }
 
-const getDeletedCommentOnCollectionScript = (collection, ddlProvider) => {
+/**
+ * @return {(collection: Object) => AlterScriptDto | undefined}
+ * */
+const getDeletedCommentOnCollectionScriptDto = (ddlProvider) => (collection) => {
     const descriptionInfo = collection?.role.compMod?.description;
     if (!descriptionInfo) {
-        return '';
+        return undefined;
     }
 
     const {old: oldComment, new: newComment} = descriptionInfo;
     if (!oldComment || newComment) {
-        return '';
+        return undefined;
     }
 
     const scriptGenerationConfig = {
         entityType: EntitiesThatSupportComments.TABLE,
         entityName: generateFullEntityName(collection),
     }
-    return ddlProvider.dropComment(scriptGenerationConfig);
+    const script = ddlProvider.dropComment(scriptGenerationConfig);
+    return {
+        scripts: [{
+            isDropScript: false,
+            script,
+        }]
+    }
 }
 
 
-
 /**
- * @return {(x: Object) => Array<string>}
+ * @return {(x: Object) => Array<AlterScriptDto>}
  * */
 const getModifyCollectionCommentsScripts = (ddlProvider) => collection => {
-    const updatedCommentScript = getUpdatedCommentOnCollectionScript(collection, ddlProvider);
-    const deletedCommentScript = getDeletedCommentOnCollectionScript(collection, ddlProvider);
+    const updatedCommentScriptDto = getUpdatedCommentOnCollectionScriptDto(ddlProvider)(collection);
+    const deletedCommentScriptDto = getDeletedCommentOnCollectionScriptDto(ddlProvider)(collection);
 
-    return prepareScript(
-        updatedCommentScript,
-        deletedCommentScript
-    );
+    return [
+        updatedCommentScriptDto,
+        deletedCommentScriptDto
+    ].filter(Boolean);
 };
 
 module.exports = {

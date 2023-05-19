@@ -1,6 +1,10 @@
 const {generateFullEntityName, getEntityNameFromCollection, prepareName} = require("../../../utils/generalUtils");
 
 /**
+ * @typedef {import('../types/AlterScriptDto').AlterScriptDto} AlterScriptDto
+ * */
+
+/**
  * @return {(collection: Object, guid: string) => Object | undefined}
  * */
 const getPropertyByGuid = (_) => (collection, guid) => {
@@ -41,7 +45,7 @@ const didCompositePkChange = (_) => (collection) => {
 }
 
 /**
- * @return {(collection: Object) => Array<string>}
+ * @return {(collection: Object) => Array<AlterScriptDto>}
  * */
 const getAddCompositePkScripts = (_, ddlProvider) => (collection) => {
     const didPkChange = didCompositePkChange(_)(collection);
@@ -64,11 +68,17 @@ const getAddCompositePkScripts = (_, ddlProvider) => (collection) => {
             }
             return ddlProvider.addPkConstraint(fullTableName, constraintName, columnNamesForDDL);
         })
-        .filter(Boolean);
+        .filter(Boolean)
+        .map(scriptLine => ({
+            scripts: [{
+                isDropScript: false,
+                script: scriptLine,
+            }]
+        }));
 }
 
 /**
- * @return {(collection: Object) => Array<string>}
+ * @return {(collection: Object) => Array<AlterScriptDto>}
  * */
 const getDropCompositePkScripts = (_, ddlProvider) => (collection) => {
     const didPkChange = didCompositePkChange(_)(collection);
@@ -78,11 +88,18 @@ const getDropCompositePkScripts = (_, ddlProvider) => (collection) => {
     const fullTableName = generateFullEntityName(collection);
     const pkDto = collection?.role?.compMod?.primaryKey || {};
     const oldPrimaryKeys = pkDto.old || [];
-    return oldPrimaryKeys.map(oldPk => ddlProvider.dropPkConstraint(fullTableName));
+    return oldPrimaryKeys
+        .map(oldPk => ddlProvider.dropPkConstraint(fullTableName))
+        .map(scriptLine => ({
+            scripts: [{
+                isDropScript: true,
+                script: scriptLine,
+            }]
+        }));
 }
 
 /**
- * @return {(collection: Object) => Array<string>}
+ * @return {(collection: Object) => Array<AlterScriptDto>}
  * */
 const getModifyCompositePkScripts = (_, ddlProvider) => (collection) => {
     const dropCompositePkScripts = getDropCompositePkScripts(_, ddlProvider)(collection);
@@ -95,7 +112,7 @@ const getModifyCompositePkScripts = (_, ddlProvider) => (collection) => {
 }
 
 /**
- * @return {(collection: Object) => Array<string>}
+ * @return {(collection: Object) => Array<AlterScriptDto>}
  * */
 const getAddPkScripts = (_, ddlProvider) => (collection) => {
     const fullTableName = generateFullEntityName(collection);
@@ -112,11 +129,17 @@ const getAddPkScripts = (_, ddlProvider) => (collection) => {
             const nameForDDl = prepareName(name);
             const columnNamesForDDL = [nameForDDl];
             return ddlProvider.addPkConstraint(fullTableName, constraintName, columnNamesForDDL);
-        });
+        })
+        .map(scriptLine => ({
+            scripts: [{
+                isDropScript: false,
+                script: scriptLine,
+            }]
+        }));
 }
 
 /**
- * @return {(collection: Object) => Array<string>}
+ * @return {(collection: Object) => Array<AlterScriptDto>}
  * */
 const getDropPkScripts = (_, ddlProvider) => (collection) => {
     const fullTableName = generateFullEntityName(collection);
@@ -132,11 +155,17 @@ const getDropPkScripts = (_, ddlProvider) => (collection) => {
         })
         .map(([name, jsonSchema]) => {
             return ddlProvider.dropPkConstraint(fullTableName);
-        });
+        })
+        .map(scriptLine => ({
+            scripts: [{
+                isDropScript: true,
+                script: scriptLine,
+            }]
+        }));
 }
 
 /**
- * @return {(collection: Object) => Array<string>}
+ * @return {(collection: Object) => Array<AlterScriptDto>}
  * */
 const getModifyPkScripts = (_, ddlProvider) => (collection) => {
     const dropPkScripts = getDropPkScripts(_, ddlProvider)(collection);
@@ -149,7 +178,7 @@ const getModifyPkScripts = (_, ddlProvider) => (collection) => {
 }
 
 /**
- * @return {(collection: Object) => Array<string>}
+ * @return {(collection: Object) => Array<AlterScriptDto>}
  * */
 const getModifyPkConstraintsScripts = (_, ddlProvider) => (collection) => {
     const modifyCompositePkScripts = getModifyCompositePkScripts(_, ddlProvider)(collection);

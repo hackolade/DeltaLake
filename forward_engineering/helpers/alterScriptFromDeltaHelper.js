@@ -51,7 +51,7 @@ const getItems = (entity, nameProperty, modify) =>
  * This function is an adapter from our old way of dealing with scripts as strings
  * to our new way of treating them as objects.
  *
- * @param script {string}
+ * @param script {string | AlterScriptDto}
  * @return {AlterScriptDto}
  * */
 const mapScriptToAlterScriptDto = (script) => {
@@ -62,6 +62,17 @@ const mapScriptToAlterScriptDto = (script) => {
             script
         }]
     }
+}
+
+/**
+ * @param scripts {Array<string>}
+ * @return {Array<string>}
+ * */
+const assertNoEmptyStatements = (scripts) => {
+    return scripts
+        .filter(Boolean)
+        .map(script => script.trim())
+        .filter(Boolean);
 }
 
 /**
@@ -77,15 +88,14 @@ const getAlterContainersScriptDtos = (schema, provider) => {
     const modifiedScripts = getItems(schema, 'containers', 'modified').flatMap(
         getModifyContainerScript(provider)
     );
-    return [
+
+    const resultScripts = [
         ...deletedScripts,
         ...addedScripts,
         ...modifiedScripts
-    ]
-        .filter(Boolean)
-        .map(script => script.trim())
-        .filter(Boolean)
-        .map(script => mapScriptToAlterScriptDto(script));
+    ];
+    const resultWithNoEmptyStatements = assertNoEmptyStatements(resultScripts);
+    return resultWithNoEmptyStatements.map(script => mapScriptToAlterScriptDto(script));
 };
 
 /**
@@ -133,20 +143,30 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
         getModifyColumnsScriptsMethod(app, definitions, provider)
     );
 
-    return [
+    const collectionResultScripts = [
         ...deletedCollectionsScripts,
         ...addedCollectionsScripts,
         ...modifiedCollectionsScripts,
-        ...modifiedCollectionCommentsScripts,
-        ...modifiedCollectionPrimaryKeysScripts,
+    ];
+    const collectionResultScriptsWithNoEmptyStatements = assertNoEmptyStatements(collectionResultScripts);
+    const collectionResultScriptsAsAlterScriptDtos = collectionResultScriptsWithNoEmptyStatements
+        .map(script => mapScriptToAlterScriptDto(script));
+
+    const columnResultScripts = [
         ...deletedColumnsScripts,
         ...addedColumnsScripts,
-        ...modifiedColumnsScripts,
-    ]
-        .filter(Boolean)
-        .map(script => script.trim())
-        .filter(Boolean)
+        ...modifiedColumnsScripts
+    ];
+    const columnResultScriptsWithNoEmptyStatements = assertNoEmptyStatements(columnResultScripts);
+    const columnResultScriptsAsAlterScriptDtos = columnResultScriptsWithNoEmptyStatements
         .map(script => mapScriptToAlterScriptDto(script));
+
+    return [
+        ...collectionResultScriptsAsAlterScriptDtos,
+        ...modifiedCollectionCommentsScripts,
+        ...modifiedCollectionPrimaryKeysScripts,
+        ...columnResultScriptsAsAlterScriptDtos,
+    ];
 };
 
 /**
@@ -177,14 +197,14 @@ const getAlterViewsScriptDtos = (schema, provider) => {
         getModifyViewsScripts(provider)
     );
 
-    return [
+    const resultScripts = [
         ...deletedViewScripts,
         ...addedViewScripts,
         ...modifiedViewScripts,
-    ]
-        .filter(Boolean)
-        .map(script => script.trim())
-        .filter(Boolean)
+    ];
+    const resultScriptsWithNoEmptyStatements = assertNoEmptyStatements(resultScripts);
+
+    return resultScriptsWithNoEmptyStatements
         .map(script => mapScriptToAlterScriptDto(script));
 };
 
@@ -223,8 +243,8 @@ const getAlterStatementsWithCommentedUnwantedDDL = (scriptDtos, data) => {
     const {additionalOptions = []} = data.options || {};
     const applyDropStatements = (additionalOptions.find(option => option.id === 'applyDropStatements') || {}).value;
 
-    return scriptDtos.map((dto) => {
-        if (!dto.isActivated) {
+    const scripts = scriptDtos.map((dto) => {
+        if (dto.isActivated === false) {
             return dto.scripts
                 .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, false));
         }
@@ -234,10 +254,8 @@ const getAlterStatementsWithCommentedUnwantedDDL = (scriptDtos, data) => {
         }
         return dto.scripts.map((scriptDto) => scriptDto.script);
     })
-        .flat()
-        .filter(Boolean)
-        .map(script => script.trim())
-        .filter(Boolean);
+        .flat();
+    return assertNoEmptyStatements(scripts);
 };
 
 /**
