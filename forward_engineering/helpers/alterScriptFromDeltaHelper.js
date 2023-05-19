@@ -48,9 +48,26 @@ const getItems = (entity, nameProperty, modify) =>
         .map(items => Object.values(items.properties)[0]);
 
 /**
- * @return Array<string>
+ * This function is an adapter from our old way of dealing with scripts as strings
+ * to our new way of treating them as objects.
+ *
+ * @param script {string}
+ * @return {AlterScriptDto}
  * */
-const getAlterContainersScripts = (schema, provider) => {
+const mapScriptToAlterScriptDto = (script) => {
+    return {
+        isActivated: true,
+        scripts: [{
+            isDropScript: doesScriptContainDropStatement(script),
+            script
+        }]
+    }
+}
+
+/**
+ * @return Array<AlterScriptDto>
+ * */
+const getAlterContainersScriptDtos = (schema, provider) => {
     const addedScripts = getItems(schema, 'containers', 'added').map(
         getAddContainerScript
     );
@@ -60,13 +77,21 @@ const getAlterContainersScripts = (schema, provider) => {
     const modifiedScripts = getItems(schema, 'containers', 'modified').flatMap(
         getModifyContainerScript(provider)
     );
-    return [...deletedScripts, ...addedScripts, ...modifiedScripts];
+    return [
+        ...deletedScripts,
+        ...addedScripts,
+        ...modifiedScripts
+    ]
+        .filter(Boolean)
+        .map(script => script.trim())
+        .filter(Boolean)
+        .map(script => mapScriptToAlterScriptDto(script));
 };
 
 /**
- * @return Array<string>
+ * @return Array<AlterScriptDto>
  * */
-const getAlterCollectionsScripts = ({schema, definitions, provider, data, _, app}) => {
+const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, app}) => {
     const getCollectionScripts = (items, compMode, getScript) =>
         items.filter(item => item.compMod?.[compMode]).flatMap(getScript);
 
@@ -117,13 +142,17 @@ const getAlterCollectionsScripts = ({schema, definitions, provider, data, _, app
         ...deletedColumnsScripts,
         ...addedColumnsScripts,
         ...modifiedColumnsScripts,
-    ];
+    ]
+        .filter(Boolean)
+        .map(script => script.trim())
+        .filter(Boolean)
+        .map(script => mapScriptToAlterScriptDto(script));
 };
 
 /**
- * @return Array<string>
+ * @return Array<AlterScriptDto>
  * */
-const getAlterViewsScripts = (schema, provider) => {
+const getAlterViewsScriptDtos = (schema, provider) => {
     const getViewScripts = (views, compMode, getScript) =>
         views
             .map(view => ({...view, ...(view.role || {})}))
@@ -152,7 +181,11 @@ const getAlterViewsScripts = (schema, provider) => {
         ...deletedViewScripts,
         ...addedViewScripts,
         ...modifiedViewScripts,
-    ];
+    ]
+        .filter(Boolean)
+        .map(script => script.trim())
+        .filter(Boolean)
+        .map(script => mapScriptToAlterScriptDto(script));
 };
 
 /**
@@ -186,7 +219,7 @@ const getAlterRelationshipsScriptDtos = ({schema, ddlProvider, _}) => {
  * }}
  * @return {Array<string>}
  * */
-const getScriptsWithCommentedDDL = (scriptDtos, data) => {
+const getAlterStatementsWithCommentedUnwantedDDL = (scriptDtos, data) => {
     const {additionalOptions = []} = data.options || {};
     const applyDropStatements = (additionalOptions.find(option => option.id === 'applyDropStatements') || {}).value;
 
@@ -203,7 +236,8 @@ const getScriptsWithCommentedDDL = (scriptDtos, data) => {
     })
         .flat()
         .filter(Boolean)
-        .map(script => script.trim());
+        .map(script => script.trim())
+        .filter(Boolean);
 };
 
 /**
@@ -212,38 +246,37 @@ const getScriptsWithCommentedDDL = (scriptDtos, data) => {
 const getAlterScriptDtos = (schema, definitions, data, app) => {
     const provider = require('../ddlProvider/ddlProvider')(app);
     const _ = app.require('lodash');
-    const containersScripts = getAlterContainersScripts(schema, provider);
-    const collectionsScripts = getAlterCollectionsScripts({schema, definitions, provider, data, _, app});
-    const viewsScripts = getAlterViewsScripts(schema, provider);
 
-    const scriptDtos = containersScripts
-        .concat(collectionsScripts, viewsScripts)
-        .filter(Boolean)
-        .map(script => script.trim())
-        .map(script => ({
-            isActivated: true,
-            scripts: [{
-                isDropScript: doesScriptContainDropStatement(script),
-                script
-            }]
-        }));
-
+    const containersScriptDtos = getAlterContainersScriptDtos(schema, provider);
+    const collectionsScriptDtos = getAlterCollectionsScriptDtos({schema, definitions, provider, data, _, app});
+    const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider);
     const relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
 
-    return scriptDtos.concat(relationshipsScriptDtos);
+    return [
+        ...containersScriptDtos,
+        ...collectionsScriptDtos,
+        ...viewsScriptDtos,
+        ...relationshipsScriptDtos,
+    ];
 };
 
-const getAlterScript = (schema, definitions, data, app) => {
-    const alterScriptDtos = getAlterScriptDtos(schema, definitions, data, app);
-    const scripts = getScriptsWithCommentedDDL(alterScriptDtos, data);
-    return joinScriptsAndFormat(scripts);
-};
-
-const joinScriptsAndFormat = scripts => {
-    const formatScripts = buildScript(scripts);
-    return formatScripts.split(';').map(script => script.trim()).join(';\n\n');
-};
+/**
+ * @param alterScriptDtos {Array<AlterScriptDto>}
+ * @param data {{
+ *     options: {
+ *         id: string,
+ *         value: any,
+ *     },
+ * }}
+ * @return {string}
+ * */
+const joinAlterScriptDtosIntoAlterScript = (alterScriptDtos, data) => {
+    const scriptAsStringsWithCommentedUnwantedDDL = getAlterStatementsWithCommentedUnwantedDDL(alterScriptDtos, data);
+    const formattedScript = buildScript(scriptAsStringsWithCommentedUnwantedDDL);
+    return formattedScript.split(';').map(script => script.trim()).join(';\n\n');
+}
 
 module.exports = {
-    getAlterScript
+    joinAlterScriptDtosIntoAlterScript,
+    getAlterScriptDtos,
 }

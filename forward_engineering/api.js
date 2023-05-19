@@ -10,8 +10,13 @@ let _;
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')
 const logHelper = require('../reverse_engineering/logHelper');
-const {getAlterScript} = require('./helpers/alterScriptFromDeltaHelper');
+const {getAlterScriptDtos, joinAlterScriptDtosIntoAlterScript} = require('./helpers/alterScriptFromDeltaHelper');
 const {getCreateRelationshipScripts} = require("./helpers/relationshipHelper");
+
+/**
+ * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
+ * */
+
 
 /**
  * @typedef {{
@@ -41,6 +46,10 @@ const {getCreateRelationshipScripts} = require("./helpers/relationshipHelper");
  *     applyToInstanceQueryRequestTimeout?: string | number,
  *     script?: string,
  *     hiddenKeys?: any,
+ *     options: {
+ *         id: string,
+ *         value: any,
+ *     },
  * }} CoreData
  *
  * @typedef {{
@@ -89,9 +98,9 @@ const parseDataForEntityLevelScript = (data) => {
 /**
  * @param data {CoreData}
  * @param app {App}
- * @return {string}
+ * @return {Array<AlterScriptDto>}
  * */
-const generateEntityLevelAlterScript = (data, app) => {
+const getEntityLevelAlterScriptDtos = (data, app) => {
     const {
         externalDefinitions,
         modelDefinitions,
@@ -99,7 +108,17 @@ const generateEntityLevelAlterScript = (data, app) => {
         internalDefinitions
     } = parseDataForEntityLevelScript(data);
     const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
-    return getAlterScript(jsonSchema, definitions, data, app);
+    return getAlterScriptDtos(jsonSchema, definitions, data, app);
+}
+
+/**
+ * @param data {CoreData}
+ * @param app {App}
+ * @return {string}
+ * */
+const generateEntityLevelAlterScript = (data, app) => {
+    const alterScriptDtos = getEntityLevelAlterScriptDtos(data, app);
+    return joinAlterScriptDtosIntoAlterScript(alterScriptDtos, data);
 }
 
 /**
@@ -171,9 +190,9 @@ const parseDataForContainerLevelScript = (data) => {
 /**
  * @param data {CoreData}
  * @param app {App}
- * @return {string}
+ * @return {Array<AlterScriptDto>}
  * */
-const generateContainerLevelAlterScript = (data, app) => {
+const getContainerLevelAlterScriptDtos = (data, app) => {
     const _ = app.require('lodash');
     const {
         internalDefinitions,
@@ -183,7 +202,17 @@ const generateContainerLevelAlterScript = (data, app) => {
     } = parseDataForContainerLevelScript(data);
     const deltaModelSchema = _.first(Object.values(entitiesJsonSchema)) || {};
     const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
-    return getAlterScript(deltaModelSchema, definitions, data, app);
+    return getAlterScriptDtos(deltaModelSchema, definitions, data, app);
+}
+
+/**
+ * @param data {CoreData}
+ * @param app {App}
+ * @return {string}
+ * */
+const generateContainerLevelAlterScript = (data, app) => {
+    const alterScriptDtos = getContainerLevelAlterScriptDtos(data, app);
+    return joinAlterScriptDtosIntoAlterScript(alterScriptDtos, data);
 }
 
 /**
@@ -192,6 +221,7 @@ const generateContainerLevelAlterScript = (data, app) => {
  * @return {string}
  * */
 const generateContainerLevelFEScript = (data, app) => {
+    const _ = app.require('lodash');
     const {
         internalDefinitions,
         externalDefinitions,
@@ -210,7 +240,7 @@ const generateContainerLevelFEScript = (data, app) => {
                 collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
                 isKeyspaceActivated: true
             })
-        }).filter(script => !dependencies.lodash.isEmpty(script));
+        }).filter(script => !_.isEmpty(script));
 
     const entityScripts = data.entities.reduce((result, entityId) => {
         const entityData = data.entityData[entityId];
