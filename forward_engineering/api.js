@@ -1,12 +1,11 @@
 'use strict';
 
-const {setDependencies, dependencies} = require('./helpers/appDependencies');
+const {setDependencies} = require('./helpers/appDependencies');
 const {getDatabaseStatement} = require('./helpers/databaseHelper');
 const {getTableStatement} = require('./helpers/tableHelper');
 const {getIndexes} = require('./helpers/indexHelper');
 const {getViewScript} = require('./helpers/viewHelper');
-const {getCleanedUrl, getTab, buildScript, doesScriptContainDropStatement} = require('./utils/generalUtils');
-let _;
+const {getCleanedUrl, getTab, buildScript} = require('./utils/generalUtils');
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')
 const logHelper = require('../reverse_engineering/logHelper');
@@ -64,8 +63,6 @@ const {getCreateRelationshipScripts} = require("./helpers/relationshipHelper");
  * }} App
  * */
 
-const setAppDependencies = ({lodash}) => _ = lodash;
-
 /**
  * @param data {CoreData}
  * @return {{
@@ -120,6 +117,18 @@ const generateEntityLevelAlterScript = (data, app) => {
     const alterScriptDtos = getEntityLevelAlterScriptDtos(data, app);
     return joinAlterScriptDtosIntoAlterScript(alterScriptDtos, data);
 }
+
+/**
+ * @param data {CoreData}
+ * @param app {App}
+ * @return {boolean}
+ * */
+const doesEntityLevelAlterScriptContainDropStatements = (data, app) => {
+    const alterScriptDtos = getEntityLevelAlterScriptDtos(data, app);
+    return alterScriptDtos
+        .some(alterScriptDto => alterScriptDto.scripts.some(scriptModificationDto => scriptModificationDto.isDropScript));
+}
+
 
 /**
  * @param data {CoreData}
@@ -218,6 +227,17 @@ const generateContainerLevelAlterScript = (data, app) => {
 /**
  * @param data {CoreData}
  * @param app {App}
+ * @return {boolean}
+ * */
+const doesContainerLevelAlterScriptContainDropStatements = (data, app) => {
+    const alterScriptDtos = getContainerLevelAlterScriptDtos(data, app);
+    return alterScriptDtos
+        .some(alterScriptDto => alterScriptDto.scripts.some(scriptModificationDto => scriptModificationDto.isDropScript));
+}
+
+/**
+ * @param data {CoreData}
+ * @param app {App}
  * @return {string}
  * */
 const generateContainerLevelFEScript = (data, app) => {
@@ -288,7 +308,6 @@ module.exports = {
     generateScript(data, logger, callback, app) {
         try {
             setDependencies(app);
-            setAppDependencies(dependencies);
 
             if (data.isUpdateScript) {
                 const scripts = generateEntityLevelAlterScript(data, app);
@@ -317,7 +336,6 @@ module.exports = {
     generateViewScript(data, logger, callback, app) {
         try {
             setDependencies(app);
-            setAppDependencies(dependencies);
             const viewSchema = JSON.parse(data.jsonSchema || '{}');
 
             const databaseStatement = getDatabaseStatement(data.containerData);
@@ -347,7 +365,6 @@ module.exports = {
     generateContainerScript(data, logger, callback, app) {
         try {
             setDependencies(app);
-            setAppDependencies(dependencies);
 
             if (data.isUpdateScript) {
                 const script = generateContainerLevelAlterScript(data, app);
@@ -434,24 +451,20 @@ module.exports = {
     /**
      * @param data {CoreData}
      * @param logger {Logger}
-     * @param cb {PluginCallback}
+     * @param callback {PluginCallback}
      * @param app {App}
      * */
-    isDropInStatements(data, logger, cb, app) {
+    isDropInStatements(data, logger, callback, app) {
         try {
-            setDependencies(app);
-
-            const callback = (error, script = '') => {
-                cb(error, doesScriptContainDropStatement(script));
-            };
-
             if (data.level === 'container') {
-                this.generateContainerScript(data, logger, callback, app);
+                const doesContainDropStatements = doesContainerLevelAlterScriptContainDropStatements(data, app);
+                callback(null, doesContainDropStatements);
             } else if (data.level === 'entity') {
-                this.generateScript(data, logger, callback, app);
+                const doesContainDropStatements = doesEntityLevelAlterScriptContainDropStatements(data, app);
+                callback(null, doesContainDropStatements);
             }
         } catch (e) {
-            cb({message: e.message, stack: e.stack});
+            callback({message: e.message, stack: e.stack});
         }
     },
 };
