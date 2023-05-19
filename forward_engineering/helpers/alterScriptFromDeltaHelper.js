@@ -216,7 +216,7 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
     const collectionsScripts = getAlterCollectionsScripts({schema, definitions, provider, data, _, app});
     const viewsScripts = getAlterViewsScripts(schema, provider);
 
-    const scripts = containersScripts
+    const scriptDtos = containersScripts
         .concat(collectionsScripts, viewsScripts)
         .filter(Boolean)
         .map(script => script.trim())
@@ -230,16 +230,16 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
 
     const relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
 
-    return scripts.concat(relationshipsScriptDtos);
+    return scriptDtos.concat(relationshipsScriptDtos);
 };
 
 const getAlterScript = (schema, definitions, data, app) => {
     const alterScriptDtos = getAlterScriptDtos(schema, definitions, data, app);
     const scripts = getScriptsWithCommentedDDL(alterScriptDtos, data);
-    return builds(scripts);
+    return joinScriptsAndFormat(scripts);
 };
 
-const builds = scripts => {
+const joinScriptsAndFormat = scripts => {
     const formatScripts = buildScript(scripts);
     return formatScripts.split(';').map(script => script.trim()).join(';\n\n');
 };
