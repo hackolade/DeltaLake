@@ -86,7 +86,7 @@ const getModifyContainerScriptDtos = (provider, _) => container => {
             ...alterCommentsScriptDtos,
             {
                 scripts: [{
-                    script: alterCommentsScriptDtos,
+                    script: alterDatabaseScript,
                     isDropScript: false,
                 }]
             },

@@ -17,7 +17,7 @@ const setDependencies = ({ lodash }) => _ = lodash;
 const viewProperties = ['code', 'name', 'tableProperties', 'selectStatement'];
 const otherViewProperties = ['viewTemporary', 'viewOrReplace', 'isGlobal', 'description'];
 
-const compareProperties = (view, properties) => {
+const compareProperties = (_) => (view, properties) => {
 	const compMod = _.get(view, 'role.compMod', {});
 	return properties.some(property => {
 		const { new: newProperty, old: oldProperty } = compMod[property] || {};
