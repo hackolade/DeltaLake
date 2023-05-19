@@ -416,6 +416,7 @@ module.exports = {
      * */
     isDropInStatements(data, logger, callback, app) {
         try {
+            setDependencies(app);
             if (data.level === 'container') {
                 const doesContainDropStatements = doesContainerLevelAlterScriptContainDropStatements(data, app);
                 callback(null, doesContainDropStatements);
