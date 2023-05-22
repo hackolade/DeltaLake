@@ -48,23 +48,6 @@ const getItems = (entity, nameProperty, modify) =>
         .map(items => Object.values(items.properties)[0]);
 
 /**
- * This function is an adapter from our old way of dealing with scripts as strings
- * to our new way of treating them as objects.
- *
- * @param script {string}
- * @return {AlterScriptDto}
- * */
-const mapScriptToAlterScriptDto = (script) => {
-    return {
-        isActivated: true,
-        scripts: [{
-            isDropScript: doesScriptContainDropStatement(script),
-            script
-        }]
-    }
-}
-
-/**
  * @param scripts {Array<string>}
  * @return {Array<string>}
  * */
@@ -128,27 +111,18 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
     const modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified')
         .flatMap(item => getModifyPkConstraintsScripts(_, provider)(item));
 
-    const addedColumnsScripts = getColumnScripts(
+    const addedColumnsScriptDtos = getColumnScripts(
         getItems(schema, 'entities', 'added'),
         getAddColumnsScripts(app, definitions, provider)
     );
-    const deletedColumnsScripts = getColumnScripts(
+    const deletedColumnsScriptDtos = getColumnScripts(
         getItems(schema, 'entities', 'deleted'),
         getDeletedColumnsScriptsMethod(app, definitions, provider)
     );
-    const modifiedColumnsScripts = getColumnScripts(
+    const modifiedColumnsScriptDtos = getColumnScripts(
         getItems(schema, 'entities', 'modified'),
         getModifyColumnsScriptsMethod(app, definitions, provider)
     );
-
-    const columnResultScripts = [
-        ...deletedColumnsScripts,
-        ...addedColumnsScripts,
-        ...modifiedColumnsScripts
-    ];
-    const columnResultScriptsWithNoEmptyStatements = assertNoEmptyStatements(columnResultScripts);
-    const columnResultScriptsAsAlterScriptDtos = columnResultScriptsWithNoEmptyStatements
-        .map(script => mapScriptToAlterScriptDto(script));
 
     return [
         ...deletedCollectionsScriptDtos,
@@ -156,7 +130,9 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
         ...modifiedCollectionsScriptDtos,
         ...modifiedCollectionCommentsScriptDtos,
         ...modifiedCollectionPrimaryKeysScriptDtos,
-        ...columnResultScriptsAsAlterScriptDtos,
+        ...deletedColumnsScriptDtos,
+        ...addedColumnsScriptDtos,
+        ...modifiedColumnsScriptDtos
     ];
 };
 

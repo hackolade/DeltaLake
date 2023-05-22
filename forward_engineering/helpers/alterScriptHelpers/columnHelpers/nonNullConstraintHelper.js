@@ -1,7 +1,11 @@
 const {generateFullEntityName, prepareName} = require("../../../utils/generalUtils");
+const {AlterScriptDto} = require("../types/AlterScriptDto");
 
 
-const getModifyNonNullColumnsScripts = (_, ddlProvider) => (collection) => {
+/**
+ * @return {(collection: Object) => Array<AlterScriptDto>}
+ * */
+const getModifyNonNullColumnsScriptDtos = (_, ddlProvider) => (collection) => {
     const fullTableName = generateFullEntityName(collection);
 
     const currentRequiredColumnNames = collection.required || [];
@@ -10,26 +14,30 @@ const getModifyNonNullColumnsScripts = (_, ddlProvider) => (collection) => {
     const columnNamesToAddNotNullConstraint = _.difference(currentRequiredColumnNames, previousRequiredColumnNames);
     const columnNamesToRemoveNotNullConstraint = _.difference(previousRequiredColumnNames, currentRequiredColumnNames);
 
-    const addNotNullConstraintsScript = _.toPairs(collection.properties)
+    const addNotNullConstraintsScriptDtos = _.toPairs(collection.properties)
         .filter(([name, jsonSchema]) => {
             const oldName = jsonSchema.compMod.oldField.name;
             const shouldRemoveForOldName = columnNamesToRemoveNotNullConstraint.includes(oldName);
             const shouldAddForNewName = columnNamesToAddNotNullConstraint.includes(name);
             return shouldAddForNewName && !shouldRemoveForOldName;
         })
-        .map(([columnName]) => ddlProvider.setNotNullConstraint(fullTableName, prepareName(columnName)));
-    const removeNotNullConstraint = _.toPairs(collection.properties)
+        .map(([columnName]) => ddlProvider.setNotNullConstraint(fullTableName, prepareName(columnName)))
+        .map(script => AlterScriptDto.getInstance([script], true, false))
+        .filter(Boolean);
+    const removeNotNullConstraintScriptDtos = _.toPairs(collection.properties)
         .filter(([name, jsonSchema]) => {
             const oldName = jsonSchema.compMod.oldField.name;
             const shouldRemoveForOldName = columnNamesToRemoveNotNullConstraint.includes(oldName);
             const shouldAddForNewName = columnNamesToAddNotNullConstraint.includes(name);
             return shouldRemoveForOldName && !shouldAddForNewName;
         })
-        .map(([name]) => ddlProvider.dropNotNullConstraint(fullTableName, prepareName(name)));
+        .map(([name]) => ddlProvider.dropNotNullConstraint(fullTableName, prepareName(name)))
+        .map(script => AlterScriptDto.getInstance([script], true, true))
+        .filter(Boolean);
 
-    return [...addNotNullConstraintsScript, ...removeNotNullConstraint];
+    return [...addNotNullConstraintsScriptDtos, ...removeNotNullConstraintScriptDtos];
 }
 
 module.exports = {
-    getModifyNonNullColumnsScripts,
+    getModifyNonNullColumnsScriptDtos,
 }
