@@ -233,12 +233,22 @@ const getModifyCollectionsScripts = (app, definitions, ddlProvider) => collectio
         dropIndexScriptDto,
         ...modifyTableScriptDtos,
         addIndexScriptDto,
-    ].map((dto) => ({
-        ...dto,
-        scripts: dto.scripts.filter(scriptModificationDto => scriptModificationDto.script?.length),
-    }))
+    ].map((dto) => {
+        const scriptModificationDtosWithNonEmptyScripts = dto.scripts.filter(scriptModificationDto => scriptModificationDto.script?.length);
+        if (!scriptModificationDtosWithNonEmptyScripts?.length) {
+            return undefined;
+        }
+        return {
+            ...dto,
+            scripts: scriptModificationDtosWithNonEmptyScripts,
+        }
+    })
+        .filter(Boolean);
 };
 
+/**
+ * @return {(entity: Object) => Array<AlterScriptDto>}
+ * */
 const getAddColumnsScripts = (app, definitions, provider) => entity => {
     setDependencies(dependencies);
     const entityData = {...entity, ..._.omit(entity.role, ['properties'])};
@@ -251,6 +261,8 @@ const getAddColumnsScripts = (app, definitions, provider) => entity => {
     const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(...hydratedAddIndex);
     const addColumnScript = provider.addTableColumns({name: fullCollectionName, columns: columnStatement});
+
+
 
     return modifyScript.type === 'new' ?
         prepareScript(dropIndexScript, ...modifyScript.script, addIndexScript) :
