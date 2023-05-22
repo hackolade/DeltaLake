@@ -131,7 +131,7 @@ class CoreData {
      * @type {Array<{
      *     id: string,
      *     value: any,
-     * }>}
+     * }> | {separateBucket: boolean}}
      */
     options
 }

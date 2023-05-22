@@ -1,13 +1,14 @@
 'use strict';
 
-const {setDependencies} = require('./helpers/appDependencies');
-const {getDatabaseStatement} = require('./helpers/databaseHelper');
-const {getTableStatement} = require('./helpers/tableHelper');
-const {getIndexes} = require('./helpers/indexHelper');
-const {getViewScript} = require('./helpers/viewHelper');
-const {getCleanedUrl, getTab, buildScript} = require('./utils/generalUtils');
-const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper')
-const databricksHelper = require('../reverse_engineering/helpers/databricksHelper')
+const { setDependencies } = require('./helpers/appDependencies');
+const { getDatabaseStatement } = require('./helpers/databaseHelper');
+const { getTableStatement } = require('./helpers/tableHelper');
+const { getIndexes } = require('./helpers/indexHelper');
+const { getViewScript } = require('./helpers/viewHelper');
+const { getCleanedUrl, getTab, buildScript } = require('./utils/generalUtils');
+const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
+const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
+
 const logHelper = require('../reverse_engineering/logHelper');
 const {getAlterScriptDtos, joinAlterScriptDtosIntoAlterScript} = require('./helpers/alterScriptFromDeltaHelper');
 const {getCreateRelationshipScripts} = require("./helpers/relationshipHelper");
@@ -200,7 +201,18 @@ const doesContainerLevelAlterScriptContainDropStatements = (data, app) => {
 /**
  * @param data {CoreData}
  * @param app {App}
- * @return {string}
+ * @return {{
+ *     container: string,
+ *     entities: Array<{
+ *      name: string,
+ *      script: string
+ *     }>,
+ *     views: Array<{
+ *      name: string,
+ *      script: string
+ *     }>,
+ *     relationships: Array<string>,
+ * }}
  * */
 const generateContainerLevelFEScript = (data, app) => {
     const _ = app.require('lodash');
@@ -211,20 +223,29 @@ const generateContainerLevelFEScript = (data, app) => {
         entitiesJsonSchema,
         containerData,
     } = parseDataForContainerLevelScript(data);
-    const databaseStatement = getDatabaseStatement(containerData);
-    const viewsScripts = data.views
-        .map(viewId => {
-            const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
-            return getViewScript({
-                schema: viewSchema,
-                viewData: data.viewData[viewId],
-                containerData: data.containerData,
-                collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
-                isKeyspaceActivated: true
-            })
-        }).filter(script => !_.isEmpty(script));
 
-    const entityScripts = data.entities.reduce((result, entityId) => {
+    let viewsScriptDtos = data.views.map(viewId => {
+        const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
+        const viewData = data.viewData[viewId];
+        const viewScript = getViewScript({
+            schema: viewSchema,
+            viewData: viewData,
+            containerData: data.containerData,
+            collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
+            isKeyspaceActivated: true,
+        });
+
+        return {
+            name: viewData[0]?.code || viewData[0]?.name,
+            script: buildScript([viewScript]),
+        };
+    });
+
+    viewsScriptDtos = viewsScriptDtos.filter(({ script }) => !_.isEmpty(script));
+
+    const databaseStatement = getDatabaseStatement(containerData);
+
+    const entityScriptDtos = data.entities.reduce((result, entityId) => {
         const entityData = data.entityData[entityId];
         const args = [
             containerData,
@@ -244,20 +265,23 @@ const generateContainerLevelFEScript = (data, app) => {
             likeTableData,
         )
 
-        return result.concat([
-            tableStatement,
-            getIndexes(...args),
-        ]);
+        const tableScript = buildScript([tableStatement, getIndexes(...args)]);
+
+        return result.concat({
+            name: entityData[0]?.code || entityData[0]?.collectionName,
+            script: tableScript,
+        });
     }, []);
 
     const relationshipScrips = getCreateRelationshipScripts(app)(data.relationships, entitiesJsonSchema);
 
-    return buildScript([
-        databaseStatement,
-        ...entityScripts,
-        ...viewsScripts,
-        ...relationshipScrips,
-    ]);
+    return {
+        container: databaseStatement,
+        entities: entityScriptDtos,
+        views: viewsScriptDtos,
+        relationships: relationshipScrips,
+    };
+
 }
 
 module.exports = {
@@ -284,7 +308,6 @@ module.exports = {
                 {message: e.message, stack: e.stack},
                 'DeltaLake Forward-Engineering Error'
             );
-
             callback({message: e.message, stack: e.stack});
         }
     },
@@ -332,8 +355,24 @@ module.exports = {
                 const script = generateContainerLevelAlterScript(data, app);
                 callback(null, script);
             } else {
-                const script = generateContainerLevelFEScript(data, app);
-                callback(null, script);
+                const scriptData = generateContainerLevelFEScript(data, app);
+                if (data.options.separateBucket) {
+                    const result =  {
+                        container: scriptData.container,
+                        entities: scriptData.entities,
+                        views: scriptData.views,
+                    };
+                    callback(null, result);
+                    return;
+                }
+
+                const result = buildScript([
+                    scriptData.container,
+                    ...(scriptData.entities.map(e => e.script)),
+                    ...(scriptData.views.map(v => v.script)),
+                    ...(scriptData.relationships),
+                ]);
+                callback(null, result);
             }
         } catch (e) {
             logger.log(
@@ -449,4 +488,3 @@ const logInfo = (step, connectionInfo, logger) => {
     logger.log('info', logHelper.getSystemInfo(connectionInfo), step);
     logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
 };
-

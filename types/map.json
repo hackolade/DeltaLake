@@ -5,8 +5,8 @@
 	"parentType": "document",
 	"useSample": true,
 	"defaultValues": {
-		"subtype": "map<str>",
-		"keyType": "string",
+		"subtype": "map<txt>",
+		"keyType": "",
 		"dependencies": [],
 		"primaryKey": false,
 		"properties": [],
@@ -15,7 +15,7 @@
 		"additionalProperties": false
 	},
 	"subtypes": {
-		"map<str>": {
+		"map<txt>": {
 			"childValueType": "text"
 		},
 		"map<num>": {
