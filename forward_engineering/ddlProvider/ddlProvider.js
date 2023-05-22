@@ -168,6 +168,9 @@ module.exports = app => {
 			return assignTemplates(templates.alterSerDeProperties, { name, serDeProperties, serDe });
 		},
 
+		/**
+		 * @return Array<string>
+		 * */
 		alterView({ dataProperties, dbName, fullName, rename: { newName, oldName }, selectStatement }) {
 			const { add: addProperties = '', drop: dropProperties = '' } = dataProperties || {};
 			let script = [];

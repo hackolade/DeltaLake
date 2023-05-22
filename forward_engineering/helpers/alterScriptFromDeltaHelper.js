@@ -170,40 +170,44 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
 /**
  * @return Array<AlterScriptDto>
  * */
-const getAlterViewsScriptDtos = (schema, provider) => {
+const getAlterViewsScriptDtos = (schema, provider, _) => {
+
+    /**
+     * @return Array<AlterScriptDto>
+     * */
     const getViewScripts = (views, compMode, getScript) =>
         views
             .map(view => ({...view, ...(view.role || {})}))
             .filter(view => view.compMod?.[compMode]).map(getScript);
 
+
+    /**
+     * @return Array<AlterScriptDto>
+     * */
     const getColumnScripts = (items, getScript) => items
         .map(view => ({...view, ...(view.role || {})}))
         .filter(view => !view.compMod?.created && !view.compMod?.deleted).flatMap(getScript);
 
-    const addedViewScripts = getViewScripts(
+    const addedViewScriptDtos = getViewScripts(
         getItems(schema, 'views', 'added'),
         'created',
-        getAddViewsScripts
+        getAddViewsScripts(_)
     );
-    const deletedViewScripts = getViewScripts(
+    const deletedViewScriptDtos = getViewScripts(
         getItems(schema, 'views', 'deleted'),
         'deleted',
         getDeleteViewsScripts(provider)
     );
-    const modifiedViewScripts = getColumnScripts(
+    const modifiedViewScriptDtos = getColumnScripts(
         getItems(schema, 'views', 'modified'),
-        getModifyViewsScripts(provider)
+        getModifyViewsScripts(provider, _)
     );
 
-    const resultScripts = [
-        ...deletedViewScripts,
-        ...addedViewScripts,
-        ...modifiedViewScripts,
-    ];
-    const resultScriptsWithNoEmptyStatements = assertNoEmptyStatements(resultScripts);
-
-    return resultScriptsWithNoEmptyStatements
-        .map(script => mapScriptToAlterScriptDto(script));
+    return [
+        ...deletedViewScriptDtos,
+        ...addedViewScriptDtos,
+        ...modifiedViewScriptDtos,
+    ]
 };
 
 /**
@@ -265,7 +269,7 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
 
     const containersScriptDtos = getAlterContainersScriptDtos(schema, provider, _);
     const collectionsScriptDtos = getAlterCollectionsScriptDtos({schema, definitions, provider, data, _, app});
-    const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider);
+    const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, _);
     const relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
 
     return [
