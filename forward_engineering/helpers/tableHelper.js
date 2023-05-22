@@ -254,6 +254,16 @@ const getStoredAsStatement = (tableData) => {
 	return `STORED AS ${tableData.storedAsTable.toUpperCase()}`;
 };
 
+/**
+ * @return {(
+ * 	containerData: any,
+ * 	entityData: any,
+ * 	entityJsonSchema: any,
+ * 	definitions: any,
+ * 	areColumnConstraintsAvailable: any,
+ * 	likeTableData: any
+ * ) => string}
+ * */
 const getTableStatement = (app) => (containerData, entityData, entityJsonSchema, definitions, areColumnConstraintsAvailable, likeTableData) => {
 	const _ = app.require('lodash');
 

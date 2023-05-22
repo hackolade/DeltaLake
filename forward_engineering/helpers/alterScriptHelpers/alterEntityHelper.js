@@ -25,6 +25,10 @@ const setDependencies = ({lodash}) => _ = lodash;
 const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'location', 'numBuckets', 'skewedby', 'skewedOn', 'skewStoredAsDir', 'sortedByKey', 'storedAsTable', 'temporaryTable', 'using', 'rowFormat', 'fieldsTerminatedBy', 'fieldsescapedBy', 'collectionItemsTerminatedBy', 'mapKeysTerminatedBy', 'linesTerminatedBy', 'nullDefinedAs', 'inputFormatClassname', 'outputFormatClassname'];
 const otherTableProperties = ['code', 'collectionName', 'tableProperties', 'description', 'properties', 'serDeLibrary', 'serDeProperties'];
 
+/**
+ * @typedef {import('./alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
+ * */
+
 const hydrateSerDeProperties = (compMod, name) => {
     const {serDeProperties, serDeLibrary} = compMod
     return {
@@ -110,6 +114,12 @@ const hydrateCollection = (entity, definitions) => {
     return [[containerData], [entityData], {...entityData, properties}, definitions];
 };
 
+/**
+ * @return {(collection: any, definitions: any, ddlProvider: any) => {
+ *         type: 'modify',
+ *         script: Array<string>
+ * }}
+ * */
 const generateModifyCollectionScript = (app) => (collection, definitions, ddlProvider) => {
     const compMod = _.get(collection, 'role.compMod', {});
     const isChangedProperties = getIsChangeProperties(_)(compMod, tableProperties);
@@ -141,7 +151,11 @@ const generateModifyCollectionScript = (app) => (collection, definitions, ddlPro
     };
 }
 
+/**
+ * @return {(entity: Object) => Array<AlterScriptDto>}
+ * */
 const getAddCollectionsScripts = (app, definitions) => entity => {
+    const _ = app.require('lodash');
     setDependencies(dependencies);
     const properties = getEntityProperties(entity);
     const indexes = _.get(entity, 'role.BloomIndxs', [])
@@ -149,19 +163,42 @@ const getAddCollectionsScripts = (app, definitions) => entity => {
     const collectionScript = getTableStatement(app)(...hydratedCollection, true);
     const indexScript = getIndexes(...hydrateAddIndexes(entity, indexes, properties, definitions));
 
-    return prepareScript(collectionScript, indexScript);
+    return [collectionScript, indexScript]
+        .filter(Boolean)
+        .map(script => ({
+            isActivated: true,
+            scripts: [{
+                isDropScript: false,
+                script
+            }]
+        }));
 };
 
-const getDeleteCollectionsScripts = provider => entity => {
+/**
+ * @return {(entity: Object) => Array<AlterScriptDto>}
+ * */
+const getDeleteCollectionsScripts = (app, provider) => entity => {
+    const _ = app.require('lodash');
     setDependencies(dependencies);
     const entityData = {...entity, ..._.get(entity, 'role', {})};
     const fullCollectionName = generateFullEntityName(entity)
     const collectionScript = provider.dropTable(fullCollectionName);
     const indexScript = provider.dropTableIndex(hydrateDropIndexes(entityData));
 
-    return prepareScript(indexScript, collectionScript);
+    return [indexScript, collectionScript]
+        .filter(Boolean)
+        .map(script => ({
+            isActivated: true,
+            scripts: [{
+                isDropScript: true,
+                script
+            }]
+        }));
 };
 
+/**
+ * @return {(entity: Object) => Array<AlterScriptDto>}
+ * */
 const getModifyCollectionsScripts = (app, definitions, ddlProvider) => collection => {
     setDependencies(dependencies);
     const properties = getEntityProperties(collection);
@@ -170,7 +207,36 @@ const getModifyCollectionsScripts = (app, definitions, ddlProvider) => collectio
     const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(...hydratedAddIndex);
 
-    return prepareScript(dropIndexScript, ...script, addIndexScript);
+    const dropIndexScriptDto = {
+        isActivated: true,
+        scripts: [{
+            isDropScript: true,
+            script: dropIndexScript
+        }]
+    }
+    const addIndexScriptDto = {
+        isActivated: true,
+        scripts: [{
+            isDropScript: false,
+            script: addIndexScript
+        }]
+    }
+    const modifyTableScriptDtos = script.map(script => ({
+        isActivated: true,
+        scripts: [{
+            isDropScript: false,
+            script
+        }]
+    }))
+
+    return [
+        dropIndexScriptDto,
+        ...modifyTableScriptDtos,
+        addIndexScriptDto,
+    ].map((dto) => ({
+        ...dto,
+        scripts: dto.scripts.filter(scriptModificationDto => scriptModificationDto.script?.length),
+    }))
 };
 
 const getAddColumnsScripts = (app, definitions, provider) => entity => {

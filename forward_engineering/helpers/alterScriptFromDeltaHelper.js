@@ -108,24 +108,24 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
     const getDeletedColumnsScriptsMethod = dbVersionNumber < 11 ? getDeleteColumnScripsForOlderRuntime : getDeleteColumnsScripts;
     const getModifyColumnsScriptsMethod = dbVersionNumber < 11 ? getModifyColumnsScriptsForOlderRuntime : getModifyColumnsScripts;
 
-    const addedCollectionsScripts = getCollectionScripts(
+    const addedCollectionsScriptDtos = getCollectionScripts(
         getItems(schema, 'entities', 'added'),
         'created',
         getAddCollectionsScripts(app, definitions)
     );
-    const deletedCollectionsScripts = getCollectionScripts(
+    const deletedCollectionsScriptDtos = getCollectionScripts(
         getItems(schema, 'entities', 'deleted'),
         'deleted',
-        getDeleteCollectionsScripts(provider)
+        getDeleteCollectionsScripts(app, provider)
     );
-    const modifiedCollectionsScripts = getCollectionScripts(
+    const modifiedCollectionsScriptDtos = getCollectionScripts(
         getItems(schema, 'entities', 'modified'),
         'modified',
         getModifyCollectionsScripts(app, definitions, provider)
     );
-    const modifiedCollectionCommentsScripts = getItems(schema, 'entities', 'modified')
+    const modifiedCollectionCommentsScriptDtos = getItems(schema, 'entities', 'modified')
         .flatMap(item => getModifyCollectionCommentsScripts(provider)(item));
-    const modifiedCollectionPrimaryKeysScripts = getItems(schema, 'entities', 'modified')
+    const modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified')
         .flatMap(item => getModifyPkConstraintsScripts(_, provider)(item));
 
     const addedColumnsScripts = getColumnScripts(
@@ -141,15 +141,6 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
         getModifyColumnsScriptsMethod(app, definitions, provider)
     );
 
-    const collectionResultScripts = [
-        ...deletedCollectionsScripts,
-        ...addedCollectionsScripts,
-        ...modifiedCollectionsScripts,
-    ];
-    const collectionResultScriptsWithNoEmptyStatements = assertNoEmptyStatements(collectionResultScripts);
-    const collectionResultScriptsAsAlterScriptDtos = collectionResultScriptsWithNoEmptyStatements
-        .map(script => mapScriptToAlterScriptDto(script));
-
     const columnResultScripts = [
         ...deletedColumnsScripts,
         ...addedColumnsScripts,
@@ -160,9 +151,11 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
         .map(script => mapScriptToAlterScriptDto(script));
 
     return [
-        ...collectionResultScriptsAsAlterScriptDtos,
-        ...modifiedCollectionCommentsScripts,
-        ...modifiedCollectionPrimaryKeysScripts,
+        ...deletedCollectionsScriptDtos,
+        ...addedCollectionsScriptDtos,
+        ...modifiedCollectionsScriptDtos,
+        ...modifiedCollectionCommentsScriptDtos,
+        ...modifiedCollectionPrimaryKeysScriptDtos,
         ...columnResultScriptsAsAlterScriptDtos,
     ];
 };

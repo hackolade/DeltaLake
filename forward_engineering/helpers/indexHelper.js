@@ -47,6 +47,9 @@ const getIndexKeys = (keys, jsonSchema, definitions) => {
 	};
 };
 
+/**
+ * @return {string}
+ * */
 const getIndexes = (containerData, entityData, jsonSchema, definitions) => {
 	setDependencies(dependencies);
 	const dbData = getTab(0, containerData);

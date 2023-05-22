@@ -144,6 +144,9 @@ const commentDeactivatedInlineKeys = (_) => (keys, deactivatedKeyNames) => {
     return {isAllKeysDeactivated: false, keysString: `${activatedKeys.join(', ')} /*, ${deactivatedKeys.join(', ')} */`}
 }
 
+/**
+ * @return {(statement: string) => string}
+ * */
 const removeRedundantTrailingCommaFromStatement = (_) => (statement) => {
     const splitedStatement = statement.split('\n');
     if (splitedStatement.length < 4 || !splitedStatement[splitedStatement.length - 2].trim().startsWith('--')) {
@@ -226,6 +229,9 @@ const getEntityName = (compMod = {}, type = 'collectionName') => {
     }
 };
 
+/**
+ * @return {Array<any>}
+ * */
 const prepareScript = (...scripts) => scripts.filter(Boolean);
 
 const getDBVersionNumber = dbVersionString => ~~(dbVersionString.split(' ')[1]);
