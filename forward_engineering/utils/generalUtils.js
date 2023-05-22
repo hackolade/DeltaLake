@@ -2,7 +2,6 @@
 
 const sqlFormatter = require('sql-formatter');
 const {RESERVED_WORDS_AS_ARRAY} = require('../enums/reservedWords');
-const {DropStatements} = require("../enums/dropStatements");
 
 /**
  * @typedef {((args: any) => string) | ((args: any) => ChainFunction)} ChainFunction
@@ -88,24 +87,6 @@ const getTypeDescriptor = (typeName) => {
         return {};
     }
 };
-
-/**
- * @param script {string}
- * @return boolean
- * */
-const isScriptADropStatement = (script) => {
-    return Object.values(DropStatements).some(statement => script.includes(statement));
-}
-
-/**
- * @param script {string}
- * @return boolean
- * */
-const doesScriptContainDropStatement = (script) => {
-    return script.split('\n')
-        .filter(Boolean)
-        .some(scriptLine => isScriptADropStatement(scriptLine));
-}
 
 /**
  * @param statement {string}
@@ -271,7 +252,6 @@ module.exports = {
     buildScript,
     wrapInSingleQuotes,
     wrapInTicks,
-    doesScriptContainDropStatement,
     getEntityData,
     getFullEntityName,
     generateFullEntityName,

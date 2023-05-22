@@ -21,7 +21,6 @@ const {
 const {
     commentDeactivatedStatements,
     buildScript,
-    doesScriptContainDropStatement,
     getDBVersionNumber
 } = require('../utils/generalUtils');
 const {getModifyPkConstraintsScripts} = require("./alterScriptHelpers/entityHelpers/primaryKeyHelper");
