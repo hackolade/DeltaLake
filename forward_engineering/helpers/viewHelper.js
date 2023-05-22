@@ -91,7 +91,7 @@ module.exports = {
 		const tableProperties = schema.tableProperties && Array.isArray(schema.tableProperties) ? filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime']) : [];
 
 		if (tableProperties.length) {
-			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`;
+			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`;
 		};
 		script.push(createStatement);
 		if (schema.selectStatement) {
