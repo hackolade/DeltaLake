@@ -165,10 +165,13 @@ const wrapInTicks = (str = '') => {
 }
 
 const buildScript = (statements) => {
-    const script = statements.filter((statement) => statement).join('\n\n');
-    const formattedScript = sqlFormatter.format(script, {indent: '    '}) + '\n';
+    const nonEmptyScripts = statements.filter((statement) => statement);
+    const formattedScripts = nonEmptyScripts.map(
+        script => sqlFormatter.format(script, {indent: '    '})
+            .replace(/\{ \{ (.+?) } }/g, '{{$1}}')
+    );
 
-    return formattedScript.replace(/\{ \{ (.+?) } }/g, '{{$1}}');
+    return formattedScripts.join('\n\n') + '\n';
 };
 
 const getContainerName = compMod => compMod.keyspaceName;
