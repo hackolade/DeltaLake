@@ -260,8 +260,7 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
  * */
 const joinAlterScriptDtosIntoAlterScript = (alterScriptDtos, data) => {
     const scriptAsStringsWithCommentedUnwantedDDL = getAlterStatementsWithCommentedUnwantedDDL(alterScriptDtos, data);
-    const formattedScript = buildScript(scriptAsStringsWithCommentedUnwantedDDL);
-    return formattedScript.split(';').map(script => script.trim()).join(';\n\n');
+    return buildScript(scriptAsStringsWithCommentedUnwantedDDL);
 }
 
 module.exports = {
