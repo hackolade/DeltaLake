@@ -1,82 +1,64 @@
 const {getDatabaseStatement, getDatabaseAlterStatement} = require('../databaseHelper')
-const {dependencies} = require('../appDependencies');
-const {getEntityData} = require('./generalHelper');
-const {getIsChangeProperties} = require('./common');
-const {EntitiesThatSupportComments} = require("./enums/entityType");
-const {wrapInSingleQuotes, replaceSpaceWithUnderscore} = require("../generalHelper");
+const {getEntityData, getIsChangeProperties} = require('../../utils/generalUtils');
+const {getAlterCommentsScriptDtos} = require("./containerHelpers/commentsHelper");
 
-let _;
+/**
+ * @typedef {import('./types/AlterScriptDto').AlterScriptDto} AlterScriptDto
+ * */
 
 const containerProperties = ['comment', 'location', 'dbProperties', 'description'];
 const otherContainerProperties = ['name', 'location'];
 
-const setDependencies = ({lodash}) => _ = lodash;
-
 const getContainerData = compMod => getEntityData(compMod, containerProperties);
 
-const hydrateDrop = container => {
+/**
+ * @param container {Object}
+ * @return {string | undefined}
+ * */
+const getDatabaseName = container => {
     const {role} = container;
     return role?.code || role?.name;
 };
 
-const getAddContainerScript = container => {
+/**
+ * @param container {Object}
+ * @return {AlterScriptDto | undefined}
+ * */
+const getAddContainerScriptDto = container => {
     const dataContainer = [container.role || {}]
-    return getDatabaseStatement(dataContainer);
-};
-
-const getDeleteContainerScript = provider => container => {
-    const hydratedDrop = hydrateDrop(container);
-    return provider.dropDatabase(hydratedDrop);
+    const script = getDatabaseStatement(dataContainer);
+    if (!script?.length) {
+        return undefined;
+    }
+    return {
+        scripts: [{
+            isDropScript: false,
+            script,
+        }]
+    }
 };
 
 /**
+ * @return {(container: Object) => AlterScriptDto}
+ * */
+const getDeleteContainerScriptDto = provider => container => {
+    const databaseName = getDatabaseName(container);
+    const script = provider.dropDatabase(databaseName);
+    return {
+        scripts: [{
+            isDropScript: true,
+            script,
+        }]
+    }
+};
+
+/**
+ * @param compMod {Object}
  * @return {{
- *     old?: string,
- *     new?: string,
+ *     new: string,
+ *     old: string,
  * }}
  * */
-const extractDescription = (container) => {
-    return container?.role?.compMod?.description || {};
-}
-
-/**
- * @return string
- * */
-const getUpsertCommentsScript = (container, ddlProvider) => {
-    const description = extractDescription(container);
-    if (description.new && description.new !== description.old) {
-        return ddlProvider.updateComment({
-            entityType: EntitiesThatSupportComments.SCHEMA,
-            entityName: replaceSpaceWithUnderscore(container.role.name),
-            comment: wrapInSingleQuotes(description.new),
-        })
-    }
-    return '';
-}
-
-/**
- * @return string
- * */
-const getDropCommentsScript = (container, ddlProvider) => {
-    const description = extractDescription(container);
-    if (description.old && !description.new) {
-        return ddlProvider.dropComment({
-            entityType: EntitiesThatSupportComments.SCHEMA,
-            entityName: replaceSpaceWithUnderscore(container.role.name)
-        })
-    }
-    return '';
-}
-
-const getAlterCommentsScript = (container, ddlProvider) => {
-    const upsertCommentScript = getUpsertCommentsScript(container, ddlProvider);
-    const dropCommentScript = getDropCommentsScript(container, ddlProvider);
-    return [
-        upsertCommentScript,
-        dropCommentScript
-    ].filter(Boolean).join('\n\n');
-}
-
 const extractNamesFromCompMod = (compMod) => {
     const extractName = type => compMod.code?.[type] || compMod.name?.[type];
     return {
@@ -85,30 +67,48 @@ const extractNamesFromCompMod = (compMod) => {
     };
 }
 
-const getModifyContainerScript = provider => container => {
-    setDependencies(dependencies);
+/**
+ * @return {(container: Object) => Array<AlterScriptDto>}
+ * */
+const getModifyContainerScriptDtos = (provider, _) => container => {
     const compMod = _.get(container, 'role.compMod', {});
     const names = extractNamesFromCompMod(compMod);
 
-    const didPropertiesChange = getIsChangeProperties({...compMod, name: names}, otherContainerProperties);
+    const didPropertiesChange = getIsChangeProperties(_)({...compMod, name: names}, otherContainerProperties);
     const containerData = {...getContainerData(compMod), name: names.new};
     if (!didPropertiesChange) {
-        const alterCommentsScript = getAlterCommentsScript(container, provider);
+        const alterCommentsScriptDtos = getAlterCommentsScriptDtos(provider)(container);
         const alterDatabaseScript = getDatabaseAlterStatement([containerData]);
+        if (!alterDatabaseScript?.length) {
+            return alterCommentsScriptDtos;
+        }
         return [
-            alterCommentsScript,
-            alterDatabaseScript,
-        ].filter(Boolean).join('\n\n');
+            ...alterCommentsScriptDtos,
+            {
+                scripts: [{
+                    script: alterDatabaseScript,
+                    isDropScript: false,
+                }]
+            },
+        ];
     }
-    const hydratedDrop = hydrateDrop({role: {...containerData, name: names.old}});
-    const deletedScript = provider.dropDatabase(hydratedDrop);
-    const addedScript = getAddContainerScript({role: containerData});
+    const databaseName = getDatabaseName({role: {...containerData, name: names.old}});
+    const deletedScript = provider.dropDatabase(databaseName);
+    const addedScriptDto = getAddContainerScriptDto({role: containerData});
 
-    return [deletedScript, addedScript];
+    return [
+        {
+            scripts: [{
+                script: deletedScript,
+                isDropScript: true,
+            }]
+        },
+        addedScriptDto
+    ].filter(Boolean);
 };
 
 module.exports = {
-    getAddContainerScript,
-    getDeleteContainerScript,
-    getModifyContainerScript
+    getAddContainerScriptDto,
+    getDeleteContainerScriptDto,
+    getModifyContainerScriptDtos
 }
