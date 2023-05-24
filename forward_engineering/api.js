@@ -214,7 +214,7 @@ const doesContainerLevelAlterScriptContainDropStatements = (data, app) => {
  *     relationships: Array<string>,
  * }}
  * */
-const generateContainerLevelFEScript = (data, app) => {
+const generateContainerLevelFEScriptDto = (data, app) => {
     const _ = app.require('lodash');
     const {
         internalDefinitions,
@@ -355,7 +355,7 @@ module.exports = {
                 const script = generateContainerLevelAlterScript(data, app);
                 callback(null, script);
             } else {
-                const scriptData = generateContainerLevelFEScript(data, app);
+                const scriptData = generateContainerLevelFEScriptDto(data, app);
                 if (data.options.separateBucket) {
                     const result =  {
                         container: scriptData.container,
