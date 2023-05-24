@@ -2,16 +2,14 @@
 
 const { setDependencies } = require('./helpers/appDependencies');
 const { getDatabaseStatement } = require('./helpers/databaseHelper');
-const { getTableStatement } = require('./helpers/tableHelper');
-const { getIndexes } = require('./helpers/indexHelper');
 const { getViewScript } = require('./helpers/viewHelper');
-const { getCleanedUrl, getTab, buildScript } = require('./utils/generalUtils');
+const { getCleanedUrl, buildScript } = require('./utils/generalUtils');
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
 
 const logHelper = require('../reverse_engineering/logHelper');
 const {getAlterScriptDtos, joinAlterScriptDtosIntoAlterScript} = require('./helpers/alterScriptFromDeltaHelper');
-const {getCreateRelationshipScripts} = require("./helpers/relationshipHelper");
+const {buildEntityLevelFEScript, buildContainerLevelFEScriptDto} = require("./helpers/feScriptBuilder");
 
 /**
  * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
@@ -91,44 +89,6 @@ const doesEntityLevelAlterScriptContainDropStatements = (data, app) => {
             .scripts.some(scriptModificationDto => scriptModificationDto.isDropScript));
 }
 
-
-/**
- * @param data {CoreData}
- * @param app {App}
- * @return {string}
- * */
-const generateEntityLevelFEScript = (data, app) => {
-    const {
-        externalDefinitions,
-        modelDefinitions,
-        jsonSchema,
-        internalDefinitions,
-        containerData,
-        entityData
-    } = parseDataForEntityLevelScript(data);
-    const databaseStatement = getDatabaseStatement(containerData);
-    const tableStatements = getTableStatement(app)(
-        containerData,
-        entityData,
-        jsonSchema,
-        [
-            modelDefinitions,
-            internalDefinitions,
-            externalDefinitions,
-        ],
-        true,
-    );
-    return buildScript([
-        databaseStatement,
-        tableStatements,
-        getIndexes(containerData, entityData, jsonSchema, [
-            modelDefinitions,
-            internalDefinitions,
-            externalDefinitions,
-        ])
-    ]);
-}
-
 /**
  * @param data {CoreData}
  * @return {{
@@ -198,92 +158,6 @@ const doesContainerLevelAlterScriptContainDropStatements = (data, app) => {
             .scripts.some(scriptModificationDto => scriptModificationDto.isDropScript));
 }
 
-/**
- * @param data {CoreData}
- * @param app {App}
- * @return {{
- *     container: string,
- *     entities: Array<{
- *      name: string,
- *      script: string
- *     }>,
- *     views: Array<{
- *      name: string,
- *      script: string
- *     }>,
- *     relationships: Array<string>,
- * }}
- * */
-const generateContainerLevelFEScriptDto = (data, app) => {
-    const _ = app.require('lodash');
-    const {
-        internalDefinitions,
-        externalDefinitions,
-        modelDefinitions,
-        entitiesJsonSchema,
-        containerData,
-    } = parseDataForContainerLevelScript(data);
-
-    let viewsScriptDtos = data.views.map(viewId => {
-        const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
-        const viewData = data.viewData[viewId];
-        const viewScript = getViewScript({
-            schema: viewSchema,
-            viewData: viewData,
-            containerData: data.containerData,
-            collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
-            isKeyspaceActivated: true,
-        });
-
-        return {
-            name: viewData[0]?.code || viewData[0]?.name,
-            script: buildScript([viewScript]),
-        };
-    });
-
-    viewsScriptDtos = viewsScriptDtos.filter(({ script }) => !_.isEmpty(script));
-
-    const databaseStatement = getDatabaseStatement(containerData);
-
-    const entityScriptDtos = data.entities.reduce((result, entityId) => {
-        const entityData = data.entityData[entityId];
-        const args = [
-            containerData,
-            entityData,
-            entitiesJsonSchema[entityId],
-            [
-                internalDefinitions[entityId],
-                modelDefinitions,
-                externalDefinitions,
-            ],
-        ];
-        const likeTableData = data.entityData[getTab(0, entityData)?.like];
-
-        const tableStatement = getTableStatement(app)(
-            ...args,
-            true,
-            likeTableData,
-        )
-
-        const tableScript = buildScript([tableStatement, getIndexes(...args)]);
-
-        return result.concat({
-            name: entityData[0]?.code || entityData[0]?.collectionName,
-            script: tableScript,
-        });
-    }, []);
-
-    const relationshipScrips = getCreateRelationshipScripts(app)(data.relationships, entitiesJsonSchema);
-
-    return {
-        container: databaseStatement,
-        entities: entityScriptDtos,
-        views: viewsScriptDtos,
-        relationships: relationshipScrips,
-    };
-
-}
-
 module.exports = {
     /**
      * @param data {CoreData}
@@ -299,7 +173,8 @@ module.exports = {
                 const scripts = generateEntityLevelAlterScript(data, app);
                 callback(null, scripts);
             } else {
-                const scripts = generateEntityLevelFEScript(data, app);
+                const parsedData = parseDataForEntityLevelScript(data);
+                const scripts = buildEntityLevelFEScript(app)(parsedData);
                 callback(null, scripts);
             }
         } catch (e) {
@@ -355,7 +230,12 @@ module.exports = {
                 const script = generateContainerLevelAlterScript(data, app);
                 callback(null, script);
             } else {
-                const scriptData = generateContainerLevelFEScriptDto(data, app);
+                const parsedData = parseDataForContainerLevelScript(data);
+                const scriptData = buildContainerLevelFEScriptDto(data, app)({
+                    ...parsedData,
+                    includeRelationshipsInEntityScripts: Boolean(data.options.separateBucket)
+                });
+
                 if (data.options.separateBucket) {
                     const result =  {
                         container: scriptData.container,
