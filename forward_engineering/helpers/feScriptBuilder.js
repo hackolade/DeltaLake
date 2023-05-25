@@ -140,10 +140,9 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
         const indexScript = getIndexes(...createTableStatementArgs);
         let relationshipScripts = [];
         if (includeRelationships) {
-            const entitiesJsonSchemaForCurrentEntity = {
-                [entityId]: entityJsonSchema,
-            }
-            relationshipScripts = getCreateRelationshipScripts(app)(data.relationships, entitiesJsonSchemaForCurrentEntity);
+            const relationshipsWithThisTableAsChild = data.relationships
+                .filter(relationship => relationship.childCollection === entityId);
+            relationshipScripts = getCreateRelationshipScripts(app)(relationshipsWithThisTableAsChild, entitiesJsonSchema);
         }
 
         const tableScript = buildScript([tableStatement, indexScript, ...relationshipScripts]);
