@@ -171,7 +171,7 @@ const buildScript = (statements) => {
             .replace(/\{ \{ (.+?) } }/g, '{{$1}}')
     );
 
-    return formattedScripts.join('\n\n') + '\n';
+    return formattedScripts.join('\n\n') + '\n\n';
 };
 
 const getContainerName = compMod => compMod.keyspaceName;
