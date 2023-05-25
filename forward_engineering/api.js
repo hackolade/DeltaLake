@@ -42,16 +42,27 @@ const {
  * }} EntitiesJsonSchema
  */
 
+const parseEntities = (entities, serializedItems) => {
+    return entities.reduce((result, entityId) => {
+        try {
+            return Object.assign({}, result, {
+                [entityId]: JSON.parse(serializedItems[entityId]),
+            });
+        } catch (e) {
+            return result;
+        }
+    }, {});
+};
 
 /**
  * @param data {CoreData}
  * @return {{
- *      jsonSchema: any,
- *      modelDefinitions: ModelDefinitions,
- *      internalDefinitions: InternalDefinitions,
- *      externalDefinitions: ExternalDefinitions,
- *      containerData: ContainerData,
- *      entityData: any,
+ *      jsonSchema: unknown,
+ *      modelDefinitions: ModelDefinitions | unknown,
+ *      internalDefinitions: InternalDefinitions | unknown,
+ *      externalDefinitions: ExternalDefinitions | unknown,
+ *      containerData: ContainerData | unknown,
+ *      entityData: unknown,
  * }}
  * */
 const parseDataForEntityLevelScript = (data) => {
@@ -75,11 +86,11 @@ const parseDataForEntityLevelScript = (data) => {
 /**
  * @param data {CoreData}
  * @return {{
- *      modelDefinitions: ModelDefinitions,
- *      internalDefinitions: InternalDefinitions,
- *      externalDefinitions: ExternalDefinitions,
- *      containerData: ContainerData,
- *      entitiesJsonSchema: EntitiesJsonSchema,
+ *      modelDefinitions: ModelDefinitions | unknown,
+ *      internalDefinitions: InternalDefinitions | unknown,
+ *      externalDefinitions: ExternalDefinitions | unknown,
+ *      containerData: ContainerData | unknown,
+ *      entitiesJsonSchema: EntitiesJsonSchema | unknown,
  * }}
  * */
 const parseDataForContainerLevelScript = (data) => {
@@ -295,18 +306,6 @@ module.exports = {
             callback({message: e.message, stack: e.stack});
         }
     },
-};
-
-const parseEntities = (entities, serializedItems) => {
-    return entities.reduce((result, entityId) => {
-        try {
-            return Object.assign({}, result, {
-                [entityId]: JSON.parse(serializedItems[entityId]),
-            });
-        } catch (e) {
-            return result;
-        }
-    }, {});
 };
 
 const logInfo = (step, connectionInfo, logger) => {

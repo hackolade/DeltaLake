@@ -2,31 +2,25 @@ const {getAlterScriptDtos, joinAlterScriptDtosIntoAlterScript} = require("../alt
 
 /**
  * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * @typedef {import('./types/coreApplicationDataTypes').EntityJsonSchema} EntityJsonSchema
- * @typedef {import('./types/coreApplicationDataTypes').ExternalDefinitions} ExternalDefinitions
- * @typedef {import('./types/coreApplicationDataTypes').InternalDefinitions} InternalDefinitions
- * @typedef {import('./types/coreApplicationDataTypes').ModelDefinitions} ModelDefinitions
  * @typedef {import('./types/coreApplicationTypes').App} App
  * @typedef {import('./types/coreApplicationTypes').CoreData} CoreData
  * */
 
 /**
  * @typedef {{
- *     externalDefinitions: ExternalDefinitions,
- *     modelDefinitions: ModelDefinitions,
- *     jsonSchema: EntityJsonSchema,
- *     internalDefinitions: InternalDefinitions
+ *     externalDefinitions: unknown,
+ *     modelDefinitions: unknown,
+ *     jsonSchema: unknown,
+ *     internalDefinitions: unknown
  * }} EntityLevelAlterScriptData
  * */
 
 /**
  * @typedef {{
- *     externalDefinitions: ExternalDefinitions,
- *     modelDefinitions: ModelDefinitions,
- *     entitiesJsonSchema: {
- *         [id: string]: EntityJsonSchema,
- *     },
- *     internalDefinitions: InternalDefinitions
+ *     externalDefinitions: unknown,
+ *     modelDefinitions: unknown,
+ *     entitiesJsonSchema: unknown,
+ *     internalDefinitions: unknown
  * }} ContainerLevelAlterScriptData
  * */
 
