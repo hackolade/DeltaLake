@@ -81,17 +81,27 @@
 
 /**
  * @typedef {{
+ *     [id: string]: EntityJsonSchema
+ * }} EntitiesJsonSchema
+ *
+ */
+
+/**
+ * @typedef {{
  *     name: string,
  *     script: string,
  * }} ContainerLevelEntityDto
  * */
 
-import {getDatabaseStatement} from "./databaseHelper";
-import {getTableStatement} from "./tableHelper";
-import {buildScript, getName, getTab} from "../utils/generalUtils";
-import {getIndexes} from "./indexHelper";
-import {getViewScript} from "./viewHelper";
-import {getCreateRelationshipScripts} from "./relationshipHelper";
+
+const {getDatabaseStatement} = require("./databaseHelper");
+const {getCreateRelationshipScripts} = require("./relationshipHelper");
+const {getTableStatement} = require("./tableHelper");
+const {getIndexes} = require("./indexHelper");
+const {buildScript, getName, getTab} = require("../utils/generalUtils");
+const {getViewScript} = require("./viewHelper");
+
+
 
 /**
  *  @return {
@@ -105,7 +115,7 @@ import {getCreateRelationshipScripts} from "./relationshipHelper";
  *     }): string
  *  }
  * */
-export const buildEntityLevelFEScript = (app) => ({
+const buildEntityLevelFEScript = (app) => ({
                                                       externalDefinitions,
                                                       modelDefinitions,
                                                       jsonSchema,
@@ -165,6 +175,7 @@ const getContainerLevelViewScriptDtos = (data, _) => {
  *          internalDefinitions: InternalDefinitions,
  *          containerData: ContainerData,
  *          includeRelationships: boolean,
+ *          entitiesJsonSchema: EntitiesJsonSchema,
  *     }): Array<ContainerLevelEntityDto>
  *  }
  * */
@@ -174,6 +185,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
                                                                 internalDefinitions,
                                                                 containerData,
                                                                 includeRelationships,
+                                                                entitiesJsonSchema,
                                                             }) => {
     return data.entities.reduce((result, entityId) => {
         const entityData = data.entityData[entityId];
@@ -190,12 +202,15 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
         );
 
         const indexScript = getIndexes(...createTableStatementArgs);
-        let relationshipScript = '';
+        let relationshipScripts = [];
         if (includeRelationships) {
-
+            const entitiesJsonSchemaForCurrentEntity = {
+                [entityId]: entityJsonSchema,
+            }
+            relationshipScripts = getCreateRelationshipScripts(app)(data.relationships, entitiesJsonSchemaForCurrentEntity);
         }
 
-        const tableScript = buildScript([tableStatement, indexScript, relationshipScript]);
+        const tableScript = buildScript([tableStatement, indexScript, ...relationshipScripts]);
 
         return result.concat({
             name: getName(entityData[0]),
@@ -210,7 +225,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
  * @return {function({
  *          externalDefinitions: ExternalDefinitions,
  *          modelDefinitions: ModelDefinitions,
- *          jsonSchema: EntityJsonSchema,
+ *          jsonSchema: EntitiesJsonSchema,
  *          internalDefinitions: InternalDefinitions,
  *          containerData: ContainerData,
  *          entityData: EntityData,
@@ -228,7 +243,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
  *     relationships: Array<string>,
  * }}
  * */
-export const buildContainerLevelFEScriptDto = (data, app) => ({
+const buildContainerLevelFEScriptDto = (data, app) => ({
                                                                      internalDefinitions,
                                                                      externalDefinitions,
                                                                      modelDefinitions,
@@ -245,6 +260,7 @@ export const buildContainerLevelFEScriptDto = (data, app) => ({
         externalDefinitions,
         modelDefinitions,
         containerData,
+        entitiesJsonSchema,
         includeRelationships: includeRelationshipsInEntityScripts,
     });
 
@@ -260,4 +276,9 @@ export const buildContainerLevelFEScriptDto = (data, app) => ({
         relationships: relationshipScrips,
     };
 
+}
+
+module.exports = {
+    buildEntityLevelFEScript,
+    buildContainerLevelFEScriptDto,
 }
