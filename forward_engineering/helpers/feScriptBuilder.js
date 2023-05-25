@@ -1,89 +1,23 @@
 /**
  * @typedef {import('../types/coreApplicationTypes').CoreData} CoreData
- * @typedef {import('./types/coreApplicationTypes').App} App
+ * @typedef {import('../types/coreApplicationTypes').App} App
+ * @typedef {import('../types/coreApplicationDataTypes').ContainerJsonSchema} ContainerJsonSchema
+ * @typedef {import('../types/coreApplicationDataTypes').ContainerStyles} ContainerStyles
+ * @typedef {import('../types/coreApplicationDataTypes').EntityData} EntityData
+ * @typedef {import('../types/coreApplicationDataTypes').EntityJsonSchema} EntityJsonSchema
+ * @typedef {import('../types/coreApplicationDataTypes').ExternalDefinitions} ExternalDefinitions
+ * @typedef {import('../types/coreApplicationDataTypes').InternalDefinitions} InternalDefinitions
+ * @typedef {import('../types/coreApplicationDataTypes').ModelDefinitions} ModelDefinitions
  * */
 
 /**
- * @typedef {[{
- *     name: string,
- *     isActivated: boolean,
- * }, {
- *     backgroundColor: Object,
- * }]} ContainerData
- * */
-
-/**
- * @typedef {[
- *     {
- *      collectionName: string,
- *      isActivated: boolean,
- *      bucketId: string,
- *      additionalProperties: boolean,
- *      tableIfNotExists: boolean,
- *    }
- * ]} EntityData
- * */
-
-/**
- * @typedef {{
- *   $schema: string,
- *   type: "definitions",
- *   GUID: string,
- * }} InternalDefinitions
- * */
-
-/**
- * @typedef {{
- *   $schema: string,
- *   type: "definitions",
- *   GUID: string,
- * }} ModelDefinitions
- * */
-
-/**
- * @typedef {{
- *   $schema: string,
- *   type: "externalDefinitions",
- *   GUID: string,
- * }} ExternalDefinitions
- * */
-
-/**
- * @typedef {{
- *   $schema: string,
- *   type: "object",
- *   title: string,
- *   properties: {
- *      [x: string]: {
- *       type: string,
- *       isActivated: boolean,
- *       mode: string,
- *       subtype: string,
- *       compositeKey: [
- *         "compositePartitionKey",
- *         "compositeClusteringKey",
- *         "compositePrimaryKey",
- *         "compositeUniqueKey",
- *       ],
- *       compositePartitionKey: boolean,
- *       compositeClusteringKey: boolean,
- *       compositePrimaryKey: boolean,
- *       compositeUniqueKey: boolean,
- *       GUID: string,
- *      },
- *   },
- *   isActivated: boolean,
- *   additionalProperties: boolean,
- *   tableIfNotExists: boolean,
- *   GUID: string,
- * }} EntityJsonSchema
+ * @typedef {[ContainerJsonSchema, ContainerStyles]} ContainerData
  * */
 
 /**
  * @typedef {{
  *     [id: string]: EntityJsonSchema
  * }} EntitiesJsonSchema
- *
  */
 
 /**
@@ -101,19 +35,30 @@ const {getIndexes} = require("./indexHelper");
 const {buildScript, getName, getTab} = require("../utils/generalUtils");
 const {getViewScript} = require("./viewHelper");
 
-
-
 /**
- *  @return {
- *      function({
- *          externalDefinitions: ExternalDefinitions,
+ * @typedef {{
+ *     externalDefinitions: ExternalDefinitions,
  *          modelDefinitions: ModelDefinitions,
  *          jsonSchema: EntityJsonSchema,
  *          internalDefinitions: InternalDefinitions,
  *          containerData: ContainerData,
- *          entityData: EntityData
- *     }): string
- *  }
+ *          entityData: EntityData[]
+ * }} EntityLevelFEScriptData
+ * */
+
+/**
+ * @typedef {{
+ *     externalDefinitions: ExternalDefinitions,
+ *     modelDefinitions: ModelDefinitions,
+ *     internalDefinitions: InternalDefinitions,
+ *     containerData: ContainerData,
+ *     includeRelationships: boolean,
+ *     entitiesJsonSchema: EntitiesJsonSchema,
+ * }} ContainerLevelFEScriptData
+ * */
+
+/**
+ * @return {(data: EntityLevelFEScriptData) => string}
  * */
 const buildEntityLevelFEScript = (app) => ({
                                                       externalDefinitions,
@@ -168,16 +113,7 @@ const getContainerLevelViewScriptDtos = (data, _) => {
 /**
  * @param data {CoreData}
  * @param app {App}
- * @return {
- *      function({
- *          externalDefinitions: ExternalDefinitions,
- *          modelDefinitions: ModelDefinitions,
- *          internalDefinitions: InternalDefinitions,
- *          containerData: ContainerData,
- *          includeRelationships: boolean,
- *          entitiesJsonSchema: EntitiesJsonSchema,
- *     }): Array<ContainerLevelEntityDto>
- *  }
+ * @return {(data: ContainerLevelFEScriptData) => Array<ContainerLevelEntityDto>}
  * */
 const getContainerLevelEntitiesScriptDtos = (app, data) => ({
                                                                 externalDefinitions,
@@ -222,15 +158,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
 /**
  * @param data {CoreData}
  * @param app {App}
- * @return {function({
- *          externalDefinitions: ExternalDefinitions,
- *          modelDefinitions: ModelDefinitions,
- *          jsonSchema: EntitiesJsonSchema,
- *          internalDefinitions: InternalDefinitions,
- *          containerData: ContainerData,
- *          entityData: EntityData,
- *          includeRelationshipsInEntityScripts: boolean,
- * }): {
+ * @return {(dto: ContainerLevelFEScriptData & {includeRelationshipsInEntityScripts: boolean}) => {
  *     container: string,
  *     entities: Array<{
  *      name: string,
