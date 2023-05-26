@@ -363,7 +363,9 @@ const getLabelValue = (context, label) => {
 }
 
 const getCommentValue = (context, label) => {
-	return context[label]?.text ? removeValueQuotes(context[label]?.text) : '';
+	const comment = context[label]?.text ? removeValueQuotes(context[label]?.text) : '';
+
+	return removeEscapingBackSlash(comment);
 }
 
 const getName = context => {
@@ -376,5 +378,7 @@ const getName = context => {
 const removeQuotes = (string = '') => string.replace(/['`"]+/gm, '');
 
 const removeValueQuotes = (string = '') => string.replace(/^(['"`])([\s\S]*)\1$/, '$2')
+
+const removeEscapingBackSlash = (string = '') => string.replace(/\\(['\\])/g, '$1');
 
 module.exports = Visitor;
