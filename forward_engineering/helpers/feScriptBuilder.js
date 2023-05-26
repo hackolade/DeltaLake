@@ -34,6 +34,7 @@ const {getTableStatement} = require("./tableHelper");
 const {getIndexes} = require("./indexHelper");
 const {buildScript, getName, getTab, getDBVersionNumber} = require("../utils/generalUtils");
 const {getViewScript} = require("./viewHelper");
+const {Runtime} = require("../enums/runtime");
 
 /**
  * @typedef {{
@@ -146,7 +147,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
 
         const indexScript = getIndexes(...createTableStatementArgs);
         let relationshipScripts = [];
-        if (includeRelationships) {
+        if (includeRelationships && dbVersionNumber >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
             const relationshipsWithThisTableAsChild = data.relationships
                 .filter(relationship => relationship.childCollection === entityId);
             relationshipScripts = getCreateRelationshipScripts(app)(relationshipsWithThisTableAsChild, entitiesJsonSchema);
@@ -186,6 +187,7 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
                                                                      includeRelationshipsInEntityScripts
                                                                  }) => {
     const _ = app.require('lodash');
+    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
 
     const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
     const databaseStatement = getDatabaseStatement(containerData);
@@ -199,7 +201,7 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
     });
 
     let relationshipScrips = [];
-    if (!includeRelationshipsInEntityScripts) {
+    if (!includeRelationshipsInEntityScripts && dbVersionNumber >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
         relationshipScrips = getCreateRelationshipScripts(app)(data.relationships, entitiesJsonSchema);
     }
 

@@ -251,11 +251,15 @@ const getAlterStatementsWithCommentedUnwantedDDL = (scriptDtos, data) => {
 const getAlterScriptDtos = (schema, definitions, data, app) => {
     const provider = require('../ddlProvider/ddlProvider')(app);
     const _ = app.require('lodash');
+    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
 
     const containersScriptDtos = getAlterContainersScriptDtos(schema, provider, _);
     const collectionsScriptDtos = getAlterCollectionsScriptDtos({schema, definitions, provider, data, _, app});
     const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, _);
-    const relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
+    let relationshipsScriptDtos = [];
+    if (dbVersionNumber >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
+        relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
+    }
 
     return [
         ...containersScriptDtos,
