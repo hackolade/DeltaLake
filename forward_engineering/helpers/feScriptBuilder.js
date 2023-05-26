@@ -32,7 +32,7 @@ const {getDatabaseStatement} = require("./databaseHelper");
 const {getCreateRelationshipScripts} = require("./relationshipHelper");
 const {getTableStatement} = require("./tableHelper");
 const {getIndexes} = require("./indexHelper");
-const {buildScript, getName, getTab} = require("../utils/generalUtils");
+const {buildScript, getName, getTab, getDBVersionNumber} = require("../utils/generalUtils");
 const {getViewScript} = require("./viewHelper");
 
 /**
@@ -58,9 +58,11 @@ const {getViewScript} = require("./viewHelper");
  * */
 
 /**
- * @return {(data: EntityLevelFEScriptData) => string}
+ * @param data {CoreData}
+ * @param app {App}
+ * @return {(dto: EntityLevelFEScriptData) => string}
  * */
-const buildEntityLevelFEScript = (app) => ({
+const buildEntityLevelFEScript = (data, app) => ({
                                                       externalDefinitions,
                                                       modelDefinitions,
                                                       jsonSchema,
@@ -68,6 +70,7 @@ const buildEntityLevelFEScript = (app) => ({
                                                       containerData,
                                                       entityData,
                                                   }) => {
+    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
     const databaseStatement = getDatabaseStatement(containerData);
     const definitions = [modelDefinitions, internalDefinitions, externalDefinitions,];
     const tableStatements = getTableStatement(app)(
@@ -76,6 +79,7 @@ const buildEntityLevelFEScript = (app) => ({
         jsonSchema,
         definitions,
         true,
+        dbVersionNumber
     );
     const indexScript = getIndexes(containerData, entityData, jsonSchema, definitions);
     return buildScript([
@@ -123,6 +127,8 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
                                                                 includeRelationships,
                                                                 entitiesJsonSchema,
                                                             }) => {
+    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
+
     return data.entities.reduce((result, entityId) => {
         const entityData = data.entityData[entityId];
 
@@ -135,6 +141,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
             ...createTableStatementArgs,
             true,
             likeTableData,
+            dbVersionNumber
         );
 
         const indexScript = getIndexes(...createTableStatementArgs);

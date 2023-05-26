@@ -16,7 +16,6 @@ const {getModifyCollectionCommentsScripts} = require('./entityHelpers/commentsHe
 const {getModifyCheckConstraintsScriptDtos} = require("./columnHelpers/checkConstraintHelper");
 const {getModifyNonNullColumnsScriptDtos} = require("./columnHelpers/nonNullConstraintHelper");
 const {getModifiedCommentOnColumnScriptDtos} = require("./columnHelpers/commentsHelper");
-const {getModifyPkConstraintsScripts} = require("./entityHelpers/primaryKeyHelper");
 const {AlterScriptDto} = require("./types/AlterScriptDto");
 
 const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'location', 'numBuckets', 'skewedby', 'skewedOn', 'skewStoredAsDir', 'sortedByKey', 'storedAsTable', 'temporaryTable', 'using', 'rowFormat', 'fieldsTerminatedBy', 'fieldsescapedBy', 'collectionItemsTerminatedBy', 'mapKeysTerminatedBy', 'linesTerminatedBy', 'nullDefinedAs', 'inputFormatClassname', 'outputFormatClassname'];
@@ -113,7 +112,7 @@ const hydrateCollection = (_) => (entity, definitions) => {
  *         script: Array<string>
  * }}
  * */
-const generateModifyCollectionScript = (app) => (collection, definitions, ddlProvider) => {
+const generateModifyCollectionScript = (app) => (collection, definitions, ddlProvider, dbVersion) => {
     const _ = app.require('lodash');
     const compMod = _.get(collection, 'role.compMod', {});
     const isChangedProperties = getIsChangeProperties(_)(compMod, tableProperties);
@@ -124,7 +123,7 @@ const generateModifyCollectionScript = (app) => (collection, definitions, ddlPro
             ...collection,
             role: {...collection.role, ...roleData}
         }, definitions);
-        const addCollectionScript = getTableStatement(app)(...hydratedCollection, true);
+        const addCollectionScript = getTableStatement(app)(...hydratedCollection, true, dbVersion);
         const deleteCollectionScript = ddlProvider.dropTable(fullCollectionName);
         return {type: 'new', script: prepareScript(deleteCollectionScript, addCollectionScript)};
     }
@@ -148,12 +147,12 @@ const generateModifyCollectionScript = (app) => (collection, definitions, ddlPro
 /**
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
-const getAddCollectionsScripts = (app, definitions) => entity => {
+const getAddCollectionsScripts = (app, definitions, dbVersion) => entity => {
     const _ = app.require('lodash');
     const properties = getEntityProperties(entity);
     const indexes = _.get(entity, 'role.BloomIndxs', [])
     const hydratedCollection = hydrateCollection(_)(entity, definitions);
-    const collectionScript = getTableStatement(app)(...hydratedCollection, true);
+    const collectionScript = getTableStatement(app)(...hydratedCollection, true, dbVersion);
     const indexScript = getIndexes(...hydrateAddIndexes(_)(entity, indexes, properties, definitions));
 
     return [collectionScript, indexScript]
@@ -191,10 +190,10 @@ const getDeleteCollectionsScripts = (app, provider) => entity => {
 /**
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
-const getModifyCollectionsScripts = (app, definitions, ddlProvider) => collection => {
+const getModifyCollectionsScripts = (app, definitions, ddlProvider, dbVersion) => collection => {
     const _ = app.require('lodash');
     const properties = getEntityProperties(collection);
-    const {script} = generateModifyCollectionScript(app)(collection, definitions, ddlProvider);
+    const {script} = generateModifyCollectionScript(app)(collection, definitions, ddlProvider, dbVersion);
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(collection, properties, definitions);
     const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(...hydratedAddIndex);
@@ -214,7 +213,7 @@ const getModifyCollectionsScripts = (app, definitions, ddlProvider) => collectio
 /**
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
-const getAddColumnsScripts = (app, definitions, provider) => entity => {
+const getAddColumnsScripts = (app, definitions, provider, dbVersion) => entity => {
     const _ = app.require('lodash');
     const entityData = {...entity, ..._.omit(entity.role, ['properties'])};
     const {columns} = getColumns(entityData, true, definitions);
@@ -222,7 +221,7 @@ const getAddColumnsScripts = (app, definitions, provider) => entity => {
     const columnStatement = getColumnsStatement(columns);
     const fullCollectionName = generateFullEntityName(entity);
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(entity, properties, definitions);
-    const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider);
+    const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider, dbVersion);
     const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(...hydratedAddIndex);
     const addColumnScript = provider.addTableColumns({name: fullCollectionName, columns: columnStatement});
@@ -241,7 +240,7 @@ const getAddColumnsScripts = (app, definitions, provider) => entity => {
         .filter(Boolean);
 };
 
-const getDeleteColumnsScripts = (app, definitions, provider) => entity => {
+const getDeleteColumnsScripts = (app, definitions, provider, dbVersion) => entity => {
     const _ = app.require('lodash');
     const entityData = {
         ...entity,
@@ -253,7 +252,7 @@ const getDeleteColumnsScripts = (app, definitions, provider) => entity => {
     const columnStatement = getColumnsString(Object.keys(columns));
     const fullCollectionName = generateFullEntityName(entity);
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(entity, properties, definitions);
-    const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider);
+    const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider, dbVersion);
     const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(...hydratedAddIndex);
     const deleteColumnScript = provider.dropTableColumns({name: fullCollectionName, columns: columnStatement});
@@ -275,7 +274,7 @@ const getDeleteColumnsScripts = (app, definitions, provider) => entity => {
 /**
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
-const getDeleteColumnScripsForOlderRuntime = (app, definitions, provider) => entity => {
+const getDeleteColumnScripsForOlderRuntime = (app, definitions, provider, dbVersion) => entity => {
     const _ = app.require('lodash');
     const deleteColumnsName = _.filter(Object.keys(entity.properties || {}), name => !entity.properties[name].compMod);
     const properties = _.omit(_.get(entity, 'role.properties', {}), deleteColumnsName);
@@ -286,7 +285,7 @@ const getDeleteColumnScripsForOlderRuntime = (app, definitions, provider) => ent
     const addIndexScript = getIndexes(...hydratedAddIndex);
     const deleteCollectionScript = provider.dropTable(fullCollectionName);
     const hydratedCollection = hydrateCollection(_)(entityData, definitions);
-    const addCollectionScript = getTableStatement(app)(...hydratedCollection, true);
+    const addCollectionScript = getTableStatement(app)(...hydratedCollection, true, dbVersion);
 
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
@@ -299,7 +298,7 @@ const getDeleteColumnScripsForOlderRuntime = (app, definitions, provider) => ent
 /**
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
-const getModifyColumnsScripts = (app, definitions, ddlProvider) => collection => {
+const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => collection => {
     const _ = app.require('lodash');
     const properties = _.get(collection, 'properties', {});
     const unionProperties = _.unionWith(
@@ -315,7 +314,7 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider) => collection =>
     };
     const hydratedAlterColumnName = hydrateAlterColumnName(_)(collection, properties);
     const alterColumnScripts = ddlProvider.alterTableColumnName(hydratedAlterColumnName);
-    const modifiedScript = generateModifyCollectionScript(app)(entityData, definitions, ddlProvider);
+    const modifiedScript = generateModifyCollectionScript(app)(entityData, definitions, ddlProvider, dbVersion);
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(collection, properties, definitions);
     const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(...hydratedAddIndex);
@@ -368,7 +367,12 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider) => collection =>
 /**
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
-const getModifyColumnsScriptsForOlderRuntime = (app, definitions, ddlProvider) => collection => {
+const getModifyColumnsScriptsForOlderRuntime = (
+    app,
+    definitions,
+    ddlProvider,
+    dbVersion
+) => collection => {
     const _ = app.require('lodash');
     const properties = _.get(collection, 'properties', {});
     const unionProperties = _.unionWith(
@@ -384,7 +388,7 @@ const getModifyColumnsScriptsForOlderRuntime = (app, definitions, ddlProvider) =
     };
     const hydratedAlterColumnName = hydrateAlterColumnName(_)(collection, properties);
     const alterColumnScripts = ddlProvider.alterTableColumnName(hydratedAlterColumnName);
-    const modifiedScript = generateModifyCollectionScript(app)(entityData, definitions, ddlProvider);
+    const modifiedScript = generateModifyCollectionScript(app)(entityData, definitions, ddlProvider, dbVersion);
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(collection, properties, definitions);
     const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(...hydratedAddIndex);
@@ -398,7 +402,7 @@ const getModifyColumnsScriptsForOlderRuntime = (app, definitions, ddlProvider) =
         const fullCollectionName = generateFullEntityName(collection);
         const deleteCollectionScript = ddlProvider.dropTable(fullCollectionName);
         const hydratedCollection = hydrateCollection(_)(entityData, definitions);
-        const addCollectionScript = getTableStatement(app)(...hydratedCollection, true);
+        const addCollectionScript = getTableStatement(app)(...hydratedCollection, true, dbVersion);
         tableModificationScriptDtos = [
             AlterScriptDto.getInstance([deleteCollectionScript], true, true),
             AlterScriptDto.getInstance([addCollectionScript], true, false),
@@ -432,7 +436,6 @@ module.exports = {
     getDeleteCollectionsScripts,
     getModifyCollectionsScripts,
     getModifyCollectionCommentsScripts,
-    getModifyPkConstraintsScripts,
     getAddColumnsScripts,
     getDeleteColumnsScripts,
     getDeleteColumnScripsForOlderRuntime,

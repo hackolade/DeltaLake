@@ -129,7 +129,7 @@ module.exports = {
                 const scripts = buildEntityLevelAlterScript(data, app)(parsedData);
                 callback(null, scripts);
             } else {
-                const scripts = buildEntityLevelFEScript(app)(parsedData);
+                const scripts = buildEntityLevelFEScript(data, app)(parsedData);
                 callback(null, scripts);
             }
         } catch (e) {
