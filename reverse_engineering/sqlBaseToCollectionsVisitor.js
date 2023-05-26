@@ -10,7 +10,7 @@ class Visitor extends SqlBaseVisitor {
 		super();
 		this.originalText = originalText;
 	}
- 
+
 	visitSingleStatement(ctx) {
 		return this.visit(ctx.statement())
 	}
@@ -122,7 +122,7 @@ class Visitor extends SqlBaseVisitor {
 					generatedDefaultValue: this.visit(constraint.columnGeneratedAs()),
 				};
 			}
-			
+
 			if (this.visitFlagValue(constraint, 'NULL')) {
 				return { ...result, isNotNull: true };
 			}
@@ -244,7 +244,7 @@ class Visitor extends SqlBaseVisitor {
 		return getLabelValue(ctx, 'location');
 	}
 	visitCommentSpec(ctx) {
-		return getLabelValue(ctx, 'comment');
+		return getCommentValue(ctx, 'comment');
 	}
 
 	visitCreateFileFormat(ctx) {
@@ -362,6 +362,12 @@ const getLabelValue = (context, label) => {
 	return context[label]?.text ? removeQuotes(context[label]?.text) : '';
 }
 
+const getCommentValue = (context, label) => {
+	const comment = context[label]?.text ? removeValueQuotes(context[label]?.text) : '';
+
+	return removeEscapingBackSlash(comment);
+}
+
 const getName = context => {
 	if (!context || dependencies.lodash.isEmpty(context)) {
 		return '';
@@ -372,5 +378,7 @@ const getName = context => {
 const removeQuotes = (string = '') => string.replace(/['`"]+/gm, '');
 
 const removeValueQuotes = (string = '') => string.replace(/^(['"`])([\s\S]*)\1$/, '$2')
+
+const removeEscapingBackSlash = (string = '') => string.replace(/\\(['\\])/g, '$1');
 
 module.exports = Visitor;
