@@ -134,6 +134,20 @@ class CoreData {
      * }> | {separateBucket: boolean}}
      */
     options
+
+    /**
+     * @type {[
+     *     {
+     *          modelName: string,
+     *          dbVendor: string,
+     *          dbVersion: string,
+     *          isLineageEnabled: boolean
+     *     },
+     *     { relationships: [] },
+     *     { sources: [] }
+     * ]}
+     * */
+    modelData
 }
 
 module.exports = {

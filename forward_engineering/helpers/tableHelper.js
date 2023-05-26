@@ -15,6 +15,7 @@ const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const {getCheckConstraintsScripts} = require("./entityHelpers/checkConstraintHelper");
 const {getCreatePKConstraintsScript} = require("./entityHelpers/primaryKeyHelper");
+const {Runtime} = require("../enums/runtime");
 
 const getCreateStatement = (_) => ({
 	dbName, tableName, isTemporary, isExternal, using, likeStatement, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
@@ -261,10 +262,19 @@ const getStoredAsStatement = (tableData) => {
  * 	entityJsonSchema: any,
  * 	definitions: any,
  * 	areColumnConstraintsAvailable: any,
- * 	likeTableData: any
+ * 	likeTableData: any,
+ * 	dbVersion: number,
  * ) => string}
  * */
-const getTableStatement = (app) => (containerData, entityData, entityJsonSchema, definitions, areColumnConstraintsAvailable, likeTableData) => {
+const getTableStatement = (app) => (
+	containerData,
+	entityData,
+	entityJsonSchema,
+	definitions,
+	areColumnConstraintsAvailable,
+	likeTableData,
+	dbVersion
+) => {
 	const _ = app.require('lodash');
 
 	const dbName = replaceSpaceWithUnderscore(getName(getTab(0, containerData)));
@@ -306,9 +316,11 @@ const getTableStatement = (app) => (containerData, entityData, entityJsonSchema,
 	if (!_.isEmpty(constraintsStatements)) {
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + statementsDelimiter;
 	}
-	const createPrimaryKeysScript = getCreatePKConstraintsScript(app)(entityJsonSchema, dbName);
-	if (!_.isEmpty(createPrimaryKeysScript)) {
-		tableStatement = tableStatement  + '\n\n' + createPrimaryKeysScript;
+	if (dbVersion >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
+		const createPrimaryKeysScript = getCreatePKConstraintsScript(app)(entityJsonSchema, dbName);
+		if (!_.isEmpty(createPrimaryKeysScript)) {
+			tableStatement = tableStatement + '\n\n' + createPrimaryKeysScript;
+		}
 	}
 	return removeRedundantTrailingCommaFromStatement(_)(tableStatement);
 };

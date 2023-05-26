@@ -29,6 +29,7 @@ const {
     getAddForeignKeyScripts,
     getModifyForeignKeyScripts
 } = require("./alterScriptHelpers/alterRelationshipsHelper");
+const {Runtime} = require("../enums/runtime");
 
 /**
  * @typedef {import('./alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
@@ -87,13 +88,25 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
 
     const getColumnScripts = (items, getScript) => items.filter(item => !item.compMod).flatMap(getScript);
     const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
-    const getDeletedColumnsScriptsMethod = dbVersionNumber < 11 ? getDeleteColumnScripsForOlderRuntime : getDeleteColumnsScripts;
-    const getModifyColumnsScriptsMethod = dbVersionNumber < 11 ? getModifyColumnsScriptsForOlderRuntime : getModifyColumnsScripts;
+
+    const getDeletedColumnsScriptsMethod = (app, definitions, provider) => {
+        if (dbVersionNumber < Runtime.RUNTIME_SUPPORTING_MODIFYING_COLUMNS_WITHOUT_NEED_TO_RECREATE_TABLE) {
+            return getDeleteColumnScripsForOlderRuntime(app, definitions, provider, dbVersionNumber);
+        }
+        return getDeleteColumnsScripts(app, definitions, provider, dbVersionNumber)
+    }
+
+    const getModifyColumnsScriptsMethod =  (app, definitions, provider) => {
+        if (dbVersionNumber < Runtime.RUNTIME_SUPPORTING_MODIFYING_COLUMNS_WITHOUT_NEED_TO_RECREATE_TABLE) {
+            return getModifyColumnsScriptsForOlderRuntime(app, definitions, provider, dbVersionNumber);
+        }
+        return getModifyColumnsScripts(app, definitions, provider, dbVersionNumber)
+    }
 
     const addedCollectionsScriptDtos = getCollectionScripts(
         getItems(schema, 'entities', 'added'),
         'created',
-        getAddCollectionsScripts(app, definitions)
+        getAddCollectionsScripts(app, definitions, dbVersionNumber)
     );
     const deletedCollectionsScriptDtos = getCollectionScripts(
         getItems(schema, 'entities', 'deleted'),
@@ -103,16 +116,20 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
     const modifiedCollectionsScriptDtos = getCollectionScripts(
         getItems(schema, 'entities', 'modified'),
         'modified',
-        getModifyCollectionsScripts(app, definitions, provider)
+        getModifyCollectionsScripts(app, definitions, provider, dbVersionNumber)
     );
     const modifiedCollectionCommentsScriptDtos = getItems(schema, 'entities', 'modified')
         .flatMap(item => getModifyCollectionCommentsScripts(provider)(item));
-    const modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified')
-        .flatMap(item => getModifyPkConstraintsScripts(_, provider)(item));
+
+    let modifiedCollectionPrimaryKeysScriptDtos = [];
+    if (dbVersionNumber >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
+        modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified')
+            .flatMap(item => getModifyPkConstraintsScripts(_, provider)(item));
+    }
 
     const addedColumnsScriptDtos = getColumnScripts(
         getItems(schema, 'entities', 'added'),
-        getAddColumnsScripts(app, definitions, provider)
+        getAddColumnsScripts(app, definitions, provider, dbVersionNumber)
     );
     const deletedColumnsScriptDtos = getColumnScripts(
         getItems(schema, 'entities', 'deleted'),
@@ -234,11 +251,15 @@ const getAlterStatementsWithCommentedUnwantedDDL = (scriptDtos, data) => {
 const getAlterScriptDtos = (schema, definitions, data, app) => {
     const provider = require('../ddlProvider/ddlProvider')(app);
     const _ = app.require('lodash');
+    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
 
     const containersScriptDtos = getAlterContainersScriptDtos(schema, provider, _);
     const collectionsScriptDtos = getAlterCollectionsScriptDtos({schema, definitions, provider, data, _, app});
     const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, _);
-    const relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
+    let relationshipsScriptDtos = [];
+    if (dbVersionNumber >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
+        relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
+    }
 
     return [
         ...containersScriptDtos,
