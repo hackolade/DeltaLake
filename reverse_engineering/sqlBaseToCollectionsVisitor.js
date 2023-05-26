@@ -10,7 +10,7 @@ class Visitor extends SqlBaseVisitor {
 		super();
 		this.originalText = originalText;
 	}
- 
+
 	visitSingleStatement(ctx) {
 		return this.visit(ctx.statement())
 	}
@@ -122,7 +122,7 @@ class Visitor extends SqlBaseVisitor {
 					generatedDefaultValue: this.visit(constraint.columnGeneratedAs()),
 				};
 			}
-			
+
 			if (this.visitFlagValue(constraint, 'NULL')) {
 				return { ...result, isNotNull: true };
 			}
@@ -244,7 +244,7 @@ class Visitor extends SqlBaseVisitor {
 		return getLabelValue(ctx, 'location');
 	}
 	visitCommentSpec(ctx) {
-		return getLabelValue(ctx, 'comment');
+		return getCommentValue(ctx, 'comment');
 	}
 
 	visitCreateFileFormat(ctx) {
@@ -360,6 +360,10 @@ class Visitor extends SqlBaseVisitor {
 
 const getLabelValue = (context, label) => {
 	return context[label]?.text ? removeQuotes(context[label]?.text) : '';
+}
+
+const getCommentValue = (context, label) => {
+	return context[label]?.text ? removeValueQuotes(context[label]?.text) : '';
 }
 
 const getName = context => {
