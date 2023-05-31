@@ -16,28 +16,40 @@ const getRelationshipName = (relationship) => {
     return relationship.role.name;
 }
 
+const getFullParentTableName = (relationship) => {
+    const compMod = relationship.role.compMod;
+
+    const parentDBName = replaceSpaceWithUnderscore(compMod.parent.bucket.name);
+    const parentEntityName = replaceSpaceWithUnderscore(compMod.parent.collection.name);
+    return getFullEntityName(parentDBName, parentEntityName);
+}
+
+const getFullChildTableName = (relationship) => {
+    const compMod = relationship.role.compMod;
+
+    const childDBName = replaceSpaceWithUnderscore(compMod.child.bucket.name);
+    const childEntityName = replaceSpaceWithUnderscore(compMod.child.collection.name);
+    return getFullEntityName(childDBName, childEntityName);
+}
+
+
 /**
  * @return {(relationship: Object) => string}
  * */
 const getAddSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
     const compMod = relationship.role.compMod;
 
-    const parentDBName = replaceSpaceWithUnderscore(compMod.parent.bucketName);
-    const parentEntityName = replaceSpaceWithUnderscore(compMod.parent.collectionName);
-    const parentTableName = getFullEntityName(parentDBName, parentEntityName);
-
-    const childDBName = replaceSpaceWithUnderscore(compMod.child.bucketName);
-    const childEntityName = replaceSpaceWithUnderscore(compMod.child.collectionName);
-    const childTableName = getFullEntityName(childDBName, childEntityName);
+    const parentTableName = getFullParentTableName(relationship);
+    const childTableName = getFullChildTableName(relationship);
 
     const relationshipName = compMod.name?.new || getRelationshipName(relationship) || '';
 
     const addFkConstraintDto = {
         childTableName,
         fkConstraintName: prepareName(relationshipName),
-        childColumns: compMod.child.fieldNames.map(name => prepareName(name)),
+        childColumns: compMod.child.collection.fkFields.map(field => prepareName(field.name)),
         parentTableName,
-        parentColumns: compMod.parent.fieldNames.map(name => prepareName(name)),
+        parentColumns: compMod.parent.collection.fkFields.map(field => prepareName(field.name)),
     };
     return ddlProvider.addFkConstraint(addFkConstraintDto);
 }
@@ -53,12 +65,12 @@ const canRelationshipBeAdded = (relationship) => {
     }
     return [
         (compMod.name?.new || getRelationshipName(relationship)),
-        compMod.parent?.bucketName,
-        compMod.parent?.collectionName,
-        compMod.parent?.fieldNames?.length,
-        compMod.child?.bucketName,
-        compMod.child?.collectionName,
-        compMod.child?.fieldNames?.length,
+        compMod.parent?.bucket,
+        compMod.parent?.collection,
+        compMod.parent?.collection?.fkFields?.length,
+        compMod.child?.bucket,
+        compMod.child?.collection,
+        compMod.child?.collection?.fkFields?.length,
     ].every(property => Boolean(property));
 }
 
@@ -87,9 +99,7 @@ const getAddForeignKeyScripts = (ddlProvider, _) => (addedRelationships) => {
 const getDeleteSingleForeignKeyScript = (ddlProvider, _) => (relationship) => {
     const compMod = relationship.role.compMod;
 
-    const childDBName = replaceSpaceWithUnderscore(compMod.child.bucketName);
-    const childEntityName = replaceSpaceWithUnderscore(compMod.child.collectionName);
-    const childTableName = getFullEntityName(childDBName, childEntityName);
+    const childTableName = getFullChildTableName(relationship);
 
     const relationshipName = compMod.name?.old || getRelationshipName(relationship) || '';
     const relationshipNameForDDL = prepareName(relationshipName);
@@ -103,8 +113,8 @@ const canRelationshipBeDeleted = (relationship) => {
     }
     return [
         (compMod.name?.old || getRelationshipName(relationship)),
-        compMod.child?.bucketName,
-        compMod.child?.collectionName,
+        compMod.child?.bucket,
+        compMod.child?.collection,
     ].every(property => Boolean(property));
 }
 
