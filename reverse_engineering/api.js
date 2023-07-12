@@ -10,14 +10,10 @@ const databricksHelper = require('./helpers/databricksHelper');
 const { getErrorMessage, cleanEntityName, isViewDdl, isTableDdl, getTemplateDocByJsonSchema } = require('./helpers/utils')
 const { setDependencies, dependencies } = require('./appDependencies');
 const fs = require('fs');
-const antlr4 = require('antlr4');
-const HiveLexer = require('./parser/Hive/HiveLexer.js');
-const HiveParser = require('./parser/Hive/HiveParser.js');
-const hqlToCollectionsVisitor = require('./hqlToCollectionsVisitor.js');
-const commandsService = require('./commandsService');
-const ExprErrorListener = require('./antlrErrorListener');
 const { getCleanedUrl } = require('../forward_engineering/utils/generalUtils');
 const mapJsonSchema = require('./thriftService/mapJsonSchema');
+const { parseViewStatement } = require('./parseViewStatement');
+const { parseDDLStatements } = require('./parseDDLStatements');
 
 module.exports = {
 
@@ -380,20 +376,7 @@ module.exports = {
 		}
 	},
 
-	parseViewStatement(data, logger, callback, app) {
-		try {
-			setDependencies(app);
-			const statement = data.statement;
-			const { result } = parseDDLStatements('CREATE VIEW `db`.`name` AS ' + statement + ';\n');
-
-			callback(null, {
-				jsonSchema: {},
-				ddl: result?.[0]?.doc?.views?.[0]?.ddl,
-			});
-		} catch(err) {
-			handleError(logger, err, callback);
-		}
-	}
+	parseViewStatement: parseViewStatement
 };
 
 const handleFileData = filePath => {
@@ -489,26 +472,6 @@ const getArraySubtypeByChildren = (_, arraySchema) => {
 	if (item.properties) {
 		return subtype("struct");
 	}
-};
-
-const parseDDLStatements = (input) => {
-	const chars = new antlr4.InputStream(input);
-	const lexer = new HiveLexer.HiveLexer(chars);
-
-	const tokens = new antlr4.CommonTokenStream(lexer);
-	const parser = new HiveParser.HiveParser(tokens);
-	parser.removeErrorListeners();
-	parser.addErrorListener(new ExprErrorListener());
-
-	const tree = parser.statements();
-
-	const hqlToCollectionsGenerator = new hqlToCollectionsVisitor(input);
-
-	const commands = tree.accept(hqlToCollectionsGenerator);
-	return commandsService.convertCommandsToReDocs(
-		dependencies.lodash.flatten(commands).filter(Boolean),
-		input
-	);
 };
 
 const createWarning = (warnings) => {
