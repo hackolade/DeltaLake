@@ -638,9 +638,13 @@ making sure that you maintain a proper JSON format.
 					{
 						"propertyName": "Key",
 						"propertyKeyword": "compositeUniqueKey",
-						"propertyType": "primaryKeySetter",
-						"abbr": "uk"
-					}				]
+						"propertyType": "compositeKeySetter",
+						"abbr": "uk",
+						"setPrimaryKey": false,
+						"template": "collectiontree",
+						"isCompositeKey": true,
+						"disabledItemStrategy": "default"
+					}]
 			}
 		]
 	},
