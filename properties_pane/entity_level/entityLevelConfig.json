@@ -601,19 +601,6 @@ making sure that you maintain a proper JSON format.
 											"exist": false
 										}
 									]
-								},
-								{
-									"type": "or",
-									"values": [
-										{
-											"key": "compositeUniqueKey",
-											"value": false
-										},
-										{
-											"key": "compositeUniqueKey",
-											"exist": false
-										}
-									]
 								}
 							]
 						}
