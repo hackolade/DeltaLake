@@ -1,153 +1,290 @@
 const {
-	getAddContainerScript,
-	getDeleteContainerScript,
-	getModifyContainerScript,
+    getDeleteContainerScriptDto,
+    getModifyContainerScriptDtos,
+    getAddContainerScriptDto,
 } = require('./alterScriptHelpers/alterContainerHelper');
 const {
-	getAddCollectionsScripts,
-	getDeleteCollectionsScripts,
-	getModifyCollectionsScripts,
-	getDeleteColumnsScripts,
-	getDeleteColumnScripsForOlderRuntime,
-	getModifyColumnsScriptsForOlderRuntime,
-	getAddColumnsScripts,
-	getModifyColumnsScripts
+    getAddCollectionsScripts,
+    getDeleteCollectionsScripts,
+    getModifyCollectionsScripts,
+    getDeleteColumnsScripts,
+    getDeleteColumnScripsForOlderRuntime,
+    getModifyColumnsScriptsForOlderRuntime,
+    getAddColumnsScripts,
+    getModifyColumnsScripts, getModifyCollectionCommentsScripts
 } = require('./alterScriptHelpers/alterEntityHelper');
 const {
-	getAddViewsScripts,
-	getDeleteViewsScripts,
-	getModifyViewsScripts,
+    getAddViewsScripts,
+    getDeleteViewsScripts,
+    getModifyViewsScripts,
 } = require('./alterScriptHelpers/alterViewHelper');
-const { DROP_STATEMENTS } = require('./constants');
-const { commentDeactivatedStatements, buildScript, doesScriptContainDropStatement} = require('./generalHelper');
-const { getDBVersionNumber } = require('./alterScriptHelpers/common');
+const {
+    commentDeactivatedStatements,
+    buildScript,
+    getDBVersionNumber
+} = require('../utils/generalUtils');
+const {getModifyPkConstraintsScripts} = require("./alterScriptHelpers/entityHelpers/primaryKeyHelper");
+const {
+    getDeleteForeignKeyScripts,
+    getAddForeignKeyScripts,
+    getModifyForeignKeyScripts
+} = require("./alterScriptHelpers/alterRelationshipsHelper");
+const {Runtime} = require("../enums/runtime");
 
+/**
+ * @typedef {import('./alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
+ * */
+
+/**
+ * @param entity {Object}
+ * @param nameProperty {string}
+ * @param modify {'added' | 'deleted' | 'modified'}
+ * @return Array<Object>
+ * */
 const getItems = (entity, nameProperty, modify) =>
-	[]
-		.concat(entity.properties?.[nameProperty]?.properties?.[modify]?.items)
-		.filter(Boolean)
-		.map(items => Object.values(items.properties)[0]);
+    []
+        .concat(entity.properties?.[nameProperty]?.properties?.[modify]?.items)
+        .filter(Boolean)
+        .map(items => Object.values(items.properties)[0]);
 
-const getAlterContainersScripts = (schema, provider) => {
-	const addedScripts = getItems(schema, 'containers', 'added').map(
-		getAddContainerScript
-	);
-	const deletedScripts = getItems(schema, 'containers', 'deleted').map(
-		getDeleteContainerScript(provider)
-	);
-	const modifiedScripts = getItems(schema, 'containers', 'modified').flatMap(
-		getModifyContainerScript(provider)
-	);
-	return [...deletedScripts, ...addedScripts, ...modifiedScripts];
+/**
+ * @param scripts {Array<string>}
+ * @return {Array<string>}
+ * */
+const assertNoEmptyStatements = (scripts) => {
+    return scripts
+        .filter(Boolean)
+        .map(script => script.trim())
+        .filter(Boolean);
+}
+
+/**
+ * @return Array<AlterScriptDto>
+ * */
+const getAlterContainersScriptDtos = (schema, provider, _) => {
+    const addedScriptDtos = getItems(schema, 'containers', 'added').map(
+        getAddContainerScriptDto
+    ).filter(Boolean);
+    const deletedScriptDtos = getItems(schema, 'containers', 'deleted').map(
+        getDeleteContainerScriptDto(provider)
+    ).filter(Boolean);
+    const modifiedScriptDtos = getItems(schema, 'containers', 'modified').flatMap(
+        getModifyContainerScriptDtos(provider, _)
+    ).filter(Boolean);
+
+    return [
+        ...deletedScriptDtos,
+        ...addedScriptDtos,
+        ...modifiedScriptDtos
+    ];
 };
 
-const getAlterCollectionsScripts = ({ schema, definitions, provider, data }) => {
-	const getCollectionScripts = (items, compMode, getScript) =>
-		items.filter(item => item.compMod?.[compMode]).flatMap(getScript);
+/**
+ * @return Array<AlterScriptDto>
+ * */
+const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, app}) => {
+    const getCollectionScripts = (items, compMode, getScript) =>
+        items.filter(item => item.compMod?.[compMode]).flatMap(getScript);
 
-	const getColumnScripts = (items, getScript) => items.filter(item => !item.compMod).flatMap(getScript);
-	const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
-	const getDeletedColumnsScriptsMethod = dbVersionNumber < 11 ? getDeleteColumnScripsForOlderRuntime : getDeleteColumnsScripts;
-	const getModifyColumnsScriptsMethod = dbVersionNumber < 11 ? getModifyColumnsScriptsForOlderRuntime : getModifyColumnsScripts;
+    const getColumnScripts = (items, getScript) => items.filter(item => !item.compMod).flatMap(getScript);
+    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
 
-	const addedCollectionsScripts = getCollectionScripts(
-		getItems(schema, 'entities', 'added'),
-		'created',
-		getAddCollectionsScripts(definitions)
-	);
-	const deletedCollectionsScripts = getCollectionScripts(
-		getItems(schema, 'entities', 'deleted'),
-		'deleted',
-		getDeleteCollectionsScripts(provider)
-	);
-	const modifiedCollectionsScripts = getCollectionScripts(
-		getItems(schema, 'entities', 'modified'),
-		'modified',
-		getModifyCollectionsScripts(definitions, provider)
-	);
+    const getDeletedColumnsScriptsMethod = (app, definitions, provider) => {
+        if (dbVersionNumber < Runtime.RUNTIME_SUPPORTING_MODIFYING_COLUMNS_WITHOUT_NEED_TO_RECREATE_TABLE) {
+            return getDeleteColumnScripsForOlderRuntime(app, definitions, provider, dbVersionNumber);
+        }
+        return getDeleteColumnsScripts(app, definitions, provider, dbVersionNumber)
+    }
 
-	const addedColumnsScripts = getColumnScripts(
-		getItems(schema, 'entities', 'added'),
-		getAddColumnsScripts(definitions, provider)
-	);
-	const deletedColumnsScripts = getColumnScripts(
-		getItems(schema, 'entities', 'deleted'),
-		getDeletedColumnsScriptsMethod(definitions, provider)
-	);
-	const modifiedColumnsScripts = getColumnScripts(
-		getItems(schema, 'entities', 'modified'),
-		getModifyColumnsScriptsMethod(definitions, provider)
-	);
+    const getModifyColumnsScriptsMethod =  (app, definitions, provider) => {
+        if (dbVersionNumber < Runtime.RUNTIME_SUPPORTING_MODIFYING_COLUMNS_WITHOUT_NEED_TO_RECREATE_TABLE) {
+            return getModifyColumnsScriptsForOlderRuntime(app, definitions, provider, dbVersionNumber);
+        }
+        return getModifyColumnsScripts(app, definitions, provider, dbVersionNumber)
+    }
 
-	return [
-		...deletedCollectionsScripts,
-		...addedCollectionsScripts,
-		...modifiedCollectionsScripts,
-		...deletedColumnsScripts,
-		...addedColumnsScripts,
-		...modifiedColumnsScripts,
-	];
+    const addedCollectionsScriptDtos = getCollectionScripts(
+        getItems(schema, 'entities', 'added'),
+        'created',
+        getAddCollectionsScripts(app, definitions, dbVersionNumber)
+    );
+    const deletedCollectionsScriptDtos = getCollectionScripts(
+        getItems(schema, 'entities', 'deleted'),
+        'deleted',
+        getDeleteCollectionsScripts(app, provider)
+    );
+    const modifiedCollectionsScriptDtos = getCollectionScripts(
+        getItems(schema, 'entities', 'modified'),
+        'modified',
+        getModifyCollectionsScripts(app, definitions, provider, dbVersionNumber)
+    );
+    const modifiedCollectionCommentsScriptDtos = getItems(schema, 'entities', 'modified')
+        .flatMap(item => getModifyCollectionCommentsScripts(provider)(item));
+
+    let modifiedCollectionPrimaryKeysScriptDtos = [];
+    if (dbVersionNumber >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
+        modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified')
+            .flatMap(item => getModifyPkConstraintsScripts(_, provider)(item));
+    }
+
+    const addedColumnsScriptDtos = getColumnScripts(
+        getItems(schema, 'entities', 'added'),
+        getAddColumnsScripts(app, definitions, provider, dbVersionNumber)
+    );
+    const deletedColumnsScriptDtos = getColumnScripts(
+        getItems(schema, 'entities', 'deleted'),
+        getDeletedColumnsScriptsMethod(app, definitions, provider)
+    );
+    const modifiedColumnsScriptDtos = getColumnScripts(
+        getItems(schema, 'entities', 'modified'),
+        getModifyColumnsScriptsMethod(app, definitions, provider)
+    );
+
+    return [
+        ...deletedCollectionsScriptDtos,
+        ...addedCollectionsScriptDtos,
+        ...modifiedCollectionsScriptDtos,
+        ...modifiedCollectionCommentsScriptDtos,
+        ...modifiedCollectionPrimaryKeysScriptDtos,
+        ...deletedColumnsScriptDtos,
+        ...addedColumnsScriptDtos,
+        ...modifiedColumnsScriptDtos
+    ];
 };
 
-const getAlterViewsScripts = (schema, provider) => {
-	const getViewScripts = (views, compMode, getScript) =>
-		views
-			.map(view => ({ ...view, ...(view.role || {}) }))
-			.filter(view => view.compMod?.[compMode]).map(getScript);
+/**
+ * @return Array<AlterScriptDto>
+ * */
+const getAlterViewsScriptDtos = (schema, provider, _) => {
 
-	const getColumnScripts = (items, getScript) => items
-		.map(view => ({ ...view, ...(view.role || {}) }))
-		.filter(view => !view.compMod?.created && !view.compMod?.deleted).flatMap(getScript);
+    /**
+     * @return Array<AlterScriptDto>
+     * */
+    const getViewScripts = (views, compMode, getScript) =>
+        views
+            .map(view => ({...view, ...(view.role || {})}))
+            .filter(view => view.compMod?.[compMode]).map(getScript);
 
-	const addedViewScripts = getViewScripts(
-		getItems(schema, 'views', 'added'),
-		'created',
-		getAddViewsScripts
-	);
-	const deletedViewScripts = getViewScripts(
-		getItems(schema, 'views', 'deleted'),
-		'deleted',
-		getDeleteViewsScripts(provider)
-	);
-	const modifiedViewScripts = getColumnScripts(
-		getItems(schema, 'views', 'modified'),
-		getModifyViewsScripts(provider)
-	);
 
-	return [
-		...deletedViewScripts,
-		...addedViewScripts,
-		...modifiedViewScripts,
-	];
+    /**
+     * @return Array<AlterScriptDto>
+     * */
+    const getColumnScripts = (items, getScript) => items
+        .map(view => ({...view, ...(view.role || {})}))
+        .filter(view => !view.compMod?.created && !view.compMod?.deleted).flatMap(getScript);
+
+    const addedViewScriptDtos = getViewScripts(
+        getItems(schema, 'views', 'added'),
+        'created',
+        getAddViewsScripts(_)
+    );
+    const deletedViewScriptDtos = getViewScripts(
+        getItems(schema, 'views', 'deleted'),
+        'deleted',
+        getDeleteViewsScripts(provider)
+    );
+    const modifiedViewScriptDtos = getColumnScripts(
+        getItems(schema, 'views', 'modified'),
+        getModifyViewsScripts(provider, _)
+    );
+
+    return [
+        ...deletedViewScriptDtos,
+        ...addedViewScriptDtos,
+        ...modifiedViewScriptDtos,
+    ]
 };
 
-const getAlterScript = (schema, definitions, data, app) => {
-	const provider = require('./alterScriptHelpers/provider')(app);
-	const containersScripts = getAlterContainersScripts(schema, provider);
-	const collectionsScripts = getAlterCollectionsScripts({ schema, definitions, provider, data });
-	const viewsScripts = getAlterViewsScripts(schema, provider);
-	let scripts = containersScripts.concat(collectionsScripts, viewsScripts).filter(Boolean).map(script => script.trim());
-	scripts = getCommentedDropScript(scripts, data);
-	return builds(scripts)
+/**
+ * @return Array<AlterScriptDto>
+ * */
+const getAlterRelationshipsScriptDtos = ({schema, ddlProvider, _}) => {
+    const deletedRelationships = getItems(schema, 'relationships', 'deleted')
+        .filter(relationship => relationship.role?.compMod?.deleted);
+    const addedRelationships = getItems(schema, 'relationships', 'added')
+        .filter(relationship => relationship.role?.compMod?.created);
+    const modifiedRelationships = getItems(schema, 'relationships', 'modified');
+
+    const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider, _)(deletedRelationships);
+    const addFkScripts = getAddForeignKeyScripts(ddlProvider, _)(addedRelationships);
+    const modifiedFkScripts = getModifyForeignKeyScripts(ddlProvider, _)(modifiedRelationships);
+
+    return [
+        ...deleteFkScripts,
+        ...addFkScripts,
+        ...modifiedFkScripts,
+    ];
+}
+
+/**
+ * @param scriptDtos {Array<AlterScriptDto>},
+ * @param data {{
+ *     options: {
+ *         id: string,
+ *         value: any,
+ *     },
+ * }}
+ * @return {Array<string>}
+ * */
+const getAlterStatementsWithCommentedUnwantedDDL = (scriptDtos, data) => {
+    const {additionalOptions = []} = data.options || {};
+    const applyDropStatements = (additionalOptions.find(option => option.id === 'applyDropStatements') || {}).value;
+
+    const scripts = scriptDtos.map((dto) => {
+        if (dto.isActivated === false) {
+            return dto.scripts
+                .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, false));
+        }
+        if (!applyDropStatements) {
+            return dto.scripts
+                .map((scriptDto) => commentDeactivatedStatements(scriptDto.script, !scriptDto.isDropScript));
+        }
+        return dto.scripts.map((scriptDto) => scriptDto.script);
+    })
+        .flat();
+    return assertNoEmptyStatements(scripts);
 };
 
-const getCommentedDropScript = (scripts, data) => {
-	const { additionalOptions = [] } = data.options || {};
-	const applyDropStatements = (additionalOptions.find(option => option.id === 'applyDropStatements') || {}).value;
-	if (applyDropStatements) {
-		return scripts;
-	}
-	return scripts.map(script => {
-		const isDrop = doesScriptContainDropStatement(script);
-		return !isDrop ? script : commentDeactivatedStatements(script, false);
-	});
+/**
+ * @return {Array<AlterScriptDto>}
+ * */
+const getAlterScriptDtos = (schema, definitions, data, app) => {
+    const provider = require('../ddlProvider/ddlProvider')(app);
+    const _ = app.require('lodash');
+    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
+
+    const containersScriptDtos = getAlterContainersScriptDtos(schema, provider, _);
+    const collectionsScriptDtos = getAlterCollectionsScriptDtos({schema, definitions, provider, data, _, app});
+    const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, _);
+    let relationshipsScriptDtos = [];
+    if (dbVersionNumber >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
+        relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
+    }
+
+    return [
+        ...containersScriptDtos,
+        ...collectionsScriptDtos,
+        ...viewsScriptDtos,
+        ...relationshipsScriptDtos,
+    ];
 };
 
-const builds = scripts => {
-	const formatScripts = buildScript(scripts);
-	return formatScripts.split(';').map(script => script.trim()).join(';\n\n');
-};
+/**
+ * @param alterScriptDtos {Array<AlterScriptDto>}
+ * @param data {{
+ *     options: {
+ *         id: string,
+ *         value: any,
+ *     },
+ * }}
+ * @return {string}
+ * */
+const joinAlterScriptDtosIntoAlterScript = (alterScriptDtos, data) => {
+    const scriptAsStringsWithCommentedUnwantedDDL = getAlterStatementsWithCommentedUnwantedDDL(alterScriptDtos, data);
+    return buildScript(scriptAsStringsWithCommentedUnwantedDDL);
+}
 
 module.exports = {
-	getAlterScript
+    joinAlterScriptDtosIntoAlterScript,
+    getAlterScriptDtos,
 }

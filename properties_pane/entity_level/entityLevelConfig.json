@@ -142,6 +142,42 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "checkbox"
 			},
 			{
+				"propertyName": "Table role",
+				"propertyKeyword": "tableRole",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"Dimension",
+					"Fact",
+					"Outrigger",
+					"Staging"
+				],
+				"dependency": {
+					"level": "model",
+					"key": "modelingMethodology",
+					"value": "Dimensional"
+				}
+			},
+			{
+				"propertyName": "Vault component",
+				"propertyKeyword": "vaultComponent",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"Hub",
+					"Link",
+					"Satellite",
+					"Bridge",
+					"Point in Time",
+					"Reference"
+				],
+				"dependency": {
+					"level": "model",
+					"key": "modelingMethodology",
+					"value": "Vault"
+				}
+			},
+			{
 				"propertyName": "Or replace",
 				"propertyKeyword": "orReplace",
 				"propertyType": "checkbox",
@@ -356,10 +392,6 @@ making sure that you maintain a proper JSON format.
 						{
 							"key": "rowFormat",
 							"value": "SerDe"
-						},
-						{
-							"key": "storedAsTable",
-							"value": "textfile"
 						}
 					]
 				}
@@ -569,19 +601,6 @@ making sure that you maintain a proper JSON format.
 											"exist": false
 										}
 									]
-								},
-								{
-									"type": "or",
-									"values": [
-										{
-											"key": "compositeUniqueKey",
-											"value": false
-										},
-										{
-											"key": "compositeUniqueKey",
-											"exist": false
-										}
-									]
 								}
 							]
 						}
@@ -606,9 +625,13 @@ making sure that you maintain a proper JSON format.
 					{
 						"propertyName": "Key",
 						"propertyKeyword": "compositeUniqueKey",
-						"propertyType": "primaryKeySetter",
-						"abbr": "uk"
-					}				]
+						"propertyType": "compositeKeySetter",
+						"abbr": "uk",
+						"setPrimaryKey": false,
+						"template": "collectiontree",
+						"isCompositeKey": true,
+						"disabledItemStrategy": "default"
+					}]
 			}
 		]
 	},

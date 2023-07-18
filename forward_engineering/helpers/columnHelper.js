@@ -7,7 +7,7 @@ const {
 	prepareName,
 	commentDeactivatedStatements,
 	encodeStringLiteral,
-} = require('./generalHelper');
+} = require('../utils/generalUtils');
 
 const getStructChild = (name, type, comment) => `${prepareName(name)}: ${type}` + (comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '');
 
@@ -53,7 +53,7 @@ const getStructChildProperties = (getTypeByProperty, definitions) => property =>
 
 const getStruct = (getTypeByProperty, definitions) => property => {
 	const getStructStatement = (propertiesString) => `struct<${propertiesString}>`;
-	
+
 	const { activatedProps, deactivatedProps } = getStructChildProperties(getTypeByProperty, definitions)(property);
 	if (deactivatedProps.length === 0) {
 		return getStructStatement(activatedProps.join(', '));
@@ -65,7 +65,7 @@ const getStruct = (getTypeByProperty, definitions) => property => {
 
 const getChildBySubtype = (parentType, subtype) => {
 	const childValueType = ((getTypeDescriptor(parentType).subtypes || {})[subtype] || {}).childValueType || 'text';
-	
+
 	return getPropertyByType(childValueType);
 };
 
@@ -170,7 +170,7 @@ const getJsonType = getTypeByProperty => property => {
 const getUnionTypeFromMultiple = getTypeByProperty => property => {
 	const types = property.type.map(type => {
 		const dataType = type === 'number' ? 'numeric' : type;
-		
+
 		return getTypeByProperty(getPropertyByType(dataType))
 	});
 
@@ -206,7 +206,7 @@ const getUnionFromAllOf = getTypeByProperty => property => {
 		if (!Array.isArray(subschema.oneOf)) {
 			return types;
 		}
-		
+
 		return Object.assign(
 			{},
 			types,
@@ -254,7 +254,7 @@ const getTypeByProperty = (definitions = []) => property => {
 	if (property.$ref) {
 		property = getDefinitionByReference(definitions, property)
 	}
-	
+
 	switch(property.type) {
 		case 'jsonObject':
 		case 'jsonArray':
@@ -310,7 +310,7 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 		if (!property.isActivated) {
 			deactivatedColumnNames.add(name);
 		}
-		
+
 		return Object.assign(
 			{},
 			hash,
@@ -338,11 +338,11 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 			hash,
 			getColumn(prepareName(typeName), unions[typeName])
 		), columns);
-	} 
-	
+	}
+
 	if (Array.isArray(jsonSchema.allOf)) {
 		const unions = getUnionFromAllOf(getTypeByProperty(definitions))(jsonSchema);
-		
+
 		columns = Object.keys(unions).reduce((hash, typeName) => Object.assign(
 			{},
 			hash,
@@ -374,7 +374,7 @@ const getColumnsString = columns => columns.join(', ');
 
 const getColumnConstraintsStaitment = ({ notNull, unique, check, defaultValue }) => {
 	const constraints = [
-		(notNull && !unique) ? 'NOT NULL' : ''	
+		(notNull && !unique) ? 'NOT NULL' : ''
 	].filter(Boolean);
 	const constraintsStaitment = constraints.join(' ');
 

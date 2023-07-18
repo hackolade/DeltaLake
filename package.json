@@ -1,7 +1,7 @@
 {
 	"name": "DeltaLake",
-	"version": "0.1.89",
-	"versionDate": "2023-04-13",
+	"version": "0.1.96",
+	"versionDate": "2023-07-14",
 	"author": "hackolade",
 	"engines": {
 		"hackolade": "6.5.3",
@@ -18,7 +18,8 @@
 				"Runtime 9",
 				"Runtime 10",
 				"Runtime 11",
-				"Runtime 12"
+				"Runtime 12",
+				"Runtime 13"
 			]
 		},
 		"features": {
@@ -39,7 +40,8 @@
                 "compositeRelationships": true                
 			},
 			"FEScriptCommentsSupported": ["2.x", "3.x"],
-			"discoverRelationships": true
+			"discoverRelationships": true,
+			"enableKeysMultipleAbrr": true
 		}
 	},
 	"description": "Hackolade plugin for Delta Lake on Databricks, including Azure Databricks, and Databricks on AWS"

@@ -1,7 +1,10 @@
 'use strict'
 
-const { buildStatement, getName, getTab, replaceSpaceWithUnderscore, encodeStringLiteral } = require('./generalHelper');
+const { buildStatement, getName, getTab, replaceSpaceWithUnderscore, encodeStringLiteral } = require('../utils/generalUtils');
 
+/**
+ * @return {string}
+ * */
 const getCreateStatement = ({
 	name, comment, location, dbProperties, isActivated
 }) => buildStatement(`CREATE DATABASE IF NOT EXISTS ${name}`, isActivated)
@@ -11,6 +14,10 @@ const getCreateStatement = ({
 	(true, ';')
 		();
 
+
+/**
+ * @return {string}
+ * */
 const getDatabaseStatement = (containerData) => {
 	const tab = getTab(0, containerData);
 	const name = replaceSpaceWithUnderscore(getName(tab));

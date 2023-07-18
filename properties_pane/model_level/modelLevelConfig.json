@@ -142,7 +142,19 @@ making sure that you maintain a proper JSON format.
 					"Runtime 9",
 					"Runtime 10",
 					"Runtime 11",
-					"Runtime 12"
+					"Runtime 12",
+					"Runtime 13"
+				]
+			},
+			{
+				"propertyName": "Modeling technique",
+				"propertyKeyword": "modelingMethodology",
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": [
+					"Relational",
+					"Dimensional",
+					"Vault"
 				]
 			},
 			{

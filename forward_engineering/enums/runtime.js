@@ -1,0 +1,9 @@
+const Runtime = Object.freeze({
+   RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS: 11,
+   RUNTIME_SUPPORTING_MODIFYING_COLUMNS_WITHOUT_NEED_TO_RECREATE_TABLE: 11,
+});
+
+
+module.exports = {
+    Runtime
+}

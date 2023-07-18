@@ -9,7 +9,7 @@
 	"MAIN_MENU___APPEND_FIELD": "Append Column",
 	"MAIN_MENU___REVERSE_DB_COLLECTIONS": "Delta Lake tables...",
 	"MAIN_MENU___FORWARD_DB_COLLECTIONS": "HiveQL of Table",
-	"MAIN_MENU___FORWARD_DB_BUCKETS": "Delta Lake Script",
+	"MAIN_MENU___FORWARD_DB_BUCKETS": "Delta Lake Script...",
 	"MAIN_MENU___FORWARD_CHANGE_COLLECTIONS": "Delta Lake Alter Table",
 	"TOOLBAR___ADD_BUCKET": "Add database",
 	"TOOLBAR___ADD_COLLECTION": "Add table",
@@ -146,5 +146,7 @@
 	"MODAL_WINDOW___DB_CONNECTIONS_LIST_TITLE": "Delta Lake Connections",
 	"COLLECTION_SCHEMA_ROOT_TYPE": "row",
 	"MODAL_WINDOW___NO_DOCUMENTS_FOR_RE": "There are no columns defined in the selected tables",
-	"PROGRESS_BAR___APPLY_TO_INSTANCE_PROCESS":"Delta Lake Apply Script Process"
+	"PROGRESS_BAR___APPLY_TO_INSTANCE_PROCESS":"Delta Lake Apply Script Process",
+	"FE_LEVEL_SELECTOR_ENTITY": "table",
+	"FE_LEVEL_SELECTOR_CONTAINER": "database"
 }

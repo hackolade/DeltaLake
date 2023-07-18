@@ -2,7 +2,7 @@
 
 let _;
 const { dependencies } = require('./appDependencies');
-const { prepareName, encodeStringLiteral } = require('./generalHelper');
+const { prepareName, encodeStringLiteral } = require('../utils/generalUtils');
 const { getTablePropertiesClause } = require('./tableHelper');
 
 const setDependencies = ({ lodash }) => _ = lodash;
@@ -89,9 +89,9 @@ module.exports = {
 		const comment = schema.description;
 		let tablePropertyStatements = '';
 		const tableProperties = schema.tableProperties && Array.isArray(schema.tableProperties) ? filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime']) : [];
-		
+
 		if (tableProperties.length) {
-			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`;
+			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`;
 		};
 		script.push(createStatement);
 		if (schema.selectStatement) {

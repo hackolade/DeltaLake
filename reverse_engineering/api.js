@@ -16,7 +16,7 @@ const HiveParser = require('./parser/Hive/HiveParser.js');
 const hqlToCollectionsVisitor = require('./hqlToCollectionsVisitor.js');
 const commandsService = require('./commandsService');
 const ExprErrorListener = require('./antlrErrorListener');
-const { getCleanedUrl } = require('../forward_engineering/helpers/generalHelper');
+const { getCleanedUrl } = require('../forward_engineering/utils/generalUtils');
 const mapJsonSchema = require('./thriftService/mapJsonSchema');
 
 module.exports = {
@@ -99,7 +99,7 @@ module.exports = {
 
 	getDbCollectionsNames: async (connectionInfo, logger, cb, app) => {
 		logger.log('info', connectionInfo, 'Retrieving tables and views information', connectionInfo.hiddenKeys);
-		
+
 		try {
 			setDependencies(app);
 
@@ -159,14 +159,14 @@ module.exports = {
 		let modelData;
 
 		try {
-			
+
 			setDependencies(app);
-			
+
 			const async = dependencies.async;
-			
+
 			modelData = await databricksHelper.getClusterStateInfo(connectionData, logger);
 			logger.log('info', modelData, 'Cluster state info');
-			
+
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
 			const fieldInference = data.fieldInference;
@@ -230,7 +230,7 @@ module.exports = {
 						if (fieldInference.active === 'field') {
 							doc.documentTemplate = getTemplateDocByJsonSchema({ properties: tableData.schema });
 						}
-						
+
 						return doc;
 					})
 
@@ -266,11 +266,11 @@ module.exports = {
 						let viewData = {};
 						let jsonSchema;
 						let documentTemplate;
-	
+
 						try {
 							let viewSchema = [];
 							let viewSample = [];
-							
+
 							try {
 								viewSchema = await fetchRequestHelper.fetchEntitySchema({ connectionInfo: connectionData, dbName, entityName: name, logger });
 								viewSample = await fetchRequestHelper.fetchSample({ connectionInfo: connectionData, dbName, entityName: name, logger });
@@ -281,7 +281,7 @@ module.exports = {
 									throw e;
 								}
 							}
-							
+
 							viewData = viewDDLHelper.getViewDataFromDDl(ddl);
 							jsonSchema = viewDDLHelper.getJsonSchema(viewSchema, viewSample);
 
@@ -292,9 +292,9 @@ module.exports = {
 							logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
 							return createViewPackage({ name });
 						}
-	
+
 						progress({ message: 'View data processed successfully', containerName: dbName, entityName: name });
-	
+
 						return createViewPackage({
 							name,
 							viewData,
@@ -365,7 +365,7 @@ module.exports = {
 					return schema;
 				}
 			});
-		
+
 			callback(null, {
 				...data,
 				jsonSchema: JSON.stringify(result)
