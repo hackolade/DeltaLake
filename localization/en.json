@@ -53,6 +53,7 @@
 	"PROPERTIES_PANE___NORMALIZATION": "Normalization",
 	"PROPERTIES_PANE___NAME": "Name",
 	"PROPERTIES_PANE___CODE": "Technical name",
+	"PROPERTIES_PANE___DESCRIPTIONS": "comments",
 	"CONTEXT_MENU___ADD_BUCKET": "Add database",
 	"CONTEXT_MENU___ADD_COLLECTION": "Add table",
 	"CONTEXT_MENU___ADD_VIEW": "Add view",
