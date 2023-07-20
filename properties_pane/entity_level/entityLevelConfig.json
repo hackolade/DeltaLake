@@ -215,6 +215,7 @@ making sure that you maintain a proper JSON format.
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
 				"options": [
+					"",
 					"delta",
 					"CSVfile",
 					"Hive",
@@ -232,6 +233,7 @@ making sure that you maintain a proper JSON format.
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
 				"options": [
+					"",
 					"textfile",
 					"sequencefile",
 					"ORC",
