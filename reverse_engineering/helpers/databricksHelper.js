@@ -60,7 +60,12 @@ const getDatabaseViewNames = async (dbName, connectionInfo, sparkVersion, logger
 
 const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) => {
 	const async = dependencies.async;
-	const databasesNames = connectionInfo.databaseName ? [connectionInfo.databaseName] : await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
+
+	await fetchRequestHelper.useCatalog(connectionInfo);
+
+	const databasesNames = connectionInfo.databaseName
+		? [connectionInfo.databaseName]
+		: await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
 	
 	return await async.mapLimit(databasesNames, 30, async dbName => {
 		const { views, viewNames } = await getDatabaseViewNames(dbName, connectionInfo, sparkVersion, logger)
