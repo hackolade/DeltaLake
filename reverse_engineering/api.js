@@ -64,10 +64,10 @@ module.exports = {
 		try {
 			setDependencies(app);
 
-			let dbNames = [];
+			let catalogNames = [];
 
-			if (connectionInfo.databaseName) {
-				dbNames = [connectionInfo.databaseName];
+			if (connectionInfo.catalogName) {
+				catalogNames = [connectionInfo.catalogName];
 			} else {
 				const connectionData = {
 					host: getCleanedUrl(connectionInfo.host),
@@ -77,17 +77,17 @@ module.exports = {
 					sparkConfig: getSparkConfigurations(connectionInfo),
 					logger,
 				};
-				dbNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionData);
+				catalogNames = await fetchRequestHelper.fetchClusterCatalogNames(connectionData);
 			}
 
-			logger.log('info', dbNames, 'Database names list');
+			logger.log('info', catalogNames, 'Catalog names list');
 
-			cb(null, dbNames);
+			cb(null, catalogNames);
 		} catch (err) {
 			logger.log(
 				'error',
 				{ message: err.message, stack: err.stack, error: err },
-				'Retrieving databases and tables names'
+				'Retrieving catalogs names'
 			);
 			cb({ message: getErrorMessage(err), stack: err.stack });
 		}
@@ -107,7 +107,8 @@ module.exports = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
 				accessToken: connectionInfo.accessToken,
-				databaseName: connectionInfo.database,
+				catalogName: connectionInfo.database,
+				databaseName: connectionInfo.databaseName,
 				queryRequestTimeout: connectionInfo.queryRequestTimeout,
 				sparkConfig: getSparkConfigurations(connectionInfo),
 				logger,

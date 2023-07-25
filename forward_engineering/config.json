@@ -18,6 +18,9 @@
 		"container": true
 	},
 	"applyScriptToInstance": true,
+	"applyToInstanceSettings": {
+		"scenario": "getDatabases"
+	},
 	"mode": "mysql",
 	"additionalOptions": [
 		{

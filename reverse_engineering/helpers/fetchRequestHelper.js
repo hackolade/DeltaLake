@@ -214,6 +214,15 @@ const fetchClusterProperties = async connectionInfo => {
 		});
 };
 
+const useCatalog = async connectionInfo => {
+	await executeCommand(connectionInfo, `USE CATALOG '${connectionInfo.catalogName}';`, 'sql');
+};
+
+const fetchClusterCatalogNames = async connectionInfo => {
+	const result = await executeCommand(connectionInfo, 'SHOW CATALOGS', 'sql');
+	return dependencies.lodash.flattenDeep(result);
+};
+
 const fetchClusterDatabasesNames = async connectionInfo => {
 	const result = await executeCommand(connectionInfo, 'SHOW DATABASES', 'sql');
 	return dependencies.lodash.flattenDeep(result);
@@ -643,10 +652,12 @@ module.exports = {
 	destroyActiveContext,
 	fetchClusterData,
 	fetchCreateStatementRequest,
+	fetchClusterCatalogNames,
 	fetchClusterDatabasesNames,
 	fetchDatabaseViewsNames,
 	fetchClusterTablesNames,
 	fetchDatabaseViewsNamesViaPython,
 	fetchEntitySchema,
+	useCatalog,
 	fetchSample,
 };
