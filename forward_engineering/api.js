@@ -15,6 +15,7 @@ const {
     doesContainerLevelAlterScriptContainDropStatements,
     doesEntityLevelAlterScriptContainDropStatements
 } = require("./helpers/alterScriptHelpers/alterScriptBuilder");
+const reApi = require('../reverse_engineering/api');
 
 /**
  * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
@@ -220,6 +221,13 @@ module.exports = {
         }
     },
 
+    getDatabases(connectionInfo, logger, callback, app) {
+        logInfo('info', connectionInfo, logger);
+        logger.progress({message: 'Get catalogs'});
+
+        reApi.getDatabases(connectionInfo, logger, callback, app);
+    },
+
     /**
      * @param connectionInfo {CoreData}
      * @param logger {Logger}
@@ -227,18 +235,17 @@ module.exports = {
      * @param app {App}
      * */
     async applyToInstance(connectionInfo, logger, cb, app) {
-        logger.clear();
-        logInfo('info', connectionInfo, logger);
-
         const connectionData = {
             host: getCleanedUrl(connectionInfo.host),
             clusterId: connectionInfo.clusterId,
             accessToken: connectionInfo.accessToken,
+            catalogName: connectionInfo.database,
             applyToInstanceQueryRequestTimeout: connectionInfo.applyToInstanceQueryRequestTimeout,
             script: connectionInfo.script
         }
 
         try {
+            await fetchRequestHelper.useCatalog(connectionData)
             await fetchRequestHelper.fetchApplyToInstance(connectionData, logger)
             cb()
         } catch (err) {
