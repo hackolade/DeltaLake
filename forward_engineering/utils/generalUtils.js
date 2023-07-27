@@ -242,6 +242,12 @@ const compareProperties = (_) => ({new: newProperty, old: oldProperty}) => {
 const getIsChangeProperties = (_) => (compMod, properties) =>
     properties.some(property => compareProperties(_)(compMod[property] || {}));
 
+const isSupportUnityCatalog = (dbVersion = '') => {
+    const runtimeVersion = getDBVersionNumber(dbVersion);
+    const MINIMUM_UNITY_CATALOG_SUPPORT_VERSION = 11;
+    return runtimeVersion >= MINIMUM_UNITY_CATALOG_SUPPORT_VERSION;
+}
+
 module.exports = {
     buildStatement,
     getName,
@@ -270,4 +276,5 @@ module.exports = {
     getDBVersionNumber,
     getIsChangeProperties,
     getDifferentItems,
+    isSupportUnityCatalog,
 };

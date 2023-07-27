@@ -28,7 +28,7 @@
  * */
 
 
-const {getDatabaseStatement} = require("./databaseHelper");
+const {getDatabaseStatement, getUseCatalogStatement} = require("./databaseHelper");
 const {getCreateRelationshipScripts} = require("./relationshipHelper");
 const {getTableStatement} = require("./tableHelper");
 const {getIndexes} = require("./indexHelper");
@@ -64,14 +64,16 @@ const {Runtime} = require("../enums/runtime");
  * @return {(dto: EntityLevelFEScriptData) => string}
  * */
 const buildEntityLevelFEScript = (data, app) => ({
-                                                      externalDefinitions,
-                                                      modelDefinitions,
-                                                      jsonSchema,
-                                                      internalDefinitions,
-                                                      containerData,
-                                                      entityData,
-                                                  }) => {
+    externalDefinitions,
+    modelDefinitions,
+    jsonSchema,
+    internalDefinitions,
+    containerData,
+    entityData,
+    modelData,
+}) => {
     const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
+    const useCatalogStatement = getUseCatalogStatement(modelData, containerData);
     const databaseStatement = getDatabaseStatement(containerData);
     const definitions = [modelDefinitions, internalDefinitions, externalDefinitions,];
     const tableStatements = getTableStatement(app)(
@@ -84,6 +86,7 @@ const buildEntityLevelFEScript = (data, app) => ({
     );
     const indexScript = getIndexes(containerData, entityData, jsonSchema, definitions);
     return buildScript([
+        useCatalogStatement,
         databaseStatement,
         tableStatements,
         indexScript
@@ -179,16 +182,18 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
  * }}
  * */
 const buildContainerLevelFEScriptDto = (data, app) => ({
-                                                                     internalDefinitions,
-                                                                     externalDefinitions,
-                                                                     modelDefinitions,
-                                                                     entitiesJsonSchema,
-                                                                     containerData,
-                                                                     includeRelationshipsInEntityScripts
-                                                                 }) => {
+    internalDefinitions,
+    externalDefinitions,
+    modelDefinitions,
+    entitiesJsonSchema,
+    containerData,
+    modelData,
+    includeRelationshipsInEntityScripts
+}) => {
     const _ = app.require('lodash');
     const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
 
+    const useCatalogStatement = getUseCatalogStatement(modelData, containerData)
     const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
     const databaseStatement = getDatabaseStatement(containerData);
     const entityScriptDtos = getContainerLevelEntitiesScriptDtos(app, data)({
@@ -206,6 +211,7 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
     }
 
     return {
+        catalog: useCatalogStatement,
         container: databaseStatement,
         entities: entityScriptDtos,
         views: viewsScriptDtos,
