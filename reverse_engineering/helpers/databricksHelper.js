@@ -61,7 +61,9 @@ const getDatabaseViewNames = async (dbName, connectionInfo, sparkVersion, logger
 const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) => {
 	const async = dependencies.async;
 
-	await fetchRequestHelper.useCatalog(connectionInfo);
+	if (isSupportUnityCatalog(sparkVersion)) {
+		await fetchRequestHelper.useCatalog(connectionInfo);
+	}
 
 	const databasesNames = connectionInfo.databaseName
 		? [connectionInfo.databaseName]
@@ -111,9 +113,14 @@ const getClusterStateInfo = async (connectionInfo, logger) => {
 	};
 }
 
-const getDatabricksRuntimeVersion = (sparkVersion = '') => {
-	const runtimeVersion = sparkVersion.split('.')[0];
-	return `Runtime ${runtimeVersion}`;
+const getRuntimeVersion = (sparkVersion = '') => sparkVersion.split('.')[0];
+
+const getDatabricksRuntimeVersion = (sparkVersion) => `Runtime ${getRuntimeVersion(sparkVersion)}`;
+
+const isSupportUnityCatalog = (sparkVersion) => {
+	const runtimeVersion = getRuntimeVersion(sparkVersion);
+	const MINIMUM_UNITY_CATALOG_SUPPORT_VERSION = 11;
+	return Number(runtimeVersion) >= MINIMUM_UNITY_CATALOG_SUPPORT_VERSION;
 }
 
 const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkVersion, logger) => {
@@ -145,5 +152,6 @@ module.exports = {
 	getDatabaseCollectionNames,
 	getClusterStateInfo,
 	getClusterData,
-	getEntitiesDDL
+	getEntitiesDDL,
+	isSupportUnityCatalog,
 };
