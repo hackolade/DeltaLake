@@ -132,6 +132,11 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea"
 			},
 			{
+				"propertyName": "Catalog name",
+				"propertyKeyword": "catalogName",
+				"propertyType": "text"
+			},
+			{
 				"propertyName": "Location",
 				"propertyKeyword": "location",
 				"propertyType": "text"
