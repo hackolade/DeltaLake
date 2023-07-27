@@ -1,6 +1,6 @@
 'use strict'
 
-const { buildStatement, getName, getTab, replaceSpaceWithUnderscore, encodeStringLiteral } = require('../utils/generalUtils');
+const { buildStatement, getName, getTab, replaceSpaceWithUnderscore, encodeStringLiteral, isSupportUnityCatalog } = require('../utils/generalUtils');
 
 /**
  * @return {string}
@@ -14,6 +14,18 @@ const getCreateStatement = ({
 	(true, ';')
 		();
 
+
+/**
+ * @return {string}
+ * */
+const getUseCatalogStatement = (modelData, databaseData) => {
+	const modelDetails = getTab(0, modelData);
+	const databaseDetails = getTab(0, databaseData);
+
+	return databaseDetails.catalogName && isSupportUnityCatalog(modelDetails.dbVersion)
+		? `USE CATALOG '${databaseDetails.catalogName}';`
+		: '';
+};
 
 /**
  * @return {string}
@@ -47,6 +59,7 @@ const getDatabaseAlterStatement = (containerData) => {
 };
 
 module.exports = {
+	getUseCatalogStatement,
 	getDatabaseStatement,
 	getDatabaseAlterStatement
 };
