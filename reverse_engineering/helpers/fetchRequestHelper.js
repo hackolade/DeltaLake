@@ -244,16 +244,18 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 		const dbInfoResult = await executeCommand(connectionInfo, `DESCRIBE DATABASE EXTENDED \`${dbName}\``, 'sql');
 		logger.log('info', '', `Database: ${dbName} successfully described`);
 		const dbProperties = dbInfoResult.reduce((dbProperties, row) => {
-			if (row[0] === 'Location') {
-				return { ...dbProperties, 'location': row[1] };
+			switch (row[0]) {
+				case 'Location':
+					return { ...dbProperties, location: row[1] };
+				case 'Comment':
+					return { ...dbProperties, description: row[1] };
+				case 'Properties':
+					return { ...dbProperties, dbProperties: convertDbProperties(row[1]) };
+				case 'Catalog Name':
+					return { ...dbProperties, catalogName: row[1] };
+				default:
+					return dbProperties
 			}
-			if (row[0] === 'Comment') {
-				return { ...dbProperties, 'description': row[1] };
-			}
-			if (row[0] === 'Properties') {
-				return { ...dbProperties, 'dbProperties': convertDbProperties(row[1]) };
-			}
-			return dbProperties;
 		}, {});
 		return { dbName, dbProperties };
 	});
