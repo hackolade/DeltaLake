@@ -18,6 +18,7 @@ const commandsService = require('./commandsService');
 const ExprErrorListener = require('./antlrErrorListener');
 const { getCleanedUrl } = require('../forward_engineering/utils/generalUtils');
 const mapJsonSchema = require('./thriftService/mapJsonSchema');
+const { isSupportUnityCatalog } = require("./helpers/databricksHelper");
 
 module.exports = {
 
@@ -64,19 +65,26 @@ module.exports = {
 		try {
 			setDependencies(app);
 
+			const connectionData = {
+				host: getCleanedUrl(connectionInfo.host),
+				clusterId: connectionInfo.clusterId,
+				accessToken: connectionInfo.accessToken,
+				queryRequestTimeout: connectionInfo.queryRequestTimeout,
+				sparkConfig: getSparkConfigurations(connectionInfo),
+				logger,
+			};
+			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
+
 			let catalogNames = [];
 
-			if (connectionInfo.catalogName) {
+			if (!isSupportUnityCatalog(clusterState.spark_version)) {
+				// In that case 'default' it's not a real container,
+				// is used only for bypass error when cluster doesn't contain any of catalogs
+				catalogNames = ['default'];
+				logger.log('info', catalogNames, 'Databricks runtime doesn\'t support Unity catalog. Use \'default\' container for schemas.');
+			}else if (connectionInfo.catalogName) {
 				catalogNames = [connectionInfo.catalogName];
 			} else {
-				const connectionData = {
-					host: getCleanedUrl(connectionInfo.host),
-					clusterId: connectionInfo.clusterId,
-					accessToken: connectionInfo.accessToken,
-					queryRequestTimeout: connectionInfo.queryRequestTimeout,
-					sparkConfig: getSparkConfigurations(connectionInfo),
-					logger,
-				};
 				catalogNames = await fetchRequestHelper.fetchClusterCatalogNames(connectionData);
 			}
 
