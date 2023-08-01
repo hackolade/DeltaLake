@@ -274,7 +274,6 @@ const getTableStatement = (app) => (
 	definitions,
 	areColumnConstraintsAvailable,
 	likeTableData,
-	dbVersion
 ) => {
 	const _ = app.require('lodash');
 
@@ -294,7 +293,7 @@ const getTableStatement = (app) => (
 		orReplace: tableData.orReplace,
 		ifNotExists: tableData.tableIfNotExists,
 		using: tableData.using,
-		primaryKeyStatement: constraintHelper.getPrimaryKeyStatement(_)(entityJsonSchema, keyNames.primaryKeys, deactivatedColumnNames, isTableActivated),
+		primaryKeyStatement: areColumnConstraintsAvailable ? constraintHelper.getPrimaryKeyStatement(_)(entityJsonSchema, keyNames.primaryKeys, deactivatedColumnNames, isTableActivated) : null,
 		likeStatement: getLikeStatement(getTab(0, likeTableData)),
 		columnStatement: getColumnsStatement(tableColumns, isTableActivated),
 		comment: tableData.description,
@@ -318,12 +317,7 @@ const getTableStatement = (app) => (
 	if (!_.isEmpty(constraintsStatements)) {
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + statementsDelimiter;
 	}
-	if (dbVersion >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
-		const createPrimaryKeysScript = getCreatePKConstraintsScript(app)(entityJsonSchema, dbName);
-		if (!_.isEmpty(createPrimaryKeysScript)) {
-			tableStatement = tableStatement + '\n\n' + createPrimaryKeysScript;
-		}
-	}
+
 	return removeRedundantTrailingCommaFromStatement(_)(tableStatement);
 };
 

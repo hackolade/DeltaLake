@@ -2,6 +2,7 @@
 
 const sqlFormatter = require('sql-formatter');
 const {RESERVED_WORDS_AS_ARRAY} = require('../enums/reservedWords');
+const {Runtime} = require("../enums/runtime");
 
 /**
  * @typedef {((args: any) => string) | ((args: any) => ChainFunction)} ChainFunction
@@ -244,8 +245,7 @@ const getIsChangeProperties = (_) => (compMod, properties) =>
 
 const isSupportUnityCatalog = (dbVersion = '') => {
     const runtimeVersion = getDBVersionNumber(dbVersion);
-    const MINIMUM_UNITY_CATALOG_SUPPORT_VERSION = 11;
-    return runtimeVersion >= MINIMUM_UNITY_CATALOG_SUPPORT_VERSION;
+    return runtimeVersion >= Runtime.MINIMUM_UNITY_CATALOG_SUPPORT_VERSION;
 }
 
 module.exports = {
