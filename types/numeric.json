@@ -1,67 +1,87 @@
 {
-	"name": "numeric",
-	"erdAbbreviation": "<num>",
-	"dtdAbbreviation": "{123}",
-	"parentType": "numeric",
-	"sample": 15,
-	"useSample": true,
-	"defaultValues": {
-		"unit": "",
-		"minimum": "",
-		"exclusiveMinimum": false,
-		"maximum": "",
-		"exclusiveMaximum": false,
-		"multipleOf": "",
-		"divisibleBy": "",
-		"default": "",
-		"primaryKey": false,
-		"relationshipType": "",
-		"parentRelationship": "",
-		"childRelationships": [],
-		"foreignCollection": "",
-		"foreignField": [],
-		"enum": [],
-		"mode": "int",
-		"sample": ""
-	},
-	"descriptor": [{
-		"schema": {
-			"mode": "tinyint"
-		},
-		"capacity": 1
-	}, {
-		"schema": {
-			"mode": "smallint"
-		},
-		"capacity": 2
-	}, {
-		"schema": {
-			"mode": "int"
-		},
-		"capacity": 4
-	}, {
-		"schema": {
-			"mode": "bigint"
-		},
-		"capacity": 8
-	}, {
-		"schema": {
-			"mode": "float"
-		},
-		"capacity": 4,
-		"mode": "floating"
-	}, {
-		"schema": {
-			"mode": "double"
-		},
-		"capacity": 8,
-		"mode": "floating"
-	}, {
-		"schema": {
-			"mode": "decimal"
-		},
-		"capacity": 16,
-		"mode": "decimal"
-	}],
-	"hiddenOnEntity": "view"
+  "name": "numeric",
+  "erdAbbreviation": "<num>",
+  "dtdAbbreviation": "{123}",
+  "parentType": "numeric",
+  "sample": 15,
+  "useSample": true,
+  "defaultValues": {
+    "unit": "",
+    "minimum": "",
+    "exclusiveMinimum": false,
+    "maximum": "",
+    "exclusiveMaximum": false,
+    "multipleOf": "",
+    "divisibleBy": "",
+    "default": "",
+    "primaryKey": false,
+    "relationshipType": "",
+    "parentRelationship": "",
+    "childRelationships": [],
+    "foreignCollection": "",
+    "foreignField": [],
+    "enum": [],
+    "mode": "int",
+    "sample": ""
+  },
+  "descriptor": [
+    {
+      "schema": {
+        "mode": "tinyint"
+      },
+      "capacity": 1
+    },
+    {
+      "schema": {
+        "mode": "smallint"
+      },
+      "capacity": 2
+    },
+    {
+      "schema": {
+        "mode": "smallint"
+      },
+      "mode": "smallint"
+    },
+    {
+      "schema": {
+        "mode": "int"
+      },
+      "capacity": 4
+    },
+    {
+      "schema": {
+        "mode": "int"
+      },
+      "mode": "integer"
+    },
+    {
+      "schema": {
+        "mode": "bigint"
+      },
+      "capacity": 8
+    },
+    {
+      "schema": {
+        "mode": "float"
+      },
+      "capacity": 4,
+      "mode": "floating"
+    },
+    {
+      "schema": {
+        "mode": "double"
+      },
+      "capacity": 8,
+      "mode": "floating"
+    },
+    {
+      "schema": {
+        "mode": "decimal"
+      },
+      "capacity": 16,
+      "mode": "decimal"
+    }
+  ],
+  "hiddenOnEntity": "view"
 }
