@@ -16,6 +16,7 @@ const keyHelper = require('./keyHelper');
 const {getCheckConstraintsScripts} = require("./entityHelpers/checkConstraintHelper");
 const {getCreatePKConstraintsScript} = require("./entityHelpers/primaryKeyHelper");
 const {Runtime} = require("../enums/runtime");
+const constraintHelper = require('./constrainthelper');
 
 const getCreateStatement = (_) => ({
 	dbName, tableName, isTemporary, isExternal, using, likeStatement, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
@@ -293,6 +294,7 @@ const getTableStatement = (app) => (
 		orReplace: tableData.orReplace,
 		ifNotExists: tableData.tableIfNotExists,
 		using: tableData.using,
+		primaryKeyStatement: constraintHelper.getPrimaryKeyStatement(_)(entityJsonSchema, keyNames.primaryKeys, deactivatedColumnNames, isTableActivated),
 		likeStatement: getLikeStatement(getTab(0, likeTableData)),
 		columnStatement: getColumnsStatement(tableColumns, isTableActivated),
 		comment: tableData.description,

@@ -311,6 +311,10 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 			deactivatedColumnNames.add(name);
 		}
 
+		const isPrimaryKey = property.primaryKey
+			&& !property.compositePrimaryKey
+			&& !property.primaryKeyOptions;
+
 		return Object.assign(
 			{},
 			hash,
@@ -320,6 +324,7 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 				getDescription(definitions, property),
 				areColumnConstraintsAvailable ? {
 					notNull: isRequired,
+					primaryKey: isPrimaryKey,
 					unique: property.unique,
 					check: property.check,
 					defaultValue: property.default
@@ -355,9 +360,9 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 
 const getColumnStatement = ({ name, type, comment, constraints, isActivated, isParentActivated, generatedExpression }) => {
 	const commentStatement = comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '';
-	const constraintsStaitment = constraints ? getColumnConstraintsStaitment(constraints) : '';
+	const constraintsStatement = constraints ? getColumnConstraintsStatement(constraints) : '';
 	const isColumnActivated = isParentActivated ? isActivated : true;
-	return commentDeactivatedStatements(`${replaceSpaceWithUnderscore(name)} ${type}${generatedExpression}${constraintsStaitment}${commentStatement}`, isColumnActivated);
+	return commentDeactivatedStatements(`${replaceSpaceWithUnderscore(name)} ${type}${generatedExpression}${constraintsStatement}${commentStatement}`, isColumnActivated);
 };
 
 const getColumnsStatement = (columns, isParentActivated) => {
@@ -372,13 +377,14 @@ const getColumnsStatement = (columns, isParentActivated) => {
 
 const getColumnsString = columns => columns.join(', ');
 
-const getColumnConstraintsStaitment = ({ notNull, unique, check, defaultValue }) => {
+const getColumnConstraintsStatement = ({ notNull, unique, primaryKey }) => {
 	const constraints = [
-		(notNull && !unique) ? 'NOT NULL' : ''
+		(notNull && !unique) ? 'NOT NULL' : '',
+		primaryKey ? 'PRIMARY KEY' : '',
 	].filter(Boolean);
-	const constraintsStaitment = constraints.join(' ');
+	const constraintsStatement = constraints.join(' ');
 
-	return constraintsStaitment ? ` ${constraintsStaitment}` : '';
+	return constraintsStatement ? ` ${constraintsStatement}` : '';
 };
 
 const getDescription = (definitions, property) => {
