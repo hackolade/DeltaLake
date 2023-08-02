@@ -96,6 +96,7 @@ const reverseTableColumn = column => {
         name: column.colName,
         description: column.colComment,
         generatedDefaultValue: column.generatedDefaultValue,
+        ...(column.primaryKey && { primaryKey: true, primaryKeyOptions: column.primaryKeyOptions }),
     }
 }
 

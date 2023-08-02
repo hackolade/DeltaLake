@@ -18,6 +18,13 @@ class Visitor extends SqlBaseVisitor {
 	visitCreateTable(ctx) {
 		const tableHeader = this.visit(ctx.createTableHeader());
 		const colList = this.visitIfExists(ctx, 'colTypeList');
+		const constraints = this.visitIfExists(ctx, 'tableConstraint', []);
+		const compositePrimaryKeys = constraints
+			.filter(constraint => constraint.pkConstraint && constraint.pkConstraint.compositePrimaryKey.length > 1)
+			.flatMap(constraint => constraint.pkConstraint);
+		const pkConstraints = constraints
+			.filter(constraint => constraint.pkConstraint && constraint.pkConstraint.compositePrimaryKey.length === 1)
+			.flatMap(constraint => constraint.pkConstraint);
 		const tableClauses = this.visit(ctx.createTableClauses());
 		const querySelectProperties = this.visitIfExists(ctx, 'query');
 		const using = this.visitIfExists(ctx, 'tableProvider');
@@ -26,7 +33,7 @@ class Visitor extends SqlBaseVisitor {
 			isExternal: tableHeader.isExternal,
 			isTemporary: tableHeader.isTemporary,
 			tableName: tableHeader.tableName,
-			colList,
+			colList: fillColumnsWithPkConstraints(colList, pkConstraints),
 			using,
 			tableProvider,
 			bucketsNum: tableClauses.bucketSpec?.bucketsNum,
@@ -48,7 +55,8 @@ class Visitor extends SqlBaseVisitor {
 			skewedOn: tableClauses.skewSpec?.skewedOn,
 			tableProperties: tableClauses.tableProperties,
 			tableOptions: tableClauses.tableOptions,
-			query: querySelectProperties
+			query: querySelectProperties,
+			primaryKey: compositePrimaryKeys,
 		}
 	}
 
@@ -97,6 +105,50 @@ class Visitor extends SqlBaseVisitor {
 		}
 	}
 
+	visitTableConstraint(ctx) {
+		return {
+			pkConstraint: this.visitIfExists(ctx, 'primaryKeyConstraint'),
+			fkConstraint: this.visitIfExists(ctx, 'foreignKeyConstraint'),
+		}
+	}
+
+	visitPrimaryKeyConstraint(ctx) {
+		return {
+			constraintName: this.visitIfExists(ctx, 'tableConstraintName', ''),
+			compositePrimaryKey: this.visitIfExists(ctx, 'keyNameList', []),
+			...this.visitIfExists(ctx, 'constraintOptions', {}),
+		};
+	}
+
+	visitForeignKeyConstraint(ctx) {
+		const [ catalog, parentDatabase, parentTable ] = this.visit(ctx.multipartIdentifier()).filter(Boolean);
+		const [ childField, parentField ] = this.visitIfExists(ctx, 'keyNameList', []);
+		return {
+			relationshipName: this.visitIfExists(ctx, 'tableConstraintName', ''),
+			parentDatabase,
+			parentTable,
+			parentField,
+			childField,
+		};
+	}
+
+	visitTableConstraintName(ctx) {
+		return getName(ctx.identifier());
+	}
+
+	visitKeyNameList(ctx) {
+		return ctx.identifier().map(getName);
+	}
+
+	visitConstraintOptions(ctx) {
+		return {
+			notEnforced: this.visitFlagValue(ctx, 'ENFORCED', false),
+			deferrable: this.visitFlagValue(ctx, 'DEFERRABLE', false),
+			initiallyDeferrable: this.visitFlagValue(ctx, 'DEFERRED', false),
+			noRely: this.visitFlagValue(ctx, 'NORELY', false)
+		}
+	}
+
 	visitColTypeList(ctx) {
 		return this.visit(ctx.colType());
 	}
@@ -125,6 +177,10 @@ class Visitor extends SqlBaseVisitor {
 
 			if (this.visitFlagValue(constraint, 'NULL')) {
 				return { ...result, isNotNull: true };
+			}
+
+			if (this.visitFlagValue(constraint, 'PRIMARY')) {
+				return { ...result, primaryKey: true };
 			}
 
 			return result;
@@ -380,5 +436,27 @@ const removeQuotes = (string = '') => string.replace(/['`"]+/gm, '');
 const removeValueQuotes = (string = '') => string.replace(/^(['"`])([\s\S]*)\1$/, '$2')
 
 const removeEscapingBackSlash = (string = '') => string.replace(/\\(['\\])/g, '$1');
+
+const fillColumnsWithPkConstraints = (columns = [], pkConstraints = []) => {
+	return columns.map(column => {
+		const columnConstraint = pkConstraints.find(pkConstr => pkConstr.compositePrimaryKey[0] === column.colName);
+
+		if (!columnConstraint) {
+			return column;
+		}
+
+		return {
+			...column,
+			primaryKey: true,
+			primaryKeyOptions: {
+				constraintName: columnConstraint.constraintName || false,
+				notEnforced: columnConstraint.notEnforced || false,
+				deferrable: columnConstraint.deferrable || false,
+				initiallyDeferrable: columnConstraint.initiallyDeferrable || false,
+				noRely: columnConstraint.noRely || false
+			}
+		}
+	});
+}
 
 module.exports = Visitor;

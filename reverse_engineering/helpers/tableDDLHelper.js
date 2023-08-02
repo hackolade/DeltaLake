@@ -76,6 +76,7 @@ const getTableDataFromDDl = (statement) => {
 			tableProperties: parsedTableData.tableProperties,
 			description: parsedTableData.commentSpec,
 			tableOptions: parsedTableData.tableOptions,
+			primaryKey: parsedTableData.primaryKey,
 		}
 	}
 }
