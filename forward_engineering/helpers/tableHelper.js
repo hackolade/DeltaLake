@@ -14,8 +14,6 @@ const {
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const {getCheckConstraintsScripts} = require("./entityHelpers/checkConstraintHelper");
-const {getCreatePKConstraintsScript} = require("./entityHelpers/primaryKeyHelper");
-const {Runtime} = require("../enums/runtime");
 const constraintHelper = require('./constrainthelper');
 
 const getCreateStatement = (_) => ({
@@ -59,6 +57,7 @@ const getCreateUsingStatement = (_) => ({
 }) => {
 	return buildStatement(`CREATE${tempExtStatement}TABLE${isNotExistsStatement} ${fullTableName} (`, isActivated)
 		(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))
+		(primaryKeyStatement, primaryKeyStatement)
 		(true, ')')
 		(using, `${getUsing(using)}`)
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
@@ -285,6 +284,9 @@ const getTableStatement = (app) => (
 	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, areColumnConstraintsAvailable, definitions);
 	const keyNames = keyHelper.getKeyNames(tableData, entityJsonSchema, definitions);
 	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
+	const primaryKeyStatement = areColumnConstraintsAvailable
+		? constraintHelper.getPrimaryKeyStatement(_)(entityJsonSchema, keyNames.primaryKeys, deactivatedColumnNames, isTableActivated)
+		: '';
 	let tableStatement = getCreateStatement(_)({
 		dbName,
 		tableName,
@@ -293,7 +295,7 @@ const getTableStatement = (app) => (
 		orReplace: tableData.orReplace,
 		ifNotExists: tableData.tableIfNotExists,
 		using: tableData.using,
-		primaryKeyStatement: areColumnConstraintsAvailable ? constraintHelper.getPrimaryKeyStatement(_)(entityJsonSchema, keyNames.primaryKeys, deactivatedColumnNames, isTableActivated) : null,
+		primaryKeyStatement,
 		likeStatement: getLikeStatement(getTab(0, likeTableData)),
 		columnStatement: getColumnsStatement(tableColumns, isTableActivated),
 		comment: tableData.description,

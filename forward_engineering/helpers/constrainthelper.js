@@ -1,15 +1,5 @@
 const { commentDeactivatedInlineKeys } = require('../utils/generalUtils');
 
-const getConstraintOpts = ({noValidateSpecification, enableSpecification, rely}) => {
-    const getPartConstraintOpts = part => part ? ` ${part}` : '';
-
-    if (!enableSpecification) {
-        return '';
-    }
-
-    return ` ${enableSpecification}${getPartConstraintOpts(noValidateSpecification)}${getPartConstraintOpts(rely)}`;
-};
-
 const getPrimaryKeyOptions = (entityJsonSchema, keysNames) => {
     if (entityJsonSchema.primaryKey && Array.isArray(entityJsonSchema.primaryKey)) {
         return entityJsonSchema.primaryKey[0] || {};
@@ -24,11 +14,10 @@ const getPrimaryKeyStatement = (_) => (entityJsonSchema, keysNames, deactivatedC
         let statement = '';
         statement += constraintName ? `CONSTRAINT ${constraintName} ` : '';
         statement += `PRIMARY KEY (${keys})`;
-        statement += notEnforced ? ` NOT ENFORCED` : '';
-        statement += deferrable ? ` DEFERRABLE` : '';
-        statement += initiallyDeferrable ? ` INITIALLY DEFERRED` : '';
-        statement += noRely ? ` NORELY` : '';
-        statement += ';';
+        statement += notEnforced ? ' NOT ENFORCED' : '';
+        statement += deferrable ? ' DEFERRABLE' : '';
+        statement += initiallyDeferrable ? ' INITIALLY DEFERRED' : '';
+        statement += noRely ? ' NORELY' : '';
 
         return statement;
     };
