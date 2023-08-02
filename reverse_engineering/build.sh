@@ -20,13 +20,13 @@ java -jar /Users/bedletskyi/Downloads/antlr-4.9.2-complete.jar -Dlanguage=JavaSc
     -Xexact-output-dir \
     grammars/SqlBase.g4
 
-#java -jar /usr/local/lib/antlr-4.9.2-complete.jar -Dlanguage=JavaScript \
-#    -lib grammars \
-#    -o parser/Hive \
-#    -visitor \
-#    -no-listener \
-#    -Xexact-output-dir \
-#    grammars/HiveParser.g4 \
-#    grammars/HiveLexer.g4
+java -jar /usr/local/lib/antlr-4.9.2-complete.jar -Dlanguage=JavaScript \
+    -lib grammars \
+    -o parser/Hive \
+    -visitor \
+    -no-listener \
+    -Xexact-output-dir \
+    grammars/HiveParser.g4 \
+    grammars/HiveLexer.g4
 
-#npx prettier --write ./parser/**/*.js
+npx prettier --write ./parser/**/*.js
