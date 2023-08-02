@@ -193,6 +193,7 @@ module.exports = {
 			progress({ message: 'Entities ddl retrieved successfully', containerName: 'databases', entityName: 'entities' });
 
 			let warnings = [];
+			let relationships = [];
 
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];
@@ -221,6 +222,10 @@ module.exports = {
 							});
 							progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name });
 						}
+
+						relationships = relationships.concat(
+							tableData.fkConstraints.map(constr => ({ ...constr, childCollection: table.name }))
+						);
 
 						progress({ message: 'Table data processed successfully', containerName: dbName, entityName: table.name });
 						const doc = {
@@ -333,7 +338,7 @@ module.exports = {
 				};
 			}
 
-			cb(null, packages, modelData);
+			cb(null, packages, modelData, relationships);
 		} catch (err) {
 			const clusterState = modelData || await databricksHelper.getClusterStateInfo(connectionData, logger);
 			if (!clusterState.isRunning) {

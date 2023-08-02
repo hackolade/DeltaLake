@@ -25,6 +25,9 @@ class Visitor extends SqlBaseVisitor {
 		const pkConstraints = constraints
 			.filter(constraint => constraint.pkConstraint && constraint.pkConstraint.compositePrimaryKey.length === 1)
 			.flatMap(constraint => constraint.pkConstraint);
+		const fkConstraints = constraints
+			.filter(constraint => constraint.fkConstraint)
+			.flatMap(constraint => constraint.fkConstraint);
 		const tableClauses = this.visit(ctx.createTableClauses());
 		const querySelectProperties = this.visitIfExists(ctx, 'query');
 		const using = this.visitIfExists(ctx, 'tableProvider');
@@ -57,6 +60,7 @@ class Visitor extends SqlBaseVisitor {
 			tableOptions: tableClauses.tableOptions,
 			query: querySelectProperties,
 			primaryKey: compositePrimaryKeys,
+			fkConstraints,
 		}
 	}
 
@@ -121,13 +125,15 @@ class Visitor extends SqlBaseVisitor {
 	}
 
 	visitForeignKeyConstraint(ctx) {
-		const [ catalog, parentDatabase, parentTable ] = this.visit(ctx.multipartIdentifier()).filter(Boolean);
+		const [ catalog, parentDatabase, parentCollection ] = this.visit(ctx.multipartIdentifier()).filter(Boolean);
 		const [ childField, parentField ] = this.visitIfExists(ctx, 'keyNameList', []);
 		return {
 			relationshipName: this.visitIfExists(ctx, 'tableConstraintName', ''),
-			parentDatabase,
-			parentTable,
+			relationshipType: 'Foreign Key',
+			dbName: parentDatabase,
+			parentCollection,
 			parentField,
+			childDbName: parentDatabase,
 			childField,
 		};
 	}
