@@ -909,7 +909,7 @@ primaryKeyConstraint
     ;
 
 foreignKeyConstraint
-    : tableConstraintName? FOREIGN KEY '(' keyNameList ')' REFERENCES multipartIdentifier '(' keyNameList ')' foreignKeyConstraintOptions* constraintOptions*
+    : tableConstraintName? FOREIGN KEY '(' keyNameList ')' REFERENCES multipartIdentifier ('(' keyNameList ')')? foreignKeyOptions*
     ;
 
 tableConstraintName
@@ -918,6 +918,11 @@ tableConstraintName
 
 keyNameList
     : identifier (',' identifier)*
+    ;
+
+foreignKeyOptions
+    : foreignKeyConstraintOptions
+    | constraintOptions
     ;
 
 foreignKeyConstraintOptions
