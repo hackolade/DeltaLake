@@ -301,7 +301,7 @@ const getGeneratedExpression = (expressionData) => {
 	return ` GENERATED ${generatedType} AS ${expressionData.expression}`;
 };
 
-const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
+const getColumns = (jsonSchema, arePkFkColumnConstraintsAvailable, areNotNullConstraintsAvailable, definitions) => {
 	const deactivatedColumnNames = new Set();
 	let columns = Object.keys(jsonSchema.properties || {}).reduce((hash, columnName) => {
 		const property = jsonSchema.properties[columnName];
@@ -311,6 +311,10 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 			deactivatedColumnNames.add(name);
 		}
 
+		const isPrimaryKey = property.primaryKey
+			&& !property.compositePrimaryKey
+			&& !property.primaryKeyOptions;
+
 		return Object.assign(
 			{},
 			hash,
@@ -318,12 +322,13 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 				prepareName(name),
 				getTypeByProperty(definitions)(property),
 				getDescription(definitions, property),
-				areColumnConstraintsAvailable ? {
-					notNull: isRequired,
+				{
 					unique: property.unique,
 					check: property.check,
-					defaultValue: property.default
-				} : {},
+					defaultValue: property.default,
+					...(areNotNullConstraintsAvailable && { notNull: isRequired }),
+					...(arePkFkColumnConstraintsAvailable && { primaryKey: isPrimaryKey }),
+				},
 				property.isActivated,
 				getGeneratedExpression(property.generatedDefaultValue),
 			)
@@ -355,9 +360,9 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 
 const getColumnStatement = ({ name, type, comment, constraints, isActivated, isParentActivated, generatedExpression }) => {
 	const commentStatement = comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '';
-	const constraintsStaitment = constraints ? getColumnConstraintsStaitment(constraints) : '';
+	const constraintsStatement = constraints ? getColumnConstraintsStatement(constraints) : '';
 	const isColumnActivated = isParentActivated ? isActivated : true;
-	return commentDeactivatedStatements(`${replaceSpaceWithUnderscore(name)} ${type}${generatedExpression}${constraintsStaitment}${commentStatement}`, isColumnActivated);
+	return commentDeactivatedStatements(`${replaceSpaceWithUnderscore(name)} ${type}${generatedExpression}${constraintsStatement}${commentStatement}`, isColumnActivated);
 };
 
 const getColumnsStatement = (columns, isParentActivated) => {
@@ -372,13 +377,14 @@ const getColumnsStatement = (columns, isParentActivated) => {
 
 const getColumnsString = columns => columns.join(', ');
 
-const getColumnConstraintsStaitment = ({ notNull, unique, check, defaultValue }) => {
+const getColumnConstraintsStatement = ({ notNull, unique, primaryKey }) => {
 	const constraints = [
-		(notNull && !unique) ? 'NOT NULL' : ''
+		(notNull && !unique) ? 'NOT NULL' : '',
+		primaryKey ? 'PRIMARY KEY' : '',
 	].filter(Boolean);
-	const constraintsStaitment = constraints.join(' ');
+	const constraintsStatement = constraints.join(' ');
 
-	return constraintsStaitment ? ` ${constraintsStaitment}` : '';
+	return constraintsStatement ? ` ${constraintsStatement}` : '';
 };
 
 const getDescription = (definitions, property) => {

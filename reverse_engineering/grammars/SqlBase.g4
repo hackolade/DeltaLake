@@ -100,7 +100,7 @@ statement
         (RESTRICT | CASCADE)?                                          #dropNamespace
     | SHOW (DATABASES | NAMESPACES) ((FROM | IN) multipartIdentifier)?
         (LIKE? pattern=STRING)?                                        #showNamespaces
-    | createTableHeader ('(' colTypeList ')')? tableProvider?
+    | createTableHeader ('(' colTypeList (',' tableConstraint)* ')')? tableProvider?
         createTableClauses
         (AS? query)?                                                   #createTable
     | CREATE TABLE (IF NOT EXISTS)? target=tableIdentifier
@@ -110,7 +110,7 @@ statement
         createFileFormat |
         locationSpec |
         (TBLPROPERTIES tableProps=tablePropertyList))*                 #createTableLike
-    | replaceTableHeader ('(' colTypeList ')')? tableProvider?
+    | replaceTableHeader ('(' colTypeList (',' tableConstraint)* ')')? tableProvider?
         createTableClauses
         (AS? query)?                                                   #replaceTable
     | ANALYZE TABLE multipartIdentifier partitionSpec? COMPUTE STATISTICS
@@ -899,12 +899,52 @@ colType
     : colName=errorCapturingIdentifier dataType (columnConstraint)? commentSpec?
     ;
 
+tableConstraint
+    : primaryKeyConstraint
+    | foreignKeyConstraint
+    ;
+
+primaryKeyConstraint
+    : tableConstraintName? PRIMARY KEY '(' keyNameList ')' constraintOptions*
+    ;
+
+foreignKeyConstraint
+    : tableConstraintName? FOREIGN KEY '(' keyNameList ')' REFERENCES multipartIdentifier ('(' keyNameList ')')? foreignKeyOptions*
+    ;
+
+tableConstraintName
+    : CONSTRAINT identifier
+    ;
+
+keyNameList
+    : identifier (',' identifier)*
+    ;
+
+foreignKeyOptions
+    : foreignKeyConstraintOptions
+    | constraintOptions
+    ;
+
+foreignKeyConstraintOptions
+    : MATCH FULL
+    | ON UPDATE NO ACTION
+    | ON DELETE NO ACTION
+    ;
+
+constraintOptions
+    : NOT ENFORCED
+    | DEFERRABLE
+    | INITIALLY DEFERRED
+    | NORELY
+    ;
+
 columnConstraint
     : columnConstraintType columnConstraintType*
     ;
 
 columnConstraintType
     : NOT NULL
+    | PRIMARY KEY
     | columnGeneratedAs
     ;
 
@@ -1756,6 +1796,14 @@ WHERE: W H E R E;
 WINDOW: W I N D O W;
 WITH: W I T H;
 ZONE: Z O N E;
+KEY : K E Y;
+ENFORCED : E N F O R C E D;
+DEFERRABLE : D E F E R R A B L E;
+INITIALLY : I N I T I A L L Y;
+DEFERRED : D E F E R R E D;
+NORELY : N O R E L Y;
+MATCH : M A T C H;
+ACTION : A C T I O N;
 
 KW_GENERATED: G E N E R A T E D;
 KW_ALWAYS: A L W A Y S;

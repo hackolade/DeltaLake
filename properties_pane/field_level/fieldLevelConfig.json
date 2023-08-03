@@ -256,6 +256,74 @@ making sure that you maintain a proper JSON format.
 				}
 			},
 			{
+				"propertyName": "Primary key options",
+				"propertyType": "block",
+				"propertyKeyword": "primaryKeyOptions",
+				"enableForReference": true,
+				"propertyTooltip": "Primary key options",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"key": "primaryKey",
+							"value": true
+						},
+						{
+							"type": "or",
+							"values": [{
+								"key": "compositePrimaryKey",
+								"value": false
+							}, {
+								"key": "compositePrimaryKey",
+								"exist": false
+							}]
+						},
+						{
+							"type": "or",
+							"values": [{
+								"key": "compositeUniqueKey",
+								"value": false
+							}, {
+								"key": "compositeUniqueKey",
+								"exist": false
+							}]
+						}
+					]
+				},
+				"structure": [
+					{
+						"propertyName": "Constraint name",
+						"propertyKeyword": "constraintName",
+						"propertyTooltip": "",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Not enforced",
+						"propertyKeyword": "notEnforced",
+						"propertyType": "checkbox",
+						"propertyTooltip": "Databricks takes no action to enforce it for existing or new rows."
+					},
+					{
+						"propertyName": "Deferrable",
+						"propertyKeyword": "deferrable",
+						"propertyType": "checkbox",
+						"propertyTooltip": "The constraint enforcement can be deferred."
+					},
+					{
+						"propertyName": "Initially Deferrable",
+						"propertyKeyword": "initiallyDeferrable",
+						"propertyType": "checkbox",
+						"propertyTooltip": "Constraint enforcement is deferred."
+					},
+					{
+						"propertyName": "No rely",
+						"propertyKeyword": "noRely",
+						"propertyType": "checkbox",
+						"propertyTooltip": "Databricks does not exploit the constraint to rewrite a query."
+					}
+				]
+			},
+			{
 				"propertyName": "Unique",
 				"propertyKeyword": "compositeUniqueKey",
 				"propertyType": "checkbox",

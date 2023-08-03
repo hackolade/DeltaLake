@@ -14,8 +14,7 @@ const {
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const {getCheckConstraintsScripts} = require("./entityHelpers/checkConstraintHelper");
-const {getCreatePKConstraintsScript} = require("./entityHelpers/primaryKeyHelper");
-const {Runtime} = require("../enums/runtime");
+const constraintHelper = require('./constrainthelper');
 
 const getCreateStatement = (_) => ({
 	dbName, tableName, isTemporary, isExternal, using, likeStatement, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
@@ -58,6 +57,7 @@ const getCreateUsingStatement = (_) => ({
 }) => {
 	return buildStatement(`CREATE${tempExtStatement}TABLE${isNotExistsStatement} ${fullTableName} (`, isActivated)
 		(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))
+		(primaryKeyStatement, primaryKeyStatement)
 		(true, ')')
 		(using, `${getUsing(using)}`)
 		(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)
@@ -261,9 +261,9 @@ const getStoredAsStatement = (tableData) => {
  * 	entityData: any,
  * 	entityJsonSchema: any,
  * 	definitions: any,
- * 	areColumnConstraintsAvailable: any,
+ * 	arePkFkConstraintsAvailable: boolean,
+ * 	areNotNullConstraintsAvailable: boolean,
  * 	likeTableData: any,
- * 	dbVersion: number,
  * ) => string}
  * */
 const getTableStatement = (app) => (
@@ -271,9 +271,9 @@ const getTableStatement = (app) => (
 	entityData,
 	entityJsonSchema,
 	definitions,
-	areColumnConstraintsAvailable,
+	arePkFkConstraintsAvailable,
+	areNotNullConstraintsAvailable,
 	likeTableData,
-	dbVersion
 ) => {
 	const _ = app.require('lodash');
 
@@ -282,9 +282,12 @@ const getTableStatement = (app) => (
 	const container = getTab(0, containerData);
 	const isTableActivated = tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
 	const tableName = replaceSpaceWithUnderscore(getName(tableData));
-	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, areColumnConstraintsAvailable, definitions);
+	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, arePkFkConstraintsAvailable, areNotNullConstraintsAvailable, definitions);
 	const keyNames = keyHelper.getKeyNames(tableData, entityJsonSchema, definitions);
 	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
+	const primaryKeyStatement = arePkFkConstraintsAvailable
+		? constraintHelper.getPrimaryKeyStatement(_)(entityJsonSchema, keyNames.primaryKeys, deactivatedColumnNames, isTableActivated)
+		: '';
 	let tableStatement = getCreateStatement(_)({
 		dbName,
 		tableName,
@@ -293,6 +296,7 @@ const getTableStatement = (app) => (
 		orReplace: tableData.orReplace,
 		ifNotExists: tableData.tableIfNotExists,
 		using: tableData.using,
+		primaryKeyStatement,
 		likeStatement: getLikeStatement(getTab(0, likeTableData)),
 		columnStatement: getColumnsStatement(tableColumns, isTableActivated),
 		comment: tableData.description,
@@ -316,12 +320,7 @@ const getTableStatement = (app) => (
 	if (!_.isEmpty(constraintsStatements)) {
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + statementsDelimiter;
 	}
-	if (dbVersion >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
-		const createPrimaryKeysScript = getCreatePKConstraintsScript(app)(entityJsonSchema, dbName);
-		if (!_.isEmpty(createPrimaryKeysScript)) {
-			tableStatement = tableStatement + '\n\n' + createPrimaryKeysScript;
-		}
-	}
+
 	return removeRedundantTrailingCommaFromStatement(_)(tableStatement);
 };
 

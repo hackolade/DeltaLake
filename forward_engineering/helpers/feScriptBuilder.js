@@ -32,9 +32,8 @@ const {getDatabaseStatement, getUseCatalogStatement} = require("./databaseHelper
 const {getCreateRelationshipScripts} = require("./relationshipHelper");
 const {getTableStatement} = require("./tableHelper");
 const {getIndexes} = require("./indexHelper");
-const {buildScript, getName, getTab, getDBVersionNumber} = require("../utils/generalUtils");
+const {buildScript, getName, getTab, isSupportUnityCatalog, isSupportNotNullConstraints} = require("../utils/generalUtils");
 const {getViewScript} = require("./viewHelper");
-const {Runtime} = require("../enums/runtime");
 
 /**
  * @typedef {{
@@ -53,7 +52,9 @@ const {Runtime} = require("../enums/runtime");
  *     modelDefinitions: ModelDefinitions,
  *     internalDefinitions: InternalDefinitions,
  *     containerData: ContainerData,
- *     includeRelationships: boolean,
+ *     arePkFkConstraintsAvailable: boolean,
+ *     areNotNullConstraintsAvailable: boolean,
+ *     includeRelationshipsInEntityScripts: boolean,
  *     entitiesJsonSchema: EntitiesJsonSchema,
  * }} ContainerLevelFEScriptData
  * */
@@ -72,7 +73,8 @@ const buildEntityLevelFEScript = (data, app) => ({
     entityData,
     modelData,
 }) => {
-    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
+    const arePkFkConstraintsAvailable = isSupportUnityCatalog(data.modelData[0].dbVersion);
+    const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
     const useCatalogStatement = getUseCatalogStatement(modelData, containerData);
     const databaseStatement = getDatabaseStatement(containerData);
     const definitions = [modelDefinitions, internalDefinitions, externalDefinitions,];
@@ -81,14 +83,23 @@ const buildEntityLevelFEScript = (data, app) => ({
         entityData,
         jsonSchema,
         definitions,
-        true,
-        dbVersionNumber
+        arePkFkConstraintsAvailable,
+        areNotNullConstraintsAvailable,
     );
     const indexScript = getIndexes(containerData, entityData, jsonSchema, definitions);
+
+    let relationshipScripts = [];
+    if (arePkFkConstraintsAvailable) {
+        const entityId = jsonSchema.GUID;
+        const relationshipsWithThisTableAsChild = modelData[1]?.relationships.filter(relationship => relationship.childCollection === entityId);
+        relationshipScripts = getCreateRelationshipScripts(app)(relationshipsWithThisTableAsChild, jsonSchema);
+    }
+
     return buildScript([
         useCatalogStatement,
         databaseStatement,
         tableStatements,
+        ...relationshipScripts,
         indexScript
     ]);
 }
@@ -124,15 +135,15 @@ const getContainerLevelViewScriptDtos = (data, _) => {
  * @return {(data: ContainerLevelFEScriptData) => Array<ContainerLevelEntityDto>}
  * */
 const getContainerLevelEntitiesScriptDtos = (app, data) => ({
-                                                                externalDefinitions,
-                                                                modelDefinitions,
-                                                                internalDefinitions,
-                                                                containerData,
-                                                                includeRelationships,
-                                                                entitiesJsonSchema,
-                                                            }) => {
-    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
-
+    externalDefinitions,
+    modelDefinitions,
+    internalDefinitions,
+    containerData,
+    entitiesJsonSchema,
+    arePkFkConstraintsAvailable,
+    areNotNullConstraintsAvailable,
+    includeRelationshipsInEntityScripts,
+}) => {
     return data.entities.reduce((result, entityId) => {
         const entityData = data.entityData[entityId];
 
@@ -143,14 +154,15 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
 
         const tableStatement = getTableStatement(app)(
             ...createTableStatementArgs,
-            true,
+            arePkFkConstraintsAvailable,
+            areNotNullConstraintsAvailable,
             likeTableData,
-            dbVersionNumber
         );
 
         const indexScript = getIndexes(...createTableStatementArgs);
+
         let relationshipScripts = [];
-        if (includeRelationships && dbVersionNumber >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
+        if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
             const relationshipsWithThisTableAsChild = data.relationships
                 .filter(relationship => relationship.childCollection === entityId);
             relationshipScripts = getCreateRelationshipScripts(app)(relationshipsWithThisTableAsChild, entitiesJsonSchema);
@@ -191,7 +203,9 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
     includeRelationshipsInEntityScripts
 }) => {
     const _ = app.require('lodash');
-    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
+    const dbVersion = data.modelData[0].dbVersion;
+    const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
+    const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
 
     const useCatalogStatement = getUseCatalogStatement(modelData, containerData)
     const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
@@ -202,11 +216,13 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
         modelDefinitions,
         containerData,
         entitiesJsonSchema,
-        includeRelationships: includeRelationshipsInEntityScripts,
+        arePkFkConstraintsAvailable,
+        areNotNullConstraintsAvailable,
+        includeRelationshipsInEntityScripts,
     });
 
     let relationshipScrips = [];
-    if (!includeRelationshipsInEntityScripts && dbVersionNumber >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
+    if (!includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
         relationshipScrips = getCreateRelationshipScripts(app)(data.relationships, entitiesJsonSchema);
     }
 
