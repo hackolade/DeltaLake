@@ -301,7 +301,7 @@ const getGeneratedExpression = (expressionData) => {
 	return ` GENERATED ${generatedType} AS ${expressionData.expression}`;
 };
 
-const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
+const getColumns = (jsonSchema, arePkFkColumnConstraintsAvailable, areNotNullConstraintsAvailable, definitions) => {
 	const deactivatedColumnNames = new Set();
 	let columns = Object.keys(jsonSchema.properties || {}).reduce((hash, columnName) => {
 		const property = jsonSchema.properties[columnName];
@@ -322,13 +322,13 @@ const getColumns = (jsonSchema, areColumnConstraintsAvailable, definitions) => {
 				prepareName(name),
 				getTypeByProperty(definitions)(property),
 				getDescription(definitions, property),
-				areColumnConstraintsAvailable ? {
-					notNull: isRequired,
-					primaryKey: isPrimaryKey,
+				{
 					unique: property.unique,
 					check: property.check,
-					defaultValue: property.default
-				} : {},
+					defaultValue: property.default,
+					...(areNotNullConstraintsAvailable && { notNull: isRequired }),
+					...(arePkFkColumnConstraintsAvailable && { primaryKey: isPrimaryKey }),
+				},
 				property.isActivated,
 				getGeneratedExpression(property.generatedDefaultValue),
 			)

@@ -248,6 +248,11 @@ const isSupportUnityCatalog = (dbVersion = '') => {
     return runtimeVersion >= Runtime.MINIMUM_UNITY_CATALOG_SUPPORT_VERSION;
 }
 
+const isSupportNotNullConstraints = (dbVersion = '') => {
+    const runtimeVersion = getDBVersionNumber(dbVersion);
+    return runtimeVersion >= Runtime.RUNTIME_SUPPORTING_NOT_NULL_CONSTRAINTS;
+}
+
 module.exports = {
     buildStatement,
     getName,
@@ -277,4 +282,5 @@ module.exports = {
     getIsChangeProperties,
     getDifferentItems,
     isSupportUnityCatalog,
+    isSupportNotNullConstraints,
 };

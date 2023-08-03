@@ -261,9 +261,9 @@ const getStoredAsStatement = (tableData) => {
  * 	entityData: any,
  * 	entityJsonSchema: any,
  * 	definitions: any,
- * 	areColumnConstraintsAvailable: any,
+ * 	arePkFkConstraintsAvailable: boolean,
+ * 	areNotNullConstraintsAvailable: boolean,
  * 	likeTableData: any,
- * 	dbVersion: number,
  * ) => string}
  * */
 const getTableStatement = (app) => (
@@ -271,7 +271,8 @@ const getTableStatement = (app) => (
 	entityData,
 	entityJsonSchema,
 	definitions,
-	areColumnConstraintsAvailable,
+	arePkFkConstraintsAvailable,
+	areNotNullConstraintsAvailable,
 	likeTableData,
 ) => {
 	const _ = app.require('lodash');
@@ -281,10 +282,10 @@ const getTableStatement = (app) => (
 	const container = getTab(0, containerData);
 	const isTableActivated = tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
 	const tableName = replaceSpaceWithUnderscore(getName(tableData));
-	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, areColumnConstraintsAvailable, definitions);
+	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, arePkFkConstraintsAvailable, areNotNullConstraintsAvailable, definitions);
 	const keyNames = keyHelper.getKeyNames(tableData, entityJsonSchema, definitions);
 	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
-	const primaryKeyStatement = areColumnConstraintsAvailable
+	const primaryKeyStatement = arePkFkConstraintsAvailable
 		? constraintHelper.getPrimaryKeyStatement(_)(entityJsonSchema, keyNames.primaryKeys, deactivatedColumnNames, isTableActivated)
 		: '';
 	let tableStatement = getCreateStatement(_)({

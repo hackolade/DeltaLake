@@ -198,8 +198,11 @@ module.exports = {
                 });
 
                 if (data.options.separateBucket) {
+                    const useCatalogStatement = scriptData.catalog
+                        ? scriptData.catalog + '\n\n'
+                        : '';
                     const result =  {
-                        container: scriptData.catalog + '\n\n' + scriptData.container,
+                        container: useCatalogStatement + scriptData.container,
                         entities: scriptData.entities,
                         views: scriptData.views,
                     };
