@@ -215,6 +215,7 @@ making sure that you maintain a proper JSON format.
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
 				"options": [
+					"",
 					"delta",
 					"CSVfile",
 					"Hive",
@@ -232,6 +233,7 @@ making sure that you maintain a proper JSON format.
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
 				"options": [
+					"",
 					"textfile",
 					"sequencefile",
 					"ORC",
@@ -601,19 +603,6 @@ making sure that you maintain a proper JSON format.
 											"exist": false
 										}
 									]
-								},
-								{
-									"type": "or",
-									"values": [
-										{
-											"key": "compositeUniqueKey",
-											"value": false
-										},
-										{
-											"key": "compositeUniqueKey",
-											"exist": false
-										}
-									]
 								}
 							]
 						}
@@ -621,12 +610,42 @@ making sure that you maintain a proper JSON format.
 				],
 				"structure": [
 					{
+						"propertyName": "Constraint name",
+						"propertyKeyword": "constraintName",
+						"propertyTooltip": "",
+						"propertyType": "text"
+					},
+					{
 						"propertyName": "Key",
 						"propertyKeyword": "compositePrimaryKey",
 						"propertyType": "primaryKeySetter",
 						"abbr": "pk",
 						"attributeList": []
-					}
+					},
+					{
+						"propertyName": "Not enforced",
+						"propertyKeyword": "notEnforced",
+						"propertyType": "checkbox",
+						"propertyTooltip": "Databricks takes no action to enforce it for existing or new rows."
+					},
+					{
+						"propertyName": "Deferrable",
+						"propertyKeyword": "deferrable",
+						"propertyType": "checkbox",
+						"propertyTooltip": "The constraint enforcement can be deferred."
+					},
+					{
+						"propertyName": "Initially Deferrable",
+						"propertyKeyword": "initiallyDeferrable",
+						"propertyType": "checkbox",
+						"propertyTooltip": "Constraint enforcement is deferred."
+					},
+					{
+						"propertyName": "No rely",
+						"propertyKeyword": "noRely",
+						"propertyType": "checkbox",
+						"propertyTooltip": "Databricks does not exploit the constraint to rewrite a query."
+					},
 				]
 			},
 			{
@@ -638,9 +657,13 @@ making sure that you maintain a proper JSON format.
 					{
 						"propertyName": "Key",
 						"propertyKeyword": "compositeUniqueKey",
-						"propertyType": "primaryKeySetter",
-						"abbr": "uk"
-					}				]
+						"propertyType": "compositeKeySetter",
+						"abbr": "uk",
+						"setPrimaryKey": false,
+						"template": "collectiontree",
+						"isCompositeKey": true,
+						"disabledItemStrategy": "default"
+					}]
 			}
 		]
 	},

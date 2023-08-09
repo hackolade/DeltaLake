@@ -1,7 +1,7 @@
 'use strict';
 
 const { setDependencies } = require('./helpers/appDependencies');
-const { getDatabaseStatement } = require('./helpers/databaseHelper');
+const { getDatabaseStatement, getUseCatalogStatement} = require('./helpers/databaseHelper');
 const { getViewScript } = require('./helpers/viewHelper');
 const { getCleanedUrl, buildScript } = require('./utils/generalUtils');
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
@@ -15,6 +15,7 @@ const {
     doesContainerLevelAlterScriptContainDropStatements,
     doesEntityLevelAlterScriptContainDropStatements
 } = require("./helpers/alterScriptHelpers/alterScriptBuilder");
+const reApi = require('../reverse_engineering/api');
 
 /**
  * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
@@ -71,6 +72,7 @@ const parseDataForEntityLevelScript = (data) => {
     const internalDefinitions = JSON.parse(data.internalDefinitions);
     const externalDefinitions = JSON.parse(data.externalDefinitions);
     const containerData = data.containerData;
+    const modelData = data.modelData;
     const entityData = data.entityData;
 
     return {
@@ -80,6 +82,7 @@ const parseDataForEntityLevelScript = (data) => {
         externalDefinitions,
         containerData,
         entityData,
+        modelData,
     }
 }
 
@@ -94,6 +97,7 @@ const parseDataForEntityLevelScript = (data) => {
  * }}
  * */
 const parseDataForContainerLevelScript = (data) => {
+    const modelData = data.modelData;
     const containerData = data.containerData;
     const modelDefinitions = JSON.parse(data.modelDefinitions);
     const externalDefinitions = JSON.parse(data.externalDefinitions);
@@ -104,6 +108,7 @@ const parseDataForContainerLevelScript = (data) => {
     );
 
     return {
+        modelData,
         modelDefinitions,
         internalDefinitions,
         externalDefinitions,
@@ -153,6 +158,7 @@ module.exports = {
             setDependencies(app);
             const viewSchema = JSON.parse(data.jsonSchema || '{}');
 
+            const useCatalogStatement = getUseCatalogStatement(data.modelData, data.containerData);
             const databaseStatement = getDatabaseStatement(data.containerData);
 
             const script = getViewScript({
@@ -163,7 +169,7 @@ module.exports = {
                 isKeyspaceActivated: true,
             });
 
-            callback(null, buildScript([databaseStatement, script]));
+            callback(null, buildScript([useCatalogStatement, databaseStatement, script]));
         } catch (e) {
             logger.log('error', {message: e.message, stack: e.stack}, 'DeltaLake Forward-Engineering Error');
 
@@ -192,8 +198,11 @@ module.exports = {
                 });
 
                 if (data.options.separateBucket) {
+                    const useCatalogStatement = scriptData.catalog
+                        ? scriptData.catalog + '\n\n'
+                        : '';
                     const result =  {
-                        container: scriptData.container,
+                        container: useCatalogStatement + scriptData.container,
                         entities: scriptData.entities,
                         views: scriptData.views,
                     };
@@ -202,6 +211,7 @@ module.exports = {
                 }
 
                 const result = buildScript([
+                    scriptData.catalog,
                     scriptData.container,
                     ...(scriptData.entities.map(e => e.script)),
                     ...(scriptData.views.map(v => v.script)),
@@ -227,9 +237,6 @@ module.exports = {
      * @param app {App}
      * */
     async applyToInstance(connectionInfo, logger, cb, app) {
-        logger.clear();
-        logInfo('info', connectionInfo, logger);
-
         const connectionData = {
             host: getCleanedUrl(connectionInfo.host),
             clusterId: connectionInfo.clusterId,

@@ -118,6 +118,12 @@
 				}
 			},
 			{
+				"inputLabel": "Catalog name",
+				"inputKeyword": "catalogName",
+				"inputType": "text",
+				"inputPlaceholder": "Optional"
+			},
+			{
 				"inputLabel": "Database name",
 				"inputKeyword": "databaseName",
 				"inputType": "text",

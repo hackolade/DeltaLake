@@ -53,6 +53,7 @@
 	"PROPERTIES_PANE___NORMALIZATION": "Normalization",
 	"PROPERTIES_PANE___NAME": "Name",
 	"PROPERTIES_PANE___CODE": "Technical name",
+	"PROPERTIES_PANE___DESCRIPTIONS": "comments",
 	"CONTEXT_MENU___ADD_BUCKET": "Add database",
 	"CONTEXT_MENU___ADD_COLLECTION": "Add table",
 	"CONTEXT_MENU___ADD_VIEW": "Add view",
@@ -148,5 +149,6 @@
 	"MODAL_WINDOW___NO_DOCUMENTS_FOR_RE": "There are no columns defined in the selected tables",
 	"PROGRESS_BAR___APPLY_TO_INSTANCE_PROCESS":"Delta Lake Apply Script Process",
 	"FE_LEVEL_SELECTOR_ENTITY": "table",
-	"FE_LEVEL_SELECTOR_CONTAINER": "database"
+	"FE_LEVEL_SELECTOR_CONTAINER": "database",
+	"DATABASE_CONNECTIONS___CONTAINER_TYPE_NAME": "Catalog"
 }

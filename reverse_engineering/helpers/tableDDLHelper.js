@@ -49,6 +49,7 @@ const getTableDataFromDDl = (statement) => {
 	const properties = parsedTableData.colList.map(column => columnREHelper.reverseTableColumn(column));
 	return {
 		properties,
+		fkConstraints: parsedTableData.fkConstraints,
 		propertiesPane: {
 			code: parsedTableData.table,
 			temporaryTable: parsedTableData.isTemporary,
@@ -76,6 +77,7 @@ const getTableDataFromDDl = (statement) => {
 			tableProperties: parsedTableData.tableProperties,
 			description: parsedTableData.commentSpec,
 			tableOptions: parsedTableData.tableOptions,
+			primaryKey: parsedTableData.primaryKey,
 		}
 	}
 }

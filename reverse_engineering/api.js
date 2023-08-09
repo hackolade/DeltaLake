@@ -14,6 +14,7 @@ const { getCleanedUrl } = require('../forward_engineering/utils/generalUtils');
 const mapJsonSchema = require('./thriftService/mapJsonSchema');
 const { parseViewStatement } = require('./parseViewStatement');
 const { parseDDLStatements } = require('./parseDDLStatements');
+const { isSupportUnityCatalog } = require("./helpers/databricksHelper");
 
 module.exports = {
 
@@ -60,30 +61,37 @@ module.exports = {
 		try {
 			setDependencies(app);
 
-			let dbNames = [];
+			const connectionData = {
+				host: getCleanedUrl(connectionInfo.host),
+				clusterId: connectionInfo.clusterId,
+				accessToken: connectionInfo.accessToken,
+				queryRequestTimeout: connectionInfo.queryRequestTimeout,
+				sparkConfig: getSparkConfigurations(connectionInfo),
+				logger,
+			};
+			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
 
-			if (connectionInfo.databaseName) {
-				dbNames = [connectionInfo.databaseName];
+			let catalogNames = [];
+
+			if (!isSupportUnityCatalog(clusterState.spark_version)) {
+				// In that case 'default' it's not a real container,
+				// is used only for bypass error when cluster doesn't contain any of catalogs
+				catalogNames = ['default'];
+				logger.log('info', catalogNames, 'Databricks runtime doesn\'t support Unity catalog. Use \'default\' container for schemas.');
+			}else if (connectionInfo.catalogName) {
+				catalogNames = [connectionInfo.catalogName];
 			} else {
-				const connectionData = {
-					host: getCleanedUrl(connectionInfo.host),
-					clusterId: connectionInfo.clusterId,
-					accessToken: connectionInfo.accessToken,
-					queryRequestTimeout: connectionInfo.queryRequestTimeout,
-					sparkConfig: getSparkConfigurations(connectionInfo),
-					logger,
-				};
-				dbNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionData);
+				catalogNames = await fetchRequestHelper.fetchClusterCatalogNames(connectionData);
 			}
 
-			logger.log('info', dbNames, 'Database names list');
+			logger.log('info', catalogNames, 'Catalog names list');
 
-			cb(null, dbNames);
+			cb(null, catalogNames);
 		} catch (err) {
 			logger.log(
 				'error',
 				{ message: err.message, stack: err.stack, error: err },
-				'Retrieving databases and tables names'
+				'Retrieving catalogs names'
 			);
 			cb({ message: getErrorMessage(err), stack: err.stack });
 		}
@@ -103,7 +111,8 @@ module.exports = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
 				accessToken: connectionInfo.accessToken,
-				databaseName: connectionInfo.database,
+				catalogName: connectionInfo.database,
+				databaseName: connectionInfo.databaseName,
 				queryRequestTimeout: connectionInfo.queryRequestTimeout,
 				sparkConfig: getSparkConfigurations(connectionInfo),
 				logger,
@@ -180,6 +189,7 @@ module.exports = {
 			progress({ message: 'Entities ddl retrieved successfully', containerName: 'databases', entityName: 'entities' });
 
 			let warnings = [];
+			let relationships = [];
 
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];
@@ -208,6 +218,10 @@ module.exports = {
 							});
 							progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name });
 						}
+
+						relationships = relationships.concat(
+							tableData.fkConstraints.map(constr => ({ ...constr, childCollection: table.name }))
+						);
 
 						progress({ message: 'Table data processed successfully', containerName: dbName, entityName: table.name });
 						const doc = {
@@ -320,7 +334,7 @@ module.exports = {
 				};
 			}
 
-			cb(null, packages, modelData);
+			cb(null, packages, modelData, relationships);
 		} catch (err) {
 			const clusterState = modelData || await databricksHelper.getClusterStateInfo(connectionData, logger);
 			if (!clusterState.isRunning) {
