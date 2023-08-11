@@ -315,7 +315,6 @@ const getColumns = (jsonSchema, arePkFkColumnConstraintsAvailable, areNotNullCon
 			&& !property.compositePrimaryKey
 			&& !property.primaryKeyOptions;
 
-		debugger
 		return Object.assign(
 			{},
 			hash,
