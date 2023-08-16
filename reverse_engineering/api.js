@@ -17,8 +17,8 @@ const hqlToCollectionsVisitor = require('./hqlToCollectionsVisitor.js');
 const commandsService = require('./commandsService');
 const ExprErrorListener = require('./antlrErrorListener');
 const { getCleanedUrl } = require('../forward_engineering/utils/generalUtils');
-const mapJsonSchema = require('./thriftService/mapJsonSchema');
 const { isSupportUnityCatalog } = require("./helpers/databricksHelper");
+const { adaptJsonSchema } = require('./adaptJsonSchema')
 
 module.exports = {
 
@@ -364,35 +364,7 @@ module.exports = {
 		}
 	},
 
-	adaptJsonSchema(data, logger, callback, app) {
-		try {
-			setDependencies(app);
-			const _ = app.require('lodash');
-			const jsonSchema = JSON.parse(data.jsonSchema);
-			const result = mapJsonSchema(_)(jsonSchema, {}, (schema, parentJsonSchema, key) => {
-				if (schema.type === 'array' && !schema.subtype) {
-					return {
-						...schema,
-						subtype: getArraySubtypeByChildren(_, schema),
-					};
-				} else {
-					return schema;
-				}
-			});
-
-			callback(null, {
-				...data,
-				jsonSchema: JSON.stringify(result)
-			});
-		} catch (error) {
-			const err = {
-				message: error.message,
-				stack: error.stack,
-			};
-			logger.log('error', err, 'Remove nulls from JSON Schema');
-			callback(err);
-		}
-	},
+	adaptJsonSchema,
 
 	parseViewStatement(data, logger, callback, app) {
 		try {
@@ -453,56 +425,6 @@ const createViewPackage = ({ name, viewData = {}, jsonSchema, documentTemplate }
 		},
 		mergeSchemas: true,
 	};
-};
-
-const getArraySubtypeByChildren = (_, arraySchema) => {
-	const subtype = (type) => `array<${type}>`;
-
-	if (!arraySchema.items) {
-		return;
-	}
-
-	if (Array.isArray(arraySchema.items) && _.uniq(arraySchema.items.map(item => item.type)).length > 1) {
-		return subtype("union");
-	}
-
-	let item = Array.isArray(arraySchema.items) ? arraySchema.items[0] : arraySchema.items;
-
-	if (!item) {
-		return;
-	}
-
-	switch(item.type) {
-		case 'string':
-		case 'text':
-			return subtype("txt");
-		case 'number':
-		case 'numeric':
-			return subtype("num");
-		case 'interval':
-			return subtype("intrvl");
-		case 'object':
-		case 'struct':
-			return subtype("struct");
-		case 'array':
-			return subtype("array");
-		case 'map':
-			return subtype("map");
-		case "union":
-			return subtype("union");
-		case "timestamp":
-			return subtype("ts");
-		case "date":
-			return subtype("date");
-	}
-
-	if (item.items) {
-		return subtype("array");
-	}
-
-	if (item.properties) {
-		return subtype("struct");
-	}
 };
 
 const parseDDLStatements = (input) => {
