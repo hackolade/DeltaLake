@@ -377,9 +377,9 @@ const getColumnsStatement = (columns, isParentActivated) => {
 
 const getColumnsString = columns => columns.join(', ');
 
-const getColumnConstraintsStatement = ({ notNull, unique, primaryKey }) => {
+const getColumnConstraintsStatement = ({ notNull, primaryKey }) => {
 	const constraints = [
-		(notNull && !unique) ? 'NOT NULL' : '',
+		notNull ? 'NOT NULL' : '',
 		primaryKey ? 'PRIMARY KEY' : '',
 	].filter(Boolean);
 	const constraintsStatement = constraints.join(' ');
