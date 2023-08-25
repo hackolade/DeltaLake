@@ -73,7 +73,8 @@ const buildEntityLevelFEScript = (data, app) => ({
     entityData,
     modelData,
 }) => {
-    const arePkFkConstraintsAvailable = isSupportUnityCatalog(data.modelData[0].dbVersion);
+    const dbVersion = data.modelData[0].dbVersion;
+    const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
     const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
     const useCatalogStatement = getUseCatalogStatement(modelData, containerData);
     const databaseStatement = getDatabaseStatement(containerData);
