@@ -277,11 +277,11 @@ const getTableStatement = (app) => (
 ) => {
 	const _ = app.require('lodash');
 
-	const dbName = replaceSpaceWithUnderscore(getName(getTab(0, containerData)));
+	const dbName = replaceSpaceWithUnderscore(prepareName(getName(getTab(0, containerData))));
 	const tableData = getTab(0, entityData);
 	const container = getTab(0, containerData);
 	const isTableActivated = tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
-	const tableName = replaceSpaceWithUnderscore(getName(tableData));
+	const tableName = replaceSpaceWithUnderscore(prepareName(getName(tableData)));
 	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, arePkFkConstraintsAvailable, areNotNullConstraintsAvailable, definitions);
 	const keyNames = keyHelper.getKeyNames(tableData, entityJsonSchema, definitions);
 	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);

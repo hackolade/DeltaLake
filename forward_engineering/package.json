@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "author": "Hackolade",
+  "installed": true,
   "dependencies": {
-    "sql-formatter": "^2.3.3"
-  },
-  "installed": true
+    "sql-formatter": "^10.0.0"
+  }
 }

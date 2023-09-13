@@ -18,8 +18,8 @@ const getCreatePKConstraintScript = (_, ddlProvider) => (entityJsonSchema, dbNam
         .map(([name]) => name)
         .map(name => prepareName(name));
 
-    const entityName = getName(entityJsonSchema);
-    const tableName = prepareName(getFullEntityName(dbName, entityName));
+    const entityName = prepareName(getName(entityJsonSchema));
+    const tableName = getFullEntityName(prepareName(dbName), entityName);
     const constraintName = prepareName(`${entityName}_pk`);
 
     return ddlProvider.addPkConstraint(tableName, constraintName, pkColumnNames)

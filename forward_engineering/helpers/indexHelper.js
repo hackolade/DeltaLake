@@ -53,10 +53,10 @@ const getIndexKeys = (keys, jsonSchema, definitions) => {
 const getIndexes = (containerData, entityData, jsonSchema, definitions) => {
 	setDependencies(dependencies);
 	const dbData = getTab(0, containerData);
-	const dbName = replaceSpaceWithUnderscore(getName(dbData));
+	const dbName = replaceSpaceWithUnderscore(prepareName(getName(dbData)));
 	const tableData = getTab(0, entityData);
 	const indexesData = getTab(2, entityData).BloomIndxs || [];
-	const tableName = replaceSpaceWithUnderscore(getName(tableData));
+	const tableName = replaceSpaceWithUnderscore(prepareName(getName(tableData)));
 	return indexesData.filter(indexData => !_.isEmpty(indexData.forColumns))
 		.map(indexData => {
 			const { columns, isIndexActivated = true } = getIndexKeys(
