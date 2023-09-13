@@ -4,6 +4,8 @@ const sqlFormatter = require('sql-formatter');
 const {RESERVED_WORDS_AS_ARRAY} = require('../enums/reservedWords');
 const {Runtime} = require("../enums/runtime");
 
+const MAX_STANDARD_ASCII_SYMBOL_CODE = 127;
+
 /**
  * @typedef {((args: any) => string) | ((args: any) => ChainFunction)} ChainFunction
  * */
@@ -51,18 +53,29 @@ const buildStatement = (mainStatement, isActivated) => {
 
 const isEscaped = (name) => /`[\s\S]*`/.test(name);
 
+const isExtendedAsciiCharacter = (char) => char.charCodeAt(0) > MAX_STANDARD_ASCII_SYMBOL_CODE;
+
+const containExtendedAsciiCharacters = (name = '') => {
+    return name.split('').some(isExtendedAsciiCharacter);
+}
+
 const prepareName = (name = '') => {
-    const containSpaces = /[\s-]/g;
-    if (containSpaces.test(name) && !isEscaped(name)) {
-        return `\`${name}\``;
-    } else if (RESERVED_WORDS_AS_ARRAY.includes(name.toLowerCase())) {
-        return `\`${name}\``;
-    } else if (name === '') {
-        return '';
-    } else if (!isNaN(name)) {
-        return `\`${name}\``;
+    const containSpacesRegexp = /[\s-]/g;
+    const isEscapedName = isEscaped(name);
+    const containSpaces = containSpacesRegexp.test(name);
+    const containExtendedAsciiChars = containExtendedAsciiCharacters(name)
+    const includeReversedWords = RESERVED_WORDS_AS_ARRAY.includes(name.toLowerCase());
+
+    const shouldBeWrappedInTicks = !isEscapedName
+        && (containSpaces || containExtendedAsciiChars || includeReversedWords);
+
+    if (name === '') {
+        return ''
+    } else if (shouldBeWrappedInTicks) {
+        return wrapInTicks(name);
+    } else {
+        return name;
     }
-    return name;
 };
 const replaceSpaceWithUnderscore = (name = '') => {
     return name.replace(/\s/g, '_');
@@ -168,7 +181,7 @@ const wrapInTicks = (str = '') => {
 const buildScript = (statements) => {
     const nonEmptyScripts = statements.filter((statement) => statement);
     const formattedScripts = nonEmptyScripts.map(
-        script => sqlFormatter.format(script, {indent: '    '})
+        script => sqlFormatter.format(script, { tabWidth: 4 })
             .replace(/\{ \{ (.+?) } }/g, '{{$1}}')
     );
 
@@ -191,8 +204,8 @@ const getFullEntityName = (dbName, entityName) => dbName ? `${dbName}.${entityNa
 const generateFullEntityName = entity => {
     const compMod = entity?.role?.compMod || {};
     const entityData = entity?.role || {};
-    const dbName = replaceSpaceWithUnderscore(getContainerName(compMod));
-    const entityName = replaceSpaceWithUnderscore(getName(entityData));
+    const dbName = replaceSpaceWithUnderscore(prepareName(getContainerName(compMod)));
+    const entityName = replaceSpaceWithUnderscore(prepareName(getName(entityData)));
     return getFullEntityName(dbName, entityName);
 };
 

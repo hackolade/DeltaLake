@@ -1,5 +1,5 @@
 const {getDatabaseStatement, getDatabaseAlterStatement} = require('../databaseHelper')
-const {getEntityData, getIsChangeProperties} = require('../../utils/generalUtils');
+const {getEntityData, getIsChangeProperties, prepareName, replaceSpaceWithUnderscore} = require('../../utils/generalUtils');
 const {getAlterCommentsScriptDtos} = require("./containerHelpers/commentsHelper");
 
 /**
@@ -17,7 +17,7 @@ const getContainerData = compMod => getEntityData(compMod, containerProperties);
  * */
 const getDatabaseName = container => {
     const {role} = container;
-    return role?.code || role?.name;
+    return replaceSpaceWithUnderscore(prepareName(role?.code || role?.name));
 };
 
 /**

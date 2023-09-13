@@ -1,6 +1,14 @@
 'use strict'
 
-const { buildStatement, getName, getTab, replaceSpaceWithUnderscore, encodeStringLiteral, isSupportUnityCatalog } = require('../utils/generalUtils');
+const {
+	buildStatement,
+	getName,
+	getTab,
+	replaceSpaceWithUnderscore,
+	encodeStringLiteral,
+	isSupportUnityCatalog,
+	prepareName
+} = require('../utils/generalUtils');
 
 /**
  * @return {string}
@@ -32,7 +40,7 @@ const getUseCatalogStatement = (modelData, databaseData) => {
  * */
 const getDatabaseStatement = (containerData) => {
 	const tab = getTab(0, containerData);
-	const name = replaceSpaceWithUnderscore(getName(tab));
+	const name = replaceSpaceWithUnderscore(prepareName(getName(tab)));
 	if (!name) {
 		return '';
 	}
@@ -51,7 +59,7 @@ const getDatabaseAlterStatement = (containerData) => {
 	if (!tab.dbProperties) {
 		return '';
 	}
-	const name = replaceSpaceWithUnderscore(getName(tab));
+	const name = replaceSpaceWithUnderscore(prepareName(getName(tab)));
 	if (!name) {
 		return '';
 	}
