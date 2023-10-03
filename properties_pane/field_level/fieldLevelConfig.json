@@ -629,6 +629,7 @@ making sure that you maintain a proper JSON format.
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
 						"options": [
+							"",
 							"always",
 							"by default"
 						],
