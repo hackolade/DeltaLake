@@ -284,8 +284,8 @@ const getColumn = (name, type, comment, constraints, isActivated, generatedExpre
 	[name]: { type, comment, constraints, isActivated, generatedExpression }
 });
 
-const getGeneratedExpression = (expressionData, defaultValue) => {
-	if (defaultValue?.trim()) {
+const getGeneratedExpression = (expressionData, defaultValue = '') => {
+	if (defaultValue.toString().trim()) {
 		return ` DEFAULT ${defaultValue}`;
 	}
 
