@@ -284,21 +284,41 @@ const getColumn = (name, type, comment, constraints, isActivated, generatedExpre
 	[name]: { type, comment, constraints, isActivated, generatedExpression }
 });
 
-const getGeneratedExpression = (expressionData) => {
-	if (!expressionData) {
-		return '';
+const getGeneratedExpression = (expressionData, defaultValue) => {
+	if (defaultValue?.trim()) {
+		return ` DEFAULT ${defaultValue}`;
 	}
 
-	if (!expressionData.expression || !expressionData.expression.trim()) {
+	if (!expressionData || !expressionData.generatedType) {
 		return '';
 	}
 
 	const generatedType = ({
 		always: 'ALWAYS',
 		'by default': 'BY DEFAULT',
-	})[expressionData.generatedType || 'always'];
+	})[expressionData.generatedType];
 
-	return ` GENERATED ${generatedType} AS ${expressionData.expression}`;
+	if (expressionData.asIdentity) {
+		const startNum = expressionData.identity?.start_num;
+		const stepNum = expressionData.identity?.step_num;
+		let statement = ` GENERATED ${generatedType} AS IDENTITY`;
+		const hasAutoincrementOptions = startNum || stepNum;
+
+		if (hasAutoincrementOptions) {
+			statement += ' ( '
+			statement += startNum && `START WITH ${startNum} `;
+			statement += stepNum && `INCREMENT BY ${stepNum}`;
+			statement += ' )';
+		}
+
+		return statement;
+	}
+
+	if (!expressionData.expression || !expressionData.expression.trim()) {
+		return '';
+	}
+
+	return ` GENERATED ${generatedType} AS ( ${expressionData.expression} )`;
 };
 
 const getColumns = (jsonSchema, arePkFkColumnConstraintsAvailable, areNotNullConstraintsAvailable, definitions) => {
@@ -325,12 +345,11 @@ const getColumns = (jsonSchema, arePkFkColumnConstraintsAvailable, areNotNullCon
 				{
 					unique: property.unique,
 					check: property.check,
-					defaultValue: property.default,
 					...(areNotNullConstraintsAvailable && { notNull: isRequired }),
 					...(arePkFkColumnConstraintsAvailable && { primaryKey: isPrimaryKey }),
 				},
 				property.isActivated,
-				getGeneratedExpression(property.generatedDefaultValue),
+				getGeneratedExpression(property.generatedDefaultValue, property.default),
 			)
 		);
 	}, {});
