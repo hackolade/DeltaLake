@@ -629,17 +629,71 @@ making sure that you maintain a proper JSON format.
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
 						"options": [
+							"",
 							"always",
 							"by default"
 						],
 						"defaultValue": "always"
 					},
 					{
+						"propertyName": "As identity",
+						"propertyKeyword": "asIdentity",
+						"propertyType": "checkbox"
+					},
+					{
 						"propertyName": "Expression",
 						"propertyKeyword": "expression",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false
+						"markdown": false,
+						"dependency": {
+							"type": "and",
+							"values": [
+								{
+									"key": "generatedType",
+									"value": "always"
+								},
+								{
+									"type": "or",
+									"values": [
+										{
+											"key": "asIdentity",
+											"value": false
+										},
+										{
+											"key": "asIdentity",
+											"exist": false
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"propertyName": "Identity",
+						"propertyType": "block",
+						"propertyKeyword": "identity",
+						"propertyTooltip": "",
+						"structure": [
+							{
+								"propertyName": "Start with",
+								"propertyKeyword": "start_num",
+								"propertyType": "text",
+								"valueType": "number",
+								"allowNegative": false
+							},
+							{
+								"propertyName": "Increment by",
+								"propertyKeyword": "step_num",
+								"propertyType": "text",
+								"valueType": "number",
+								"allowNegative": false
+							}
+						],
+						"dependency": {
+							"key": "asIdentity",
+							"value": true
+						}
 					}
 				]
 			},

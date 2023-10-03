@@ -75,7 +75,34 @@
                 "to": {
                     "mode": "string"
                 }
-            }
+            },
+            {
+                "from": {
+                    "defaultOption": "Autoincrement"
+                },
+                "to": {
+                    "generatedDefaultValue": {
+                        "generatedType": "by default",
+                        "asIdentity": true
+                    }
+                }
+            },
+            [
+                "movePropertyByPath",
+                {
+                    "from": "autoincrement",
+                    "to": "generatedDefaultValue.identity"
+                }
+            ]
         ]
+    },
+    "delete": {
+        "field": {
+            "integer" : [
+                {
+                    "name": "defaultOption"
+                }
+            ]
+        }
     }
 }
