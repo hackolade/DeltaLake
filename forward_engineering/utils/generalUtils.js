@@ -1,6 +1,6 @@
 'use strict'
 
-const sqlFormatter = require('sql-formatter');
+const sqlFormatter = require('@sqltools/formatter');
 const {RESERVED_WORDS_AS_ARRAY} = require('../enums/reservedWords');
 const {Runtime} = require("../enums/runtime");
 
@@ -181,7 +181,7 @@ const wrapInTicks = (str = '') => {
 const buildScript = (statements) => {
     const nonEmptyScripts = statements.filter((statement) => statement);
     const formattedScripts = nonEmptyScripts.map(
-        script => sqlFormatter.format(script, { tabWidth: 4 })
+        script => sqlFormatter.format(script, { indent: '    ', linesBetweenQueries: 2 })
             .replace(/\{ \{ (.+?) } }/g, '{{$1}}')
     );
 
