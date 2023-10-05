@@ -2585,7 +2585,7 @@ const serializedATN = [
 const atn = new antlr4.atn.ATNDeserializer().deserialize(serializedATN);
 
 const decisionsToDFA = atn.decisionToState.map(
-  (ds, index) => new antlr4.dfa.DFA(ds, index)
+  (ds, index) => new antlr4.dfa.DFA(ds, index),
 );
 
 class HiveLexer extends antlr4.Lexer {
@@ -3797,7 +3797,7 @@ class HiveLexer extends antlr4.Lexer {
       this,
       atn,
       decisionsToDFA,
-      new antlr4.PredictionContextCache()
+      new antlr4.PredictionContextCache(),
     );
   }
 
