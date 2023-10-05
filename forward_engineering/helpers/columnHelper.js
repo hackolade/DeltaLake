@@ -6,7 +6,7 @@ const {
 	getTypeDescriptor,
 	prepareName,
 	commentDeactivatedStatements,
-	encodeStringLiteral,
+	encodeStringLiteral, wrapInBrackets,
 } = require('../utils/generalUtils');
 
 const getStructChild = (name, type, comment) => `${prepareName(name)}: ${type}` + (comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '');
@@ -306,8 +306,8 @@ const getGeneratedExpression = (expressionData, defaultValue = '') => {
 
 		if (hasAutoincrementOptions) {
 			statement += ' ( '
-			statement += startNum && `START WITH ${startNum} `;
-			statement += stepNum && `INCREMENT BY ${stepNum}`;
+			statement += startNum ? `START WITH ${startNum} ` : '';
+			statement += stepNum ? `INCREMENT BY ${stepNum}` : '';
 			statement += ' )';
 		}
 
@@ -318,7 +318,7 @@ const getGeneratedExpression = (expressionData, defaultValue = '') => {
 		return '';
 	}
 
-	return ` GENERATED ${generatedType} AS ( ${expressionData.expression} )`;
+	return ` GENERATED ${generatedType} AS ${wrapInBrackets(expressionData.expression)}`;
 };
 
 const getColumns = (jsonSchema, arePkFkColumnConstraintsAvailable, areNotNullConstraintsAvailable, definitions) => {

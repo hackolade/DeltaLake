@@ -178,6 +178,10 @@ const wrapInTicks = (str = '') => {
     return `\`${str}\``;
 }
 
+const wrapInBrackets = (str = '') => {
+    return /^\(\S+\)$/.test(str) ? str : `(${str})`;
+}
+
 const buildScript = (statements) => {
     const nonEmptyScripts = statements.filter((statement) => statement);
     const formattedScripts = nonEmptyScripts.map(
@@ -283,6 +287,7 @@ module.exports = {
     buildScript,
     wrapInSingleQuotes,
     wrapInTicks,
+    wrapInBrackets,
     getEntityData,
     getFullEntityName,
     generateFullEntityName,
