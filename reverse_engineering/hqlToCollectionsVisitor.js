@@ -539,7 +539,6 @@ class Visitor extends HiveParserVisitor {
     visitAlterStatementSuffixRenameCol(ctx) {
         const columnConstraint = this.visitWhenExists(ctx, 'alterColumnConstraint', {});
 
-        debugger
         return {
             type: UPDATE_FIELD_COMMAND,
             name: this.visit(ctx.identifier()[0]),
