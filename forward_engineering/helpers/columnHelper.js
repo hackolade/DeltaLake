@@ -314,7 +314,7 @@ const getGeneratedExpression = (expressionData, defaultValue = '') => {
 		return statement;
 	}
 
-	if (!expressionData.expression || !expressionData.expression.trim()) {
+	if (!expressionData.expression || !expressionData.expression.trim() || generatedType === 'BY DEFAULT') {
 		return '';
 	}
 

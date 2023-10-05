@@ -93,6 +93,18 @@
                     "from": "autoincrement",
                     "to": "generatedDefaultValue.identity"
                 }
+            ],
+            [
+                "addMissingIdByPath",
+                {
+                    "path": "generatedDefaultValue.id"
+                }
+            ],
+            [
+                "addMissingIdByPath",
+                {
+                    "path": "generatedDefaultValue.identity.id"
+                }
             ]
         ]
     },
