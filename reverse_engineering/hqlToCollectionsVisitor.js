@@ -539,7 +539,6 @@ class Visitor extends HiveParserVisitor {
     visitAlterStatementSuffixRenameCol(ctx) {
         const columnConstraint = this.visitWhenExists(ctx, 'alterColumnConstraint', {});
 
-        debugger
         return {
             type: UPDATE_FIELD_COMMAND,
             name: this.visit(ctx.identifier()[0]),
@@ -713,17 +712,6 @@ class Visitor extends HiveParserVisitor {
 
         if (ctx.generatedAsIdentity()) {
             return this.visit(ctx.generatedAsIdentity());
-            // const wholeExpression = this.getText(ctx.generatedAsIdentity().);
-            // const isDefault = /^\s*BY\s+DEFAULT\s+/i.test(wholeExpression);
-            // console.log(this.getText(ctx.generatedAsIdentity()));
-            // const expression = wholeExpression.replace(/^\s*(ALWAYS|BY\s+DEFAULT)\s+AS\s+/i, "");
-            // const t = wholeExpression.match(/^\s*(ALWAYS|BY\s+DEFAULT)\s+AS\s+\(/i);
-            //
-            // return {
-            //     generatedType: isDefault ? "by default" : "always",
-            //     asIdentity: true,
-            //     expression
-            // };
         }
 
         return;
