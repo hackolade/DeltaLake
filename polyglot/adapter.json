@@ -97,12 +97,14 @@
             [
                 "addMissingIdByPath",
                 {
+                    "from": "generatedDefaultValue",
                     "path": "generatedDefaultValue.id"
                 }
             ],
             [
                 "addMissingIdByPath",
                 {
+                    "from": "generatedDefaultValue.identity",
                     "path": "generatedDefaultValue.identity.id"
                 }
             ]
