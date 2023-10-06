@@ -372,6 +372,11 @@ making sure that you maintain a proper JSON format.
 			},
 			"default",
 			{
+				"propertyName": "Check name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
+			},
+			{
 				"propertyName": "Check",
 				"propertyKeyword": "check",
 				"propertyType": "details",
@@ -610,7 +615,18 @@ making sure that you maintain a proper JSON format.
 					]
 				}
 			},
-			"default",
+			{
+				"fieldName": "Default",
+				"fieldKeyword": "default",
+				"shouldValidate": true,
+				"fieldType": "text",
+				"regex": "(?:\\s|\\d|\\S)+"
+			},
+			{
+				"propertyName": "Check name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
+			},
 			{
 				"propertyName": "Check",
 				"propertyKeyword": "check",
@@ -732,6 +748,11 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "checkbox"
 			},
 			"default",
+			{
+				"propertyName": "Check name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
+			},
 			{
 				"propertyName": "Check",
 				"propertyKeyword": "check",
@@ -924,6 +945,11 @@ making sure that you maintain a proper JSON format.
 				}
 			},
 			"default",
+			{
+				"propertyName": "Check name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
+			},
 			{
 				"propertyName": "Check",
 				"propertyKeyword": "check",
@@ -1119,6 +1145,11 @@ making sure that you maintain a proper JSON format.
 			},
 			"default",
 			{
+				"propertyName": "Check name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
+			},
+			{
 				"propertyName": "Check",
 				"propertyKeyword": "check",
 				"propertyType": "details",
@@ -1313,6 +1344,11 @@ making sure that you maintain a proper JSON format.
 			},
 			"default",
 			{
+				"propertyName": "Check name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
+			},
+			{
 				"propertyName": "Check",
 				"propertyKeyword": "check",
 				"propertyType": "details",
@@ -1505,6 +1541,11 @@ making sure that you maintain a proper JSON format.
 				}
 			},
 			"default",
+			{
+				"propertyName": "Check name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
+			},
 			{
 				"propertyName": "Check",
 				"propertyKeyword": "check",
@@ -1716,6 +1757,11 @@ making sure that you maintain a proper JSON format.
 						}
 					]
 				}
+			},
+			{
+				"propertyName": "Check name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Check",
@@ -1971,6 +2017,11 @@ making sure that you maintain a proper JSON format.
 				}
 			},
 			{
+				"propertyName": "Check name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
+			},
+			{
 				"propertyName": "Check",
 				"propertyKeyword": "check",
 				"propertyType": "details",
@@ -2163,6 +2214,11 @@ making sure that you maintain a proper JSON format.
 						}
 					]
 				}
+			},
+			{
+				"propertyName": "Check name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Check",
