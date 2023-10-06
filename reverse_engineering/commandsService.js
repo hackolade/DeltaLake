@@ -500,7 +500,7 @@ const updateProperties = (properties, statementData) => {
 
     return _.fromPairs(
         _.keys(properties).map((columnName) => {
-            if (!statementData.fields.includes(columnName)) {
+            if (!statementData?.fields?.includes(columnName)) {
                 return [columnName, properties[columnName]];
             }
 
