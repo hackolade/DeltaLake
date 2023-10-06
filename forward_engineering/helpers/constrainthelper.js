@@ -43,6 +43,14 @@ const getPrimaryKeyStatement = (_) => (entityJsonSchema, keysNames, deactivatedC
     return getStatement({ ...options, keys: keysString });
 };
 
+const getCheckConstraint = (column) => {
+    return {
+        check: column.check,
+        checkConstraintName: column.checkConstraintName,
+    }
+};
+
 module.exports = {
     getPrimaryKeyStatement,
+    getCheckConstraint,
 }
