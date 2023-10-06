@@ -8,6 +8,7 @@ const {
 	commentDeactivatedStatements,
 	encodeStringLiteral, wrapInBrackets,
 } = require('../utils/generalUtils');
+const { getCheckConstraint } = require("./constrainthelper");
 
 const getStructChild = (name, type, comment) => `${prepareName(name)}: ${type}` + (comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '');
 
@@ -344,7 +345,7 @@ const getColumns = (jsonSchema, arePkFkColumnConstraintsAvailable, areNotNullCon
 				getDescription(definitions, property),
 				{
 					unique: property.unique,
-					check: property.check,
+					...(property.check && getCheckConstraint(property)),
 					...(areNotNullConstraintsAvailable && { notNull: isRequired }),
 					...(arePkFkColumnConstraintsAvailable && { primaryKey: isPrimaryKey }),
 				},
