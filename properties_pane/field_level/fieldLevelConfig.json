@@ -372,16 +372,16 @@ making sure that you maintain a proper JSON format.
 			},
 			"default",
 			{
-				"propertyName": "Check name",
-				"propertyKeyword": "checkConstraintName",
-				"propertyType": "text"
-			},
-			{
-				"propertyName": "Check",
+				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Check constraint name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Generated as",
@@ -623,16 +623,16 @@ making sure that you maintain a proper JSON format.
 				"regex": "(?:\\s|\\d|\\S)+"
 			},
 			{
-				"propertyName": "Check name",
-				"propertyKeyword": "checkConstraintName",
-				"propertyType": "text"
-			},
-			{
-				"propertyName": "Check",
+				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Check constraint name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Generated as",
@@ -753,16 +753,16 @@ making sure that you maintain a proper JSON format.
 			},
 			"default",
 			{
-				"propertyName": "Check name",
-				"propertyKeyword": "checkConstraintName",
-				"propertyType": "text"
-			},
-			{
-				"propertyName": "Check",
+				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Check constraint name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Generated as",
@@ -950,16 +950,16 @@ making sure that you maintain a proper JSON format.
 			},
 			"default",
 			{
-				"propertyName": "Check name",
-				"propertyKeyword": "checkConstraintName",
-				"propertyType": "text"
-			},
-			{
-				"propertyName": "Check",
+				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Check constraint name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Generated as",
@@ -1149,16 +1149,16 @@ making sure that you maintain a proper JSON format.
 			},
 			"default",
 			{
-				"propertyName": "Check name",
-				"propertyKeyword": "checkConstraintName",
-				"propertyType": "text"
-			},
-			{
-				"propertyName": "Check",
+				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Check constraint name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Generated as",
@@ -1348,16 +1348,16 @@ making sure that you maintain a proper JSON format.
 			},
 			"default",
 			{
-				"propertyName": "Check name",
-				"propertyKeyword": "checkConstraintName",
-				"propertyType": "text"
-			},
-			{
-				"propertyName": "Check",
+				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Check constraint name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Generated as",
@@ -1546,16 +1546,16 @@ making sure that you maintain a proper JSON format.
 			},
 			"default",
 			{
-				"propertyName": "Check name",
-				"propertyKeyword": "checkConstraintName",
-				"propertyType": "text"
-			},
-			{
-				"propertyName": "Check",
+				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Check constraint name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Generated as",
@@ -1763,16 +1763,16 @@ making sure that you maintain a proper JSON format.
 				}
 			},
 			{
-				"propertyName": "Check name",
-				"propertyKeyword": "checkConstraintName",
-				"propertyType": "text"
-			},
-			{
-				"propertyName": "Check",
+				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Check constraint name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Generated as",
@@ -2021,16 +2021,16 @@ making sure that you maintain a proper JSON format.
 				}
 			},
 			{
-				"propertyName": "Check name",
-				"propertyKeyword": "checkConstraintName",
-				"propertyType": "text"
-			},
-			{
-				"propertyName": "Check",
+				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Check constraint name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Generated as",
@@ -2220,16 +2220,16 @@ making sure that you maintain a proper JSON format.
 				}
 			},
 			{
-				"propertyName": "Check name",
-				"propertyKeyword": "checkConstraintName",
-				"propertyType": "text"
-			},
-			{
-				"propertyName": "Check",
+				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
 				"template": "textarea",
 				"markdown": false
+			},
+			{
+				"propertyName": "Check constraint name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Generated as",
