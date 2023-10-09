@@ -198,22 +198,40 @@ class Visitor extends SqlBaseVisitor {
 			const expression = this.getText(ctx.generatedAsExpression().expression());
 			return {
 				generatedType: 'always',
-				expression: `(${expression})`,
-			};
-		}
-
-		if (ctx.generatedAsIdentity()) {
-			const wholeExpression = this.getText(ctx.generatedAsIdentity());
-			const isDefault = /^\s*BY\s+DEFAULT\s+/i.test(wholeExpression);
-			const expression = wholeExpression.replace(/^\s*(ALWAYS|BY\s+DEFAULT)\s+AS\s+/i, '');
-
-			return {
-				generatedType: isDefault ? 'by default' : 'always',
+				asIdentity: false,
 				expression,
 			};
 		}
 
+		if (ctx.generatedAsIdentity()) {
+			return this.visit(ctx.generatedAsIdentity());
+		}
+
 		return;
+	}
+
+	visitGeneratedAsIdentity(ctx) {
+		const hasIdentityOptions = ctx.identityOptions();
+		return {
+			generatedType: ctx.KW_DEFAULT() ? 'by default' : 'always',
+			asIdentity: true,
+			...(hasIdentityOptions && { identity: this.visit(ctx.identityOptions()) }),
+		}
+	}
+
+	visitIdentityOptions(ctx) {
+		return {
+			start_num: this.visitWhenExists(ctx, 'startWith'),
+			step_num: this.visitWhenExists(ctx, 'incrementBy'),
+		};
+	}
+
+	visitStartWith(ctx) {
+		return ctx.number().getText();
+	}
+
+	visitIncrementBy(ctx) {
+		return ctx.number().getText();
 	}
 
 	visitMapDataType(ctx) {
