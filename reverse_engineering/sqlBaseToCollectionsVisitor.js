@@ -221,8 +221,8 @@ class Visitor extends SqlBaseVisitor {
 
 	visitIdentityOptions(ctx) {
 		return {
-			start_num: this.visitWhenExists(ctx, 'startWith'),
-			step_num: this.visitWhenExists(ctx, 'incrementBy'),
+			start_num: this.visitIfExists(ctx, 'startWith'),
+			step_num: this.visitIfExists(ctx, 'incrementBy'),
 		};
 	}
 
