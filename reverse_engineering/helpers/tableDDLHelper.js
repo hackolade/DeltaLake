@@ -46,6 +46,7 @@ const getTableDataFromDDl = (statement) => {
 	if (!dependencies.lodash.isEmpty(parsedTableData.query)) {
 		parsedTableData.query = statement.substring(parsedTableData.query.select.start, parsedTableData.query.select.stop)
 	}
+
 	const properties = parsedTableData.colList.map(column => columnREHelper.reverseTableColumn(column));
 	return {
 		properties,

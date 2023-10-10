@@ -639,10 +639,6 @@ making sure that you maintain a proper JSON format.
 				"propertyTooltip": "",
 				"propertyKeyword": "generatedDefaultValue",
 				"propertyType": "block",
-				"dependency": {
-					"key": "mode",
-					"value": "bigint"
-				},
 				"structure": [
 					{
 						"propertyName": "Type",

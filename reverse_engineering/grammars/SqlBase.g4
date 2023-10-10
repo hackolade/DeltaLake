@@ -957,7 +957,19 @@ generatedAsExpression
     ;
 
 generatedAsIdentity
-    : (KW_ALWAYS | BY KW_DEFAULT) AS KW_IDENTITY ('(' (START WITH number)? (KW_INCREMENT BY number)? ')')?
+    : (KW_ALWAYS | BY KW_DEFAULT) AS KW_IDENTITY ('(' identityOptions ')')?
+    ;
+
+identityOptions
+    : startWith? incrementBy?
+    ;
+
+startWith
+    : START WITH number
+    ;
+
+incrementBy
+    : KW_INCREMENT BY number
     ;
 
 complexColTypeList
