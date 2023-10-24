@@ -7,10 +7,10 @@ const {generateFullEntityName, getEntityNameFromCollection, prepareName} = requi
 /**
  * @return {(collection: Object, guid: string) => Object | undefined}
  * */
-const getPropertyByGuid = (_) => (collection, guid) => {
+const getPropertyNameByGuid = (_) => (collection, guid) => {
     const propertyInArray = _.toPairs(collection?.role?.properties)
         .filter(([name, jsonSchema]) => jsonSchema.GUID === guid)
-        .map(([name, jsonSchema]) => jsonSchema);
+        .map(([name]) => name);
     if (!propertyInArray.length) {
         return undefined;
     }
@@ -20,9 +20,9 @@ const getPropertyByGuid = (_) => (collection, guid) => {
 /**
  * @return {(collection: Object, guids: string[]) => Array<Object>}
  * */
-const getPropertiesByGuids = (_) => (collection, guids) => {
+const getPropertiesNamesByGuids = (_) => (collection, guids) => {
     return guids
-        .map(guid => getPropertyByGuid(_)(collection, guid))
+        .map(guid => getPropertyNameByGuid(_)(collection, guid))
         .filter(Boolean);
 }
 
@@ -61,8 +61,7 @@ const getAddCompositePkScripts = (_, ddlProvider) => (collection) => {
         .map(newPk => {
             const compositePrimaryKey = newPk.compositePrimaryKey || [];
             const guidsOfColumnsInPk = compositePrimaryKey.map(compositePkEntry => compositePkEntry.keyId);
-            const columnsInPk = getPropertiesByGuids(_)(collection, guidsOfColumnsInPk);
-            const columnNamesForDDL = columnsInPk.map(column => prepareName(column.compMod.newField.name));
+            const columnNamesForDDL = getPropertiesNamesByGuids(_)(collection, guidsOfColumnsInPk);
             if (!columnNamesForDDL.length) {
                 return undefined;
             }
