@@ -65,9 +65,10 @@ const prepareName = (name = '') => {
     const containSpaces = containSpacesRegexp.test(name);
     const containExtendedAsciiChars = containExtendedAsciiCharacters(name)
     const includeReversedWords = RESERVED_WORDS_AS_ARRAY.includes(name.toLowerCase());
+	const containVariableExpression = /\$\{.+\}/g.test(name);
 
     const shouldBeWrappedInTicks = !isEscapedName
-        && (containSpaces || containExtendedAsciiChars || includeReversedWords);
+        && (containSpaces || containExtendedAsciiChars || includeReversedWords || containVariableExpression);
 
     if (name === '') {
         return ''
