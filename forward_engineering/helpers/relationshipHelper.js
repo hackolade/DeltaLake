@@ -42,8 +42,8 @@ const getParentFieldIds = (relationship) => {
 const createSingleRelationship = (_, ddlProvider) => (relationship, entitiesJsonSchema) => {
     const parentTable = entitiesJsonSchema[relationship.parentCollection];
     const childTable = entitiesJsonSchema[relationship.childCollection];
-    const childBucketName = childTable?.bucketName;
-    const parentBucketName = parentTable?.bucketName;
+    const childBucketName = prepareName(childTable?.bucketName);
+    const parentBucketName = prepareName(parentTable?.bucketName);
 
     if (!parentTable || !childTable || !childBucketName || !parentBucketName) {
         return '';
@@ -58,9 +58,9 @@ const createSingleRelationship = (_, ddlProvider) => (relationship, entitiesJson
     }
 
     const childBucketNameForDDL = replaceSpaceWithUnderscore(childBucketName);
-    const childTableNameForDDL = replaceSpaceWithUnderscore(getName(childTable));
+    const childTableNameForDDL = prepareName(replaceSpaceWithUnderscore(getName(childTable)));
     const parentBucketNameForDDL = replaceSpaceWithUnderscore(parentBucketName);
-    const parentTableNameForDDL = replaceSpaceWithUnderscore(getName(parentTable));
+    const parentTableNameForDDL = prepareName(replaceSpaceWithUnderscore(getName(parentTable)));
 
     const addFkScript = ddlProvider.addFkConstraint({
         childTableName: getFullEntityName(childBucketNameForDDL, childTableNameForDDL),
