@@ -31,7 +31,7 @@ const getUseCatalogStatement = (modelData, databaseData) => {
 	const databaseDetails = getTab(0, databaseData);
 
 	return databaseDetails.catalogName && isSupportUnityCatalog(modelDetails.dbVersion)
-		? `USE CATALOG '${databaseDetails.catalogName}';`
+		? `USE CATALOG \`${databaseDetails.catalogName}\`;`
 		: '';
 };
 
