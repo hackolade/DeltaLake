@@ -49,17 +49,18 @@ const getCreateStatement = ({
 /**
  * @return {string}
  * */
-const getUseCatalogStatement = (modelData, databaseData) => {
-	const modelDetails = getTab(0, modelData);
+const getUseCatalogStatement = (databaseData) => {
 	const databaseDetails = getTab(0, databaseData);
 
-	return databaseDetails.catalogName && isSupportUnityCatalog(modelDetails.dbVersion)
+	return databaseDetails.catalogName
 		? `USE CATALOG \`${databaseDetails.catalogName}\`;`
 		: '';
 };
 
 /**
  * @return {string}
+ * @param {*} containerData
+ * @param {boolean} isUnityCatalogSupports
  * */
 const getDatabaseStatement = (containerData, isUnityCatalogSupports) => {
 	const tab = getTab(0, containerData);

@@ -43,6 +43,7 @@ const {getViewScript} = require("./viewHelper");
  *          internalDefinitions: InternalDefinitions,
  *          containerData: ContainerData,
  *          entityData: EntityData[]
+ *
  * }} EntityLevelFEScriptData
  * */
 
@@ -76,8 +77,8 @@ const buildEntityLevelFEScript = (data, app) => ({
     const dbVersion = data.modelData[0].dbVersion;
     const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
     const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
-    const useCatalogStatement = getUseCatalogStatement(modelData, containerData);
-    const databaseStatement = getDatabaseStatement(containerData);
+    const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
+    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable);
     const definitions = [modelDefinitions, internalDefinitions, externalDefinitions,];
     const tableStatements = getTableStatement(app)(
         containerData,
@@ -208,7 +209,7 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
     const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
     const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
 
-    const useCatalogStatement = getUseCatalogStatement(modelData, containerData)
+    const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(modelData, containerData) : '';
     const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
     const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable);
     const entityScriptDtos = getContainerLevelEntitiesScriptDtos(app, data)({
