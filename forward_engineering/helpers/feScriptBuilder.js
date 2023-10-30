@@ -210,7 +210,7 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
 
     const useCatalogStatement = getUseCatalogStatement(modelData, containerData)
     const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
-    const databaseStatement = getDatabaseStatement(containerData);
+    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable);
     const entityScriptDtos = getContainerLevelEntitiesScriptDtos(app, data)({
         internalDefinitions,
         externalDefinitions,
