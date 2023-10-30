@@ -142,6 +142,11 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "text"
 			},
 			{
+				"propertyName": "Managed Location",
+				"propertyKeyword": "managedLocation",
+				"propertyType": "text"
+			},
+			{
 				"propertyName": "Database properties",
 				"propertyKeyword": "dbProperties",
 				"propertyType": "details",
