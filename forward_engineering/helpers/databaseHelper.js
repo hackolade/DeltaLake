@@ -10,6 +10,12 @@ const {
 	prepareName
 } = require('../utils/generalUtils');
 
+/**
+ * @param {string|undefined} location
+ * @param {string|undefined} managedLocation
+ * @param {boolean} isUnityCatalogSupports
+ * @return {string}
+ */
 const getLocationOption = (location, managedLocation, isUnityCatalogSupports) => {
 	if (isUnityCatalogSupports && managedLocation) {
 		return `MANAGED LOCATION '${managedLocation}'`;
@@ -21,6 +27,13 @@ const getLocationOption = (location, managedLocation, isUnityCatalogSupports) =>
 };
 
 /**
+ * @param {string} name
+ * @param {string|undefined} comment
+ * @param {string|undefined} location
+ * @param {string|undefined} managedLocation
+ * @param {string|undefined} dbProperties
+ * @param {boolean} isActivated
+ * @param {boolean} isUnityCatalogSupports
  * @return {string}
  * */
 const getCreateStatement = ({
