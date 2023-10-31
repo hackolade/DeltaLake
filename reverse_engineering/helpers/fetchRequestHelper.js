@@ -237,7 +237,7 @@ const fetchDatabaseViewsNamesViaPython = (dbName, connectionInfo) =>
 const fetchClusterTablesNames = (dbName, connectionInfo) =>
 	executeCommand(connectionInfo, `SHOW TABLES IN \`${dbName}\``, 'sql');
 
-const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames, logger) => {
+const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames, isManagedLocationSupports, logger) => {
 	const async = dependencies.async;
 	const databasesPropertiesResult = await async.mapLimit(databasesNames, 40, async dbName => {
 		logger.log('info', '', `Start describe database: ${dbName} `);
@@ -246,7 +246,8 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 		const dbProperties = dbInfoResult.reduce((dbProperties, row) => {
 			switch (row[0]) {
 				case 'Location':
-					return { ...dbProperties, location: row[1] };
+					const propertyName = isManagedLocationSupports ? 'managedLocation' : 'location';
+					return { ...dbProperties, [propertyName]: row[1] };
 				case 'Comment':
 					return { ...dbProperties, description: row[1] };
 				case 'Properties':

@@ -16,6 +16,8 @@ const { parseDDLStatements } = require('./parseDDLStatements');
 const { isSupportUnityCatalog } = require("./helpers/databricksHelper");
 const { adaptJsonSchema } = require('./adaptJsonSchema')
 
+const DEFAULT_DATABRICKS_CATALOG_NAME = 'hive_metastore';
+
 module.exports = {
 
 	disconnect: function (connectionInfo, cb) {
@@ -175,9 +177,11 @@ module.exports = {
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
 			const fieldInference = data.fieldInference;
+			const isUnityCatalogSupports = isSupportUnityCatalog(modelData.spark_version);
 
 			progress({ message: 'Start getting data from entities', containerName: 'databases', entityName: 'entities' });
-			const clusterData = await databricksHelper.getClusterData(connectionData, dataBaseNames, collections, logger);
+			const isManagedLocationSupports = isUnityCatalogSupports && data.database !== DEFAULT_DATABRICKS_CATALOG_NAME;
+			const clusterData = await databricksHelper.getClusterData(connectionData, dataBaseNames, collections, isManagedLocationSupports, logger);
 
 			progress({ message: 'Start getting entities ddl', containerName: 'databases', entityName: 'entities' });
 			const entitiesDdl = await databricksHelper.getEntitiesDDL(connectionData, dataBaseNames, collections, modelData.spark_version, logger);

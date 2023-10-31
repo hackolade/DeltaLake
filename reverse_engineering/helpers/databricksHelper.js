@@ -143,8 +143,8 @@ const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkV
 	});
 }
 
-const getClusterData = (connectionInfo, databasesNames, collectionsNames, logger) => {
-	return fetchRequestHelper.fetchClusterData(connectionInfo, collectionsNames, databasesNames, logger);
+const getClusterData = (connectionInfo, databasesNames, collectionsNames, isManagedLocationSupports, logger) => {
+	return fetchRequestHelper.fetchClusterData(connectionInfo, collectionsNames, databasesNames, isManagedLocationSupports, logger);
 }
 
 module.exports = {
