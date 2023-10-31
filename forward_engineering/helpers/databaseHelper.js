@@ -6,7 +6,6 @@ const {
 	getTab,
 	replaceSpaceWithUnderscore,
 	encodeStringLiteral,
-	isSupportUnityCatalog,
 	prepareName
 } = require('../utils/generalUtils');
 
