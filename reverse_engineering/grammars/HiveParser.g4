@@ -225,8 +225,8 @@ createDatabaseStatement
     ;
 
 dbLocation
-    :
-      KW_LOCATION StringLiteral
+    : KW_MANAGED KW_LOCATION StringLiteral
+    | KW_LOCATION StringLiteral
     ;
 
 dbProperties

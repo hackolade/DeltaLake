@@ -1127,7 +1127,8 @@ class Visitor extends HiveParserVisitor {
     visitCreateDatabaseStatement(ctx) {
         const name = this.visit(ctx.identifier());
         const description = this.visitWhenExists(ctx, 'databaseComment');
-        const location = removeSingleDoubleQuotes(ctx?.dbLocation()?.StringLiteral()?.getText() || '');
+        const locationPropertyName = Boolean(ctx?.dbLocation()?.KW_MANAGED()) ? 'managedLocation' : 'location'
+        const locationValue = removeSingleDoubleQuotes(ctx?.dbLocation()?.StringLiteral()?.getText() || '');
         const dbProperties = removeParentheses(ctx?.dbProperties()?.getText() || '');
 
         return {
@@ -1135,8 +1136,8 @@ class Visitor extends HiveParserVisitor {
             name,
             data: {
                 description,
-                location,
                 dbProperties,
+                [locationPropertyName]: locationValue,
             },
         };
     }

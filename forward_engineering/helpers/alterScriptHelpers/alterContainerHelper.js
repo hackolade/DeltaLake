@@ -21,12 +21,12 @@ const getDatabaseName = container => {
 };
 
 /**
- * @param container {Object}
- * @return {AlterScriptDto | undefined}
+ * @param  {boolean} isUnityCatalogSupports
+ * @return {(container: AlterScriptDto | undefined) => AlterScriptDto | undefined}
  * */
-const getAddContainerScriptDto = container => {
+const getAddContainerScriptDto = (isUnityCatalogSupports) => container => {
     const dataContainer = [container.role || {}]
-    const script = getDatabaseStatement(dataContainer);
+    const script = getDatabaseStatement(dataContainer, isUnityCatalogSupports);
     if (!script?.length) {
         return undefined;
     }
@@ -70,7 +70,7 @@ const extractNamesFromCompMod = (compMod) => {
 /**
  * @return {(container: Object) => Array<AlterScriptDto>}
  * */
-const getModifyContainerScriptDtos = (provider, _) => container => {
+const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports) => container => {
     const compMod = _.get(container, 'role.compMod', {});
     const names = extractNamesFromCompMod(compMod);
 
@@ -94,7 +94,7 @@ const getModifyContainerScriptDtos = (provider, _) => container => {
     }
     const databaseName = getDatabaseName({role: {...containerData, name: names.old}});
     const deletedScript = provider.dropDatabase(databaseName);
-    const addedScriptDto = getAddContainerScriptDto({role: containerData});
+    const addedScriptDto = getAddContainerScriptDto(isUnityCatalogSupports)({role: containerData});
 
     return [
         {

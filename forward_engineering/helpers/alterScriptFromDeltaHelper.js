@@ -21,7 +21,7 @@ const {
 const {
     commentDeactivatedStatements,
     buildScript,
-    getDBVersionNumber
+    getDBVersionNumber, isSupportUnityCatalog
 } = require('../utils/generalUtils');
 const {getModifyPkConstraintsScripts} = require("./alterScriptHelpers/entityHelpers/primaryKeyHelper");
 const {
@@ -61,15 +61,15 @@ const assertNoEmptyStatements = (scripts) => {
 /**
  * @return Array<AlterScriptDto>
  * */
-const getAlterContainersScriptDtos = (schema, provider, _) => {
+const getAlterContainersScriptDtos = (schema, isUnityCatalogSupports, provider, _) => {
     const addedScriptDtos = getItems(schema, 'containers', 'added').map(
-        getAddContainerScriptDto
+        getAddContainerScriptDto(isUnityCatalogSupports)
     ).filter(Boolean);
     const deletedScriptDtos = getItems(schema, 'containers', 'deleted').map(
         getDeleteContainerScriptDto(provider)
     ).filter(Boolean);
     const modifiedScriptDtos = getItems(schema, 'containers', 'modified').flatMap(
-        getModifyContainerScriptDtos(provider, _)
+        getModifyContainerScriptDtos(provider, _, isUnityCatalogSupports)
     ).filter(Boolean);
 
     return [
@@ -251,13 +251,12 @@ const getAlterStatementsWithCommentedUnwantedDDL = (scriptDtos, data) => {
 const getAlterScriptDtos = (schema, definitions, data, app) => {
     const provider = require('../ddlProvider/ddlProvider')(app);
     const _ = app.require('lodash');
-    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
-
-    const containersScriptDtos = getAlterContainersScriptDtos(schema, provider, _);
+    const isUnityCatalogSupports = isSupportUnityCatalog(data.modelData[0].dbVersion);
+    const containersScriptDtos = getAlterContainersScriptDtos(schema, isUnityCatalogSupports, provider, _);
     const collectionsScriptDtos = getAlterCollectionsScriptDtos({schema, definitions, provider, data, _, app});
     const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, _);
     let relationshipsScriptDtos = [];
-    if (dbVersionNumber >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
+    if (isUnityCatalogSupports) {
         relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
     }
 

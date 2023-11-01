@@ -3,7 +3,7 @@
 const { setDependencies } = require('./helpers/appDependencies');
 const { getDatabaseStatement, getUseCatalogStatement} = require('./helpers/databaseHelper');
 const { getViewScript } = require('./helpers/viewHelper');
-const { getCleanedUrl, buildScript } = require('./utils/generalUtils');
+const { getCleanedUrl, buildScript, isSupportUnityCatalog } = require('./utils/generalUtils');
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
 
@@ -15,7 +15,6 @@ const {
     doesContainerLevelAlterScriptContainDropStatements,
     doesEntityLevelAlterScriptContainDropStatements
 } = require("./helpers/alterScriptHelpers/alterScriptBuilder");
-const reApi = require('../reverse_engineering/api');
 
 /**
  * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
@@ -157,9 +156,11 @@ module.exports = {
         try {
             setDependencies(app);
             const viewSchema = JSON.parse(data.jsonSchema || '{}');
+            const dbVersion = data.modelData[0].dbVersion;
+            const isUnityCatalogSupports = isSupportUnityCatalog(dbVersion);
 
-            const useCatalogStatement = getUseCatalogStatement(data.modelData, data.containerData);
-            const databaseStatement = getDatabaseStatement(data.containerData);
+            const useCatalogStatement = isUnityCatalogSupports ? getUseCatalogStatement(data.containerData) : '';
+            const databaseStatement = getDatabaseStatement(data.containerData, isUnityCatalogSupports);
 
             const script = getViewScript({
                 schema: viewSchema,
