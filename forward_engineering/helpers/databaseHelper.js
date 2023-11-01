@@ -52,7 +52,7 @@ const getUseCatalogStatement = (databaseData) => {
 	const databaseDetails = getTab(0, databaseData);
 
 	return databaseDetails.catalogName
-		? `USE CATALOG \`${databaseDetails.catalogName}\`;`
+		? `USE CATALOG ${prepareName(databaseDetails.catalogName)};`
 		: '';
 };
 
