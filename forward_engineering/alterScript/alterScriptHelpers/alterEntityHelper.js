@@ -17,6 +17,7 @@ const {getModifyCheckConstraintsScriptDtos} = require("./columnHelpers/checkCons
 const {getModifyNonNullColumnsScriptDtos} = require("./columnHelpers/nonNullConstraintHelper");
 const {getModifiedCommentOnColumnScriptDtos} = require("./columnHelpers/commentsHelper");
 const {AlterScriptDto} = require("../types/AlterScriptDto");
+const {getModifiedDefaultColumnValueScriptDtos} = require("./columnHelpers/defaultValueHelper");
 
 const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'location', 'numBuckets', 'skewedby', 'skewedOn', 'skewStoredAsDir', 'sortedByKey', 'storedAsTable', 'temporaryTable', 'using', 'rowFormat', 'fieldsTerminatedBy', 'fieldsescapedBy', 'collectionItemsTerminatedBy', 'mapKeysTerminatedBy', 'linesTerminatedBy', 'nullDefinedAs', 'inputFormatClassname', 'outputFormatClassname'];
 const otherTableProperties = ['code', 'collectionName', 'tableProperties', 'description', 'properties', 'serDeLibrary', 'serDeProperties'];
@@ -323,6 +324,7 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
     const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(_, ddlProvider)(collection);
     const modifyNotNullConstraintsScriptDtos = getModifyNonNullColumnsScriptDtos(_, ddlProvider)(collection);
     const modifyCheckConstraintsScriptDtos = getModifyCheckConstraintsScriptDtos(_, ddlProvider)(collection);
+    const modifiedDefaultColumnValueScriptDtos = getModifiedDefaultColumnValueScriptDtos(_, ddlProvider)(collection);
     const {columnsToDelete, columnsToAdd} = hydrateAlterColumnType(_)(properties);
     const {columns: columnsInfo} = getColumns(entityData.role, true, definitions);
     const deleteColumnScripts = _.map(columnsToDelete, column => ddlProvider.dropTableColumn({
@@ -358,6 +360,7 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
         ...modifiedCommentOnColumnsScriptDtos,
         ...modifyNotNullConstraintsScriptDtos,
         ...modifyCheckConstraintsScriptDtos,
+        ...modifiedDefaultColumnValueScriptDtos,
         ...modifyCollectionScriptDtos,
         addIndexScriptDto
     ]
@@ -397,6 +400,7 @@ const getModifyColumnsScriptsForOlderRuntime = (
     const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(_, ddlProvider)(collection);
     const modifyNotNullConstraintsScriptDtos = getModifyNonNullColumnsScriptDtos(_, ddlProvider)(collection);
     const modifyCheckConstraintsScriptDtos = getModifyCheckConstraintsScriptDtos(_, ddlProvider)(collection);
+
     let tableModificationScriptDtos = [];
     if (!_.isEmpty(columnsToDelete)) {
         const fullCollectionName = generateFullEntityName(collection);

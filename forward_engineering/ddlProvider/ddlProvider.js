@@ -290,5 +290,24 @@ module.exports = app => {
             );
         },
 
+        /**
+         * @param fullTableName {string}
+         * @param columnName {string}
+         * @param defaultValue {string}
+         * @return string
+         * */
+        updateColumnDefaultValue({
+                                     fullTableName,
+                                     columnName,
+                                     defaultValue
+        }) {
+            const templatesConfig = {
+                tableName: fullTableName,
+                columnName,
+                defaultValue
+            }
+            return assignTemplates(templates.updateColumnDefaultValue, templatesConfig);
+        },
+
     }
 };
