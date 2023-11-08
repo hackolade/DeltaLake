@@ -2,7 +2,7 @@
 
 let _;
 const { dependencies } = require('./appDependencies');
-const { prepareName, encodeStringLiteral } = require('../utils/generalUtils');
+const { prepareName, encodeStringLiteral } = require('../utils/general');
 const { getTablePropertiesClause } = require('./tableHelper');
 
 const setDependencies = ({ lodash }) => _ = lodash;

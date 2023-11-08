@@ -11,7 +11,7 @@ const {
     prepareScript,
     getIsChangeProperties,
     getDifferentItems,
-} = require('../../utils/generalUtils');
+} = require('../../utils/general');
 const {getModifyCollectionCommentsScripts} = require('./entityHelpers/commentsHelper');
 const {getModifyCheckConstraintsScriptDtos} = require("./columnHelpers/checkConstraintHelper");
 const {getModifyNonNullColumnsScriptDtos} = require("./columnHelpers/nonNullConstraintHelper");

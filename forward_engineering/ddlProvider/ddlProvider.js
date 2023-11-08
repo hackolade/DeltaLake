@@ -1,5 +1,5 @@
 const templates = require('./ddlTemplates');
-const {getFullEntityName} = require('../utils/generalUtils');
+const {getFullEntityName} = require('../utils/general');
 
 module.exports = app => {
     const {assignTemplates} = app.require('@hackolade/ddl-fe-utils');

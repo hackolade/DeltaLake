@@ -22,7 +22,7 @@ const {
     commentDeactivatedStatements,
     buildScript,
     getDBVersionNumber, isSupportUnityCatalog
-} = require('../utils/generalUtils');
+} = require('../utils/general');
 const {getModifyPkConstraintsScripts} = require("./alterScriptHelpers/entityHelpers/primaryKeyHelper");
 const {
     getDeleteForeignKeyScripts,

@@ -1,4 +1,4 @@
-const {generateFullEntityName, getEntityNameFromCollection, prepareName} = require("../../../utils/generalUtils");
+const {generateFullEntityName, getEntityNameFromCollection, prepareName} = require("../../../utils/general");
 
 /**
  * @typedef {import('../types/AlterScriptDto').AlterScriptDto} AlterScriptDto

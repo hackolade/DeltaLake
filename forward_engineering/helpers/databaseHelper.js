@@ -7,7 +7,7 @@ const {
 	replaceSpaceWithUnderscore,
 	encodeStringLiteral,
 	prepareName
-} = require('../utils/generalUtils');
+} = require('../utils/general');
 
 /**
  * @param {string|undefined} location

@@ -32,7 +32,7 @@ const {getDatabaseStatement, getUseCatalogStatement} = require("./databaseHelper
 const {getCreateRelationshipScripts} = require("./relationshipHelper");
 const {getTableStatement} = require("./tableHelper");
 const {getIndexes} = require("./indexHelper");
-const {buildScript, getName, getTab, isSupportUnityCatalog, isSupportNotNullConstraints} = require("../utils/generalUtils");
+const {buildScript, getName, getTab, isSupportUnityCatalog, isSupportNotNullConstraints} = require("../utils/general");
 const {getViewScript} = require("./viewHelper");
 
 /**

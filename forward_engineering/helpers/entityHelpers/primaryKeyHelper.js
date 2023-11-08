@@ -1,4 +1,4 @@
-const {prepareName, getName, getFullEntityName} = require("../../utils/generalUtils");
+const {prepareName, getName, getFullEntityName} = require("../../utils/general");
 
 /**
  * @param entityJsonSchema {Object}

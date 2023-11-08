@@ -1,4 +1,4 @@
-const {generateFullEntityName, prepareName, wrapInSingleQuotes} = require("../../../utils/generalUtils");
+const {generateFullEntityName, prepareName, wrapInSingleQuotes} = require("../../../utils/general");
 const {AlterScriptDto} = require("../types/AlterScriptDto");
 
 /**

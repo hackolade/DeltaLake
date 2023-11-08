@@ -8,7 +8,7 @@ const {
     getEntityName,
     prepareScript,
     getFullEntityName
-} = require('../../utils/generalUtils');
+} = require('../../utils/general');
 
 /**
  * @typedef {import('./types/AlterScriptDto').AlterScriptDto} AlterScriptDto

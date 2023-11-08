@@ -2,7 +2,7 @@ const {
     getFullEntityName,
     replaceSpaceWithUnderscore,
     prepareName,
-} = require("../../utils/generalUtils");
+} = require("../../utils/general");
 
 /**
  * @typedef {import('./types/AlterScriptDto').AlterScriptDto} AlterScriptDto

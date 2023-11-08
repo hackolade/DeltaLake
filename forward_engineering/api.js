@@ -3,7 +3,7 @@
 const { setDependencies } = require('./helpers/appDependencies');
 const { getDatabaseStatement, getUseCatalogStatement} = require('./helpers/databaseHelper');
 const { getViewScript } = require('./helpers/viewHelper');
-const { getCleanedUrl, buildScript, isSupportUnityCatalog } = require('./utils/generalUtils');
+const { getCleanedUrl, buildScript, isSupportUnityCatalog } = require('./utils/general');
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
 

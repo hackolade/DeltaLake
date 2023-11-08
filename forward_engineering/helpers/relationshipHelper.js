@@ -4,7 +4,7 @@ const {
     getName,
     prepareName,
     getRelationshipName, commentDeactivatedStatements
-} = require("../utils/generalUtils");
+} = require("../utils/general");
 
 
 /**

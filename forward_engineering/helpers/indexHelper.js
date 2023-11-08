@@ -1,6 +1,6 @@
 'use strict'
 
-const { getTab, buildStatement,prepareName, getName, replaceSpaceWithUnderscore } = require('../utils/generalUtils');
+const { getTab, buildStatement,prepareName, getName, replaceSpaceWithUnderscore } = require('../utils/general');
 const schemaHelper = require('./jsonSchemaHelper');
 const { getItemByPath } = require('./jsonSchemaHelper');
 const { dependencies } = require('./appDependencies');
