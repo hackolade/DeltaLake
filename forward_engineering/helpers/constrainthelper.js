@@ -1,4 +1,4 @@
-const { commentDeactivatedInlineKeys } = require('../utils/generalUtils');
+const { commentDeactivatedInlineKeys } = require('../utils/general');
 
 const getPrimaryKeyOptions = (entityJsonSchema, keysNames) => {
     if (entityJsonSchema.primaryKey && Array.isArray(entityJsonSchema.primaryKey)) {

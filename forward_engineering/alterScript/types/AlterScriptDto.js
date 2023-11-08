@@ -59,6 +59,38 @@ class AlterScriptDto {
                 }))
         }
     }
+
+    /**
+     * @param dropScript {string | undefined}
+     * @param createScript {string | undefined}
+     * @param isActivated {boolean}
+     * @return {AlterScriptDto | undefined}
+     * */
+    static getDropAndRecreateInstance(dropScript, createScript, isActivated) {
+        /**
+         * @type {ModificationScript[]}
+         * */
+        const scriptModificationDtos = [];
+        if (Boolean(dropScript)) {
+            scriptModificationDtos.push({
+                isDropScript: true,
+                script: dropScript,
+            })
+        }
+        if (Boolean(createScript)) {
+            scriptModificationDtos.push({
+                isDropScript: false,
+                script: createScript,
+            });
+        }
+        if (!scriptModificationDtos?.length) {
+            return undefined;
+        }
+        return {
+            isActivated,
+            scripts: scriptModificationDtos,
+        }
+    }
 }
 
 module.exports = {

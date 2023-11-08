@@ -22,7 +22,7 @@ const {
     commentDeactivatedStatements,
     buildScript,
     getDBVersionNumber, isSupportUnityCatalog
-} = require('../utils/generalUtils');
+} = require('../utils/general');
 const {getModifyPkConstraintsScripts} = require("./alterScriptHelpers/entityHelpers/primaryKeyHelper");
 const {
     getDeleteForeignKeyScripts,
@@ -30,10 +30,8 @@ const {
     getModifyForeignKeyScripts
 } = require("./alterScriptHelpers/alterRelationshipsHelper");
 const {Runtime} = require("../enums/runtime");
+const {AlterScriptDto} = require("./types/AlterScriptDto");
 
-/**
- * @typedef {import('./alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * */
 
 /**
  * @param entity {Object}

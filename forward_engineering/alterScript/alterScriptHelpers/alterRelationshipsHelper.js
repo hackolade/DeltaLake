@@ -2,11 +2,9 @@ const {
     getFullEntityName,
     replaceSpaceWithUnderscore,
     prepareName,
-} = require("../../utils/generalUtils");
+} = require("../../utils/general");
+const {AlterScriptDto} = require("../types/AlterScriptDto");
 
-/**
- * @typedef {import('./types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * */
 
 /**
  * @param relationship {Object}

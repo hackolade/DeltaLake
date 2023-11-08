@@ -10,7 +10,7 @@ const {
 	encodeStringLiteral,
 	prepareName,
 	getDifferentItems
-} = require('../utils/generalUtils');
+} = require('../utils/general');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const {getCheckConstraintsScripts} = require("./entityHelpers/checkConstraintHelper");

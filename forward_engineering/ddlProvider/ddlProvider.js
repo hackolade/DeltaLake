@@ -1,5 +1,5 @@
 const templates = require('./ddlTemplates');
-const {getFullEntityName} = require('../utils/generalUtils');
+const {getFullEntityName} = require('../utils/general');
 
 module.exports = app => {
     const {assignTemplates} = app.require('@hackolade/ddl-fe-utils');
@@ -290,5 +290,36 @@ module.exports = app => {
             );
         },
 
+        /**
+         * @param fullTableName {string}
+         * @param columnName {string}
+         * @param defaultValue {string}
+         * @return string
+         * */
+        updateColumnDefaultValue({
+                                     fullTableName,
+                                     columnName,
+                                     defaultValue
+        }) {
+            const templatesConfig = {
+                tableName: fullTableName,
+                columnName,
+                defaultValue
+            }
+            return assignTemplates(templates.updateColumnDefaultValue, templatesConfig);
+        },
+
+        /**
+         * @param fullTableName {string}
+         * @param columnName {string}
+         * @return string
+         * */
+        dropColumnDefaultValue({fullTableName, columnName}) {
+            const templatesConfig = {
+                tableName: fullTableName,
+                columnName,
+            }
+            return assignTemplates(templates.dropColumnDefaultValue, templatesConfig);
+        },
     }
 };
