@@ -309,5 +309,17 @@ module.exports = app => {
             return assignTemplates(templates.updateColumnDefaultValue, templatesConfig);
         },
 
+        /**
+         * @param fullTableName {string}
+         * @param columnName {string}
+         * @return string
+         * */
+        dropColumnDefaultValue({fullTableName, columnName}) {
+            const templatesConfig = {
+                tableName: fullTableName,
+                columnName,
+            }
+            return assignTemplates(templates.dropColumnDefaultValue, templatesConfig);
+        },
     }
 };

@@ -25,14 +25,38 @@ const getUpdatedDefaultColumnValueScriptDtos = (_, ddlProvider) => (collection) 
         .filter(Boolean);
 }
 
+/**
+ * @return {(collection: Object) => Array<AlterScriptDto>}
+ * */
+const getDeletedDefaultColumnValueScriptDtos = (_, ddlProvider) => (collection) => {
+    return _.toPairs(collection.properties)
+        .filter(([name, jsonSchema]) => {
+            const newDefault = jsonSchema.default;
+            const oldName = jsonSchema.compMod.oldField.name;
+            const oldDefault = collection.role.properties[oldName]?.default;
+            return oldDefault && !newDefault;
+        })
+        .map(([name, jsonSchema]) => {
+            const scriptGenerationConfig = {
+                fullTableName: generateFullEntityName(collection),
+                columnName: prepareName(name),
+            }
+            return ddlProvider.dropColumnDefaultValue(scriptGenerationConfig);
+        })
+        .map(script => AlterScriptDto.getInstance([script], true, true))
+        .filter(Boolean);
+}
+
 
 /**
  * @return {(collection: Object) => Array<AlterScriptDto>}
  * */
 const getModifiedDefaultColumnValueScriptDtos = (_, ddlProvider) => (collection) => {
     const updatedDefaultValuesScriptDtos = getUpdatedDefaultColumnValueScriptDtos(_, ddlProvider)(collection);
+    const dropDefaultValuesScriptDtos = getDeletedDefaultColumnValueScriptDtos(_, ddlProvider)(collection);
     return [
         ...updatedDefaultValuesScriptDtos,
+        ...dropDefaultValuesScriptDtos,
     ];
 }
 

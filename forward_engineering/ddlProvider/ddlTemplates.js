@@ -23,6 +23,8 @@ module.exports = {
 
 	updateColumnDefaultValue: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} SET DEFAULT ${defaultValue};',
 
+	dropColumnDefaultValue: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} DROP DEFAULT;',
+
 	addNotNullConstraint: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} SET NOT NULL;',
 
 	dropNotNullConstraint: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} DROP NOT NULL;',
