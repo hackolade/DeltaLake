@@ -1,9 +1,9 @@
 'use strict';
 
-const { setDependencies } = require('./helpers/appDependencies');
-const { getDatabaseStatement, getUseCatalogStatement} = require('./helpers/databaseHelper');
-const { getViewScript } = require('./helpers/viewHelper');
-const { getCleanedUrl, buildScript, isSupportUnityCatalog } = require('./utils/general');
+const {setDependencies} = require('./helpers/appDependencies');
+const {getDatabaseStatement, getUseCatalogStatement} = require('./helpers/databaseHelper');
+const {getViewScript} = require('./helpers/viewHelper');
+const {getCleanedUrl, buildScript, isSupportUnityCatalog} = require('./utils/general');
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
 
@@ -14,27 +14,30 @@ const {
     buildContainerLevelAlterScript,
     doesContainerLevelAlterScriptContainDropStatements,
     doesEntityLevelAlterScriptContainDropStatements
-} = require("./alterScript/alterScriptHelpers/alterScriptBuilder");
+} = require("./alterScript/alterScriptBuilder");
+const {
+    ModelDefinitions,
+    InternalDefinitions,
+    ExternalDefinitions,
+    ContainerJsonSchema,
+    ContainerStyles,
+    EntityJsonSchema,
+} = require('./types/coreApplicationDataTypes');
+const {
+    App,
+    CoreData,
+    Logger,
+    PluginError
+} = require('./types/coreApplicationTypes')
 
 /**
- * @typedef {import('./types/coreApplicationDataTypes').ContainerJsonSchema} ContainerJsonSchema
- * @typedef {import('./types/coreApplicationDataTypes').ContainerStyles} ContainerStyles
- * @typedef {import('./types/coreApplicationDataTypes').EntityData} EntityData
- * @typedef {import('./types/coreApplicationDataTypes').EntityJsonSchema} EntityJsonSchema
- * @typedef {import('./types/coreApplicationDataTypes').ExternalDefinitions} ExternalDefinitions
- * @typedef {import('./types/coreApplicationDataTypes').InternalDefinitions} InternalDefinitions
- * @typedef {import('./types/coreApplicationDataTypes').ModelDefinitions} ModelDefinitions
- * @typedef {import('./types/coreApplicationTypes').App} App
- * @typedef {import('./types/coreApplicationTypes').Logger} Logger
- * @typedef {import('./types/coreApplicationTypes').CoreData} CoreData
- * @typedef {import('./types/coreApplicationTypes').PluginError} PluginError
- *
  * @typedef {(error?: PluginError | null, result?: any | null) => void} PluginCallback
  * */
 
 /**
  * @typedef {[ContainerJsonSchema, ContainerStyles]} ContainerData
  * */
+
 /**
  * @typedef {{
  *     [id: string]: EntityJsonSchema
@@ -201,7 +204,7 @@ module.exports = {
                     const useCatalogStatement = scriptData.catalog
                         ? scriptData.catalog + '\n\n'
                         : '';
-                    const result =  {
+                    const result = {
                         container: useCatalogStatement + scriptData.container,
                         entities: scriptData.entities,
                         views: scriptData.views,
