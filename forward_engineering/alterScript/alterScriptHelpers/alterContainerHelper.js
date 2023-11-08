@@ -1,4 +1,4 @@
-const {getDatabaseStatement, getDatabaseAlterStatement} = require('../databaseHelper')
+const {getDatabaseStatement, getDatabaseAlterStatement} = require('../../helpers/databaseHelper')
 const {getEntityData, getIsChangeProperties, prepareName, replaceSpaceWithUnderscore} = require('../../utils/general');
 const {getAlterCommentsScriptDtos} = require("./containerHelpers/commentsHelper");
 

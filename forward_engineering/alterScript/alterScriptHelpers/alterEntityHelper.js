@@ -1,6 +1,6 @@
-const {getColumns, getColumnsStatement, getColumnsString, getColumnStatement} = require('../columnHelper');
-const {getIndexes} = require('../indexHelper');
-const {getTableStatement, hydrateTableProperties} = require('../tableHelper');
+const {getColumns, getColumnsStatement, getColumnsString, getColumnStatement} = require('../../helpers/columnHelper');
+const {getIndexes} = require('../../helpers/indexHelper');
+const {getTableStatement, hydrateTableProperties} = require('../../helpers/tableHelper');
 const {
     getFullEntityName,
     generateFullEntityName,

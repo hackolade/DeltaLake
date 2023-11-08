@@ -14,7 +14,7 @@ const {
     buildContainerLevelAlterScript,
     doesContainerLevelAlterScriptContainDropStatements,
     doesEntityLevelAlterScriptContainDropStatements
-} = require("./helpers/alterScriptHelpers/alterScriptBuilder");
+} = require("./alterScript/alterScriptHelpers/alterScriptBuilder");
 
 /**
  * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto

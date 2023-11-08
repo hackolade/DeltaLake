@@ -1,5 +1,5 @@
-const {getViewScript} = require('../viewHelper');
-const {hydrateTableProperties} = require('../tableHelper');
+const {getViewScript} = require('../../helpers/viewHelper');
+const {hydrateTableProperties} = require('../../helpers/tableHelper');
 const {
     getEntityData,
     getEntityProperties,
