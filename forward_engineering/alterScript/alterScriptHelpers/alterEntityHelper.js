@@ -153,7 +153,7 @@ const getAddCollectionsScripts = (app, definitions, dbVersion) => entity => {
     const indexes = _.get(entity, 'role.BloomIndxs', [])
     const hydratedCollection = hydrateCollection(_)(entity, definitions);
     const collectionScript = getTableStatement(app)(...hydratedCollection, true, dbVersion);
-    const indexScript = getIndexes(...hydrateAddIndexes(_)(entity, indexes, properties, definitions));
+    const indexScript = getIndexes(_)(...hydrateAddIndexes(_)(entity, indexes, properties, definitions));
 
     return [collectionScript, indexScript]
         .filter(Boolean)
@@ -196,7 +196,7 @@ const getModifyCollectionsScripts = (app, definitions, ddlProvider, dbVersion) =
     const {script} = generateModifyCollectionScript(app)(collection, definitions, ddlProvider, dbVersion);
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(collection, properties, definitions);
     const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
-    const addIndexScript = getIndexes(...hydratedAddIndex);
+    const addIndexScript = getIndexes(_)(...hydratedAddIndex);
 
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
@@ -223,7 +223,7 @@ const getAddColumnsScripts = (app, definitions, provider, dbVersion) => entity =
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(entity, properties, definitions);
     const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider, dbVersion);
     const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
-    const addIndexScript = getIndexes(...hydratedAddIndex);
+    const addIndexScript = getIndexes(_)(...hydratedAddIndex);
     const addColumnScript = provider.addTableColumns({name: fullCollectionName, columns: columnStatement});
 
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
@@ -254,7 +254,7 @@ const getDeleteColumnsScripts = (app, definitions, provider, dbVersion) => entit
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(entity, properties, definitions);
     const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider, dbVersion);
     const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
-    const addIndexScript = getIndexes(...hydratedAddIndex);
+    const addIndexScript = getIndexes(_)(...hydratedAddIndex);
     const deleteColumnScript = provider.dropTableColumns({name: fullCollectionName, columns: columnStatement});
 
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
@@ -282,7 +282,7 @@ const getDeleteColumnScripsForOlderRuntime = (app, definitions, provider, dbVers
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(entity, properties, definitions);
     const fullCollectionName = generateFullEntityName(entity)
     const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
-    const addIndexScript = getIndexes(...hydratedAddIndex);
+    const addIndexScript = getIndexes(_)(...hydratedAddIndex);
     const deleteCollectionScript = provider.dropTable(fullCollectionName);
     const hydratedCollection = hydrateCollection(_)(entityData, definitions);
     const addCollectionScript = getTableStatement(app)(...hydratedCollection, true, dbVersion);
@@ -317,7 +317,7 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
     const modifiedScript = generateModifyCollectionScript(app)(entityData, definitions, ddlProvider, dbVersion);
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(collection, properties, definitions);
     const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
-    const addIndexScript = getIndexes(...hydratedAddIndex);
+    const addIndexScript = getIndexes(_)(...hydratedAddIndex);
 
     const fullCollectionName = generateFullEntityName(collection);
     const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(_, ddlProvider)(collection);
@@ -391,7 +391,7 @@ const getModifyColumnsScriptsForOlderRuntime = (
     const modifiedScript = generateModifyCollectionScript(app)(entityData, definitions, ddlProvider, dbVersion);
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(collection, properties, definitions);
     const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
-    const addIndexScript = getIndexes(...hydratedAddIndex);
+    const addIndexScript = getIndexes(_)(...hydratedAddIndex);
 
     const {columnsToDelete} = hydrateAlterColumnType(_)(properties);
     const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(_, ddlProvider)(collection);

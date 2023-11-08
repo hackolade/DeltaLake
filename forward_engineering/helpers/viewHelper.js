@@ -1,13 +1,9 @@
 'use strict'
 
-let _;
-const { dependencies } = require('./appDependencies');
 const { prepareName, encodeStringLiteral } = require('../utils/general');
 const { getTablePropertiesClause } = require('./tableHelper');
 
-const setDependencies = ({ lodash }) => _ = lodash;
-
-const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
+const getColumnNames = (_) => (collectionRefsDefinitionsMap, columns) => {
 	return _.uniq(Object.keys(columns).map(name => {
 		const id = _.get(columns, [name, 'GUID']);
 
@@ -29,7 +25,7 @@ const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
 	})).filter(_.identity);
 };
 
-const getFromStatement = (collectionRefsDefinitionsMap, columns) => {
+const getFromStatement = (_) => (collectionRefsDefinitionsMap, columns) => {
 	const sourceCollections = _.uniq(Object.keys(columns).map(name => {
 		const refId = columns[name].refId;
 		const source = collectionRefsDefinitionsMap[refId];
@@ -64,12 +60,12 @@ const replaceSpaceWithUnderscore = (name = '') => {
 
 module.exports = {
 	getViewScript({
+		_,
 		schema,
 		viewData,
 		containerData,
 		collectionRefsDefinitionsMap,
 	}) {
-		setDependencies(dependencies);
 		let script = [];
 		const columns = schema.properties || {};
 		const view = _.first(viewData) || {};
@@ -112,8 +108,8 @@ module.exports = {
 		}
 
 		if (!_.isEmpty(columns)) {
-			const fromStatement = getFromStatement(collectionRefsDefinitionsMap, columns);
-			const columnsNames = getColumnNames(collectionRefsDefinitionsMap, columns);
+			const fromStatement = getFromStatement(_)(collectionRefsDefinitionsMap, columns);
+			const columnsNames = getColumnNames(_)(collectionRefsDefinitionsMap, columns);
 
 			if (fromStatement && columnsNames?.length) {
 				script.push(`AS SELECT ${columnsNames.join(', ')}`);

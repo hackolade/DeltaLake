@@ -1,6 +1,5 @@
 'use strict';
 
-const {setDependencies} = require('./helpers/appDependencies');
 const {getDatabaseStatement, getUseCatalogStatement} = require('./helpers/databaseHelper');
 const {getViewScript} = require('./helpers/viewHelper');
 const {getCleanedUrl, buildScript, isSupportUnityCatalog} = require('./utils/general');
@@ -127,8 +126,6 @@ module.exports = {
      * */
     generateScript(data, logger, callback, app) {
         try {
-            setDependencies(app);
-
             const parsedData = parseDataForEntityLevelScript(data);
 
             if (data.isUpdateScript) {
@@ -156,7 +153,7 @@ module.exports = {
      * */
     generateViewScript(data, logger, callback, app) {
         try {
-            setDependencies(app);
+            const _ = app.require('lodash');
             const viewSchema = JSON.parse(data.jsonSchema || '{}');
             const dbVersion = data.modelData[0].dbVersion;
             const isUnityCatalogSupports = isSupportUnityCatalog(dbVersion);
@@ -165,6 +162,7 @@ module.exports = {
             const databaseStatement = getDatabaseStatement(data.containerData, isUnityCatalogSupports);
 
             const script = getViewScript({
+                _,
                 schema: viewSchema,
                 viewData: data.viewData,
                 containerData: data.containerData,
@@ -188,8 +186,6 @@ module.exports = {
      * */
     generateContainerScript(data, logger, callback, app) {
         try {
-            setDependencies(app);
-
             const parsedData = parseDataForContainerLevelScript(data);
             if (data.isUpdateScript) {
                 const script = buildContainerLevelAlterScript(data, app)(parsedData);
@@ -302,7 +298,6 @@ module.exports = {
      * */
     isDropInStatements(data, logger, callback, app) {
         try {
-            setDependencies(app);
             if (data.level === 'container') {
                 const parsedData = parseDataForContainerLevelScript(data);
                 const doesContainDropStatements = doesContainerLevelAlterScriptContainDropStatements(data, app)(parsedData);
