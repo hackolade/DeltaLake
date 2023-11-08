@@ -17,7 +17,6 @@ const {
 } = require("./alterScript/alterScriptHelpers/alterScriptBuilder");
 
 /**
- * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
  * @typedef {import('./types/coreApplicationDataTypes').ContainerJsonSchema} ContainerJsonSchema
  * @typedef {import('./types/coreApplicationDataTypes').ContainerStyles} ContainerStyles
  * @typedef {import('./types/coreApplicationDataTypes').EntityData} EntityData

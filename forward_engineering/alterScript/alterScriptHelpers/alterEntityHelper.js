@@ -16,7 +16,7 @@ const {getModifyCollectionCommentsScripts} = require('./entityHelpers/commentsHe
 const {getModifyCheckConstraintsScriptDtos} = require("./columnHelpers/checkConstraintHelper");
 const {getModifyNonNullColumnsScriptDtos} = require("./columnHelpers/nonNullConstraintHelper");
 const {getModifiedCommentOnColumnScriptDtos} = require("./columnHelpers/commentsHelper");
-const {AlterScriptDto} = require("./types/AlterScriptDto");
+const {AlterScriptDto} = require("../types/AlterScriptDto");
 
 const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'location', 'numBuckets', 'skewedby', 'skewedOn', 'skewStoredAsDir', 'sortedByKey', 'storedAsTable', 'temporaryTable', 'using', 'rowFormat', 'fieldsTerminatedBy', 'fieldsescapedBy', 'collectionItemsTerminatedBy', 'mapKeysTerminatedBy', 'linesTerminatedBy', 'nullDefinedAs', 'inputFormatClassname', 'outputFormatClassname'];
 const otherTableProperties = ['code', 'collectionName', 'tableProperties', 'description', 'properties', 'serDeLibrary', 'serDeProperties'];

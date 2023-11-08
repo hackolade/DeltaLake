@@ -1,8 +1,6 @@
 const {generateFullEntityName, getEntityNameFromCollection, prepareName} = require("../../../utils/general");
+const {AlterScriptDto} = require("../../types/AlterScriptDto");
 
-/**
- * @typedef {import('../types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * */
 
 /**
  * @return {(collection: Object, guid: string) => Object | undefined}

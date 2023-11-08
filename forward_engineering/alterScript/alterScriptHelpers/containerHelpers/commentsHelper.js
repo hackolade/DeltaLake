@@ -1,9 +1,7 @@
 const {EntitiesThatSupportComments} = require("../../../enums/entityType");
 const {replaceSpaceWithUnderscore, wrapInSingleQuotes} = require("../../../utils/general");
+const {AlterScriptDto} = require("../../types/AlterScriptDto");
 
-/**
- * @typedef {import('../types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * */
 
 /**
  * @return {{

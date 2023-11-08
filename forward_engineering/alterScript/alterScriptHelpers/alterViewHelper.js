@@ -9,10 +9,7 @@ const {
     prepareScript,
     getFullEntityName
 } = require('../../utils/general');
-
-/**
- * @typedef {import('./types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * */
+const {AlterScriptDto} = require("../types/AlterScriptDto");
 
 const viewProperties = ['code', 'name', 'tableProperties', 'selectStatement'];
 const otherViewProperties = ['viewTemporary', 'viewOrReplace', 'isGlobal', 'description'];

@@ -3,10 +3,8 @@ const {
     replaceSpaceWithUnderscore,
     prepareName,
 } = require("../../utils/general");
+const {AlterScriptDto} = require("../types/AlterScriptDto");
 
-/**
- * @typedef {import('./types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * */
 
 /**
  * @param relationship {Object}
