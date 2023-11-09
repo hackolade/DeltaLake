@@ -6,17 +6,46 @@ const {hydrateIndex} = require("./indexHelper");
 const {generateModifyCollectionScript} = require("./modifyCollectionScript");
 
 /**
- * @return {(entity: Object) => Array<AlterScriptDto>}
+ * @typedef {{
+ *     [name: string]: {
+ *          constraints: Record<string, string | undefined> | undefined
+ *     }
+ * }} Columns
  * */
-const getAddColumnsScripts = (app, definitions, provider, dbVersion) => entity => {
-    const _ = app.require('lodash');
+
+/**
+ * @return {(columns: Columns) => Columns }
+ * */
+const getColumnsWithoutNotNullConstraint = (_) => (columns) => {
+    const nameToJsonSchema = _.toPairs(columns)
+        .map(([name, jsonSchema]) => {
+            if (!jsonSchema?.constraints) {
+                return [name, jsonSchema];
+            }
+            const newJsonSchema = {
+                ...jsonSchema,
+                constraints: {
+                    ...jsonSchema.constraints,
+                    notNull: undefined,
+                }
+            };
+            return [name, newJsonSchema];
+        });
+    return _.fromPairs(nameToJsonSchema);
+}
+
+const getAddColumnsScriptsForModifyModifyCollectionScript = (_, provider) => (entity, definitions, modifyScript) => {
     const entityData = {...entity, ..._.omit(entity.role, ['properties'])};
     const {columns} = getColumns(entityData, true, definitions);
+
+    // "NOT NULL" constraint is baked right into the "column statement". We are unsetting "not null" constraint
+    // property on each column so that we could add these constraints in separate statements and not have it duplicated.
+    const columnsWithoutNotNull = getColumnsWithoutNotNullConstraint(_)(columns);
+
     const properties = getEntityProperties(entity);
-    const columnStatement = getColumnsStatement(columns);
+    const columnStatement = getColumnsStatement(columnsWithoutNotNull);
     const fullCollectionName = generateFullEntityName(entity);
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(entity, properties, definitions);
-    const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider, dbVersion);
     const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(_)(...hydratedAddIndex);
     const addColumnScript = provider.addTableColumns({name: fullCollectionName, columns: columnStatement});
@@ -26,13 +55,38 @@ const getAddColumnsScripts = (app, definitions, provider, dbVersion) => entity =
     const addColumnScriptDto = AlterScriptDto.getInstance([addColumnScript], true, false);
     const modifyCollectionScriptDtos = AlterScriptDto.getInstances(modifyScript.script, true, false);
 
-    if (modifyScript.type === 'new') {
-        return [dropIndexScriptDto, ...modifyCollectionScriptDtos, addIndexScriptDto]
-            .filter(Boolean)
-    }
-
     return [dropIndexScriptDto, addColumnScriptDto, ...modifyCollectionScriptDtos, addIndexScriptDto]
         .filter(Boolean);
+}
+
+const getAddColumnsScriptsForNewModifyCollectionScript = (_, provider) => (entity, definitions, modifyScript) => {
+    const properties = getEntityProperties(entity);
+    const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(entity, properties, definitions);
+    const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
+    const addIndexScript = getIndexes(_)(...hydratedAddIndex);
+
+    const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
+    const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
+    const modifyCollectionScriptDtos = AlterScriptDto.getInstances(modifyScript.script, true, false);
+
+    return [
+        dropIndexScriptDto,
+        ...modifyCollectionScriptDtos,
+        addIndexScriptDto
+    ].filter(Boolean)
+}
+
+/**
+ * @return {(entity: Object) => Array<AlterScriptDto>}
+ * */
+const getAddColumnsScripts = (app, definitions, provider, dbVersion) => (entity) => {
+    const _ = app.require('lodash');
+
+    const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider, dbVersion);
+    if (modifyScript.type === 'new') {
+        return getAddColumnsScriptsForNewModifyCollectionScript(_, provider)(entity, definitions, modifyScript);
+    }
+    return getAddColumnsScriptsForModifyModifyCollectionScript(_, provider)(entity, definitions, modifyScript);
 };
 
 module.exports = {
