@@ -1,5 +1,5 @@
 const {getColumns, getColumnsStatement} = require("../../../helpers/columnHelper");
-const {getEntityProperties, generateFullEntityName} = require("../../../utils/general");
+const {getEntityProperties, generateFullEntityName, prepareName} = require("../../../utils/general");
 const {getIndexes} = require("../../../helpers/indexHelper");
 const {AlterScriptDto} = require("../../types/AlterScriptDto");
 const {hydrateIndex} = require("./indexHelper");
@@ -34,6 +34,25 @@ const getColumnsWithoutNotNullConstraint = (_) => (columns) => {
     return _.fromPairs(nameToJsonSchema);
 }
 
+/**
+ * @return {(collection: Object, columns: Columns) => Array<AlterScriptDto> }
+ * */
+const getAddNotNullConstraintScriptDtos = (_, ddlProvider) => (collection, columns) => {
+    const fullTableName = generateFullEntityName(collection);
+
+    return _.toPairs(columns)
+        .map(([name, jsonSchema]) => {
+            const constraints = jsonSchema?.constraints || {};
+            if (constraints.notNull) {
+                return ddlProvider.setNotNullConstraint(fullTableName, prepareName(name));
+            }
+            return undefined;
+        })
+        .filter(Boolean)
+        .map(script => AlterScriptDto.getInstance([script], true, false))
+        .filter(Boolean);
+}
+
 const getAddColumnsScriptsForModifyModifyCollectionScript = (_, provider) => (entity, definitions, modifyScript) => {
     const entityData = {...entity, ..._.omit(entity.role, ['properties'])};
     const {columns} = getColumns(entityData, true, definitions);
@@ -53,9 +72,16 @@ const getAddColumnsScriptsForModifyModifyCollectionScript = (_, provider) => (en
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
     const addColumnScriptDto = AlterScriptDto.getInstance([addColumnScript], true, false);
+    const notNullConstraintScriptDtos = getAddNotNullConstraintScriptDtos(_, provider)(entity, columns);
     const modifyCollectionScriptDtos = AlterScriptDto.getInstances(modifyScript.script, true, false);
 
-    return [dropIndexScriptDto, addColumnScriptDto, ...modifyCollectionScriptDtos, addIndexScriptDto]
+    return [
+        dropIndexScriptDto,
+        addColumnScriptDto,
+        ...notNullConstraintScriptDtos,
+        ...modifyCollectionScriptDtos,
+        addIndexScriptDto
+    ]
         .filter(Boolean);
 }
 
