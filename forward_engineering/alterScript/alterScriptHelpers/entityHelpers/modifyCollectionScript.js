@@ -81,9 +81,9 @@ const getModifyLocationScriptDto = (app, ddlProvider) => (collection) => {
     const oldLocation = location.old;
     const newLocation = location.new;
 
-    if (typeof newLocation === 'string' && newLocation?.length && oldLocation !== newLocation) {
+    if (oldLocation !== newLocation) {
         const fullCollectionName = generateFullEntityName(collection);
-        const ddlLocation = wrapInSingleQuotes(newLocation);
+        const ddlLocation = wrapInSingleQuotes(newLocation || '');
         const script = ddlProvider.setTableLocation({
             location: ddlLocation,
             fullTableName: fullCollectionName,
