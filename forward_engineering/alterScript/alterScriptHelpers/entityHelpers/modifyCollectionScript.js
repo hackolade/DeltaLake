@@ -5,7 +5,8 @@ const {
     getEntityName,
     getFullEntityName,
     getContainerName,
-    getEntityProperties
+    getEntityProperties,
+    wrapInSingleQuotes
 } = require("../../../utils/general");
 const {getTableStatement, hydrateTableProperties} = require("../../../helpers/tableHelper");
 const {AlterScriptDto} = require("../../types/AlterScriptDto");
@@ -70,6 +71,29 @@ const getDropAndRecreateCollectionScriptDtos = (app, ddlProvider) => (collection
 }
 
 /**
+ * @return {(collection: any) => AlterScriptDto | undefined}
+ * */
+const getModifyLocationScriptDto = (app, ddlProvider) => (collection) => {
+    const _ = app.require('lodash');
+
+    const compMod = _.get(collection, 'role.compMod', {});
+    const location =  _.get(compMod, 'location', {});
+    const oldLocation = location.old;
+    const newLocation = location.new;
+
+    if (typeof newLocation === 'string' && newLocation?.length && oldLocation !== newLocation) {
+        const fullCollectionName = generateFullEntityName(collection);
+        const ddlLocation = wrapInSingleQuotes(newLocation);
+        const script = ddlProvider.setTableLocation({
+            location: ddlLocation,
+            fullTableName: fullCollectionName,
+        });
+        return AlterScriptDto.getInstance([script], true, false);
+    }
+    return undefined;
+}
+
+/**
  * @return {(collection: any, definitions: any, dbVersion: any) => {
  *         type: 'modify' | 'new',
  *         script: Array<AlterScriptDto>
@@ -86,13 +110,16 @@ const getModifyCollectionScriptDtos = (app, ddlProvider) => (collection) => {
     const hydratedTableProperties = hydrateTableProperties(_)(dataProperties, fullCollectionName);
     const hydratedSerDeProperties = hydrateSerDeProperties(_)(compMod, fullCollectionName);
     const tablePropertiesScript = ddlProvider.alterTableProperties(hydratedTableProperties);
-    const serDeProperties = ddlProvider.alterSerDeProperties(hydratedSerDeProperties)
+    const serDeProperties = ddlProvider.alterSerDeProperties(hydratedSerDeProperties);
+    const modifyLocationScriptDto = getModifyLocationScriptDto(app, ddlProvider)(collection);
+
     return {
         type: 'modify',
         script: [
             AlterScriptDto.getInstance([alterTableNameScript], true, false),
             ...AlterScriptDto.getInstances(tablePropertiesScript, true, false),
             AlterScriptDto.getInstance([serDeProperties], true, false),
+            modifyLocationScriptDto,
         ]
             .filter(Boolean),
     };
