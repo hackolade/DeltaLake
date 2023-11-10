@@ -109,14 +109,13 @@ const getDeleteCollectionsScripts = (app, provider) => entity => {
 const getModifyCollectionsScripts = (app, definitions, ddlProvider, dbVersion) => collection => {
     const _ = app.require('lodash');
     const properties = getEntityProperties(collection);
-    const {script} = generateModifyCollectionScript(app)(collection, definitions, ddlProvider, dbVersion);
+    const {script: modifyTableScriptDtos} = generateModifyCollectionScript(app)(collection, definitions, ddlProvider, dbVersion);
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(collection, properties, definitions);
     const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(_)(...hydratedAddIndex);
 
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
-    const modifyTableScriptDtos = AlterScriptDto.getInstances(script, true, false);
 
     return [
         dropIndexScriptDto,
@@ -146,14 +145,13 @@ const getDeleteColumnsScripts = (app, definitions, provider, dbVersion) => entit
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
     const deleteColumnScriptDto = AlterScriptDto.getInstance([deleteColumnScript], true, false);
-    const modifyCollectionScriptDtos = AlterScriptDto.getInstances(modifyScript.script, true, false);
 
     if (modifyScript.type === 'new') {
-        return [dropIndexScriptDto, ...modifyCollectionScriptDtos, addIndexScriptDto]
+        return [dropIndexScriptDto, ...(modifyScript.script || []), addIndexScriptDto]
             .filter(Boolean)
     }
 
-    return [dropIndexScriptDto, deleteColumnScriptDto, ...modifyCollectionScriptDtos, addIndexScriptDto]
+    return [dropIndexScriptDto, deleteColumnScriptDto, ...(modifyScript.script || []), addIndexScriptDto]
         .filter(Boolean);
 };
 
@@ -230,11 +228,10 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
     );
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
-    const modifyCollectionScriptDtos = AlterScriptDto.getInstances(modifiedScript.script, true, false);
     const alterColumnScriptDtos = AlterScriptDto.getInstances(alterColumnScripts, true, false);
 
     if (modifiedScript.type === 'new') {
-        return [dropIndexScriptDto, ...modifyCollectionScriptDtos, addIndexScriptDto]
+        return [dropIndexScriptDto, ...(modifiedScript.script || []), addIndexScriptDto]
             .filter(Boolean);
     }
 
@@ -246,7 +243,7 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
         ...modifyNotNullConstraintsScriptDtos,
         ...modifyCheckConstraintsScriptDtos,
         ...modifiedDefaultColumnValueScriptDtos,
-        ...modifyCollectionScriptDtos,
+        ...(modifiedScript.script || []),
         addIndexScriptDto
     ]
         .filter(Boolean);
@@ -300,11 +297,10 @@ const getModifyColumnsScriptsForOlderRuntime = (
 
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
-    const modifyCollectionScriptDtos = AlterScriptDto.getInstances(modifiedScript.script, true, false);
     const alterColumnScriptDtos = AlterScriptDto.getInstances(alterColumnScripts, true, false);
 
     if (modifiedScript.type === 'new') {
-        return [dropIndexScriptDto, ...modifyCollectionScriptDtos, addIndexScriptDto]
+        return [dropIndexScriptDto, ...(modifiedScript.script || []), addIndexScriptDto]
             .filter(Boolean);
     }
 
@@ -315,7 +311,7 @@ const getModifyColumnsScriptsForOlderRuntime = (
         ...modifiedCommentOnColumnsScriptDtos,
         ...modifyNotNullConstraintsScriptDtos,
         ...modifyCheckConstraintsScriptDtos,
-        ...modifyCollectionScriptDtos,
+        ...(modifiedScript.script || []),
         addIndexScriptDto
     ].filter(Boolean);
 }

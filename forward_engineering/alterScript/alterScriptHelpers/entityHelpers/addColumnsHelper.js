@@ -73,13 +73,12 @@ const getAddColumnsScriptsForModifyModifyCollectionScript = (_, provider) => (en
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
     const addColumnScriptDto = AlterScriptDto.getInstance([addColumnScript], true, false);
     const notNullConstraintScriptDtos = getAddNotNullConstraintScriptDtos(_, provider)(entity, columns);
-    const modifyCollectionScriptDtos = AlterScriptDto.getInstances(modifyScript.script, true, false);
 
     return [
         dropIndexScriptDto,
         addColumnScriptDto,
         ...notNullConstraintScriptDtos,
-        ...modifyCollectionScriptDtos,
+        ...(modifyScript.script || []),
         addIndexScriptDto
     ]
         .filter(Boolean);
@@ -93,11 +92,10 @@ const getAddColumnsScriptsForNewModifyCollectionScript = (_, provider) => (entit
 
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
-    const modifyCollectionScriptDtos = AlterScriptDto.getInstances(modifyScript.script, true, false);
 
     return [
         dropIndexScriptDto,
-        ...modifyCollectionScriptDtos,
+        ...(modifyScript.script || []),
         addIndexScriptDto
     ].filter(Boolean)
 }
