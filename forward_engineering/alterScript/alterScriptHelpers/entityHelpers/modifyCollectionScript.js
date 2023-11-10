@@ -10,8 +10,8 @@ const {
 const {getTableStatement, hydrateTableProperties} = require("../../../helpers/tableHelper");
 const {AlterScriptDto} = require("../../types/AlterScriptDto");
 
-const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'location', 'numBuckets', 'skewedby', 'skewedOn', 'skewStoredAsDir', 'sortedByKey', 'storedAsTable', 'temporaryTable', 'using', 'rowFormat', 'fieldsTerminatedBy', 'fieldsescapedBy', 'collectionItemsTerminatedBy', 'mapKeysTerminatedBy', 'linesTerminatedBy', 'nullDefinedAs', 'inputFormatClassname', 'outputFormatClassname'];
-const otherTableProperties = ['code', 'collectionName', 'tableProperties', 'description', 'properties', 'serDeLibrary', 'serDeProperties'];
+const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'numBuckets', 'skewedby', 'skewedOn', 'skewStoredAsDir', 'sortedByKey', 'storedAsTable', 'temporaryTable', 'using', 'rowFormat', 'fieldsTerminatedBy', 'fieldsescapedBy', 'collectionItemsTerminatedBy', 'mapKeysTerminatedBy', 'linesTerminatedBy', 'nullDefinedAs', 'inputFormatClassname', 'outputFormatClassname'];
+const otherTableProperties = ['code', 'collectionName', 'tableProperties', 'description', 'properties', 'serDeLibrary', 'serDeProperties', 'location',];
 
 const hydrateSerDeProperties = (_) => (compMod, name) => {
     const {serDeProperties, serDeLibrary} = compMod
@@ -91,9 +91,10 @@ const getModifyCollectionScriptDtos = (app, ddlProvider) => (collection) => {
         type: 'modify',
         script: [
             AlterScriptDto.getInstance([alterTableNameScript], true, false),
-            AlterScriptDto.getInstances(tablePropertiesScript, true, false),
+            ...AlterScriptDto.getInstances(tablePropertiesScript, true, false),
             AlterScriptDto.getInstance([serDeProperties], true, false),
-        ],
+        ]
+            .filter(Boolean),
     };
 }
 
@@ -106,9 +107,9 @@ const getModifyCollectionScriptDtos = (app, ddlProvider) => (collection) => {
 const generateModifyCollectionScript = (app) => (collection, definitions, ddlProvider, dbVersion) => {
     const _ = app.require('lodash');
     const compMod = _.get(collection, 'role.compMod', {});
-    const isChangedProperties = getIsChangeProperties(_)(compMod, tableProperties);
+    const shouldDropAndRecreate = getIsChangeProperties(_)(compMod, tableProperties);
 
-    if (isChangedProperties) {
+    if (shouldDropAndRecreate) {
         return getDropAndRecreateCollectionScriptDtos(app, ddlProvider)(collection, definitions, dbVersion);
     }
     return getModifyCollectionScriptDtos(app, ddlProvider)(collection);
