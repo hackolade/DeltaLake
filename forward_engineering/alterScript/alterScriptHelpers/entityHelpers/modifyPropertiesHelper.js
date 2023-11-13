@@ -19,7 +19,7 @@ const buildTablePropertiesDiffMap = (tableProperties) => {
         const correspondingOldProp = oldProperties.find(p => p.propertyKey === newProp.propertyKey);
         if (!correspondingOldProp) {
             diffMap.appendAdded(newProp);
-        } else {
+        } else if (newProp.propertyValue !== correspondingOldProp.propertyValue) {
             diffMap.appendModified(newProp, correspondingOldProp);
         }
     }
