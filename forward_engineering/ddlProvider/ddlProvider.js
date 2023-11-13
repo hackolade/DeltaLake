@@ -117,30 +117,6 @@ module.exports = app => {
         },
 
         /**
-         * @return {Array<string>}
-         * */
-        alterTableProperties({dataProperties, name}) {
-            if (!name) {
-                return [];
-            }
-            const {add: addProperties = '', drop: dropProperties = ''} = dataProperties;
-            let scripts = [];
-            if (addProperties.length) {
-                scripts = scripts.concat(assignTemplates(templates.setTableProperties, {
-                    name,
-                    properties: addProperties
-                }));
-            }
-            if (dropProperties.length) {
-                scripts = scripts.concat(assignTemplates(templates.unsetTableProperties, {
-                    name,
-                    properties: dropProperties
-                }));
-            }
-            return scripts;
-        },
-
-        /**
          * @param name {string} full table name
          * @param properties {string} joined properties with values
          * @return string
