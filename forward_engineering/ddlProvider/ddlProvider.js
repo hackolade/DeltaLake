@@ -140,10 +140,20 @@ module.exports = app => {
             return scripts;
         },
 
+        /**
+         * @param name {string} full table name
+         * @param properties {string} joined properties with values
+         * @return string
+         * */
         setTableProperties({name, properties} = {}) {
             return !name || !properties ? '' : assignTemplates(templates.setTableProperties, {name, properties});
         },
 
+        /**
+         * @param name {string} full table name
+         * @param properties {string} joined properties
+         * @return string
+         * */
         unsetTableProperties({name, properties} = {}) {
             return !name || !properties ? '' : assignTemplates(templates.unsetTableProperties, {name, properties});
         },

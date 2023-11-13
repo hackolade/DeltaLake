@@ -355,6 +355,12 @@ const getCorrectUsing = using => {
 	}
 }
 
+/**
+ * @return {(tableProperties: Array<{
+ *      propertyKey: string,
+ *      propertyValue: any | undefined
+ * }>) => string}
+ * */
 const getTablePropertiesClause = (_) => tableProperties => {
 	const isText = _.overEvery([value => _.isNaN(_.toNumber(value)), value => value !== 'true' && value !== 'false']);
 	const tablePropertyStatements = (tableProperties || []).map(({ propertyKey, propertyValue = undefined }) => {
