@@ -1,10 +1,6 @@
-const {generateFullEntityName, wrapInSingleQuotes} = require("../../../utils/generalUtils");
+const {generateFullEntityName, wrapInSingleQuotes} = require("../../../utils/general");
 const {EntitiesThatSupportComments} = require("../../../enums/entityType");
-
-
-/**
- * @typedef {import('../types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * */
+const {AlterScriptDto} = require("../../types/AlterScriptDto");
 
 
 /**

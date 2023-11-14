@@ -7,7 +7,7 @@ const {
 	prepareName,
 	commentDeactivatedStatements,
 	encodeStringLiteral, wrapInBrackets,
-} = require('../utils/generalUtils');
+} = require('../utils/general');
 const { getCheckConstraint } = require("./constrainthelper");
 
 const getStructChild = (name, type, comment) => `${prepareName(name)}: ${type}` + (comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '');

@@ -32,7 +32,7 @@ const {getDatabaseStatement, getUseCatalogStatement} = require("./databaseHelper
 const {getCreateRelationshipScripts} = require("./relationshipHelper");
 const {getTableStatement} = require("./tableHelper");
 const {getIndexes} = require("./indexHelper");
-const {buildScript, getName, getTab, isSupportUnityCatalog, isSupportNotNullConstraints} = require("../utils/generalUtils");
+const {buildScript, getName, getTab, isSupportUnityCatalog, isSupportNotNullConstraints} = require("../utils/general");
 const {getViewScript} = require("./viewHelper");
 
 /**
@@ -74,6 +74,7 @@ const buildEntityLevelFEScript = (data, app) => ({
     entityData,
     modelData,
 }) => {
+    const _ = app.require('lodash');
     const dbVersion = data.modelData[0].dbVersion;
     const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
     const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
@@ -88,7 +89,7 @@ const buildEntityLevelFEScript = (data, app) => ({
         arePkFkConstraintsAvailable,
         areNotNullConstraintsAvailable,
     );
-    const indexScript = getIndexes(containerData, entityData, jsonSchema, definitions);
+    const indexScript = getIndexes(_)(containerData, entityData, jsonSchema, definitions);
 
     let relationshipScripts = [];
     if (arePkFkConstraintsAvailable) {
@@ -117,6 +118,7 @@ const getContainerLevelViewScriptDtos = (data, _) => {
         const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
         const viewData = data.viewData[viewId];
         const viewScript = getViewScript({
+            _,
             schema: viewSchema,
             viewData: viewData,
             containerData: data.containerData,
@@ -146,6 +148,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
     areNotNullConstraintsAvailable,
     includeRelationshipsInEntityScripts,
 }) => {
+    const _ = app.require('lodash');
     return data.entities.reduce((result, entityId) => {
         const entityData = data.entityData[entityId];
 
@@ -161,7 +164,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
             likeTableData,
         );
 
-        const indexScript = getIndexes(...createTableStatementArgs);
+        const indexScript = getIndexes(_)(...createTableStatementArgs);
 
         let relationshipScripts = [];
         if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {

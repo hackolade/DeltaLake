@@ -10,7 +10,7 @@ const {
 	encodeStringLiteral,
 	prepareName,
 	getDifferentItems
-} = require('../utils/generalUtils');
+} = require('../utils/general');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const {getCheckConstraintsScriptsOnColumnLevel, getCheckConstraintsScriptsOnTableLevel} = require("./entityHelpers/checkConstraintHelper");
@@ -358,6 +358,12 @@ const getCorrectUsing = using => {
 	}
 }
 
+/**
+ * @return {(tableProperties: Array<{
+ *      propertyKey: string,
+ *      propertyValue: any | undefined
+ * }>) => string}
+ * */
 const getTablePropertiesClause = (_) => tableProperties => {
 	const isText = _.overEvery([value => _.isNaN(_.toNumber(value)), value => value !== 'true' && value !== 'false']);
 	const tablePropertyStatements = (tableProperties || []).map(({ propertyKey, propertyValue = undefined }) => {

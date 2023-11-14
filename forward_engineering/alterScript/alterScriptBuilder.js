@@ -1,10 +1,6 @@
-const {getAlterScriptDtos, joinAlterScriptDtosIntoAlterScript} = require("../alterScriptFromDeltaHelper");
-
-/**
- * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * @typedef {import('./types/coreApplicationTypes').App} App
- * @typedef {import('./types/coreApplicationTypes').CoreData} CoreData
- * */
+const {getAlterScriptDtos, joinAlterScriptDtosIntoAlterScript} = require("./alterScriptFromDeltaHelper");
+const {AlterScriptDto} = require("./types/AlterScriptDto");
+const { CoreData, App } = require('../types/coreApplicationTypes');
 
 /**
  * @typedef {{

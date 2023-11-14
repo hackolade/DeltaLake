@@ -1,10 +1,8 @@
-const {getDatabaseStatement, getDatabaseAlterStatement} = require('../databaseHelper')
-const {getEntityData, getIsChangeProperties, prepareName, replaceSpaceWithUnderscore} = require('../../utils/generalUtils');
+const {getDatabaseStatement, getDatabaseAlterStatement} = require('../../helpers/databaseHelper')
+const {getEntityData, getIsChangeProperties, prepareName, replaceSpaceWithUnderscore} = require('../../utils/general');
 const {getAlterCommentsScriptDtos} = require("./containerHelpers/commentsHelper");
+const {AlterScriptDto} = require("../types/AlterScriptDto");
 
-/**
- * @typedef {import('./types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * */
 
 const containerProperties = ['comment', 'location', 'dbProperties', 'description'];
 const otherContainerProperties = ['name', 'location'];

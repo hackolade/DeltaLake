@@ -21,6 +21,10 @@ module.exports = {
 
 	updateComment: 'COMMENT ON ${entityType} ${entityName} IS ${comment};',
 
+	updateColumnDefaultValue: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} SET DEFAULT ${defaultValue};',
+
+	dropColumnDefaultValue: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} DROP DEFAULT;',
+
 	addNotNullConstraint: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} SET NOT NULL;',
 
 	dropNotNullConstraint: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName} DROP NOT NULL;',
@@ -50,6 +54,8 @@ module.exports = {
 	unsetTableProperties: 'ALTER TABLE ${name} UNSET TBLPROPERTIES IF EXISTS (${properties});',
 
 	alterSerDeProperties: 'ALTER TABLE ${name} SET SERDE ${serDe}${serDeProperties};',
+
+	setTableLocation: 'ALTER TABLE ${name} SET LOCATION ${location};',
 
 	serDeProperties: ' WITH SERDEPROPERTIES (${properties})',
 

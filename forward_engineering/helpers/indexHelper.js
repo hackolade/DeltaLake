@@ -1,12 +1,8 @@
 'use strict'
 
-const { getTab, buildStatement,prepareName, getName, replaceSpaceWithUnderscore } = require('../utils/generalUtils');
+const { getTab, buildStatement,prepareName, getName, replaceSpaceWithUnderscore } = require('../utils/general');
 const schemaHelper = require('./jsonSchemaHelper');
 const { getItemByPath } = require('./jsonSchemaHelper');
-const { dependencies } = require('./appDependencies');
-let _;
-
-const setDependencies = ({ lodash }) => _ = lodash;
 
 const getIndexStatement = ({
 	tableName, dbName, columns, options, isActivated
@@ -17,13 +13,13 @@ const getIndexStatement = ({
 		();
 };
 
-const getIndexKeys = (keys, jsonSchema, definitions) => {
+const getIndexKeys = (_) => (keys, jsonSchema, definitions) => {
 	if (!Array.isArray(keys)) {
 		return '';
 	}
 	const paths = schemaHelper.getPathsByIds(keys.map(key => key.keyId), [jsonSchema, ...definitions]);
 	const idToNameHashTable = schemaHelper.getIdToNameHashTable([jsonSchema, ...definitions]);
-	const [activatedKeys, deactivatedKeys] =dependencies.lodash.partition(paths, path => {
+	const [activatedKeys, deactivatedKeys] = _.partition(paths, path => {
 		const item = getItemByPath(path, jsonSchema);
 		return item ? item.isActivated : true;
 	});
@@ -48,10 +44,9 @@ const getIndexKeys = (keys, jsonSchema, definitions) => {
 };
 
 /**
- * @return {string}
+ * @return {(containerData: any, entityData: any, jsonSchema: any, definitions: any) => string}
  * */
-const getIndexes = (containerData, entityData, jsonSchema, definitions) => {
-	setDependencies(dependencies);
+const getIndexes = (_) => (containerData, entityData, jsonSchema, definitions) => {
 	const dbData = getTab(0, containerData);
 	const dbName = replaceSpaceWithUnderscore(prepareName(getName(dbData)));
 	const tableData = getTab(0, entityData);
@@ -59,7 +54,7 @@ const getIndexes = (containerData, entityData, jsonSchema, definitions) => {
 	const tableName = replaceSpaceWithUnderscore(prepareName(getName(tableData)));
 	return indexesData.filter(indexData => !_.isEmpty(indexData.forColumns))
 		.map(indexData => {
-			const { columns, isIndexActivated = true } = getIndexKeys(
+			const { columns, isIndexActivated = true } = getIndexKeys(_)(
 				indexData.forColumns,
 				jsonSchema,
 				definitions

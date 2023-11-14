@@ -1,9 +1,8 @@
 'use strict';
 
-const { setDependencies } = require('./helpers/appDependencies');
-const { getDatabaseStatement, getUseCatalogStatement} = require('./helpers/databaseHelper');
-const { getViewScript } = require('./helpers/viewHelper');
-const { getCleanedUrl, buildScript, isSupportUnityCatalog } = require('./utils/generalUtils');
+const {getDatabaseStatement, getUseCatalogStatement} = require('./helpers/databaseHelper');
+const {getViewScript} = require('./helpers/viewHelper');
+const {getCleanedUrl, buildScript, isSupportUnityCatalog} = require('./utils/general');
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
 
@@ -14,28 +13,30 @@ const {
     buildContainerLevelAlterScript,
     doesContainerLevelAlterScriptContainDropStatements,
     doesEntityLevelAlterScriptContainDropStatements
-} = require("./helpers/alterScriptHelpers/alterScriptBuilder");
+} = require("./alterScript/alterScriptBuilder");
+const {
+    ModelDefinitions,
+    InternalDefinitions,
+    ExternalDefinitions,
+    ContainerJsonSchema,
+    ContainerStyles,
+    EntityJsonSchema,
+} = require('./types/coreApplicationDataTypes');
+const {
+    App,
+    CoreData,
+    Logger,
+    PluginError
+} = require('./types/coreApplicationTypes')
 
 /**
- * @typedef {import('./helpers/alterScriptHelpers/types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * @typedef {import('./types/coreApplicationDataTypes').ContainerJsonSchema} ContainerJsonSchema
- * @typedef {import('./types/coreApplicationDataTypes').ContainerStyles} ContainerStyles
- * @typedef {import('./types/coreApplicationDataTypes').EntityData} EntityData
- * @typedef {import('./types/coreApplicationDataTypes').EntityJsonSchema} EntityJsonSchema
- * @typedef {import('./types/coreApplicationDataTypes').ExternalDefinitions} ExternalDefinitions
- * @typedef {import('./types/coreApplicationDataTypes').InternalDefinitions} InternalDefinitions
- * @typedef {import('./types/coreApplicationDataTypes').ModelDefinitions} ModelDefinitions
- * @typedef {import('./types/coreApplicationTypes').App} App
- * @typedef {import('./types/coreApplicationTypes').Logger} Logger
- * @typedef {import('./types/coreApplicationTypes').CoreData} CoreData
- * @typedef {import('./types/coreApplicationTypes').PluginError} PluginError
- *
  * @typedef {(error?: PluginError | null, result?: any | null) => void} PluginCallback
  * */
 
 /**
  * @typedef {[ContainerJsonSchema, ContainerStyles]} ContainerData
  * */
+
 /**
  * @typedef {{
  *     [id: string]: EntityJsonSchema
@@ -125,8 +126,6 @@ module.exports = {
      * */
     generateScript(data, logger, callback, app) {
         try {
-            setDependencies(app);
-
             const parsedData = parseDataForEntityLevelScript(data);
 
             if (data.isUpdateScript) {
@@ -154,7 +153,7 @@ module.exports = {
      * */
     generateViewScript(data, logger, callback, app) {
         try {
-            setDependencies(app);
+            const _ = app.require('lodash');
             const viewSchema = JSON.parse(data.jsonSchema || '{}');
             const dbVersion = data.modelData[0].dbVersion;
             const isUnityCatalogSupports = isSupportUnityCatalog(dbVersion);
@@ -163,6 +162,7 @@ module.exports = {
             const databaseStatement = getDatabaseStatement(data.containerData, isUnityCatalogSupports);
 
             const script = getViewScript({
+                _,
                 schema: viewSchema,
                 viewData: data.viewData,
                 containerData: data.containerData,
@@ -186,8 +186,6 @@ module.exports = {
      * */
     generateContainerScript(data, logger, callback, app) {
         try {
-            setDependencies(app);
-
             const parsedData = parseDataForContainerLevelScript(data);
             if (data.isUpdateScript) {
                 const script = buildContainerLevelAlterScript(data, app)(parsedData);
@@ -202,7 +200,7 @@ module.exports = {
                     const useCatalogStatement = scriptData.catalog
                         ? scriptData.catalog + '\n\n'
                         : '';
-                    const result =  {
+                    const result = {
                         container: useCatalogStatement + scriptData.container,
                         entities: scriptData.entities,
                         views: scriptData.views,
@@ -300,7 +298,6 @@ module.exports = {
      * */
     isDropInStatements(data, logger, callback, app) {
         try {
-            setDependencies(app);
             if (data.level === 'container') {
                 const parsedData = parseDataForContainerLevelScript(data);
                 const doesContainDropStatements = doesContainerLevelAlterScriptContainDropStatements(data, app)(parsedData);

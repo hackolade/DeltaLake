@@ -1,6 +1,6 @@
 'use strict'
 
-const { getName, prepareName } = require('../utils/generalUtils');
+const { getName, prepareName } = require('../utils/general');
 
 const getPathById = (schema, id, path) => {
 	if (schema.GUID === id) {

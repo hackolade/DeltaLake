@@ -1,5 +1,5 @@
-const {generateFullEntityName, wrapInTicks} = require("../../../utils/generalUtils");
-const {AlterScriptDto} = require("../types/AlterScriptDto");
+const {generateFullEntityName, wrapInTicks} = require("../../../utils/general");
+const {AlterScriptDto} = require("../../types/AlterScriptDto");
 
 /**
  * @param columnName {string}

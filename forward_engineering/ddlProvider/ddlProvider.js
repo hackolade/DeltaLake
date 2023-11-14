@@ -1,5 +1,5 @@
 const templates = require('./ddlTemplates');
-const {getFullEntityName} = require('../utils/generalUtils');
+const {getFullEntityName} = require('../utils/general');
 
 module.exports = app => {
     const {assignTemplates} = app.require('@hackolade/ddl-fe-utils');
@@ -116,31 +116,20 @@ module.exports = app => {
             });
         },
 
-        alterTableProperties({dataProperties, name}) {
-            if (!name) {
-                return [];
-            }
-            const {add: addProperties = '', drop: dropProperties = ''} = dataProperties;
-            let script = [];
-            if (addProperties.length) {
-                script = script.concat(assignTemplates(templates.setTableProperties, {
-                    name,
-                    properties: addProperties
-                }));
-            }
-            if (dropProperties.length) {
-                script = script.concat(assignTemplates(templates.unsetTableProperties, {
-                    name,
-                    properties: dropProperties
-                }));
-            }
-            return script;
-        },
-
+        /**
+         * @param name {string} full table name
+         * @param properties {string} joined properties with values
+         * @return string
+         * */
         setTableProperties({name, properties} = {}) {
             return !name || !properties ? '' : assignTemplates(templates.setTableProperties, {name, properties});
         },
 
+        /**
+         * @param name {string} full table name
+         * @param properties {string} joined properties
+         * @return string
+         * */
         unsetTableProperties({name, properties} = {}) {
             return !name || !properties ? '' : assignTemplates(templates.unsetTableProperties, {name, properties});
         },
@@ -290,5 +279,49 @@ module.exports = app => {
             );
         },
 
+        /**
+         * @param fullTableName {string}
+         * @param columnName {string}
+         * @param defaultValue {string}
+         * @return string
+         * */
+        updateColumnDefaultValue({
+                                     fullTableName,
+                                     columnName,
+                                     defaultValue
+        }) {
+            const templatesConfig = {
+                tableName: fullTableName,
+                columnName,
+                defaultValue
+            }
+            return assignTemplates(templates.updateColumnDefaultValue, templatesConfig);
+        },
+
+        /**
+         * @param fullTableName {string}
+         * @param columnName {string}
+         * @return string
+         * */
+        dropColumnDefaultValue({fullTableName, columnName}) {
+            const templatesConfig = {
+                tableName: fullTableName,
+                columnName,
+            }
+            return assignTemplates(templates.dropColumnDefaultValue, templatesConfig);
+        },
+
+        /**
+         * @param fullTableName {string}
+         * @param location {string}
+         * @return {string}
+         * */
+        setTableLocation({ fullTableName, location }) {
+            const templatesConfig = {
+                name: fullTableName,
+                location,
+            }
+            return assignTemplates(templates.setTableLocation, templatesConfig);
+        }
     }
 };

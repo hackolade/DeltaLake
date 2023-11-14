@@ -1,5 +1,5 @@
-const {getViewScript} = require('../viewHelper');
-const {hydrateTableProperties} = require('../tableHelper');
+const {getViewScript} = require('../../helpers/viewHelper');
+const {hydrateTableProperties} = require('../../helpers/tableHelper');
 const {
     getEntityData,
     getEntityProperties,
@@ -8,11 +8,8 @@ const {
     getEntityName,
     prepareScript,
     getFullEntityName
-} = require('../../utils/generalUtils');
-
-/**
- * @typedef {import('./types/AlterScriptDto').AlterScriptDto} AlterScriptDto
- * */
+} = require('../../utils/general');
+const {AlterScriptDto} = require("../types/AlterScriptDto");
 
 const viewProperties = ['code', 'name', 'tableProperties', 'selectStatement'];
 const otherViewProperties = ['viewTemporary', 'viewOrReplace', 'isGlobal', 'description'];
@@ -83,7 +80,7 @@ const hydrateAlterView = (_) => (view) => {
  * */
 const getAddViewsScripts = (_) => view => {
     const hydratedView = hydrateView(_)(view);
-    const script = getViewScript(hydratedView);
+    const script = getViewScript({ _, ...hydratedView});
     return {
         isActivated: true,
         scripts: [{
@@ -127,7 +124,7 @@ const getModifyViewsScripts = (provider, _) => view => {
     const viewName = generateFullEntityName(view);
     const dropViewScript = provider.dropView(viewName);
     const hydratedView = hydrateView(_)(view);
-    const addViewScript = getViewScript(hydratedView);
+    const addViewScript = getViewScript({_, ...hydratedView});
     return [{
         isActivated: true,
         scripts: [{

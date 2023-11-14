@@ -271,6 +271,15 @@ const isSupportNotNullConstraints = (dbVersion = '') => {
     return runtimeVersion >= Runtime.RUNTIME_SUPPORTING_NOT_NULL_CONSTRAINTS;
 }
 
+/**
+ * @param compMod {Record<string, any>}
+ * @param propertiesToCheck {Array<string>}
+ * @return {boolean}
+ * */
+const checkFieldPropertiesChanged = (compMod, propertiesToCheck) => {
+    return propertiesToCheck.some(prop => compMod?.oldField[prop] !== compMod?.newField[prop]);
+};
+
 module.exports = {
     buildStatement,
     getName,
@@ -302,4 +311,5 @@ module.exports = {
     getDifferentItems,
     isSupportUnityCatalog,
     isSupportNotNullConstraints,
+    checkFieldPropertiesChanged,
 };
