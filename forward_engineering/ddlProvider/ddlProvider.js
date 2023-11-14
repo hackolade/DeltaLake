@@ -116,25 +116,28 @@ module.exports = app => {
             });
         },
 
+        /**
+         * @return {Array<string>}
+         * */
         alterTableProperties({dataProperties, name}) {
             if (!name) {
                 return [];
             }
             const {add: addProperties = '', drop: dropProperties = ''} = dataProperties;
-            let script = [];
+            let scripts = [];
             if (addProperties.length) {
-                script = script.concat(assignTemplates(templates.setTableProperties, {
+                scripts = scripts.concat(assignTemplates(templates.setTableProperties, {
                     name,
                     properties: addProperties
                 }));
             }
             if (dropProperties.length) {
-                script = script.concat(assignTemplates(templates.unsetTableProperties, {
+                scripts = scripts.concat(assignTemplates(templates.unsetTableProperties, {
                     name,
                     properties: dropProperties
                 }));
             }
-            return script;
+            return scripts;
         },
 
         setTableProperties({name, properties} = {}) {
@@ -321,5 +324,18 @@ module.exports = app => {
             }
             return assignTemplates(templates.dropColumnDefaultValue, templatesConfig);
         },
+
+        /**
+         * @param fullTableName {string}
+         * @param location {string}
+         * @return {string}
+         * */
+        setTableLocation({ fullTableName, location }) {
+            const templatesConfig = {
+                name: fullTableName,
+                location,
+            }
+            return assignTemplates(templates.setTableLocation, templatesConfig);
+        }
     }
 };

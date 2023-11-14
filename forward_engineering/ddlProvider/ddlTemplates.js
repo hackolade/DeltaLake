@@ -55,6 +55,8 @@ module.exports = {
 
 	alterSerDeProperties: 'ALTER TABLE ${name} SET SERDE ${serDe}${serDeProperties};',
 
+	setTableLocation: 'ALTER TABLE ${name} SET LOCATION ${location};',
+
 	serDeProperties: ' WITH SERDEPROPERTIES (${properties})',
 
 	dropDatabase: 'DROP DATABASE IF EXISTS ${name};',
