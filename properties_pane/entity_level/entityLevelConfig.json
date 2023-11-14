@@ -197,19 +197,6 @@ making sure that you maintain a proper JSON format.
 				}
 			},
 			{
-				"propertyName": "Table role",
-				"propertyKeyword": "tableRole",
-				"propertyTooltip": "Select from list of options",
-				"propertyType": "select",
-				"options": [
-					"",
-					"Dimension",
-					"Fact",
-					"Hub",
-					"Satellite"
-				]
-			},
-			{
 				"propertyName": "Using",
 				"propertyKeyword": "using",
 				"propertyTooltip": "Select from list of options",
