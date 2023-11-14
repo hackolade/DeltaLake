@@ -13,7 +13,7 @@ const {
 } = require('../utils/generalUtils');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
-const {getCheckConstraintsScripts} = require("./entityHelpers/checkConstraintHelper");
+const {getCheckConstraintsScriptsOnColumnLevel, getCheckConstraintsScriptsOnTableLevel} = require("./entityHelpers/checkConstraintHelper");
 const constraintHelper = require('./constrainthelper');
 
 const getCreateStatement = (_) => ({
@@ -316,7 +316,10 @@ const getTableStatement = (app) => (
 
 	const statementsDelimiter = ';\n';
 
-	const constraintsStatements = getCheckConstraintsScripts(columns, tableName).join(statementsDelimiter);
+	const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(columns, tableName).join(statementsDelimiter);
+	const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(entityJsonSchema).join(statementsDelimiter);
+	const constraintsStatements = [constraintsStatementsOnTable, constraintsStatementsOnColumns].join(statementsDelimiter);
+
 	if (!_.isEmpty(constraintsStatements)) {
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + statementsDelimiter;
 	}
