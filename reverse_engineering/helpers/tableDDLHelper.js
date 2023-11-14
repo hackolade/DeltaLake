@@ -79,6 +79,7 @@ const getTableDataFromDDl = (statement) => {
 			description: parsedTableData.commentSpec,
 			tableOptions: parsedTableData.tableOptions,
 			primaryKey: parsedTableData.primaryKey,
+			chkConstr: parsedTableData.chkConstr
 		}
 	}
 }
