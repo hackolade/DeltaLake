@@ -1,4 +1,4 @@
-const {getColumns, getColumnsString, getColumnStatement} = require('../../helpers/columnHelper');
+const {getColumns, getColumnsString} = require('../../helpers/columnHelper');
 const {getIndexes} = require('../../helpers/indexHelper');
 const {getTableStatement} = require('../../helpers/tableHelper');
 const {hydrateAddIndexes, hydrateDropIndexes, hydrateIndex} = require('./entityHelpers/indexHelper');
@@ -15,6 +15,7 @@ const {getModifyNonNullColumnsScriptDtos} = require("./columnHelpers/nonNullCons
 const {getModifiedCommentOnColumnScriptDtos} = require("./columnHelpers/commentsHelper");
 const {AlterScriptDto} = require("../types/AlterScriptDto");
 const {getModifiedDefaultColumnValueScriptDtos} = require("./columnHelpers/defaultValueHelper");
+const {getUpdateTypesScriptDtos} = require("./columnHelpers/alterTypeHelper");
 
 const hydrateAlterColumnName = (_) => (entity, properties = {}) => {
     const collectionName = generateFullEntityName(entity);
@@ -203,29 +204,11 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
     const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(_)(...hydratedAddIndex);
 
-    const fullCollectionName = generateFullEntityName(collection);
     const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(_, ddlProvider)(collection);
     const modifyNotNullConstraintsScriptDtos = getModifyNonNullColumnsScriptDtos(_, ddlProvider)(collection);
     const modifyCheckConstraintsScriptDtos = getModifyCheckConstraintsScriptDtos(_, ddlProvider)(collection);
     const modifiedDefaultColumnValueScriptDtos = getModifiedDefaultColumnValueScriptDtos(_, ddlProvider)(collection);
-    const {columnsToDelete, columnsToAdd} = hydrateAlterColumnType(_)(properties);
-    const {columns: columnsInfo} = getColumns(entityData.role, true, definitions);
-    const deleteColumnScripts = _.map(columnsToDelete, column => ddlProvider.dropTableColumn({
-        name: fullCollectionName,
-        column
-    }));
-    const addColumnScripts = _.map(columnsToAdd, column =>
-        ddlProvider.addTableColumn({
-            name: fullCollectionName,
-            column: getColumnStatement({name: column, ...columnsInfo[column]})
-        }));
 
-    const modifyPairedScriptDtos = _.flatten(
-        _.zip(
-            (deleteColumnScripts || []).map(script => AlterScriptDto.getInstance([script], true, true)),
-            (addColumnScripts || []).map(script => AlterScriptDto.getInstance([script], true, false)),
-        )
-    );
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
     const alterColumnScriptDtos = AlterScriptDto.getInstances(alterColumnScripts, true, false);
@@ -235,9 +218,11 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
             .filter(Boolean);
     }
 
+    const updateTypeScriptDtos = getUpdateTypesScriptDtos(_, ddlProvider)(collection, definitions);
+
     return [
         dropIndexScriptDto,
-        ...modifyPairedScriptDtos,
+        ...updateTypeScriptDtos,
         ...alterColumnScriptDtos,
         ...modifiedCommentOnColumnsScriptDtos,
         ...modifyNotNullConstraintsScriptDtos,
