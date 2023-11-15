@@ -66,7 +66,6 @@ const getRemoveCheckConstraintsScriptsDtosFromColumns = (ddlProvider, _) => (ful
 const getModifyCheckConstraintsScriptDtosFromColumns = (ddlProvider, _) => (fullTableName, collection) => {
     return _.toPairs(collection.properties)
         .filter(([name, jsonSchema]) => {
-            debugger;
             const oldName = jsonSchema.compMod.oldField.name;
             const currentCheckConstraintOnColumn = jsonSchema.check;
             const previousCheckConstraintOnColumn = collection.role.properties[oldName]?.check;
