@@ -9,14 +9,17 @@ const { AlterScriptDto } = require('../../types/AlterScriptDto');
  */
 
 /**
+ * @param constraintName {string}
  * @param columnName {string}
  * @return string
  * */
-const getCheckConstraintNameForDdlProvider = (columnName) => {
+const getCheckConstraintNameForDdlProvider = (constraintName = '', columnName) => {
     const columnNameNoTicks = columnName.replaceAll('`', '');
-    const constraintName = `${columnNameNoTicks}_constraint`;
-    return wrapInTicks(constraintName);
-}
+    const constraintNameNoTicks = constraintName.replaceAll('`', '');
+    const appliedConstraintName = constraintNameNoTicks || `${columnNameNoTicks}_constraint`;
+
+    return wrapInTicks(appliedConstraintName);
+};
 
 /**
  * @param ddlProvider {Object}
@@ -32,7 +35,7 @@ const getAddCheckConstraintsScriptsDtosFromColumns = (ddlProvider, _) => (fullTa
             return currentCheckConstraintOnColumn && !previousCheckConstraintOnColumn;
         })
         .map(([columnName, jsonSchema]) => {
-            const constraintName = getCheckConstraintNameForDdlProvider(columnName);
+            const constraintName = getCheckConstraintNameForDdlProvider(jsonSchema.checkConstraintName, columnName);
             return ddlProvider.setCheckConstraint(fullTableName, constraintName, jsonSchema.check);
         })
         .map(script => AlterScriptDto.getInstance([script], true, false));
@@ -52,11 +55,12 @@ const getRemoveCheckConstraintsScriptsDtosFromColumns = (ddlProvider, _) => (ful
             return previousCheckConstraintOnColumn && !currentCheckConstraintOnColumn;
         })
         .map(([name]) => {
-            const constraintName = getCheckConstraintNameForDdlProvider(name);
+            const oldConstraintName = collection.role.properties[name]?.checkConstraintName;
+            const constraintName = getCheckConstraintNameForDdlProvider(oldConstraintName, name);
             return ddlProvider.dropCheckConstraint(fullTableName, constraintName);
         })
         .map(script => AlterScriptDto.getInstance([script], true, true));
-}
+};
 
 /**
  * @param ddlProvider {Object}
@@ -74,10 +78,11 @@ const getModifyCheckConstraintsScriptDtosFromColumns = (ddlProvider, _) => (full
         })
         .flatMap(([columnName, jsonSchema]) => {
             const oldColumnName = jsonSchema.compMod.oldField.name;
-            const oldConstraintName = getCheckConstraintNameForDdlProvider(oldColumnName);
-            const dropOldConstraint = ddlProvider.dropCheckConstraint(fullTableName, oldConstraintName);
+            const oldConstraintName = collection.role.properties[oldColumnName]?.checkConstraintName;
+            const constraintName = getCheckConstraintNameForDdlProvider(oldConstraintName, oldColumnName);
+            const dropOldConstraint = ddlProvider.dropCheckConstraint(fullTableName, constraintName);
 
-            const newConstraintName = getCheckConstraintNameForDdlProvider(columnName);
+            const newConstraintName = getCheckConstraintNameForDdlProvider(jsonSchema.checkConstraintName, columnName);
             const createNewConstraint = ddlProvider.setCheckConstraint(fullTableName, newConstraintName, jsonSchema.check);
 
             return [
@@ -87,7 +92,25 @@ const getModifyCheckConstraintsScriptDtosFromColumns = (ddlProvider, _) => (full
         });
 };
 
-getAddCheckConstraintsScriptsDtosFromTable = (ddlProvider) => (fullTableName, newCheckConstraints) => {
+const didCheckConstraintsChange = (_) => (collection) => {
+    const checkConstraints = collection?.role?.compMod?.chkConstr || {};
+    const newCheckConstraints = checkConstraints.new || [];
+    const oldCheckConstraints = checkConstraints.old || [];
+
+    if (newCheckConstraints.length !== oldCheckConstraints.length) {
+        return true;
+    }
+
+    if (newCheckConstraints.length === 0 && oldCheckConstraints.length === 0) {
+        return false;
+    }
+
+    const areConstraintArraysEqual = _(oldCheckConstraints).differenceWith(newCheckConstraints, _.isEqual).isEmpty();
+
+    return !areConstraintArraysEqual;
+};
+
+const getAddCheckConstraintsScriptsDtosFromTable = (ddlProvider) => (fullTableName, newCheckConstraints) => {
     return newCheckConstraints
         .map(newCheckConstraint => {
             return ddlProvider.setCheckConstraint(
@@ -100,7 +123,7 @@ getAddCheckConstraintsScriptsDtosFromTable = (ddlProvider) => (fullTableName, ne
         .map(script => AlterScriptDto.getInstance([script], true, false));
 };
 
-getRemoveCheckConstraintsScriptsDtosFromTable = (ddlProvider) => (fullTableName, oldCheckConstraints) => {
+const getRemoveCheckConstraintsScriptsDtosFromTable = (ddlProvider) => (fullTableName, oldCheckConstraints) => {
     return oldCheckConstraints
         .map(oldCheckConstraint => {
             return ddlProvider.dropCheckConstraint(
@@ -123,6 +146,12 @@ const getAllModifyCheckConstraintsScriptDtos = (ddlProvider, _) => (fullTableNam
     const oldTableCheckConstraints = checkConstraintsFromTableCompMod.old || [];
 
     const modifyCheckConstraintsScriptDtosFromColumns = getModifyCheckConstraintsScriptDtosFromColumns(ddlProvider, _)(fullTableName, collection);
+
+
+    if (!didCheckConstraintsChange(_)(collection)) {
+        return modifyCheckConstraintsScriptDtosFromColumns;
+    }
+
     const removeCheckConstraintsScriptDtosFromTable = getRemoveCheckConstraintsScriptsDtosFromTable(ddlProvider)(fullTableName, oldTableCheckConstraints);
     const addCheckConstraintsScriptDtosFromTable = getAddCheckConstraintsScriptsDtosFromTable(ddlProvider)(fullTableName, newTableCheckConstraints);
 
@@ -145,9 +174,9 @@ const getModifyCheckConstraintsScriptDtos = (_, ddlProvider) => (collection) => 
     const removeCheckConstraintScripts = getRemoveCheckConstraintsScriptsDtosFromColumns(ddlProvider, _)(fullTableName, collection);
 
     return [
-        ...addCheckConstraintsScriptDtos,
+        ...removeCheckConstraintScripts,
         ...modifyCheckConstraintsScripts,
-        ...removeCheckConstraintScripts
+        ...addCheckConstraintsScriptDtos
     ].filter(Boolean);
 };
 
