@@ -1,5 +1,5 @@
-const {generateFullEntityName, wrapInTicks} = require("../../../utils/general");
-const {AlterScriptDto} = require("../../types/AlterScriptDto");
+const { generateFullEntityName, wrapInTicks } = require('../../../utils/general');
+const { AlterScriptDto } = require('../../types/AlterScriptDto');
 
 /**
  * @typedef GetAlterScriptDtoFunction
@@ -130,8 +130,8 @@ const getAllModifyCheckConstraintsScriptDtos = (ddlProvider, _) => (fullTableNam
         ...removeCheckConstraintsScriptDtosFromTable,
         ...addCheckConstraintsScriptDtosFromTable,
         ...modifyCheckConstraintsScriptDtosFromColumns
-    ]
-}
+    ];
+};
 
 /**
  * @return {(collection: Object) => Array<AlterScriptDto>}
@@ -149,8 +149,8 @@ const getModifyCheckConstraintsScriptDtos = (_, ddlProvider) => (collection) => 
         ...modifyCheckConstraintsScripts,
         ...removeCheckConstraintScripts
     ].filter(Boolean);
-}
+};
 
 module.exports = {
     getModifyCheckConstraintsScriptDtos,
-}
+};
