@@ -318,7 +318,7 @@ const getTableStatement = (app) => (
 
 	const statementsDelimiter = ';\n';
 
-	const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(columns, tableName).join(statementsDelimiter);
+	const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(columns, fullTableName).join(statementsDelimiter);
 	const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(entityJsonSchema, fullTableName).join(statementsDelimiter);
 	const constraintsStatements = buildConstraints(constraintsStatementsOnTable, constraintsStatementsOnColumns, statementsDelimiter);
 
