@@ -53,7 +53,24 @@ const getCheckConstraintsScriptsOnTableLevel = (entityJsonSchema, tableName) => 
 	return [];
 };
 
+const buildConstraints = (tableConstraints, columnConstraints, delimiter) => {
+	if (!tableConstraints && !columnConstraints) {
+		return '';
+	}
+
+	if (tableConstraints && !columnConstraints) {
+		return tableConstraints;
+	}
+
+	if (!tableConstraints && columnConstraints) {
+		return columnConstraints;
+	}
+
+	return [tableConstraints, columnConstraints].join(delimiter);
+};
+
 module.exports = {
 	getCheckConstraintsScriptsOnColumnLevel,
-	getCheckConstraintsScriptsOnTableLevel
+	getCheckConstraintsScriptsOnTableLevel,
+	buildConstraints
 };

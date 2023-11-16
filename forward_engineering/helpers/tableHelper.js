@@ -14,7 +14,7 @@ const {
 } = require('../utils/general');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
-const {getCheckConstraintsScriptsOnColumnLevel, getCheckConstraintsScriptsOnTableLevel} = require("./entityHelpers/checkConstraintHelper");
+const {getCheckConstraintsScriptsOnColumnLevel, getCheckConstraintsScriptsOnTableLevel, buildConstraints } = require("./entityHelpers/checkConstraintHelper");
 const constraintHelper = require('./constrainthelper');
 
 const getCreateStatement = (_) => ({
@@ -320,7 +320,7 @@ const getTableStatement = (app) => (
 
 	const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(columns, tableName).join(statementsDelimiter);
 	const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(entityJsonSchema, fullTableName).join(statementsDelimiter);
-	const constraintsStatements = [constraintsStatementsOnTable, constraintsStatementsOnColumns].join(statementsDelimiter);
+	const constraintsStatements = buildConstraints(constraintsStatementsOnTable, constraintsStatementsOnColumns, statementsDelimiter);
 
 	if (!_.isEmpty(constraintsStatements)) {
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + statementsDelimiter;
