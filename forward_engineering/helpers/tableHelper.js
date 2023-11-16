@@ -9,7 +9,8 @@ const {
 	removeRedundantTrailingCommaFromStatement,
 	encodeStringLiteral,
 	prepareName,
-	getDifferentItems
+	getDifferentItems,
+	getFullEntityName
 } = require('../utils/general');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
@@ -282,6 +283,7 @@ const getTableStatement = (app) => (
 	const container = getTab(0, containerData);
 	const isTableActivated = tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
 	const tableName = replaceSpaceWithUnderscore(prepareName(getName(tableData)));
+	const fullTableName = getFullEntityName(dbName, tableName);
 	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, arePkFkConstraintsAvailable, areNotNullConstraintsAvailable, definitions);
 	const keyNames = keyHelper.getKeyNames(tableData, entityJsonSchema, definitions);
 	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
@@ -317,7 +319,7 @@ const getTableStatement = (app) => (
 	const statementsDelimiter = ';\n';
 
 	const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(columns, tableName).join(statementsDelimiter);
-	const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(entityJsonSchema).join(statementsDelimiter);
+	const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(entityJsonSchema, fullTableName).join(statementsDelimiter);
 	const constraintsStatements = [constraintsStatementsOnTable, constraintsStatementsOnColumns].join(statementsDelimiter);
 
 	if (!_.isEmpty(constraintsStatements)) {

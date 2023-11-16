@@ -38,14 +38,15 @@ const getCheckConstraintsScriptsOnColumnLevel = (columns, tableName) => {
 /**
  *
  * @param entityJsonSchema {Object}
+ * @param tableName {string}
  * @return {Array<string>}
  */
-const getCheckConstraintsScriptsOnTableLevel = (entityJsonSchema) => {
+const getCheckConstraintsScriptsOnTableLevel = (entityJsonSchema, tableName) => {
 	if (entityJsonSchema.chkConstr?.length) {
 		return entityJsonSchema.chkConstr.map((checkConstr, index) => {
 			const constraintName = getCheckConstraintName(checkConstr.chkConstrName, entityJsonSchema.collectionName, index);
 
-			return `ALTER TABLE ${entityJsonSchema.collectionName} ADD CONSTRAINT \`${constraintName}\` CHECK (${checkConstr.constrExpression})`;
+			return `ALTER TABLE ${tableName} ADD CONSTRAINT \`${constraintName}\` CHECK (${checkConstr.constrExpression})`;
 		});
 	}
 
