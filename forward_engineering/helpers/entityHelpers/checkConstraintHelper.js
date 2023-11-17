@@ -1,3 +1,12 @@
+const { wrapInTicks } = require('../../utils/general');
+
+/**
+ * @typedef GetStatementsFunction
+ * @param _ {Object}
+ * @param tableName {string}
+ * @returns Array<string>
+ */
+
 /**
  * @param constraintName {string}
  * @param tableName {string}
@@ -6,7 +15,7 @@
  */
 const getCheckConstraintName = (constraintName, tableName, index) => {
 	if (constraintName) {
-		return constraintName;
+		return wrapInTicks(constraintName);
 	}
 
 	let generatedName = `${tableName}_constraint`;
@@ -15,45 +24,42 @@ const getCheckConstraintName = (constraintName, tableName, index) => {
 		generatedName = `${generatedName}_${index + 1}`;
 	}
 
-	return generatedName;
+	return wrapInTicks(generatedName);
 };
 
 
 /**
- * @param columns {Object[]}
- * @param tableName {string}
- * @return string[]
+ * @param ddlProvider {Object}
+ * @returns GetStatementsFunction
  * */
-const getCheckConstraintsScriptsOnColumnLevel = (columns, tableName) => {
+const getCheckConstraintsScriptsOnColumnLevel = (ddlProvider) => (columns, tableName) => {
 	return Object.keys(columns)
 		.map(colName => ({ colName: colName.replaceAll('`', ''), ...columns[colName] }))
 		.filter(column => column.constraints.check)
 		.map(column => {
 			const constraintName = getCheckConstraintName(column.constraints.checkConstraintName, tableName);
 
-			return `ALTER TABLE ${tableName} ADD CONSTRAINT \`${constraintName}\` CHECK (${column.constraints.check})`;
+			return ddlProvider.setCheckConstraint(tableName, constraintName, column.constraints.check);
 		});
 };
 
 /**
- *
- * @param entityJsonSchema {Object}
- * @param tableName {string}
- * @return {Array<string>}
- */
-const getCheckConstraintsScriptsOnTableLevel = (entityJsonSchema, tableName) => {
+ * @param ddlProvider {Object}
+ * @returns GetStatementsFunction
+ * */
+const getCheckConstraintsScriptsOnTableLevel = (ddlProvider) => (entityJsonSchema, tableName) => {
 	if (entityJsonSchema.chkConstr?.length) {
 		return entityJsonSchema.chkConstr.map((checkConstr, index) => {
 			const constraintName = getCheckConstraintName(checkConstr.chkConstrName, entityJsonSchema.collectionName, index);
 
-			return `ALTER TABLE ${tableName} ADD CONSTRAINT \`${constraintName}\` CHECK (${checkConstr.constrExpression})`;
+			return ddlProvider.setCheckConstraint(tableName, constraintName, checkConstr.constrExpression);
 		});
 	}
 
 	return [];
 };
 
-const buildConstraints = (tableConstraints, columnConstraints, delimiter) => {
+const buildConstraints = (tableConstraints, columnConstraints) => {
 	if (!tableConstraints && !columnConstraints) {
 		return '';
 	}
@@ -66,7 +72,7 @@ const buildConstraints = (tableConstraints, columnConstraints, delimiter) => {
 		return columnConstraints;
 	}
 
-	return [tableConstraints, columnConstraints].join(delimiter);
+	return [tableConstraints, columnConstraints].join('\n');
 };
 
 module.exports = {

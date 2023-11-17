@@ -277,6 +277,7 @@ const getTableStatement = (app) => (
 	likeTableData,
 ) => {
 	const _ = app.require('lodash');
+	const ddlProvider = require('../ddlProvider/ddlProvider')(app);
 
 	const dbName = replaceSpaceWithUnderscore(prepareName(getName(getTab(0, containerData))));
 	const tableData = getTab(0, entityData);
@@ -318,12 +319,12 @@ const getTableStatement = (app) => (
 
 	const statementsDelimiter = ';\n';
 
-	const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(columns, fullTableName).join(statementsDelimiter);
-	const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(entityJsonSchema, fullTableName).join(statementsDelimiter);
-	const constraintsStatements = buildConstraints(constraintsStatementsOnTable, constraintsStatementsOnColumns, statementsDelimiter);
+	const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(ddlProvider)(columns, fullTableName).join('\n');
+	const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(ddlProvider)(entityJsonSchema, fullTableName).join('\n');
+	const constraintsStatements = buildConstraints(constraintsStatementsOnTable, constraintsStatementsOnColumns);
 
 	if (!_.isEmpty(constraintsStatements)) {
-		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + statementsDelimiter;
+		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements;
 	}
 
 	return removeRedundantTrailingCommaFromStatement(_)(tableStatement);
