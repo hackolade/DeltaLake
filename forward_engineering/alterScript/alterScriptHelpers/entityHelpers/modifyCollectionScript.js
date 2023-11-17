@@ -11,6 +11,7 @@ const {
 const {getTableStatement} = require("../../../helpers/tableHelper");
 const {AlterScriptDto} = require("../../types/AlterScriptDto");
 const {getModifiedTablePropertiesScriptDtos} = require("./modifyPropertiesHelper");
+const { getModifyCheckConstraintsScriptDtos } = require('./checkConstraintsHelper');
 
 const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'numBuckets', 'skewedby', 'skewedOn', 'skewStoredAsDir', 'sortedByKey', 'storedAsTable', 'temporaryTable', 'using', 'rowFormat', 'fieldsTerminatedBy', 'fieldsescapedBy', 'collectionItemsTerminatedBy', 'mapKeysTerminatedBy', 'linesTerminatedBy', 'nullDefinedAs', 'inputFormatClassname', 'outputFormatClassname'];
 const otherTableProperties = ['code', 'collectionName', 'tableProperties', 'description', 'properties', 'serDeLibrary', 'serDeProperties', 'location',];
@@ -108,6 +109,7 @@ const getModifyCollectionScriptDtos = (app, ddlProvider) => (collection) => {
 
     const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
     const hydratedSerDeProperties = hydrateSerDeProperties(_)(compMod, fullCollectionName);
+    const checkConstraintsDtos = getModifyCheckConstraintsScriptDtos(ddlProvider)(fullCollectionName, collection);
     const tablePropertiesScriptDtos = getModifiedTablePropertiesScriptDtos(_, ddlProvider)(collection);
     const serDeProperties = ddlProvider.alterSerDeProperties(hydratedSerDeProperties);
     const modifyLocationScriptDto = getModifyLocationScriptDto(app, ddlProvider)(collection);
@@ -117,6 +119,7 @@ const getModifyCollectionScriptDtos = (app, ddlProvider) => (collection) => {
         script: [
             AlterScriptDto.getInstance([alterTableNameScript], true, false),
             ...tablePropertiesScriptDtos,
+            ...checkConstraintsDtos,
             AlterScriptDto.getInstance([serDeProperties], true, false),
             modifyLocationScriptDto,
         ]
