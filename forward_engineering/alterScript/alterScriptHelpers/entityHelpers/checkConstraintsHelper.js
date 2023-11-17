@@ -89,7 +89,7 @@ const getModifyCheckConstraintsScriptDtos = (ddlProvider) => (fullTableName, col
     return [
         ...removeCheckConstraintsScriptDtosFromTable,
         ...addCheckConstraintsScriptDtosFromTable
-    ];
+    ].filter(Boolean);
 };
 
 module.exports = {
