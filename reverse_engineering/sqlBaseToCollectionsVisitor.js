@@ -29,6 +29,7 @@ class Visitor extends SqlBaseVisitor {
 			.filter(constraint => constraint.fkConstraint)
 			.flatMap(constraint => constraint.fkConstraint);
 		const tableClauses = this.visit(ctx.createTableClauses());
+		const checkConstraints = getCheckConstraintsFromTableProperties(tableClauses.tableProperties);
 		const querySelectProperties = this.visitIfExists(ctx, 'query');
 		const using = this.visitIfExists(ctx, 'tableProvider');
 		const tableProvider = tableClauses.createFileFormat?.serDeLibrary;
@@ -61,6 +62,7 @@ class Visitor extends SqlBaseVisitor {
 			query: querySelectProperties,
 			primaryKey: compositePrimaryKeys,
 			fkConstraints,
+        	chkConstr: checkConstraints
 		}
 	}
 
@@ -482,5 +484,31 @@ const fillColumnsWithPkConstraints = (columns = [], pkConstraints = []) => {
 		}
 	});
 }
+
+/**
+ *
+ * @param tableProperties {Array<Object>}
+ * @returns {Array<Object>}
+ */
+const getCheckConstraintsFromTableProperties = (tableProperties) => {
+	const checkConstraintRegExp = /.constraints./;
+	const rawCheckConstraints = tableProperties.filter(tableProperty => {
+		return checkConstraintRegExp.test(tableProperty.propertyKey);
+	});
+
+	if (!rawCheckConstraints.length) {
+		return [];
+	}
+
+	return rawCheckConstraints.map(constraint => {
+		const indexBegin = constraint.propertyKey.lastIndexOf('.') + 1;
+		const name = constraint.propertyKey.substring(indexBegin);
+
+		return {
+			chkConstrName: name,
+			constrExpression: constraint.propertyValue
+		};
+	});
+};
 
 module.exports = Visitor;

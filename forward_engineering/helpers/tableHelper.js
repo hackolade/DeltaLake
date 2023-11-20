@@ -9,11 +9,12 @@ const {
 	removeRedundantTrailingCommaFromStatement,
 	encodeStringLiteral,
 	prepareName,
-	getDifferentItems
+	getDifferentItems,
+	getFullEntityName
 } = require('../utils/general');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
-const {getCheckConstraintsScripts} = require("./entityHelpers/checkConstraintHelper");
+const {getCheckConstraintsScriptsOnColumnLevel, getCheckConstraintsScriptsOnTableLevel, buildConstraints } = require("./entityHelpers/checkConstraintHelper");
 const constraintHelper = require('./constrainthelper');
 
 const getCreateStatement = (_) => ({
@@ -276,12 +277,14 @@ const getTableStatement = (app) => (
 	likeTableData,
 ) => {
 	const _ = app.require('lodash');
+	const ddlProvider = require('../ddlProvider/ddlProvider')(app);
 
 	const dbName = replaceSpaceWithUnderscore(prepareName(getName(getTab(0, containerData))));
 	const tableData = getTab(0, entityData);
 	const container = getTab(0, containerData);
 	const isTableActivated = tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
 	const tableName = replaceSpaceWithUnderscore(prepareName(getName(tableData)));
+	const fullTableName = getFullEntityName(dbName, tableName);
 	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, arePkFkConstraintsAvailable, areNotNullConstraintsAvailable, definitions);
 	const keyNames = keyHelper.getKeyNames(tableData, entityJsonSchema, definitions);
 	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
@@ -316,9 +319,12 @@ const getTableStatement = (app) => (
 
 	const statementsDelimiter = ';\n';
 
-	const constraintsStatements = getCheckConstraintsScripts(columns, tableName).join(statementsDelimiter);
+	const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(ddlProvider)(columns, fullTableName).join('\n');
+	const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(ddlProvider)(entityJsonSchema, fullTableName).join('\n');
+	const constraintsStatements = buildConstraints(constraintsStatementsOnTable, constraintsStatementsOnColumns);
+
 	if (!_.isEmpty(constraintsStatements)) {
-		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements + statementsDelimiter;
+		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements;
 	}
 
 	return removeRedundantTrailingCommaFromStatement(_)(tableStatement);

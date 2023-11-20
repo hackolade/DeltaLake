@@ -677,5 +677,32 @@ making sure that you maintain a proper JSON format.
 				}
 			]
 		}]
+	},
+	{
+		"lowerTab": "Check Constraints",
+		"structure": [
+			{
+				"propertyName": "Check Constraint",
+				"propertyType": "group",
+				"propertyKeyword": "chkConstr",
+				"propertyTooltip": "",
+				"structure": [
+					{
+						"propertyName": "Name",
+						"propertyKeyword": "chkConstrName",
+						"propertyTooltip": "",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "constrExpression",
+						"propertyTooltip": "Expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			}
+		]
 	}
 ]

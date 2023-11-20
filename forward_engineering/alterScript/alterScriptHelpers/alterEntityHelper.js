@@ -10,7 +10,7 @@ const {
     getContainerName,
 } = require('../../utils/general');
 const {getModifyCollectionCommentsScripts} = require('./entityHelpers/commentsHelper');
-const {getModifyCheckConstraintsScriptDtos} = require("./columnHelpers/checkConstraintHelper");
+const {getCheckConstraintsScriptDtos} = require("./columnHelpers/checkConstraintHelper");
 const {getModifyNonNullColumnsScriptDtos} = require("./columnHelpers/nonNullConstraintHelper");
 const {getModifiedCommentOnColumnScriptDtos} = require("./columnHelpers/commentsHelper");
 const {AlterScriptDto} = require("../types/AlterScriptDto");
@@ -206,7 +206,7 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
 
     const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(_, ddlProvider)(collection);
     const modifyNotNullConstraintsScriptDtos = getModifyNonNullColumnsScriptDtos(_, ddlProvider)(collection);
-    const modifyCheckConstraintsScriptDtos = getModifyCheckConstraintsScriptDtos(_, ddlProvider)(collection);
+    const modifyCheckConstraintsScriptDtos = getCheckConstraintsScriptDtos(_, ddlProvider)(collection);
     const modifiedDefaultColumnValueScriptDtos = getModifiedDefaultColumnValueScriptDtos(_, ddlProvider)(collection);
 
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
@@ -266,7 +266,7 @@ const getModifyColumnsScriptsForOlderRuntime = (
     const {columnsToDelete} = hydrateAlterColumnType(_)(properties);
     const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(_, ddlProvider)(collection);
     const modifyNotNullConstraintsScriptDtos = getModifyNonNullColumnsScriptDtos(_, ddlProvider)(collection);
-    const modifyCheckConstraintsScriptDtos = getModifyCheckConstraintsScriptDtos(_, ddlProvider)(collection);
+    const modifyCheckConstraintsScriptDtos = getCheckConstraintsScriptDtos(_, ddlProvider)(collection);
 
     let tableModificationScriptDtos = [];
     if (!_.isEmpty(columnsToDelete)) {
