@@ -33,6 +33,7 @@ const {
 const schemaHelper = require('./thriftService/schemaHelper');
 const { dependencies } = require('./appDependencies');
 const { removeParentheses } = require('./helpers/utils');
+const { getCheckConstraintsFromTableProperties, getFilteredTableProperties } = require('./helpers/visitorsHelper');
 
 const ALLOWED_COMMANDS = [
     HiveParser.RULE_createTableStatement,
@@ -95,6 +96,7 @@ class Visitor extends HiveParserVisitor {
         const description = this.visitWhenExists(ctx, 'tableComment');
         const location = this.visitWhenExists(ctx, 'tableLocation');
         const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
+        const checkConstraints = Array.isArray(tableProperties) && getCheckConstraintsFromTableProperties(tableProperties[0]);
         let tableOptions = this.visitWhenExists(ctx, 'tableOptions');
         tableOptions =  Array.isArray(tableOptions) ? tableOptions?.[0] || '' : tableOptions;
         const temporaryTable = Boolean(ctx.KW_TEMPORARY());
@@ -137,8 +139,9 @@ class Visitor extends HiveParserVisitor {
                         skewStoredAsDir,
                         tableOptions,
                         location: Array.isArray(location) ? location[0] || '' : String(location),
-                        tableProperties: Array.isArray(tableProperties) ? tableProperties[0] || '' : String(tableProperties),
+                        tableProperties: Array.isArray(tableProperties) ? getFilteredTableProperties(tableProperties[0]) || '' : String(tableProperties),
                         using: getUsingProperty(Array.isArray(tableDataSource) ? tableDataSource[0] || '' : String(tableDataSource)),
+                        chkConstr: checkConstraints,
                         ...storedAsTable,
                         ...tableRowFormat,
                     },

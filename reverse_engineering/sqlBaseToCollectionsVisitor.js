@@ -1,17 +1,6 @@
 const { SqlBaseVisitor } = require('./parser/SQLBase/SqlBaseVisitor');
 const { dependencies } = require('./appDependencies');
-
-/**
- * @typedef TableProperty
- * @property propertyKey {string}
- * @property propertyValue {string}
- */
-
-/**
- * @typedef CheckConstraint
- * @property chkConstrName {string}
- * @property constrExpression {string}
- */
+const { getFilteredTableProperties, getCheckConstraintsFromTableProperties } = require('./helpers/visitorsHelper');
 
 global.SQL_standard_keyword_behavior = false;
 global.legacy_exponent_literal_as_decimal_enabled = true;
@@ -494,43 +483,6 @@ const fillColumnsWithPkConstraints = (columns = [], pkConstraints = []) => {
 				noRely: columnConstraint.noRely || false
 			}
 		}
-	});
-}
-
-/**
- * @param tableProperties {Array<TableProperty>}
- * @returns {Array<CheckConstraint>}
- */
-const getCheckConstraintsFromTableProperties = (tableProperties) => {
-	const checkConstraintRegExp = /.constraints./;
-	const rawCheckConstraints = tableProperties.filter(tableProperty => {
-		return checkConstraintRegExp.test(tableProperty.propertyKey);
-	});
-
-	if (!rawCheckConstraints.length) {
-		return [];
-	}
-
-	return rawCheckConstraints.map(constraint => {
-		const indexBegin = constraint.propertyKey.lastIndexOf('.') + 1;
-		const name = constraint.propertyKey.substring(indexBegin);
-
-		return {
-			chkConstrName: name,
-			constrExpression: constraint.propertyValue
-		};
-	});
-};
-
-/**
- * @param tableProperties {Array<TableProperty>}
- * @returns {Array<TableProperty>}
- */
-const getFilteredTableProperties = (tableProperties) => {
-	const checkConstraintRegExp = /.constraints./;
-
-	return tableProperties.filter(tableProperty => {
-		return !checkConstraintRegExp.test(tableProperty.propertyKey);
 	});
 };
 
