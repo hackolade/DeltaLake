@@ -1,6 +1,18 @@
 const { SqlBaseVisitor } = require('./parser/SQLBase/SqlBaseVisitor');
 const { dependencies } = require('./appDependencies');
 
+/**
+ * @typedef TableProperty
+ * @property propertyKey {string}
+ * @property propertyValue {string}
+ */
+
+/**
+ * @typedef CheckConstraint
+ * @property chkConstrName {string}
+ * @property constrExpression {string}
+ */
+
 global.SQL_standard_keyword_behavior = false;
 global.legacy_exponent_literal_as_decimal_enabled = true;
 global.legacy_setops_precedence_enabled = true;
@@ -57,7 +69,7 @@ class Visitor extends SqlBaseVisitor {
 			collectionItemsTerminatedBy: tableClauses.rowFormat?.collectionItemsTerminatedBy,
 			skewedBy: tableClauses.skewSpec?.skewedBy,
 			skewedOn: tableClauses.skewSpec?.skewedOn,
-			tableProperties: tableClauses.tableProperties,
+			tableProperties: getFilteredTableProperties(tableClauses.tableProperties),
 			tableOptions: tableClauses.tableOptions,
 			query: querySelectProperties,
 			primaryKey: compositePrimaryKeys,
@@ -486,9 +498,8 @@ const fillColumnsWithPkConstraints = (columns = [], pkConstraints = []) => {
 }
 
 /**
- *
- * @param tableProperties {Array<Object>}
- * @returns {Array<Object>}
+ * @param tableProperties {Array<TableProperty>}
+ * @returns {Array<CheckConstraint>}
  */
 const getCheckConstraintsFromTableProperties = (tableProperties) => {
 	const checkConstraintRegExp = /.constraints./;
@@ -508,6 +519,18 @@ const getCheckConstraintsFromTableProperties = (tableProperties) => {
 			chkConstrName: name,
 			constrExpression: constraint.propertyValue
 		};
+	});
+};
+
+/**
+ * @param tableProperties {Array<TableProperty>}
+ * @returns {Array<TableProperty>}
+ */
+const getFilteredTableProperties = (tableProperties) => {
+	const checkConstraintRegExp = /.constraints./;
+
+	return tableProperties.filter(tableProperty => {
+		return !checkConstraintRegExp.test(tableProperty.propertyKey);
 	});
 };
 
