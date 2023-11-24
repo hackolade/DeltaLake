@@ -33,7 +33,11 @@ const {
 const schemaHelper = require('./thriftService/schemaHelper');
 const { dependencies } = require('./appDependencies');
 const { removeParentheses } = require('./helpers/utils');
-const { getCheckConstraintsFromTableProperties, getFilteredTableProperties } = require('./helpers/visitorsHelper');
+const {
+    getCheckConstraintsFromTableProperties,
+    getFilteredTableProperties,
+    normalizeTableProperties
+} = require('./helpers/visitorsHelper');
 
 const ALLOWED_COMMANDS = [
     HiveParser.RULE_createTableStatement,
@@ -86,19 +90,25 @@ class Visitor extends HiveParserVisitor {
     }
 
     visitCreateTableStatement(ctx) {
-        const _ = dependencies.lodash
+        const _ = dependencies.lodash;
         const [tableName, tableLikeName] = this.visit(ctx.tableName());
         const tableDataSource = this.visitWhenExists(ctx, 'tableUsingDataSource');
         const compositePartitionKey = this.visitWhenExists(ctx, 'tablePartition', [])?.[0] || [];
-        const { compositeClusteringKey, numBuckets, sortedByKey } = this.visitWhenExists(ctx, 'tableBuckets', [])?.[0] || {};
+        const {
+            compositeClusteringKey,
+            numBuckets,
+            sortedByKey
+        } = this.visitWhenExists(ctx, 'tableBuckets', [])?.[0] || {};
         const { skewedby, skewedOn, skewStoredAsDir } = this.visitWhenExists(ctx, 'tableSkewed', [])?.[0] || {};
         const tableRowFormat = this.visitWhenExists(ctx, 'tableRowFormat', {})?.[0] || {};
         const description = this.visitWhenExists(ctx, 'tableComment');
         const location = this.visitWhenExists(ctx, 'tableLocation');
-        const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
-        const checkConstraints = Array.isArray(tableProperties) && getCheckConstraintsFromTableProperties(tableProperties[0]);
+        const rawTableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
+        const tableProperties = normalizeTableProperties(rawTableProperties);
+        debugger
+        const checkConstraints = getCheckConstraintsFromTableProperties(tableProperties);
         let tableOptions = this.visitWhenExists(ctx, 'tableOptions');
-        tableOptions =  Array.isArray(tableOptions) ? tableOptions?.[0] || '' : tableOptions;
+        tableOptions = Array.isArray(tableOptions) ? tableOptions?.[0] || '' : tableOptions;
         const temporaryTable = Boolean(ctx.KW_TEMPORARY());
         const externalTable = Boolean(ctx.KW_EXTERNAL());
         let storedAsTable = this.visitWhenExists(ctx, 'tableFileFormat', {});
@@ -130,7 +140,7 @@ class Visitor extends HiveParserVisitor {
                         temporaryTable,
                         externalTable,
                         description: Array.isArray(description) ? description[0] || '' : String(description),
-                        compositePartitionKey: compositePartitionKey.map(([ name ]) => ({ name })),
+                        compositePartitionKey: compositePartitionKey.map(([name]) => ({ name })),
                         compositeClusteringKey,
                         numBuckets,
                         sortedByKey,
@@ -139,7 +149,7 @@ class Visitor extends HiveParserVisitor {
                         skewStoredAsDir,
                         tableOptions,
                         location: Array.isArray(location) ? location[0] || '' : String(location),
-                        tableProperties: Array.isArray(tableProperties) ? getFilteredTableProperties(tableProperties[0]) || '' : String(tableProperties),
+                        tableProperties: Array.isArray(tableProperties) ? getFilteredTableProperties(tableProperties) || '' : String(tableProperties),
                         using: getUsingProperty(Array.isArray(tableDataSource) ? tableDataSource[0] || '' : String(tableDataSource)),
                         chkConstr: checkConstraints,
                         ...storedAsTable,
@@ -321,7 +331,7 @@ class Visitor extends HiveParserVisitor {
         return [
             ...keyValueProperties,
             ...keyProperties.map(propertyKey => ({ propertyKey })),
-        ]
+        ];
     }
 
     visitKeyValueProperty(ctx) {
@@ -726,7 +736,7 @@ class Visitor extends HiveParserVisitor {
             generatedType: ctx.KW_DEFAULT() ? 'by default' : 'always',
             asIdentity: true,
             ...(hasIdentityOptions && { identity: this.visit(ctx.identityOptions()) }),
-        }
+        };
     }
 
     visitIdentityOptions(ctx) {
@@ -931,7 +941,7 @@ class Visitor extends HiveParserVisitor {
         return {
             type: 'map',
             subtype: schemaHelper.getMapSubtype(itemType),
-            properties: items.oneOf ? {} : properties   ,
+            properties: items.oneOf ? {} : properties,
             ...(items.oneOf && { oneOf: getOneOf(items.oneOf, 'New column') }),
             ...schemaHelper.getMapKeyType(key),
         };
@@ -1130,7 +1140,7 @@ class Visitor extends HiveParserVisitor {
     visitCreateDatabaseStatement(ctx) {
         const name = this.visit(ctx.identifier());
         const description = this.visitWhenExists(ctx, 'databaseComment');
-        const locationPropertyName = Boolean(ctx?.dbLocation()?.KW_MANAGED()) ? 'managedLocation' : 'location'
+        const locationPropertyName = Boolean(ctx?.dbLocation()?.KW_MANAGED()) ? 'managedLocation' : 'location';
         const locationValue = removeSingleDoubleQuotes(ctx?.dbLocation()?.StringLiteral()?.getText() || '');
         const dbProperties = removeParentheses(ctx?.dbProperties()?.getText() || '');
 
@@ -1215,7 +1225,7 @@ class Visitor extends HiveParserVisitor {
 
     visitCreateBloomfilterIndexStatement(ctx) {
         const { collectionName, bucketName } = this.visit(ctx.createBloomfilterIndexMainStatement());
-        const columns = this.visitWhenExists(ctx, 'bloomfilterColumnParenthesesList')
+        const columns = this.visitWhenExists(ctx, 'bloomfilterColumnParenthesesList');
         const options = this.visitWhenExists(ctx, 'bloomfilterIndexOptions');
 
         return {
@@ -1232,7 +1242,7 @@ class Visitor extends HiveParserVisitor {
         return {
             collectionName: table,
             bucketName: database,
-        }
+        };
     }
 
     visitBloomfilterColumnParenthesesList(ctx) {
@@ -1247,7 +1257,7 @@ class Visitor extends HiveParserVisitor {
         return {
             name: this.visit(ctx.identifier()),
             options: this.visitWhenExists(ctx, 'bloomfilterIndexOptions'),
-        }
+        };
     }
 
     visitBloomfilterIndexOptions(ctx) {
@@ -1256,7 +1266,7 @@ class Visitor extends HiveParserVisitor {
 
     visitDropBloomfilterIndexStatement(ctx) {
         const { collectionName, bucketName } = this.visit(ctx.dropBloomfilterIndexMainStatement());
-        const columns = this.visitWhenExists(ctx, 'bloomfilterColumnParenthesesList')
+        const columns = this.visitWhenExists(ctx, 'bloomfilterColumnParenthesesList');
 
         return {
             type: REMOVE_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND,
@@ -1271,7 +1281,7 @@ class Visitor extends HiveParserVisitor {
         return {
             collectionName: table,
             bucketName: database,
-        }
+        };
     }
 
     visitResourcePlanDdlStatements(ctx) {
@@ -1573,16 +1583,16 @@ const getStoredAsTable = (storedAsTable) => {
 
 const getUsingProperty = (using) => {
     return {
-        delta: "delta",
-        csvfile: "CSVfile",
-        csv: "CSVfile",
-        hive: "Hive",
-        jsonfile: "JSONfile",
-        jdbc: "JDBC",
-        orc: "ORC",
-        parquet: "Parquet",
-        libsvm: "LIBSVM",
-        textfile: "textfile",
+        delta: 'delta',
+        csvfile: 'CSVfile',
+        csv: 'CSVfile',
+        hive: 'Hive',
+        jsonfile: 'JSONfile',
+        jdbc: 'JDBC',
+        orc: 'ORC',
+        parquet: 'Parquet',
+        libsvm: 'LIBSVM',
+        textfile: 'textfile',
     }[String(using).toLowerCase()] || 'delta';
 };
 
@@ -1623,7 +1633,7 @@ const handleChoices = (field) => {
 };
 
 const convertKeysToProperties = (keys = [], existed) => {
-    return keys.reduce((properties, [ name, type ]) => {
+    return keys.reduce((properties, [name, type]) => {
         if (existed?.[name]) {
             return properties;
         }
