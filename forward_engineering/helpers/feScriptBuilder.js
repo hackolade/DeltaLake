@@ -204,7 +204,6 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
     modelDefinitions,
     entitiesJsonSchema,
     containerData,
-    modelData,
     includeRelationshipsInEntityScripts
 }) => {
     const _ = app.require('lodash');
@@ -212,7 +211,7 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
     const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
     const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
 
-    const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(modelData, containerData) : '';
+    const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
     const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
     const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable);
     const entityScriptDtos = getContainerLevelEntitiesScriptDtos(app, data)({
