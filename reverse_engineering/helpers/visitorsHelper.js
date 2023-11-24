@@ -16,11 +16,11 @@
  */
 const getCheckConstraintsFromTableProperties = (tableProperties) => {
     const checkConstraintRegExp = /.constraints./;
-    const rawCheckConstraints = tableProperties.filter(tableProperty => {
+    const rawCheckConstraints = tableProperties?.filter(tableProperty => {
         return checkConstraintRegExp.test(tableProperty.propertyKey);
     });
 
-    if (!rawCheckConstraints.length) {
+    if (!rawCheckConstraints?.length) {
         return [];
     }
 
@@ -42,12 +42,23 @@ const getCheckConstraintsFromTableProperties = (tableProperties) => {
 const getFilteredTableProperties = (tableProperties) => {
     const checkConstraintRegExp = /.constraints./;
 
-    return tableProperties.filter(tableProperty => {
+    return tableProperties?.filter(tableProperty => {
         return !checkConstraintRegExp.test(tableProperty.propertyKey);
     });
 };
 
+const normalizeTableProperties = (tableProperties) => {
+    if (Array.isArray(tableProperties)) {
+        return tableProperties.length > 1
+            ? tableProperties
+            : tableProperties[0];
+    }
+
+    return tableProperties;
+}
+
 module.exports = {
     getCheckConstraintsFromTableProperties,
-    getFilteredTableProperties
+    getFilteredTableProperties,
+    normalizeTableProperties
 }
