@@ -105,7 +105,6 @@ class Visitor extends HiveParserVisitor {
         const location = this.visitWhenExists(ctx, 'tableLocation');
         const rawTableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
         const tableProperties = normalizeTableProperties(rawTableProperties);
-        debugger
         const checkConstraints = getCheckConstraintsFromTableProperties(tableProperties);
         let tableOptions = this.visitWhenExists(ctx, 'tableOptions');
         tableOptions = Array.isArray(tableOptions) ? tableOptions?.[0] || '' : tableOptions;
