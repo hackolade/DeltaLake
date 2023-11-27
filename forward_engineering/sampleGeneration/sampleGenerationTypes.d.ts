@@ -1,8 +1,8 @@
-type EntityLevelParsedJsonData = {
+export type EntityLevelParsedJsonData = {
     [columnName: string]: any | null | undefined,
 }
 
-type ContainerLevelParsedJsonData = {
+export type ContainerLevelParsedJsonData = {
     [collectionId: string]: EntityLevelParsedJsonData,
 }
 

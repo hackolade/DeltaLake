@@ -27,12 +27,33 @@ const parseJsonData = (jsonData) => {
     return collectionIdToSamples;
 }
 
+const generateSampleForDemonstrationOnContainerLevel = (_, ddlProvider) => (parsedData) => {
+    const { prepareName, generateFullEntityNameFromBucketAndTableNames } = require('../utils/general');
+    /**
+     * @type {ContainerLevelParsedJsonData}
+     * */
+    const sampleData = parsedData.jsonData;
+    const collectionId = _.get(Object.keys(sampleData), '[0]');
+    if (!collectionId) {
+        return '';
+    }
+    const entityJsonSchema = (parsedData.entitiesJsonSchema || {})[collectionId] || {};
+    const { bucketName, collectionName } = entityJsonSchema;
+
+    const ddlTableName = generateFullEntityNameFromBucketAndTableNames(bucketName, collectionName);
+
+}
+
 /**
+ * @param app {App}
  * @param parsedData {Object}
  * @param level {'entity' | 'container'}
  * @return {string}
  * */
-const generateSampleForDemonstration = (parsedData, level) => {
+const generateSampleForDemonstration = (app, parsedData, level) => {
+    const ddlProvider = require('../ddlProvider/ddlProvider')(app);
+    const _ = app.require('lodash');
+
     return "INSERT INTO ... VALUES(...);";
 }
 

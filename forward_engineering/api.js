@@ -111,6 +111,7 @@ const parseDataForContainerLevelScript = (data) => {
         data.entities,
         data.internalDefinitions
     );
+    const jsonData = parseJsonData(data.jsonData);
 
     return {
         modelData,
@@ -119,6 +120,7 @@ const parseDataForContainerLevelScript = (data) => {
         externalDefinitions,
         containerData,
         entitiesJsonSchema,
+        jsonData,
     }
 }
 
@@ -163,7 +165,7 @@ module.exports = {
                 if (!sampleGenerationOptions.isSampleGenerationRequired) {
                     return callback(null, scripts);
                 }
-                const demoSample = generateSampleForDemonstration(parsedData.jsonData);
+                const demoSample = generateSampleForDemonstration(app, parsedData, 'entity');
                 return callback(null, getScriptAndSampleResponse(scripts, demoSample));
             }
         } catch (e) {
@@ -246,7 +248,7 @@ module.exports = {
                     return callback(null, scripts);
                 }
 
-                const demoSample = generateSampleForDemonstration(parsedData);
+                const demoSample = generateSampleForDemonstration(app, parsedData, 'container');
                 return callback(null, getScriptAndSampleResponse(scripts, demoSample));
             }
         } catch (e) {
