@@ -42,5 +42,6 @@
 		"value": 1,
 		"minValue": 1,
 		"maxValue": 100000000
-	}
+	},
+	"refresh": true
 }

@@ -7,7 +7,7 @@ const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestH
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
 
 const logHelper = require('../reverse_engineering/logHelper');
-const {buildEntityLevelFEScript, buildContainerLevelFEScriptDto} = require("./helpers/feScriptBuilder");
+const {buildEntityLevelFEScript, buildContainerLevelFEScriptDto, buildContainerLevelFEScript} = require("./helpers/feScriptBuilder");
 const {
     buildEntityLevelAlterScript,
     buildContainerLevelAlterScript,
@@ -28,6 +28,7 @@ const {
     Logger,
     PluginError
 } = require('./types/coreApplicationTypes')
+const {getSampleGenerationOptions, parseJsonData, generateSampleForDemonstration} = require("./sampleGeneration/sampleGenerationService");
 
 /**
  * @typedef {(error?: PluginError | null, result?: any | null) => void} PluginCallback
@@ -64,6 +65,7 @@ const parseEntities = (entities, serializedItems) => {
  *      externalDefinitions: ExternalDefinitions | unknown,
  *      containerData: ContainerData | unknown,
  *      entityData: unknown,
+ *      jsonData: ParsedJsonData
  * }}
  * */
 const parseDataForEntityLevelScript = (data) => {
@@ -74,6 +76,7 @@ const parseDataForEntityLevelScript = (data) => {
     const containerData = data.containerData;
     const modelData = data.modelData;
     const entityData = data.entityData;
+    const jsonData = parseJsonData(data.jsonData);
 
     return {
         jsonSchema,
@@ -83,6 +86,7 @@ const parseDataForEntityLevelScript = (data) => {
         containerData,
         entityData,
         modelData,
+        jsonData,
     }
 }
 
@@ -94,6 +98,7 @@ const parseDataForEntityLevelScript = (data) => {
  *      externalDefinitions: ExternalDefinitions | unknown,
  *      containerData: ContainerData | unknown,
  *      entitiesJsonSchema: EntitiesJsonSchema | unknown,
+ *      jsonData: Record<string, Object>
  * }}
  * */
 const parseDataForContainerLevelScript = (data) => {
@@ -117,6 +122,27 @@ const parseDataForContainerLevelScript = (data) => {
     }
 }
 
+/**
+ * @param script {string}
+ * @param sample {string}
+ * @return {Array<{ title: string, script: string, mode: string }>}
+ * */
+const getScriptAndSampleResponse = (script, sample) => {
+    const mode = "sql";
+    return [
+        {
+            title: 'DDL script',
+            script,
+            mode,
+        },
+        {
+            title: 'Sample data',
+            script: sample,
+            mode,
+        },
+    ]
+}
+
 module.exports = {
     /**
      * @param data {CoreData}
@@ -133,7 +159,12 @@ module.exports = {
                 callback(null, scripts);
             } else {
                 const scripts = buildEntityLevelFEScript(data, app)(parsedData);
-                callback(null, scripts);
+                const sampleGenerationOptions = getSampleGenerationOptions(app, data);
+                if (!sampleGenerationOptions.isSampleGenerationRequired) {
+                    return callback(null, scripts);
+                }
+                const demoSample = generateSampleForDemonstration(parsedData.jsonData);
+                return callback(null, getScriptAndSampleResponse(scripts, demoSample));
             }
         } catch (e) {
             logger.log(
@@ -200,23 +231,23 @@ module.exports = {
                     const useCatalogStatement = scriptData.catalog
                         ? scriptData.catalog + '\n\n'
                         : '';
-                    const result = {
+                    const scripts = {
                         container: useCatalogStatement + scriptData.container,
                         entities: scriptData.entities,
                         views: scriptData.views,
                     };
-                    callback(null, result);
-                    return;
+                    return callback(null, scripts);
                 }
 
-                const result = buildScript([
-                    scriptData.catalog,
-                    scriptData.container,
-                    ...(scriptData.entities.map(e => e.script)),
-                    ...(scriptData.views.map(v => v.script)),
-                    ...(scriptData.relationships),
-                ]);
-                callback(null, result);
+                const scripts = buildContainerLevelFEScript(scriptData);
+
+                const sampleGenerationOptions = getSampleGenerationOptions(app, data);
+                if (!sampleGenerationOptions.isSampleGenerationRequired) {
+                    return callback(null, scripts);
+                }
+
+                const demoSample = generateSampleForDemonstration(parsedData);
+                return callback(null, getScriptAndSampleResponse(scripts, demoSample));
             }
         } catch (e) {
             logger.log(

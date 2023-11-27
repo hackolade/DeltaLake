@@ -240,7 +240,18 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
 
 }
 
+const buildContainerLevelFEScript = (containerLevelFEScriptDto) => {
+    return buildScript([
+        containerLevelFEScriptDto.catalog,
+        containerLevelFEScriptDto.container,
+        ...(containerLevelFEScriptDto.entities.map(e => e.script)),
+        ...(containerLevelFEScriptDto.views.map(v => v.script)),
+        ...(containerLevelFEScriptDto.relationships),
+    ]);
+}
+
 module.exports = {
     buildEntityLevelFEScript,
     buildContainerLevelFEScriptDto,
+    buildContainerLevelFEScript,
 }

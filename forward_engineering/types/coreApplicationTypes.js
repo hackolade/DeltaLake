@@ -148,6 +148,11 @@ class CoreData {
      * ]}
      * */
     modelData
+
+    /**
+     * @type {Record<string, string> | string}
+     * */
+    jsonData
 }
 
 module.exports = {
