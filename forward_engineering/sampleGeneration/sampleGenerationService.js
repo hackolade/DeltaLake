@@ -34,6 +34,22 @@ const parseJsonData = (jsonData) => {
 }
 
 /**
+ * @param columnIndex {number}
+ * @param maxColumnsInLineOfValuesClause {number}
+ * @return {string}
+ * */
+const getValuesClauseColumnDelimiter = (columnIndex, maxColumnsInLineOfValuesClause) => {
+    const indexInLine = columnIndex % maxColumnsInLineOfValuesClause;
+    if (columnIndex === 0 || indexInLine !== 0) {
+        return ', ';
+    }
+    if (columnIndex !== 0 && indexInLine === 0) {
+        return ',\n\t';
+    }
+    return '';
+}
+
+/**
  * @return {
  *     (
  *      entityJsonSchema: SampleGenerationEntityJsonSchema,
@@ -65,16 +81,14 @@ const generateSamples = (_, ddlProvider) => (entityJsonSchema, samples) => {
             const sampleValue = sampleDto[columnName];
             const ddlValueRepresentation = sampleValue.toString();
             valueClauseParts.push(ddlValueRepresentation);
-            if (j % maxColumnsInLineOfValuesClause !== 0 && j !== columnNames.length - 1) {
-                valueClauseParts.push(', ');
-            }
-            if (j !== 0 && j % maxColumnsInLineOfValuesClause === 0 && j !== columnNames.length - 1) {
-                valueClauseParts.push(',\n\t');
+            if (j !== columnNames.length - 1) {
+                const columnDelimiter = getValuesClauseColumnDelimiter(j, maxColumnsInLineOfValuesClause);
+                valueClauseParts.push(columnDelimiter);
             }
         }
         valueClauseParts.push('\n)');
         statements.push(valueClauseParts.join(''));
-        if (i < samples.length - 1) {
+        if (i !== samples.length - 1) {
             statements.push(',\n')
         }
     }
@@ -100,6 +114,18 @@ const generateSampleForDemonstrationOnContainerLevel = (_, ddlProvider) => (pars
 }
 
 /**
+ * @return {(parsedData: Object) => string}
+ * */
+const generateSampleForDemonstrationOnEntityLevel = (_, ddlProvider) => (parsedData) => {
+    /**
+     * @type {ContainerLevelParsedJsonData}
+     * */
+    const sampleData = parsedData.jsonData || {};
+    const entityJsonSchema = parsedData.jsonSchema || {};
+    return generateSamples(_, ddlProvider)(entityJsonSchema, [sampleData]);
+}
+
+/**
  * @param app {App}
  * @param parsedData {Object}
  * @param level {'entity' | 'container'}
@@ -109,11 +135,13 @@ const generateSampleForDemonstration = (app, parsedData, level) => {
     const ddlProvider = require('../ddlProvider/ddlProvider')(app);
     const _ = app.require('lodash');
 
-    let script = ''
-    if (level === 'container') {
-        script = generateSampleForDemonstrationOnContainerLevel(_, ddlProvider)(parsedData);
+    if (level === 'entity') {
+        return generateSampleForDemonstrationOnEntityLevel(_, ddlProvider)(parsedData);
     }
-    return script;
+    if (level === 'container') {
+        return  generateSampleForDemonstrationOnContainerLevel(_, ddlProvider)(parsedData);
+    }
+    return '';
 }
 
 
