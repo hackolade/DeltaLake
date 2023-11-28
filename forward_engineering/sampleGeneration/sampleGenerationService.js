@@ -57,22 +57,26 @@ const generateSamples = (_, ddlProvider) => (entityJsonSchema, samples) => {
     const statements = [insertIntoClause];
     const maxColumnsInLineOfValuesClause = 3;
 
-    for (const sampleDto of samples) {
+    for (let i = 0; i < samples.length; i++) {
+        const sampleDto = samples[i];
         const valueClauseParts = ['(\n\t'];
-        for (let i = 0; i < columnNames.length; i++) {
-            const columnName = columnNames[i];
+        for (let j = 0; j < columnNames.length; j++) {
+            const columnName = columnNames[j];
             const sampleValue = sampleDto[columnName];
             const ddlValueRepresentation = sampleValue.toString();
             valueClauseParts.push(ddlValueRepresentation);
-            if (i % maxColumnsInLineOfValuesClause !== 0 && i !== columnNames.length - 1) {
+            if (j % maxColumnsInLineOfValuesClause !== 0 && j !== columnNames.length - 1) {
                 valueClauseParts.push(', ');
             }
-            if (i !== 0 && i % maxColumnsInLineOfValuesClause === 0 && i !== columnNames.length - 1) {
+            if (j !== 0 && j % maxColumnsInLineOfValuesClause === 0 && j !== columnNames.length - 1) {
                 valueClauseParts.push(',\n\t');
             }
         }
         valueClauseParts.push('\n)');
         statements.push(valueClauseParts.join(''));
+        if (i < samples.length - 1) {
+            statements.push(',\n')
+        }
     }
 
     return statements.join('\n') + ';';
