@@ -183,6 +183,9 @@ const wrapInBrackets = (str = '') => {
     return /^\(\S+\)$/.test(str) ? str : `(${str})`;
 }
 
+/**
+ * @param statements {Array<string>}
+ * */
 const buildScript = (statements) => {
     const nonEmptyScripts = statements.filter((statement) => statement);
     const formattedScripts = nonEmptyScripts.map(
