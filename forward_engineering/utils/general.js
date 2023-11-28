@@ -81,9 +81,16 @@ const prepareName = (name = '') => {
 const replaceSpaceWithUnderscore = (name = '') => {
     return name.replace(/\s/g, '_');
 }
+
+const replaceDotWithUnderscore = (name = '') => {
+	return name.replace(/\./g, '_');
+}
+
 const getName = (entity) => entity.code || entity.collectionName || entity.name || '';
 
-const getRelationshipName = (relationship) => relationship.name || '';
+const getRelationshipName = (relationship) => {
+	return replaceDotWithUnderscore(replaceSpaceWithUnderscore(relationship.name || ''));
+};
 
 const getTab = (tabNum, configData) => Array.isArray(configData) ? (configData[tabNum] || {}) : {};
 const indentString = (str, tab = 4) => (str || '').split('\n').map(s => ' '.repeat(tab) + s).join('\n');

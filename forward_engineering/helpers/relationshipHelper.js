@@ -3,7 +3,7 @@ const {
     replaceSpaceWithUnderscore,
     getName,
     prepareName,
-    getRelationshipName, commentDeactivatedStatements
+    getRelationshipName, commentDeactivatedStatements, wrapInTicks
 } = require("../utils/general");
 
 
@@ -65,7 +65,7 @@ const createSingleRelationship = (_, ddlProvider) => (relationship, entitiesJson
     const addFkScript = ddlProvider.addFkConstraint({
         childTableName: getFullEntityName(childBucketNameForDDL, childTableNameForDDL),
         childColumns: childColumnNames.map(name => prepareName(name)),
-        fkConstraintName: prepareName(getRelationshipName(relationship)),
+        fkConstraintName: wrapInTicks(getRelationshipName(relationship)),
         parentColumns: parentColumnNames.map(name => prepareName(name)),
         parentTableName: getFullEntityName(parentBucketNameForDDL, parentTableNameForDDL),
     });
