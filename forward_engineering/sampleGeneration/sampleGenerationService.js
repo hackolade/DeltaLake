@@ -1,7 +1,8 @@
 const {
     prepareName,
-    generateFullEntityNameFromBucketAndTableNames, buildScript,
+    generateFullEntityNameFromBucketAndTableNames,
 } = require('../utils/general');
+const {mapInsertSampleToDml} = require("./mapInsertSampleToDml");
 
 
 const getSampleGenerationOptions = (app, data) => {
@@ -63,6 +64,7 @@ const generateSamples = (_, ddlProvider) => (entityJsonSchema, samples) => {
     }
     const { bucketName, collectionName } = entityJsonSchema;
     const ddlTableName = generateFullEntityNameFromBucketAndTableNames(bucketName, collectionName);
+    const properties = entityJsonSchema.properties || {};
 
     const firstSample = _.get(samples, '[0]', {});
     const columnNames = Object.keys(firstSample);
@@ -79,7 +81,9 @@ const generateSamples = (_, ddlProvider) => (entityJsonSchema, samples) => {
         for (let j = 0; j < columnNames.length; j++) {
             const columnName = columnNames[j];
             const sampleValue = sampleDto[columnName];
-            const ddlValueRepresentation = sampleValue.toString();
+            const column = properties[columnName] || {};
+
+            const ddlValueRepresentation = mapInsertSampleToDml(column, sampleValue);
             valueClauseParts.push(ddlValueRepresentation);
             if (j !== columnNames.length - 1) {
                 const columnDelimiter = getValuesClauseColumnDelimiter(j, maxColumnsInLineOfValuesClause);
