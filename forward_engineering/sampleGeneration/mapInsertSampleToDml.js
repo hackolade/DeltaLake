@@ -26,6 +26,14 @@ const mapInsertNumberSampleToDml = (column, sample) => {
  * @param column {Object}
  * @param sample {any}
  * */
+const mapInsertBooleanSampleToDml = (column, sample) => {
+    return Boolean(sample);
+}
+
+/**
+ * @param column {Object}
+ * @param sample {any}
+ * */
 const mapSqlCodeToDml = (column, sample) => {
     return (sample || '').toString();
 }
@@ -53,7 +61,7 @@ const mapJsonArrayToDml = (column, sample) => {
  * @param column {Object}
  * @param sample {any}
  * */
-const mapMapToDml = (column, sample) => {
+const mapMapToDml = (column, sample = {}) => {
     const keyType = column.keyType || 'text';
     /**
      * @type {InsertSampleMapper}
@@ -62,7 +70,7 @@ const mapMapToDml = (column, sample) => {
 
     const mapKeyValuePairs = [];
     const properties = column.properties || {};
-    for (const propertyName of Object.keys(properties)) {
+    for (const propertyName of Object.keys(sample)) {
         const propertyJsonSchema = properties[propertyName] || {};
         const propertyType = propertyJsonSchema.type || 'text';
         /**
@@ -90,7 +98,7 @@ const mapMapToDml = (column, sample) => {
  * @param column {Object}
  * @param sample {any}
  * */
-const mapArrayToDml = (column, sample) => {
+const mapArrayToDml = (column, sample = []) => {
     const arrayElements = [];
     let items = column.items || [];
     if (!Array.isArray(items)) {
@@ -122,7 +130,7 @@ const mapArrayToDml = (column, sample) => {
  * @param column {Object}
  * @param sample {any}
  * */
-const mapStructToDml = (column, sample) => {
+const mapStructToDml = (column, sample = {}) => {
     /**
      * @type {InsertSampleMapper}
      * */
@@ -130,7 +138,7 @@ const mapStructToDml = (column, sample) => {
 
     const structKeyValuePairs = [];
     const properties = column.properties || {};
-    for (const propertyName of Object.keys(properties)) {
+    for (const propertyName of Object.keys(sample || {})) {
         const propertyJsonSchema = properties[propertyName] || {};
         const propertyType = propertyJsonSchema.type || 'text';
         /**
@@ -158,6 +166,7 @@ const mapStructToDml = (column, sample) => {
  * @type {Map<string, InsertSampleMapper>}
  * */
 const typeToMapperMap = new Map()
+    .set('bool', mapInsertBooleanSampleToDml)
     .set('text', mapInsertStringSampleToDml)
     .set('numeric', mapInsertNumberSampleToDml)
     .set('timestamp', mapSqlCodeToDml)
