@@ -35,11 +35,19 @@ const mapSqlCodeToDml = (column, sample) => {
  * @param sample {any}
  * */
 const mapJsonObjectToDml = (column, sample) => {
-    if (column.type !== 'jsonObject') {
-        return '';
-    }
-    return JSON.stringify(sample);
+    const stringified = JSON.stringify(sample);
+    return wrapInSingleQuotes(stringified);
 }
+
+/**
+ * @param column {Object}
+ * @param sample {any}
+ * */
+const mapJsonArrayToDml = (column, sample) => {
+    const stringified = JSON.stringify(sample);
+    return wrapInSingleQuotes(stringified);
+}
+
 
 /**
  * @param column {Object}
@@ -84,7 +92,11 @@ const mapMapToDml = (column, sample) => {
  * */
 const mapArrayToDml = (column, sample) => {
     const arrayElements = [];
-    const items = column.items || [];
+    let items = column.items || [];
+    if (!Array.isArray(items)) {
+        items = [items];
+    }
+
     for (let i = 0; i < Math.min(items.length, sample.length); i++) {
         const value = sample[i];
         const valueJsonSchema = items[i];
@@ -107,6 +119,42 @@ const mapArrayToDml = (column, sample) => {
 }
 
 /**
+ * @param column {Object}
+ * @param sample {any}
+ * */
+const mapStructToDml = (column, sample) => {
+    /**
+     * @type {InsertSampleMapper}
+     * */
+    const keyMapper = typeToMapperMap.get('text') || (() => {});
+
+    const structKeyValuePairs = [];
+    const properties = column.properties || {};
+    for (const propertyName of Object.keys(properties)) {
+        const propertyJsonSchema = properties[propertyName] || {};
+        const propertyType = propertyJsonSchema.type || 'text';
+        /**
+         * @type {InsertSampleMapper}
+         * */
+        const valueMapper = typeToMapperMap.get(propertyType) || (() => {});
+
+        if (structKeyValuePairs.length !== 0) {
+            structKeyValuePairs.push(', ');
+        }
+
+        const dmlKey = keyMapper(column, propertyName);
+        const dmlValue = valueMapper(propertyJsonSchema, sample[propertyName]);
+        structKeyValuePairs.push(dmlKey);
+        structKeyValuePairs.push(', ');
+        structKeyValuePairs.push(dmlValue);
+    }
+
+    structKeyValuePairs.unshift('NAMED_STRUCT(');
+    structKeyValuePairs.push(')');
+    return structKeyValuePairs.join('');
+}
+
+/**
  * @type {Map<string, InsertSampleMapper>}
  * */
 const typeToMapperMap = new Map()
@@ -117,6 +165,9 @@ const typeToMapperMap = new Map()
     .set('interval', mapSqlCodeToDml)
     .set('map', mapMapToDml)
     .set('array', mapArrayToDml)
+    .set('struct', mapStructToDml)
+    .set('jsonObject', mapJsonObjectToDml)
+    .set('jsonArray', mapJsonArrayToDml)
 
 /**
  * @param column {Object}
