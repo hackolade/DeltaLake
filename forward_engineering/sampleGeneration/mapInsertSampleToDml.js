@@ -41,6 +41,10 @@ const mapJsonObjectToDml = (column, sample) => {
     return JSON.stringify(sample);
 }
 
+/**
+ * @param column {Object}
+ * @param sample {any}
+ * */
 const mapMapToDml = (column, sample) => {
     const keyType = column.keyType || 'text';
     /**
@@ -75,6 +79,34 @@ const mapMapToDml = (column, sample) => {
 }
 
 /**
+ * @param column {Object}
+ * @param sample {any}
+ * */
+const mapArrayToDml = (column, sample) => {
+    const arrayElements = [];
+    const items = column.items || [];
+    for (let i = 0; i < Math.min(items.length, sample.length); i++) {
+        const value = sample[i];
+        const valueJsonSchema = items[i];
+        const valueType = valueJsonSchema.type || 'text';
+
+        /**
+         * @type {InsertSampleMapper}
+         * */
+        const valueMapper = typeToMapperMap.get(valueType) || (() => {});
+        const dmlValue = valueMapper(valueJsonSchema, value);
+
+        if (arrayElements.length !== 0) {
+            arrayElements.push(', ');
+        }
+        arrayElements.push(dmlValue);
+    }
+    arrayElements.unshift('ARRAY(');
+    arrayElements.push(')');
+    return arrayElements.join('');
+}
+
+/**
  * @type {Map<string, InsertSampleMapper>}
  * */
 const typeToMapperMap = new Map()
@@ -84,6 +116,7 @@ const typeToMapperMap = new Map()
     .set('date', mapSqlCodeToDml)
     .set('interval', mapSqlCodeToDml)
     .set('map', mapMapToDml)
+    .set('array', mapArrayToDml)
 
 /**
  * @param column {Object}
