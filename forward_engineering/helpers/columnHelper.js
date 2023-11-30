@@ -385,14 +385,30 @@ const getColumnStatement = ({ name, type, comment, constraints, isActivated, isP
 	return commentDeactivatedStatements(`${replaceSpaceWithUnderscore(name)} ${type}${generatedExpression}${constraintsStatement}${commentStatement}`, isColumnActivated);
 };
 
+const isCommentedStatement = (statement = '') => statement.startsWith('--');
+
 const getColumnsStatement = (columns, isParentActivated) => {
-	return Object.keys(columns).map((name) => {
+	const columnStatements = Object.keys(columns).map((name) => {
 		return getColumnStatement(Object.assign(
 			{},
 			columns[name],
 			{ name, isParentActivated }
 		))
-	}).join(', ');
+	});
+
+	const lastColumnStatement = columnStatements[columnStatements.length - 1];
+	const allDeactivated = columnStatements.every(isCommentedStatement);
+	if (allDeactivated || !isCommentedStatement(lastColumnStatement)) {
+		return columnStatements.join(',\n');
+	}
+
+	const lastActiveStatement = columnStatements.findLastIndex(statement => !isCommentedStatement(statement));
+	return columnStatements.map((statement, index) => {
+		if (index === lastActiveStatement) {
+			return `${statement} -- ,\n`;
+		}
+		return `${statement},\n`;
+	}).join('');
 };
 
 const getColumnsString = columns => columns.join(', ');
