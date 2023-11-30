@@ -147,26 +147,6 @@ const commentDeactivatedInlineKeys = (_) => (keys, deactivatedKeyNames) => {
     return {isAllKeysDeactivated: false, keysString: `${activatedKeys.join(', ')} /*, ${deactivatedKeys.join(', ')} */`}
 }
 
-/**
- * @return {(statement: string) => string}
- * */
-const removeRedundantTrailingCommaFromStatement = (_) => (statement) => {
-    const splitedStatement = statement.split('\n');
-    if (splitedStatement.length < 4 || !splitedStatement[splitedStatement.length - 2].trim().startsWith('--')) {
-        return statement;
-    }
-    const lineWithTrailingCommaIndex = _.findLastIndex(splitedStatement, line => {
-        if (line.trim() !== ');' && !line.trim().startsWith('--')) {
-            return true;
-        }
-    });
-    if (lineWithTrailingCommaIndex !== -1) {
-        splitedStatement[lineWithTrailingCommaIndex] = `${splitedStatement[lineWithTrailingCommaIndex].slice(0, -1)} -- ,`;
-        return splitedStatement.join('\n');
-    }
-    return statement;
-}
-
 const getCleanedUrl = url => {
     if (url.endsWith('/')) {
         return url.slice(0, -1)
@@ -298,7 +278,6 @@ module.exports = {
     replaceSpaceWithUnderscore,
     commentDeactivatedStatements,
     commentDeactivatedInlineKeys,
-    removeRedundantTrailingCommaFromStatement,
     getCleanedUrl,
     encodeStringLiteral,
     buildScript,

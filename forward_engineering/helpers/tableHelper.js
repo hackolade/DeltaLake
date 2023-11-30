@@ -6,7 +6,6 @@ const {
 	getTab,
 	replaceSpaceWithUnderscore,
 	commentDeactivatedInlineKeys,
-	removeRedundantTrailingCommaFromStatement,
 	encodeStringLiteral,
 	prepareName,
 	getDifferentItems,
@@ -327,7 +326,7 @@ const getTableStatement = (app) => (
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements;
 	}
 
-	return removeRedundantTrailingCommaFromStatement(_)(tableStatement);
+	return tableStatement;
 };
 
 const getUsing = using => {
