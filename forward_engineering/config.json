@@ -19,6 +19,9 @@
 	},
 	"applyScriptToInstance": true,
 	"mode": "mysql",
+	"applyToInstanceSettings": {
+		"generateSamplesInBulk": true
+	},
 	"additionalOptions": [
 		{
 			"id": "applyDropStatements",

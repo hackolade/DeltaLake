@@ -263,18 +263,18 @@ module.exports = {
     },
 
     /**
-     * @param connectionInfo {CoreData}
+     * @param data {CoreData}
      * @param logger {Logger}
      * @param cb {PluginCallback}
      * @param app {App}
      * */
-    async applyToInstance(connectionInfo, logger, cb, app) {
+    async applyToInstance(data, logger, cb, app) {
         const connectionData = {
-            host: getCleanedUrl(connectionInfo.host),
-            clusterId: connectionInfo.clusterId,
-            accessToken: connectionInfo.accessToken,
-            applyToInstanceQueryRequestTimeout: connectionInfo.applyToInstanceQueryRequestTimeout,
-            script: connectionInfo.script
+            host: getCleanedUrl(data.host),
+            clusterId: data.clusterId,
+            accessToken: data.accessToken,
+            applyToInstanceQueryRequestTimeout: data.applyToInstanceQueryRequestTimeout,
+            script: data.script
         }
 
         try {
