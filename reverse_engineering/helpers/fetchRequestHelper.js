@@ -2,8 +2,11 @@
 const nodeFetch = require('node-fetch');
 const AbortController = require('abort-controller');
 const { dependencies } = require('../appDependencies');
+const fs = require('fs');
+const readline = require('readline');
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
+const { generateSamplesScript } = require('../../forward_engineering/sampleGeneration/sampleGenerationService');
 
 const JSON_OBJECTS_DELIMITER = '}, {';
 
@@ -81,7 +84,56 @@ const destroyActiveContext = () => {
 	return result;
 };
 
-const fetchApplyToInstance = async (connectionInfo, logger) => {
+/**
+ * @return {(
+ *     connectionInfo: Object,
+ *     samples: Array<Object>,
+ *     entityJsonSchema: Object,
+ * ) => Promise<any>}
+ * */
+const sendSampleBatch = (_) => (connectionInfo, samples, entityJsonSchema) => {
+	const script = generateSamplesScript(_)(entityJsonSchema, samples);
+	return executeCommand(connectionInfo, script, 'sql')
+}
+
+const sendSampleBatches = (_) => async (connectionInfo) => {
+	const { entitiesData } = connectionInfo;
+	// there is a .pagination param in connectionInfo
+	const batchSize = 1000;
+
+	for (const entityData of Object.values(entitiesData)) {
+		const { filePath, jsonSchema } = entityData;
+		const fileStream = fs.createReadStream(filePath);
+		const rl = readline.createInterface({
+			input: fileStream,
+			crlfDelay: Infinity
+		});
+
+		const sendBatchPromises = [];
+		let samples = [];
+
+		rl.on('line', (line) => {
+			samples.push(JSON.parse(line));
+			if (samples.length === batchSize) {
+				const sendBatchPromise = sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
+				sendBatchPromises.push(sendBatchPromise);
+				samples = [];
+			}
+		});
+
+		rl.on('close', () => {
+			if (samples.length !== 0) {
+				const sendBatchPromise = sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
+				sendBatchPromises.push(sendBatchPromise);
+				samples = [];
+			}
+		});
+
+		await Promise.all(sendBatchPromises);
+	}
+}
+
+const fetchApplyToInstance = (_) => async (connectionInfo, logger) => {
 	const progress = message => {
 		logger.log('info', message, 'Applying to instance');
 		logger.progress(message);
@@ -90,10 +142,13 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 	progress({ message: `Applying script: \n ${connectionInfo.script}` });
 
 	await Promise.race([
-		executeCommand(connectionInfo, connectionInfo.script, 'sql'),
+		executeCommand(connectionInfo, connectionInfo.script, 'sql')
+			.then(() => {
+				return sendSampleBatches(_)(connectionInfo);
+			}),
 		new Promise((_r, rej) =>
 			setTimeout(() => {
-				throw new Error('Timeout exceeded for script\n' + script);
+				throw new Error('Timeout exceeded for script\n' + connectionInfo.script);
 			}, connectionInfo.applyToInstanceQueryRequestTimeout || 120000),
 		),
 	]);

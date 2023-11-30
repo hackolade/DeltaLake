@@ -58,7 +58,7 @@ const getValuesClauseColumnDelimiter = (columnIndex, maxColumnsInLineOfValuesCla
  *     ) => string
  * }
  * */
-const generateSamples = (_, ddlProvider) => (entityJsonSchema, samples) => {
+const generateSamples = (_) => (entityJsonSchema, samples) => {
     if (!samples.length) {
         return '';
     }
@@ -103,7 +103,7 @@ const generateSamples = (_, ddlProvider) => (entityJsonSchema, samples) => {
 /**
  * @return {(parsedData: Object) => string}
  * */
-const generateSampleForDemonstrationOnContainerLevel = (_, ddlProvider) => (parsedData) => {
+const generateSampleForDemonstrationOnContainerLevel = (_) => (parsedData) => {
     /**
      * @type {ContainerLevelParsedJsonData}
      * */
@@ -114,19 +114,19 @@ const generateSampleForDemonstrationOnContainerLevel = (_, ddlProvider) => (pars
     }
     const entityJsonSchema = (parsedData.entitiesJsonSchema || {})[collectionId] || {};
     const collectionSampleData = sampleData[collectionId] || {}
-    return generateSamples(_, ddlProvider)(entityJsonSchema, [collectionSampleData]);
+    return generateSamples(_)(entityJsonSchema, [collectionSampleData]);
 }
 
 /**
  * @return {(parsedData: Object) => string}
  * */
-const generateSampleForDemonstrationOnEntityLevel = (_, ddlProvider) => (parsedData) => {
+const generateSampleForDemonstrationOnEntityLevel = (_) => (parsedData) => {
     /**
      * @type {ContainerLevelParsedJsonData}
      * */
     const sampleData = parsedData.jsonData || {};
     const entityJsonSchema = parsedData.jsonSchema || {};
-    return generateSamples(_, ddlProvider)(entityJsonSchema, [sampleData]);
+    return generateSamples(_)(entityJsonSchema, [sampleData]);
 }
 
 /**
@@ -136,21 +136,38 @@ const generateSampleForDemonstrationOnEntityLevel = (_, ddlProvider) => (parsedD
  * @return {string}
  * */
 const generateSampleForDemonstration = (app, parsedData, level) => {
-    const ddlProvider = require('../ddlProvider/ddlProvider')(app);
     const _ = app.require('lodash');
 
     if (level === 'entity') {
-        return generateSampleForDemonstrationOnEntityLevel(_, ddlProvider)(parsedData);
+        return generateSampleForDemonstrationOnEntityLevel(_)(parsedData);
     }
     if (level === 'container') {
-        return  generateSampleForDemonstrationOnContainerLevel(_, ddlProvider)(parsedData);
+        return  generateSampleForDemonstrationOnContainerLevel(_)(parsedData);
     }
     return '';
 }
 
+/**
+ * @return {
+ *      (
+ *          entityJsonSchema: Object,
+ *          samples: Array<Object>,
+ *      ) => string
+ * }
+ * */
+const generateSamplesScript = (_) => (entityJsonSchema, samples) => {
+    if (!samples?.length) {
+        return '';
+    }
+    if (!(entityJsonSchema.bucketName && entityJsonSchema.collectionName)) {
+        return '';
+    }
+    return generateSamples(_)(entityJsonSchema, samples);
+}
 
 module.exports = {
     getSampleGenerationOptions,
     parseJsonData,
     generateSampleForDemonstration,
+    generateSamplesScript,
 }

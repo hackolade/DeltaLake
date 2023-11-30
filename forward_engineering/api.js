@@ -274,11 +274,13 @@ module.exports = {
             clusterId: data.clusterId,
             accessToken: data.accessToken,
             applyToInstanceQueryRequestTimeout: data.applyToInstanceQueryRequestTimeout,
-            script: data.script
+            script: data.script,
+            entitiesData: data.entitiesData,
         }
 
+        const _ = app.require('lodash');
         try {
-            await fetchRequestHelper.fetchApplyToInstance(connectionData, logger)
+            await fetchRequestHelper.fetchApplyToInstance(_)(connectionData, logger)
             cb()
         } catch (err) {
             logger.log(
