@@ -102,7 +102,6 @@ const sendSampleBatches = (_) => async (connectionInfo) => {
 
 	for (const entityData of Object.values(entitiesData)) {
 		let samples = [];
-		const sendBatchPromises = [];
 		// Not pushing the sample displayed on the DML screen because it's a part of "Create table" script
 		const { filePath, jsonSchema } = entityData;
 
@@ -117,20 +116,16 @@ const sendSampleBatches = (_) => async (connectionInfo) => {
 			for await (const line of rl) {
 				samples.push(JSON.parse(line));
 				if (samples.length === batchSize) {
-					const sendBatchPromise = sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
-					sendBatchPromises.push(sendBatchPromise);
+					await sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
 					samples = [];
 				}
 			}
 		}
 
 		if (samples.length !== 0) {
-			const sendBatchPromise = sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
-			sendBatchPromises.push(sendBatchPromise);
+			await sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
 			samples = [];
 		}
-
-		await Promise.all(sendBatchPromises);
 	}
 }
 
