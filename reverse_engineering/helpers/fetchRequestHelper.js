@@ -101,32 +101,34 @@ const sendSampleBatches = (_) => async (connectionInfo) => {
 	const batchSize = 1000;
 
 	for (const entityData of Object.values(entitiesData)) {
-		const { filePath, jsonSchema } = entityData;
-		const fileStream = fs.createReadStream(filePath);
-		const rl = readline.createInterface({
-			input: fileStream,
-			crlfDelay: Infinity
-		});
-
-		const sendBatchPromises = [];
 		let samples = [];
+		const sendBatchPromises = [];
+		// Not pushing the sample displayed on the DML screen because it's a part of "Create table" script
+		const { filePath, jsonSchema } = entityData;
 
-		rl.on('line', (line) => {
-			samples.push(JSON.parse(line));
-			if (samples.length === batchSize) {
-				const sendBatchPromise = sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
-				sendBatchPromises.push(sendBatchPromise);
-				samples = [];
-			}
-		});
+		if (filePath) {
+			const fileStream = fs.createReadStream(filePath);
+			const rl = readline.createInterface({
+				input: fileStream,
+				output: process.stdout,
+				terminal: false
+			});
 
-		rl.on('close', () => {
-			if (samples.length !== 0) {
-				const sendBatchPromise = sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
-				sendBatchPromises.push(sendBatchPromise);
-				samples = [];
+			for await (const line of rl) {
+				samples.push(JSON.parse(line));
+				if (samples.length === batchSize) {
+					const sendBatchPromise = sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
+					sendBatchPromises.push(sendBatchPromise);
+					samples = [];
+				}
 			}
-		});
+		}
+
+		if (samples.length !== 0) {
+			const sendBatchPromise = sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
+			sendBatchPromises.push(sendBatchPromise);
+			samples = [];
+		}
 
 		await Promise.all(sendBatchPromises);
 	}
