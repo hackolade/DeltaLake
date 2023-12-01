@@ -98,7 +98,6 @@ const sendSampleBatch = (_) => (connectionInfo, samples, entityJsonSchema) => {
 
 const sendSampleBatches = (_) => async (connectionInfo) => {
 	const { entitiesData } = connectionInfo;
-	// there is a .pagination param in connectionInfo
 	const batchSize = 1000;
 
 	for (const entityData of Object.values(entitiesData)) {
