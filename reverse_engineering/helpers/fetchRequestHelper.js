@@ -2,13 +2,9 @@
 const nodeFetch = require('node-fetch');
 const AbortController = require('abort-controller');
 const { dependencies } = require('../appDependencies');
-const fs = require('fs');
-const readline = require('readline');
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 const { generateSamplesScript } = require('../../forward_engineering/sampleGeneration/sampleGenerationService');
-const {Writable} = require("stream");
-const split = require('split2');
 const {batchProcessFile} = require("./fileHelper");
 
 const JSON_OBJECTS_DELIMITER = '}, {';
@@ -99,131 +95,6 @@ const sendSampleBatch = (_) => (connectionInfo, samples, entityJsonSchema) => {
 	return executeCommand(connectionInfo, script, 'sql')
 }
 
-const createNdJsonStream = (ndJsonFilePath, onData) => {
-	const stream = fs.createReadStream(ndJsonFilePath);
-
-	return stream.pipe(split()).on('data', data => {
-		onData(data, stream);
-	});
-};
-
-const getCountOfLines = filePath =>
-	new Promise((resolve, reject) => {
-		let countOfLines = 0;
-
-		createNdJsonStream(filePath, () => {
-			countOfLines++;
-		})
-			.on('end', () => {
-				resolve(countOfLines);
-			})
-			.on('error', error => {
-				reject(error);
-			});
-	});
-
-const addPositionToParseError = err => {
-	if (err.column && err.line) {
-		return new Error(`${err.message} in JSON at position ${err.column}. On line: ${err.line + 1}`);
-	} else {
-		return err;
-	}
-};
-
-const readNdJsonByLine = async ({ filePath, log, callback, }) => {
-	const maxDocuments = await getCountOfLines(filePath);
-	let line = 0;
-	let isDestroyed = false;
-	let parseError = null;
-	const Writable = require('stream').Writable;
-	const writeStream = new Writable({
-		async write(data, encoding, next) {
-			line++;
-
-			if (line <= maxDocuments) {
-				try {
-					if (shouldLogStep(line)) {
-						log(
-							'info',
-							{ lines: `${line} / ${maxDocuments}`, progress: line / maxDocuments },
-							'NDJSON_READ_LINES',
-						);
-					}
-					if (data) {
-						const resultData = (await data).toString('utf-8');
-						const callbackResult = callback(JSON.parse(resultData));
-
-						if (callbackResult instanceof Promise) {
-							await callbackResult;
-						}
-
-						next();
-					}
-				} catch (err) {
-					parseError = addPositionToParseError(err);
-					next(parseError);
-					return;
-				}
-			} else if (!isDestroyed) {
-				isDestroyed = true;
-				writeStream.emit('finish');
-			}
-		},
-	});
-
-	return new Promise((resolve, reject) => {
-		createNdJsonStream(filePath, () => {})
-			.pipe(writeStream)
-			.on('finish', () => {
-				log(
-					'info',
-					{
-						lines: `${line} / ${maxDocuments}`,
-						progress: line / maxDocuments,
-					},
-					'NDJSON_READ_LINES',
-				);
-				return resolve();
-			})
-			.on('error', error => {
-				reject(error);
-			});
-	});
-};
-
-const sendSampleBatches2 = (_, logger) => async (connectionInfo) => {
-	const { entitiesData } = connectionInfo;
-	const batchSize = 10000;
-
-	for (const entityData of Object.values(entitiesData)) {
-		let samples = [];
-		// Not pushing the sample displayed on the DML screen because it's a part of "Create table" script
-		const { filePath, jsonSchema } = entityData;
-
-		if (filePath) {
-			await readNdJsonByLine({
-				filePath,
-				log: (level, data, operation) => {
-					const message = JSON.stringify(data);
-					logger.progress({ message });
-				},
-				callback: async (parsedLine) => {
-					samples.push(parsedLine);
-					if (samples.length === batchSize) {
-						await sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
-						samples = [];
-					}
-				},
-			})
-		}
-
-		if (samples.length !== 0) {
-			await sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
-			samples = [];
-		}
-	}
-}
-
 /**
  * @param lineNumber {number}
  * @return {boolean}
@@ -252,6 +123,9 @@ const sendSampleBatches = (_, logger) => async (connectionInfo) => {
 				return sendSampleBatch(_)(connectionInfo, batch, jsonSchema);
 			},
 			logProgress: (lineIndex, amountOfLines) => {
+				if (!shouldLogStep(lineIndex)) {
+					return;
+				}
 				const messageData = {
 					lines: `${lineIndex} / ${amountOfLines}`,
 					progress: lineIndex / amountOfLines,
