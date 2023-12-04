@@ -125,7 +125,13 @@ const generateSampleForDemonstrationOnEntityLevel = (_) => (parsedData) => {
      * @type {ContainerLevelParsedJsonData}
      * */
     const sampleData = parsedData.jsonData || {};
-    const entityJsonSchema = parsedData.jsonSchema || {};
+    const entityData = _.get(parsedData, 'entityData[0]', {});
+    const containerData = _.get(parsedData, 'containerData[0]', {});
+    const entityJsonSchema = {
+        ...entityData,
+        bucketName: containerData.name,
+        ...(parsedData.jsonSchema || {}),
+    };
     return generateSamples(_)(entityJsonSchema, [sampleData]);
 }
 
