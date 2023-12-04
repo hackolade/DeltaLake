@@ -7,6 +7,9 @@ const readline = require('readline');
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 const { generateSamplesScript } = require('../../forward_engineering/sampleGeneration/sampleGenerationService');
+const {Writable} = require("stream");
+const split = require('split2');
+const {batchProcessFile} = require("./fileHelper");
 
 const JSON_OBJECTS_DELIMITER = '}, {';
 
@@ -96,9 +99,101 @@ const sendSampleBatch = (_) => (connectionInfo, samples, entityJsonSchema) => {
 	return executeCommand(connectionInfo, script, 'sql')
 }
 
-const sendSampleBatches = (_) => async (connectionInfo) => {
+const createNdJsonStream = (ndJsonFilePath, onData) => {
+	const stream = fs.createReadStream(ndJsonFilePath);
+
+	return stream.pipe(split()).on('data', data => {
+		onData(data, stream);
+	});
+};
+
+const getCountOfLines = filePath =>
+	new Promise((resolve, reject) => {
+		let countOfLines = 0;
+
+		createNdJsonStream(filePath, () => {
+			countOfLines++;
+		})
+			.on('end', () => {
+				resolve(countOfLines);
+			})
+			.on('error', error => {
+				reject(error);
+			});
+	});
+
+const addPositionToParseError = err => {
+	if (err.column && err.line) {
+		return new Error(`${err.message} in JSON at position ${err.column}. On line: ${err.line + 1}`);
+	} else {
+		return err;
+	}
+};
+
+const readNdJsonByLine = async ({ filePath, log, callback, }) => {
+	const maxDocuments = await getCountOfLines(filePath);
+	let line = 0;
+	let isDestroyed = false;
+	let parseError = null;
+	const Writable = require('stream').Writable;
+	const writeStream = new Writable({
+		async write(data, encoding, next) {
+			line++;
+
+			if (line <= maxDocuments) {
+				try {
+					if (shouldLogStep(line)) {
+						log(
+							'info',
+							{ lines: `${line} / ${maxDocuments}`, progress: line / maxDocuments },
+							'NDJSON_READ_LINES',
+						);
+					}
+					if (data) {
+						const resultData = (await data).toString('utf-8');
+						const callbackResult = callback(JSON.parse(resultData));
+
+						if (callbackResult instanceof Promise) {
+							await callbackResult;
+						}
+
+						next();
+					}
+				} catch (err) {
+					parseError = addPositionToParseError(err);
+					next(parseError);
+					return;
+				}
+			} else if (!isDestroyed) {
+				isDestroyed = true;
+				writeStream.emit('finish');
+			}
+		},
+	});
+
+	return new Promise((resolve, reject) => {
+		createNdJsonStream(filePath, () => {})
+			.pipe(writeStream)
+			.on('finish', () => {
+				log(
+					'info',
+					{
+						lines: `${line} / ${maxDocuments}`,
+						progress: line / maxDocuments,
+					},
+					'NDJSON_READ_LINES',
+				);
+				return resolve();
+			})
+			.on('error', error => {
+				reject(error);
+			});
+	});
+};
+
+const sendSampleBatches2 = (_, logger) => async (connectionInfo) => {
 	const { entitiesData } = connectionInfo;
-	const batchSize = 1000;
+	const batchSize = 10000;
 
 	for (const entityData of Object.values(entitiesData)) {
 		let samples = [];
@@ -106,20 +201,20 @@ const sendSampleBatches = (_) => async (connectionInfo) => {
 		const { filePath, jsonSchema } = entityData;
 
 		if (filePath) {
-			const fileStream = fs.createReadStream(filePath);
-			const rl = readline.createInterface({
-				input: fileStream,
-				output: process.stdout,
-				terminal: false
-			});
-
-			for await (const line of rl) {
-				samples.push(JSON.parse(line));
-				if (samples.length === batchSize) {
-					await sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
-					samples = [];
-				}
-			}
+			await readNdJsonByLine({
+				filePath,
+				log: (level, data, operation) => {
+					const message = JSON.stringify(data);
+					logger.progress({ message });
+				},
+				callback: async (parsedLine) => {
+					samples.push(parsedLine);
+					if (samples.length === batchSize) {
+						await sendSampleBatch(_)(connectionInfo, samples, jsonSchema);
+						samples = [];
+					}
+				},
+			})
 		}
 
 		if (samples.length !== 0) {
@@ -129,10 +224,50 @@ const sendSampleBatches = (_) => async (connectionInfo) => {
 	}
 }
 
+/**
+ * @param lineNumber {number}
+ * @return {boolean}
+ * */
+const shouldLogStep = (lineNumber) => {
+	if (lineNumber < 1000) {
+		return lineNumber % 100 === 0;
+	}
+	return lineNumber % 1000 === 0;
+}
+
+
+const sendSampleBatches = (_, logger) => async (connectionInfo) => {
+	const { entitiesData } = connectionInfo;
+	const batchSize = 5000;
+
+	for (const entityData of Object.values(entitiesData)) {
+		const { filePath, jsonSchema } = entityData;
+		// Not pushing the sample displayed on the DML screen because it's a part of "Create table" script
+
+		await batchProcessFile({
+			filePath,
+			batchSize,
+			parseLine: line => JSON.parse(line),
+			batchHandler: (batch) => {
+				return sendSampleBatch(_)(connectionInfo, batch, jsonSchema);
+			},
+			logProgress: (lineIndex, amountOfLines) => {
+				const messageData = {
+					lines: `${lineIndex} / ${amountOfLines}`,
+					progress: lineIndex / amountOfLines,
+				}
+				const message = JSON.stringify(messageData);
+				logger.log('info', { message }, 'SEND_SAMPLE_BATCHES');
+				logger.progress('info', { message }, 'SEND_SAMPLE_BATCHES');
+			},
+		})
+	}
+}
+
 const fetchApplyToInstance = (_) => async (connectionInfo, logger) => {
 	const progress = message => {
 		logger.log('info', message, 'Applying to instance');
-		logger.progress(message);
+		logger.progress({message});
 	};
 
 	progress({ message: `Applying script: \n ${connectionInfo.script}` });
@@ -140,7 +275,7 @@ const fetchApplyToInstance = (_) => async (connectionInfo, logger) => {
 	await Promise.race([
 		executeCommand(connectionInfo, connectionInfo.script, 'sql')
 			.then(() => {
-				return sendSampleBatches(_)(connectionInfo);
+				return sendSampleBatches(_, logger)(connectionInfo);
 			}),
 		new Promise((_r, rej) =>
 			setTimeout(() => {
@@ -604,6 +739,8 @@ const executeCommand = (connectionInfo, command, language = 'sql', logger) => {
 	});
 };
 
+// const sleep = (millis) => new Promise((res, rej) => setTimeout(() => {res(true)}, millis));
+
 const getCommandExecutionResult = (query, options, commandOptions) => {
 	return fetch(query, options)
 		.then(async response => {
@@ -618,7 +755,7 @@ const getCommandExecutionResult = (query, options, commandOptions) => {
 				responseBody,
 			};
 		})
-		.then(body => {
+		.then(async body => {
 			body = JSON.parse(body);
 			if (body.status === 'Finished' && body.results !== null) {
 				if (body.results.resultType === 'error') {
@@ -638,6 +775,7 @@ const getCommandExecutionResult = (query, options, commandOptions) => {
 					description: commandOptions,
 				};
 			}
+            // await sleep(500);
 			return getCommandExecutionResult(query, options, commandOptions);
 		});
 };
