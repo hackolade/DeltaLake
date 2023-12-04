@@ -45,18 +45,19 @@ const batchProcessFile = async ({
         return;
     }
 
-    const fileStream = fs.createReadStream(filePath);
-    const rl = readline.createInterface({
-        input: fileStream,
-        output: process.stdout,
-        terminal: false
-    });
-
     let batch = [];
     let lineIndex = 0;
 
     try {
         const amountOfLines = await getCountOfLines(filePath);
+
+        const fileStream = fs.createReadStream(filePath);
+        const rl = readline.createInterface({
+            input: fileStream,
+            output: process.stdout,
+            terminal: false
+        });
+
         for await (const line of rl) {
             logProgress(lineIndex, amountOfLines);
             try {

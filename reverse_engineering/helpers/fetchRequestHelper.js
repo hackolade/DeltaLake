@@ -126,13 +126,10 @@ const sendSampleBatches = (_, logger) => async (connectionInfo) => {
 				if (!shouldLogStep(lineIndex)) {
 					return;
 				}
-				const messageData = {
-					lines: `${lineIndex} / ${amountOfLines}`,
-					progress: lineIndex / amountOfLines,
-				}
-				const message = JSON.stringify(messageData);
+				const progress = Number(lineIndex / amountOfLines);
+				const message = `Inserted ${lineIndex} lines out of ${amountOfLines}, progress ${progress.toFixed(2)}%`;
 				logger.log('info', { message }, 'SEND_SAMPLE_BATCHES');
-				logger.progress('info', { message }, 'SEND_SAMPLE_BATCHES');
+				logger.progress({ message });
 			},
 		})
 	}
