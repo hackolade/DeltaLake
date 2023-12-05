@@ -70,6 +70,20 @@ const mapDateToDml = (column, sample = '') => {
  * @param column {Object}
  * @param sample {any}
  * */
+const mapIntervalToDml = (column, sample = '') => {
+    if (sample.toUpperCase().includes('INTERVAL')) {
+        return mapSqlCodeToDml(column, sample);
+    }
+    if (sample.startsWith("'") && sample.endsWith("'")) {
+        return sample;
+    }
+    return mapStringToDml(column, sample);
+}
+
+/**
+ * @param column {Object}
+ * @param sample {any}
+ * */
 const mapJsonObjectToDml = (column, sample) => {
     const stringified = JSON.stringify(sample);
     return wrapInSingleQuotes(stringified);
@@ -199,7 +213,7 @@ const typeToMapperMap = new Map()
     .set('numeric', mapNumberToDml)
     .set('timestamp', mapTimestampToDml)
     .set('date', mapDateToDml)
-    .set('interval', mapSqlCodeToDml)
+    .set('interval', mapIntervalToDml)
     .set('map', mapMapToDml)
     .set('array', mapArrayToDml)
     .set('struct', mapStructToDml)
