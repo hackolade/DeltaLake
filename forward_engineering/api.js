@@ -145,6 +145,57 @@ const getScriptAndSampleResponse = (script, sample) => {
     ]
 }
 
+/**
+ * @param data {CoreData}
+ * @param app {App}
+ * @return {{
+ *      container: string,
+ *      entities: Array<{ name: string, script: string }>,
+ *      views: Array<{ name: string, script: string }>,
+ * }}
+ * */
+const getContainerScriptWithSeparateBuckets = (app, data,) => {
+    const parsedData = parseDataForContainerLevelScript(data);
+    const sampleGenerationOptions = getSampleGenerationOptions(app, data);
+
+    const scriptData = buildContainerLevelFEScriptDto(data, app)({
+        ...parsedData,
+        includeRelationshipsInEntityScripts: true,
+        includeSamplesInEntityScripts: sampleGenerationOptions.isSampleGenerationRequired,
+    });
+
+    const useCatalogStatement = scriptData.catalog
+        ? scriptData.catalog + '\n\n'
+        : '';
+    return {
+        container: useCatalogStatement + scriptData.container,
+        entities: scriptData.entities,
+        views: scriptData.views,
+    };
+}
+
+/**
+ * @param data {CoreData}
+ * @param app {App}
+ * @return {string | Array<{ title: string, script: string, mode: string }>}
+ * */
+const getContainerScriptWithNotSeparateBuckets = (app, data,) => {
+    const parsedData = parseDataForContainerLevelScript(data);
+    const sampleGenerationOptions = getSampleGenerationOptions(app, data);
+    const scriptData = buildContainerLevelFEScriptDto(data, app)({
+        ...parsedData,
+        includeRelationshipsInEntityScripts: false,
+        includeSamplesInEntityScripts: false,
+    });
+    const scripts = buildContainerLevelFEScript(scriptData);
+    if (!sampleGenerationOptions.isSampleGenerationRequired) {
+        return scripts;
+    }
+
+    const demoSample = generateSampleForDemonstration(app, parsedData, 'container');
+    return getScriptAndSampleResponse(scripts, demoSample);
+}
+
 module.exports = {
     /**
      * @param data {CoreData}
@@ -224,32 +275,12 @@ module.exports = {
                 const script = buildContainerLevelAlterScript(data, app)(parsedData);
                 callback(null, script);
             } else {
-                const scriptData = buildContainerLevelFEScriptDto(data, app)({
-                    ...parsedData,
-                    includeRelationshipsInEntityScripts: Boolean(data.options.separateBucket)
-                });
-
                 if (data.options.separateBucket) {
-                    const useCatalogStatement = scriptData.catalog
-                        ? scriptData.catalog + '\n\n'
-                        : '';
-                    const scripts = {
-                        container: useCatalogStatement + scriptData.container,
-                        entities: scriptData.entities,
-                        views: scriptData.views,
-                    };
+                    const scripts = getContainerScriptWithSeparateBuckets(app, data);
                     return callback(null, scripts);
                 }
-
-                const scripts = buildContainerLevelFEScript(scriptData);
-
-                const sampleGenerationOptions = getSampleGenerationOptions(app, data);
-                if (!sampleGenerationOptions.isSampleGenerationRequired) {
-                    return callback(null, scripts);
-                }
-
-                const demoSample = generateSampleForDemonstration(app, parsedData, 'container');
-                return callback(null, getScriptAndSampleResponse(scripts, demoSample));
+                const scripts = getContainerScriptWithNotSeparateBuckets(app, data);
+                return callback(null, scripts);
             }
         } catch (e) {
             logger.log(

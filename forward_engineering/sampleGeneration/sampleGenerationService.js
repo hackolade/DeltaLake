@@ -154,6 +154,26 @@ const generateSampleForDemonstration = (app, parsedData, level) => {
 }
 
 /**
+ * @return {({
+ *     sampleData: ContainerLevelParsedJsonData,
+ *     collectionId: string,
+ *     entitiesJsonSchema: Record<string, Object>,
+ * }) => string}
+ * */
+const generateSampleForSeparateBucketTable = (_) => ({
+    entitiesJsonSchema = {},
+    collectionId,
+    sampleData = {}
+}) => {
+    if (!collectionId) {
+        return '';
+    }
+    const entityJsonSchema = entitiesJsonSchema[collectionId] || {};
+    const collectionSampleData = sampleData[collectionId] || {}
+    return generateSamples(_)(entityJsonSchema, [collectionSampleData]);
+}
+
+/**
  * @return {
  *      (
  *          entityJsonSchema: Object,
@@ -176,4 +196,5 @@ module.exports = {
     parseJsonData,
     generateSampleForDemonstration,
     generateSamplesScript,
+    generateSampleForSeparateBucketTable,
 }
