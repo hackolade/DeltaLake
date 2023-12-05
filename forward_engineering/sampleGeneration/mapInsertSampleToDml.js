@@ -10,7 +10,7 @@ const {wrapInSingleQuotes} = require("../utils/general");
  * @param column {Object}
  * @param sample {any}
  * */
-const mapInsertStringSampleToDml = (column, sample) => {
+const mapStringToDml = (column, sample) => {
     return wrapInSingleQuotes(sample);
 }
 
@@ -18,7 +18,7 @@ const mapInsertStringSampleToDml = (column, sample) => {
  * @param column {Object}
  * @param sample {any}
  * */
-const mapInsertNumberSampleToDml = (column, sample) => {
+const mapNumberToDml = (column, sample) => {
     return Number(sample);
 }
 
@@ -26,7 +26,7 @@ const mapInsertNumberSampleToDml = (column, sample) => {
  * @param column {Object}
  * @param sample {any}
  * */
-const mapInsertBooleanSampleToDml = (column, sample) => {
+const mapBooleanToDml = (column, sample) => {
     return Boolean(sample);
 }
 
@@ -49,7 +49,7 @@ const mapTimestampToDml = (column, sample = '') => {
     if (sample.startsWith("'") && sample.endsWith("'")) {
         return sample;
     }
-    return mapInsertStringSampleToDml(column, sample);
+    return mapStringToDml(column, sample);
 }
 
 /**
@@ -63,7 +63,7 @@ const mapDateToDml = (column, sample = '') => {
     if (sample.startsWith("'") && sample.endsWith("'")) {
         return sample;
     }
-    return mapInsertStringSampleToDml(column, sample);
+    return mapStringToDml(column, sample);
 }
 
 /**
@@ -194,9 +194,9 @@ const mapStructToDml = (column, sample = {}) => {
  * @type {Map<string, InsertSampleMapper>}
  * */
 const typeToMapperMap = new Map()
-    .set('bool', mapInsertBooleanSampleToDml)
-    .set('text', mapInsertStringSampleToDml)
-    .set('numeric', mapInsertNumberSampleToDml)
+    .set('bool', mapBooleanToDml)
+    .set('text', mapStringToDml)
+    .set('numeric', mapNumberToDml)
     .set('timestamp', mapTimestampToDml)
     .set('date', mapDateToDml)
     .set('interval', mapSqlCodeToDml)
