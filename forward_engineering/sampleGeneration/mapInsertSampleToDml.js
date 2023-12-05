@@ -43,7 +43,21 @@ const mapSqlCodeToDml = (column, sample) => {
  * @param sample {any}
  * */
 const mapTimestampToDml = (column, sample = '') => {
-    if (sample.includes('TIMESTAMP')) {
+    if (sample.toUpperCase().includes('TIMESTAMP')) {
+        return mapSqlCodeToDml(column, sample);
+    }
+    if (sample.startsWith("'") && sample.endsWith("'")) {
+        return sample;
+    }
+    return mapInsertStringSampleToDml(column, sample);
+}
+
+/**
+ * @param column {Object}
+ * @param sample {any}
+ * */
+const mapDateToDml = (column, sample = '') => {
+    if (sample.toUpperCase().includes('DATE')) {
         return mapSqlCodeToDml(column, sample);
     }
     if (sample.startsWith("'") && sample.endsWith("'")) {
@@ -184,7 +198,7 @@ const typeToMapperMap = new Map()
     .set('text', mapInsertStringSampleToDml)
     .set('numeric', mapInsertNumberSampleToDml)
     .set('timestamp', mapTimestampToDml)
-    .set('date', mapSqlCodeToDml)
+    .set('date', mapDateToDml)
     .set('interval', mapSqlCodeToDml)
     .set('map', mapMapToDml)
     .set('array', mapArrayToDml)
