@@ -42,6 +42,20 @@ const mapSqlCodeToDml = (column, sample) => {
  * @param column {Object}
  * @param sample {any}
  * */
+const mapTimestampToDml = (column, sample = '') => {
+    if (sample.includes('TIMESTAMP')) {
+        return mapSqlCodeToDml(column, sample);
+    }
+    if (sample.startsWith("'") && sample.endsWith("'")) {
+        return sample;
+    }
+    return mapInsertStringSampleToDml(column, sample);
+}
+
+/**
+ * @param column {Object}
+ * @param sample {any}
+ * */
 const mapJsonObjectToDml = (column, sample) => {
     const stringified = JSON.stringify(sample);
     return wrapInSingleQuotes(stringified);
@@ -169,7 +183,7 @@ const typeToMapperMap = new Map()
     .set('bool', mapInsertBooleanSampleToDml)
     .set('text', mapInsertStringSampleToDml)
     .set('numeric', mapInsertNumberSampleToDml)
-    .set('timestamp', mapSqlCodeToDml)
+    .set('timestamp', mapTimestampToDml)
     .set('date', mapSqlCodeToDml)
     .set('interval', mapSqlCodeToDml)
     .set('map', mapMapToDml)
