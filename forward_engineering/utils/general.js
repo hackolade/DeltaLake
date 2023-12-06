@@ -81,9 +81,16 @@ const prepareName = (name = '') => {
 const replaceSpaceWithUnderscore = (name = '') => {
     return name.replace(/\s/g, '_');
 }
+
+const replaceDotWithUnderscore = (name = '') => {
+	return name.replace(/\./g, '_');
+}
+
 const getName = (entity) => entity.code || entity.collectionName || entity.name || '';
 
-const getRelationshipName = (relationship) => relationship.name || '';
+const getRelationshipName = (relationship) => {
+	return replaceDotWithUnderscore(replaceSpaceWithUnderscore(relationship.name || ''));
+};
 
 const getTab = (tabNum, configData) => Array.isArray(configData) ? (configData[tabNum] || {}) : {};
 const indentString = (str, tab = 4) => (str || '').split('\n').map(s => ' '.repeat(tab) + s).join('\n');
@@ -138,26 +145,6 @@ const commentDeactivatedInlineKeys = (_) => (keys, deactivatedKeyNames) => {
     }
 
     return {isAllKeysDeactivated: false, keysString: `${activatedKeys.join(', ')} /*, ${deactivatedKeys.join(', ')} */`}
-}
-
-/**
- * @return {(statement: string) => string}
- * */
-const removeRedundantTrailingCommaFromStatement = (_) => (statement) => {
-    const splitedStatement = statement.split('\n');
-    if (splitedStatement.length < 4 || !splitedStatement[splitedStatement.length - 2].trim().startsWith('--')) {
-        return statement;
-    }
-    const lineWithTrailingCommaIndex = _.findLastIndex(splitedStatement, line => {
-        if (line.trim() !== ');' && !line.trim().startsWith('--')) {
-            return true;
-        }
-    });
-    if (lineWithTrailingCommaIndex !== -1) {
-        splitedStatement[lineWithTrailingCommaIndex] = `${splitedStatement[lineWithTrailingCommaIndex].slice(0, -1)} -- ,`;
-        return splitedStatement.join('\n');
-    }
-    return statement;
 }
 
 const getCleanedUrl = url => {
@@ -305,7 +292,6 @@ module.exports = {
     replaceSpaceWithUnderscore,
     commentDeactivatedStatements,
     commentDeactivatedInlineKeys,
-    removeRedundantTrailingCommaFromStatement,
     getCleanedUrl,
     encodeStringLiteral,
     buildScript,
