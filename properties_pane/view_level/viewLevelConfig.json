@@ -119,6 +119,10 @@ making sure that you maintain a proper JSON format.
 		"lowerTab": "Details",
 		"structure": [
 			{
+				"propertyKeyword": "viewOn",
+				"hidden": true
+			},
+			{
 				"propertyName": "Column list",
 				"propertyKeyword": "columnList",
 				"propertyType": "details",
