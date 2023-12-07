@@ -62,7 +62,7 @@ const generateSamples = (_) => (entityJsonSchema, samples) => {
     if (!samples.length) {
         return '';
     }
-    const { bucketName, collectionName } = entityJsonSchema;
+    const {bucketName, collectionName} = entityJsonSchema;
     const ddlTableName = generateFullEntityNameFromBucketAndTableNames(bucketName, collectionName);
     const properties = entityJsonSchema.properties || {};
 
@@ -108,13 +108,15 @@ const generateSampleForDemonstrationOnContainerLevel = (_) => (parsedData) => {
      * @type {ContainerLevelParsedJsonData}
      * */
     const sampleData = parsedData.jsonData || {};
-    const collectionId = _.get(Object.keys(sampleData), '[0]');
-    if (!collectionId) {
-        return '';
-    }
-    const entityJsonSchema = (parsedData.entitiesJsonSchema || {})[collectionId] || {};
-    const collectionSampleData = sampleData[collectionId] || {}
-    return generateSamples(_)(entityJsonSchema, [collectionSampleData]);
+    const collectionIds = Object.keys(sampleData);
+
+    return collectionIds.map(collectionId => {
+        const entityJsonSchema = (parsedData.entitiesJsonSchema || {})[collectionId] || {};
+        const collectionSampleData = sampleData[collectionId] || {}
+        return generateSamples(_)(entityJsonSchema, [collectionSampleData]);
+    })
+        .concat([''])
+        .join('\n\n');
 }
 
 /**
@@ -148,7 +150,7 @@ const generateSampleForDemonstration = (app, parsedData, level) => {
         return generateSampleForDemonstrationOnEntityLevel(_)(parsedData);
     }
     if (level === 'container') {
-        return  generateSampleForDemonstrationOnContainerLevel(_)(parsedData);
+        return generateSampleForDemonstrationOnContainerLevel(_)(parsedData);
     }
     return '';
 }
@@ -161,10 +163,10 @@ const generateSampleForDemonstration = (app, parsedData, level) => {
  * }) => string}
  * */
 const generateSampleForSeparateBucketTable = (_) => ({
-    entitiesJsonSchema = {},
-    collectionId,
-    sampleData = {}
-}) => {
+                                                         entitiesJsonSchema = {},
+                                                         collectionId,
+                                                         sampleData = {}
+                                                     }) => {
     if (!collectionId) {
         return '';
     }
