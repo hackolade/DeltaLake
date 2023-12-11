@@ -626,7 +626,7 @@ const getCommandExecutionResult = (query, options, commandOptions) => {
 				responseBody,
 			};
 		})
-		.then(async body => {
+		.then(body => {
 			body = JSON.parse(body);
 			if (body.status === 'Finished' && body.results !== null) {
 				if (body.results.resultType === 'error') {
@@ -646,7 +646,6 @@ const getCommandExecutionResult = (query, options, commandOptions) => {
 					description: commandOptions,
 				};
 			}
-            // await sleep(500);
 			return getCommandExecutionResult(query, options, commandOptions);
 		});
 };
