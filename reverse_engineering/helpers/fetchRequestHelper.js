@@ -106,6 +106,18 @@ const shouldLogStep = (lineNumber) => {
 	return lineNumber % 1000 === 0;
 }
 
+/**
+ * @return {(lineIndex: number, amountOfLines: number) => void}
+ * */
+const logProgressOfSendingSampleBatches = (logger) => (lineIndex, amountOfLines) => {
+	if (!shouldLogStep(lineIndex)) {
+		return;
+	}
+	const progress = Number(lineIndex / amountOfLines);
+	const message = `Inserted ${lineIndex} lines out of ${amountOfLines}, progress ${progress.toFixed(2)}%`;
+	logger.log('info', { message }, 'SEND_SAMPLE_BATCHES');
+	logger.progress({ message });
+};
 
 const sendSampleBatches = (_, logger) => async (connectionInfo) => {
 	const { entitiesData } = connectionInfo;
@@ -122,15 +134,7 @@ const sendSampleBatches = (_, logger) => async (connectionInfo) => {
 			batchHandler: (batch) => {
 				return sendSampleBatch(_)(connectionInfo, batch, jsonSchema);
 			},
-			logProgress: (lineIndex, amountOfLines) => {
-				if (!shouldLogStep(lineIndex)) {
-					return;
-				}
-				const progress = Number(lineIndex / amountOfLines);
-				const message = `Inserted ${lineIndex} lines out of ${amountOfLines}, progress ${progress.toFixed(2)}%`;
-				logger.log('info', { message }, 'SEND_SAMPLE_BATCHES');
-				logger.progress({ message });
-			},
+			logProgress: logProgressOfSendingSampleBatches(logger),
 		})
 	}
 }
