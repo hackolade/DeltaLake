@@ -8,6 +8,7 @@ const { generateSamplesScript } = require('../../forward_engineering/sampleGener
 const {batchProcessFile} = require("./fileHelper");
 
 const JSON_OBJECTS_DELIMITER = '}, {';
+const BATCH_SIZE = 5000;
 
 let activeContexts = {};
 
@@ -121,7 +122,6 @@ const logProgressOfSendingSampleBatches = (logger) => (lineIndex, amountOfLines)
 
 const sendSampleBatches = (_, logger) => async (connectionInfo) => {
 	const { entitiesData } = connectionInfo;
-	const batchSize = 5000;
 
 	for (const entityData of Object.values(entitiesData)) {
 		const { filePath, jsonSchema } = entityData;
@@ -129,7 +129,7 @@ const sendSampleBatches = (_, logger) => async (connectionInfo) => {
 
 		await batchProcessFile({
 			filePath,
-			batchSize,
+			batchSize: BATCH_SIZE,
 			parseLine: line => JSON.parse(line),
 			batchHandler: (batch) => {
 				return sendSampleBatch(_)(connectionInfo, batch, jsonSchema);
