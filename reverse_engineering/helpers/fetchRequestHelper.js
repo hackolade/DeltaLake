@@ -614,8 +614,6 @@ const executeCommand = (connectionInfo, command, language = 'sql', logger) => {
 	});
 };
 
-// const sleep = (millis) => new Promise((res, rej) => setTimeout(() => {res(true)}, millis));
-
 const getCommandExecutionResult = (query, options, commandOptions) => {
 	return fetch(query, options)
 		.then(async response => {
