@@ -38,18 +38,31 @@ const mapSqlCodeToDml = (column, sample) => {
     return (sample || '').toString();
 }
 
+
+
 /**
+ * There are several types (DATE, TIMESTAMP, INTERVAL) that require different mapping strategies
+ * depending on how the sample is presented: as an expression, as an unwrapped string or as a wrapped string
+ * @param sample {string}
  * @param column {Object}
- * @param sample {any}
+ * @param expressionKeyword {string}
  * */
-const mapTimestampToDml = (column, sample = '') => {
-    if (sample.toUpperCase().includes('TIMESTAMP')) {
+const mapTypeThatCanBeModelledAsExpressionToDml = (column, sample= '', expressionKeyword= '') => {
+    if (sample.toUpperCase().includes(expressionKeyword.toUpperCase())) {
         return mapSqlCodeToDml(column, sample);
     }
     if (sample.startsWith("'") && sample.endsWith("'")) {
         return sample;
     }
     return mapStringToDml(column, sample);
+}
+
+/**
+ * @param column {Object}
+ * @param sample {any}
+ * */
+const mapTimestampToDml = (column, sample = '') => {
+    return mapTypeThatCanBeModelledAsExpressionToDml(column, sample, 'TIMESTAMP');
 }
 
 /**
@@ -57,13 +70,7 @@ const mapTimestampToDml = (column, sample = '') => {
  * @param sample {any}
  * */
 const mapDateToDml = (column, sample = '') => {
-    if (sample.toUpperCase().includes('DATE')) {
-        return mapSqlCodeToDml(column, sample);
-    }
-    if (sample.startsWith("'") && sample.endsWith("'")) {
-        return sample;
-    }
-    return mapStringToDml(column, sample);
+    return mapTypeThatCanBeModelledAsExpressionToDml(column, sample, 'DATE');
 }
 
 /**
@@ -71,13 +78,7 @@ const mapDateToDml = (column, sample = '') => {
  * @param sample {any}
  * */
 const mapIntervalToDml = (column, sample = '') => {
-    if (sample.toUpperCase().includes('INTERVAL')) {
-        return mapSqlCodeToDml(column, sample);
-    }
-    if (sample.startsWith("'") && sample.endsWith("'")) {
-        return sample;
-    }
-    return mapStringToDml(column, sample);
+    return mapTypeThatCanBeModelledAsExpressionToDml(column, sample, 'INTERVAL');
 }
 
 /**
