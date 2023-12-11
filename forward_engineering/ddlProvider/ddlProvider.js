@@ -324,25 +324,5 @@ module.exports = app => {
             return assignTemplates(templates.setTableLocation, templatesConfig);
         },
 
-        /**
-         * @param fullTableName {string}
-         * @param columns {string[]}
-         * @param values {Array<Array<any>>}
-         * @return {string}
-         * */
-        insertIntoTableValues({ fullTableName, columns, values}) {
-            const ddlValues = ['(']
-                .concat(
-                    values.map(columnValues => columnValues.join(', '))
-                )
-                .concat([')'])
-                .join(',');
-
-            const templatesConfig = {
-                name: fullTableName,
-                columns: columns.join(', '),
-                values: ddlValues,
-            }
-        }
     }
 };
