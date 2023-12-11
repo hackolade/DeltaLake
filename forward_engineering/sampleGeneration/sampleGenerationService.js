@@ -71,7 +71,7 @@ const generateSamples = (_) => (entityJsonSchema, samples) => {
     const ddlColumnNames = columnNames.map(name => prepareName(name));
     const joinedDdlColumnNames = ddlColumnNames.join(',\n\t');
 
-    const insertIntoClause = ['INSERT INTO ', ddlTableName, '(\n\t', joinedDdlColumnNames, '\n)', ' VALUES'].join('');
+    const insertIntoClause = `INSERT INTO ${ddlTableName} (\n\t${joinedDdlColumnNames}\n) VALUES`;
     const statements = [insertIntoClause];
     const maxColumnsInLineOfValuesClause = 3;
 

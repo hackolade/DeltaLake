@@ -188,7 +188,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
         let tableScript = buildScript([tableStatement, indexScript, ...relationshipScripts]);
         if (sampleScript) {
             // This is because SQL formatter breaks some "INSERT" statements with complex types
-            tableScript = [tableScript, '\n', sampleScript].join('');
+            tableScript = [tableScript, sampleScript].join('\n');
         }
 
         return result.concat({
