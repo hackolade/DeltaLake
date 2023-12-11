@@ -19,6 +19,9 @@
 	},
 	"applyScriptToInstance": true,
 	"mode": "mysql",
+	"applyToInstanceSettings": {
+		"generateSamplesInBulk": true
+	},
 	"additionalOptions": [
 		{
 			"id": "applyDropStatements",
@@ -26,6 +29,22 @@
 			"forUpdate": true,
 			"name": "Apply Drop Statements",
 			"isDropInStatements": true
+		},
+		{
+			"id": "INCLUDE_SAMPLES",
+			"value": false,
+			"name": "Include sample data",
+			"align": "right"
 		}
-	]
+	],
+	"splitView": {
+		"byAdditionalOptions": ["INCLUDE_SAMPLES"]
+	},
+	"numberOfDocumentsOptions": {
+		"id": "numberOfDocuments",
+		"value": 1,
+		"minValue": 1,
+		"maxValue": 100000
+	},
+	"refresh": true
 }

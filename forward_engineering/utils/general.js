@@ -170,6 +170,9 @@ const wrapInBrackets = (str = '') => {
     return /^\(\S+\)$/.test(str) ? str : `(${str})`;
 }
 
+/**
+ * @param statements {Array<string>}
+ * */
 const buildScript = (statements) => {
     const nonEmptyScripts = statements.filter((statement) => statement);
     const formattedScripts = nonEmptyScripts.map(
@@ -193,12 +196,23 @@ const getEntityData = (object, properties = [], type = 'new') =>
 
 const getFullEntityName = (dbName, entityName) => dbName ? `${dbName}.${entityName}` : entityName;
 
+/**
+ * @param bucketName {string}
+ * @param tableName {string}
+ * @return {string}
+ * */
+const generateFullEntityNameFromBucketAndTableNames = (bucketName, tableName) => {
+    const dbName = replaceSpaceWithUnderscore(prepareName(bucketName));
+    const entityName = replaceSpaceWithUnderscore(prepareName(tableName));
+    return getFullEntityName(dbName, entityName);
+}
+
 const generateFullEntityName = entity => {
     const compMod = entity?.role?.compMod || {};
     const entityData = entity?.role || {};
-    const dbName = replaceSpaceWithUnderscore(prepareName(getContainerName(compMod)));
-    const entityName = replaceSpaceWithUnderscore(prepareName(getName(entityData)));
-    return getFullEntityName(dbName, entityName);
+    const bucketName = getContainerName(compMod);
+    const tableName = getName(entityData);
+    return generateFullEntityNameFromBucketAndTableNames(bucketName, tableName);
 };
 
 const getEntityNameFromCollection = (collection) => {
@@ -298,4 +312,5 @@ module.exports = {
     isSupportUnityCatalog,
     isSupportNotNullConstraints,
     checkFieldPropertiesChanged,
+    generateFullEntityNameFromBucketAndTableNames,
 };

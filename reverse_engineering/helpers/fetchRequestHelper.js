@@ -4,8 +4,11 @@ const AbortController = require('abort-controller');
 const { dependencies } = require('../appDependencies');
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
+const { generateSamplesScript } = require('../../forward_engineering/sampleGeneration/sampleGenerationService');
+const {batchProcessFile} = require("./fileHelper");
 
 const JSON_OBJECTS_DELIMITER = '}, {';
+const BATCH_SIZE = 5000;
 
 let activeContexts = {};
 
@@ -81,19 +84,77 @@ const destroyActiveContext = () => {
 	return result;
 };
 
-const fetchApplyToInstance = async (connectionInfo, logger) => {
+/**
+ * @return {(
+ *     connectionInfo: Object,
+ *     samples: Array<Object>,
+ *     entityJsonSchema: Object,
+ * ) => Promise<any>}
+ * */
+const sendSampleBatch = (_) => (connectionInfo, samples, entityJsonSchema) => {
+	const script = generateSamplesScript(_)(entityJsonSchema, samples);
+	return executeCommand(connectionInfo, script, 'sql')
+}
+
+/**
+ * @param lineNumber {number}
+ * @return {boolean}
+ * */
+const shouldLogStep = (lineNumber) => {
+	if (lineNumber < 1000) {
+		return lineNumber % 100 === 0;
+	}
+	return lineNumber % 1000 === 0;
+}
+
+/**
+ * @return {(lineIndex: number, amountOfLines: number) => void}
+ * */
+const logProgressOfSendingSampleBatches = (logger) => (lineIndex, amountOfLines) => {
+	if (!shouldLogStep(lineIndex)) {
+		return;
+	}
+	const progress = Number(lineIndex / amountOfLines);
+	const message = `Inserted ${lineIndex} lines out of ${amountOfLines}, progress ${progress.toFixed(2)}%`;
+	logger.log('info', { message }, 'SEND_SAMPLE_BATCHES');
+	logger.progress({ message });
+};
+
+const sendSampleBatches = (_, logger) => async (connectionInfo) => {
+	const { entitiesData } = connectionInfo;
+
+	for (const entityData of Object.values(entitiesData)) {
+		const { filePath, jsonSchema } = entityData;
+		// Not pushing the sample displayed on the DML screen because it's a part of "Create table" script
+
+		await batchProcessFile({
+			filePath,
+			batchSize: BATCH_SIZE,
+			parseLine: line => JSON.parse(line),
+			batchHandler: (batch) => {
+				return sendSampleBatch(_)(connectionInfo, batch, jsonSchema);
+			},
+			logProgress: logProgressOfSendingSampleBatches(logger),
+		})
+	}
+}
+
+const fetchApplyToInstance = (_) => async (connectionInfo, logger) => {
 	const progress = message => {
 		logger.log('info', message, 'Applying to instance');
-		logger.progress(message);
+		logger.progress({message});
 	};
 
 	progress({ message: `Applying script: \n ${connectionInfo.script}` });
 
 	await Promise.race([
-		executeCommand(connectionInfo, connectionInfo.script, 'sql'),
+		executeCommand(connectionInfo, connectionInfo.script, 'sql')
+			.then(() => {
+				return sendSampleBatches(_, logger)(connectionInfo);
+			}),
 		new Promise((_r, rej) =>
 			setTimeout(() => {
-				throw new Error('Timeout exceeded for script\n' + script);
+				throw new Error('Timeout exceeded for script\n' + connectionInfo.script);
 			}, connectionInfo.applyToInstanceQueryRequestTimeout || 120000),
 		),
 	]);

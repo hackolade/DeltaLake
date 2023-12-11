@@ -34,6 +34,7 @@ const {getTableStatement} = require("./tableHelper");
 const {getIndexes} = require("./indexHelper");
 const {buildScript, getName, getTab, isSupportUnityCatalog, isSupportNotNullConstraints} = require("../utils/general");
 const {getViewScript} = require("./viewHelper");
+const {generateSampleForSeparateBucketTable, parseJsonData} = require('../sampleGeneration/sampleGenerationService');
 
 /**
  * @typedef {{
@@ -57,6 +58,7 @@ const {getViewScript} = require("./viewHelper");
  *     areNotNullConstraintsAvailable: boolean,
  *     includeRelationshipsInEntityScripts: boolean,
  *     entitiesJsonSchema: EntitiesJsonSchema,
+ *     includeSamplesInEntityScripts: boolean,
  * }} ContainerLevelFEScriptData
  * */
 
@@ -147,6 +149,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
     arePkFkConstraintsAvailable,
     areNotNullConstraintsAvailable,
     includeRelationshipsInEntityScripts,
+    includeSamplesInEntityScripts,
 }) => {
     const _ = app.require('lodash');
     return data.entities.reduce((result, entityId) => {
@@ -173,7 +176,20 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
             relationshipScripts = getCreateRelationshipScripts(app)(relationshipsWithThisTableAsChild, entitiesJsonSchema);
         }
 
-        const tableScript = buildScript([tableStatement, indexScript, ...relationshipScripts]);
+        let sampleScript = '';
+        if (includeSamplesInEntityScripts) {
+            sampleScript = generateSampleForSeparateBucketTable(_)({
+                entitiesJsonSchema,
+                collectionId: entityId,
+                sampleData: parseJsonData(data.jsonData),
+            });
+        }
+
+        let tableScript = buildScript([tableStatement, indexScript, ...relationshipScripts]);
+        if (sampleScript) {
+            // This is because SQL formatter breaks some "INSERT" statements with complex types
+            tableScript = [tableScript, sampleScript].join('\n');
+        }
 
         return result.concat({
             name: getName(entityData[0]),
@@ -185,7 +201,10 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
 /**
  * @param data {CoreData}
  * @param app {App}
- * @return {(dto: ContainerLevelFEScriptData & {includeRelationshipsInEntityScripts: boolean}) => {
+ * @return {(dto: ContainerLevelFEScriptData & {
+ *      includeRelationshipsInEntityScripts: boolean,
+ *      includeSamplesInEntityScripts: boolean,
+ * }) => {
  *     container: string,
  *     entities: Array<{
  *      name: string,
@@ -204,7 +223,8 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
     modelDefinitions,
     entitiesJsonSchema,
     containerData,
-    includeRelationshipsInEntityScripts
+    includeRelationshipsInEntityScripts,
+    includeSamplesInEntityScripts,
 }) => {
     const _ = app.require('lodash');
     const dbVersion = data.modelData[0].dbVersion;
@@ -223,6 +243,7 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
         arePkFkConstraintsAvailable,
         areNotNullConstraintsAvailable,
         includeRelationshipsInEntityScripts,
+        includeSamplesInEntityScripts,
     });
 
     let relationshipScrips = [];
@@ -240,7 +261,18 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
 
 }
 
+const buildContainerLevelFEScript = (containerLevelFEScriptDto) => {
+    return buildScript([
+        containerLevelFEScriptDto.catalog,
+        containerLevelFEScriptDto.container,
+        ...(containerLevelFEScriptDto.entities.map(e => e.script)),
+        ...(containerLevelFEScriptDto.views.map(v => v.script)),
+        ...(containerLevelFEScriptDto.relationships),
+    ]);
+}
+
 module.exports = {
     buildEntityLevelFEScript,
     buildContainerLevelFEScriptDto,
+    buildContainerLevelFEScript,
 }

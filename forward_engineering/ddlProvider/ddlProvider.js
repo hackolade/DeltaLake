@@ -322,6 +322,7 @@ module.exports = app => {
                 location,
             }
             return assignTemplates(templates.setTableLocation, templatesConfig);
-        }
+        },
+
     }
 };

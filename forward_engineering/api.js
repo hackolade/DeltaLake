@@ -7,7 +7,7 @@ const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestH
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
 
 const logHelper = require('../reverse_engineering/logHelper');
-const {buildEntityLevelFEScript, buildContainerLevelFEScriptDto} = require("./helpers/feScriptBuilder");
+const {buildEntityLevelFEScript, buildContainerLevelFEScriptDto, buildContainerLevelFEScript} = require("./helpers/feScriptBuilder");
 const {
     buildEntityLevelAlterScript,
     buildContainerLevelAlterScript,
@@ -28,6 +28,7 @@ const {
     Logger,
     PluginError
 } = require('./types/coreApplicationTypes')
+const {getSampleGenerationOptions, parseJsonData, generateSampleForDemonstration} = require("./sampleGeneration/sampleGenerationService");
 
 /**
  * @typedef {(error?: PluginError | null, result?: any | null) => void} PluginCallback
@@ -64,6 +65,7 @@ const parseEntities = (entities, serializedItems) => {
  *      externalDefinitions: ExternalDefinitions | unknown,
  *      containerData: ContainerData | unknown,
  *      entityData: unknown,
+ *      jsonData: ParsedJsonData
  * }}
  * */
 const parseDataForEntityLevelScript = (data) => {
@@ -74,6 +76,7 @@ const parseDataForEntityLevelScript = (data) => {
     const containerData = data.containerData;
     const modelData = data.modelData;
     const entityData = data.entityData;
+    const jsonData = parseJsonData(data.jsonData);
 
     return {
         jsonSchema,
@@ -83,6 +86,7 @@ const parseDataForEntityLevelScript = (data) => {
         containerData,
         entityData,
         modelData,
+        jsonData,
     }
 }
 
@@ -94,6 +98,7 @@ const parseDataForEntityLevelScript = (data) => {
  *      externalDefinitions: ExternalDefinitions | unknown,
  *      containerData: ContainerData | unknown,
  *      entitiesJsonSchema: EntitiesJsonSchema | unknown,
+ *      jsonData: Record<string, Object>
  * }}
  * */
 const parseDataForContainerLevelScript = (data) => {
@@ -106,6 +111,7 @@ const parseDataForContainerLevelScript = (data) => {
         data.entities,
         data.internalDefinitions
     );
+    const jsonData = parseJsonData(data.jsonData);
 
     return {
         modelData,
@@ -114,7 +120,80 @@ const parseDataForContainerLevelScript = (data) => {
         externalDefinitions,
         containerData,
         entitiesJsonSchema,
+        jsonData,
     }
+}
+
+/**
+ * @param script {string}
+ * @param sample {string}
+ * @return {Array<{ title: string, script: string, mode: string }>}
+ * */
+const getScriptAndSampleResponse = (script, sample) => {
+    const mode = "sql";
+    return [
+        {
+            title: 'DDL script',
+            script,
+            mode,
+        },
+        {
+            title: 'Sample data',
+            script: sample,
+            mode,
+        },
+    ]
+}
+
+/**
+ * @param data {CoreData}
+ * @param app {App}
+ * @return {{
+ *      container: string,
+ *      entities: Array<{ name: string, script: string }>,
+ *      views: Array<{ name: string, script: string }>,
+ * }}
+ * */
+const getContainerScriptWithSeparateBuckets = (app, data,) => {
+    const parsedData = parseDataForContainerLevelScript(data);
+    const sampleGenerationOptions = getSampleGenerationOptions(app, data);
+
+    const scriptData = buildContainerLevelFEScriptDto(data, app)({
+        ...parsedData,
+        includeRelationshipsInEntityScripts: true,
+        includeSamplesInEntityScripts: sampleGenerationOptions.isSampleGenerationRequired,
+    });
+
+    const useCatalogStatement = scriptData.catalog
+        ? scriptData.catalog + '\n\n'
+        : '';
+    return {
+        container: useCatalogStatement + scriptData.container,
+        entities: scriptData.entities,
+        views: scriptData.views,
+    };
+}
+
+/**
+ * @param data {CoreData}
+ * @param app {App}
+ * @return {string | Array<{ title: string, script: string, mode: string }>}
+ * */
+const getContainerScriptWithNotSeparateBuckets = (app, data,) => {
+    const parsedData = parseDataForContainerLevelScript(data);
+    const sampleGenerationOptions = getSampleGenerationOptions(app, data);
+    const scriptData = buildContainerLevelFEScriptDto(data, app)({
+        ...parsedData,
+        includeRelationshipsInEntityScripts: false,
+        includeSamplesInEntityScripts: false,
+    });
+    const scripts = buildContainerLevelFEScript(scriptData);
+    if (!sampleGenerationOptions.isSampleGenerationRequired) {
+        return scripts;
+    }
+
+    const demoSample = generateSampleForDemonstration(app, parsedData, 'container');
+    return getScriptAndSampleResponse(scripts, demoSample);
 }
 
 module.exports = {
@@ -133,7 +212,12 @@ module.exports = {
                 callback(null, scripts);
             } else {
                 const scripts = buildEntityLevelFEScript(data, app)(parsedData);
-                callback(null, scripts);
+                const sampleGenerationOptions = getSampleGenerationOptions(app, data);
+                if (!sampleGenerationOptions.isSampleGenerationRequired) {
+                    return callback(null, scripts);
+                }
+                const demoSample = generateSampleForDemonstration(app, parsedData, 'entity');
+                return callback(null, getScriptAndSampleResponse(scripts, demoSample));
             }
         } catch (e) {
             logger.log(
@@ -191,32 +275,12 @@ module.exports = {
                 const script = buildContainerLevelAlterScript(data, app)(parsedData);
                 callback(null, script);
             } else {
-                const scriptData = buildContainerLevelFEScriptDto(data, app)({
-                    ...parsedData,
-                    includeRelationshipsInEntityScripts: Boolean(data.options.separateBucket)
-                });
-
                 if (data.options.separateBucket) {
-                    const useCatalogStatement = scriptData.catalog
-                        ? scriptData.catalog + '\n\n'
-                        : '';
-                    const result = {
-                        container: useCatalogStatement + scriptData.container,
-                        entities: scriptData.entities,
-                        views: scriptData.views,
-                    };
-                    callback(null, result);
-                    return;
+                    const scripts = getContainerScriptWithSeparateBuckets(app, data);
+                    return callback(null, scripts);
                 }
-
-                const result = buildScript([
-                    scriptData.catalog,
-                    scriptData.container,
-                    ...(scriptData.entities.map(e => e.script)),
-                    ...(scriptData.views.map(v => v.script)),
-                    ...(scriptData.relationships),
-                ]);
-                callback(null, result);
+                const scripts = getContainerScriptWithNotSeparateBuckets(app, data);
+                return callback(null, scripts);
             }
         } catch (e) {
             logger.log(
@@ -230,22 +294,24 @@ module.exports = {
     },
 
     /**
-     * @param connectionInfo {CoreData}
+     * @param data {CoreData}
      * @param logger {Logger}
      * @param cb {PluginCallback}
      * @param app {App}
      * */
-    async applyToInstance(connectionInfo, logger, cb, app) {
+    async applyToInstance(data, logger, cb, app) {
         const connectionData = {
-            host: getCleanedUrl(connectionInfo.host),
-            clusterId: connectionInfo.clusterId,
-            accessToken: connectionInfo.accessToken,
-            applyToInstanceQueryRequestTimeout: connectionInfo.applyToInstanceQueryRequestTimeout,
-            script: connectionInfo.script
+            host: getCleanedUrl(data.host),
+            clusterId: data.clusterId,
+            accessToken: data.accessToken,
+            applyToInstanceQueryRequestTimeout: data.applyToInstanceQueryRequestTimeout,
+            script: data.script,
+            entitiesData: data.entitiesData,
         }
 
+        const _ = app.require('lodash');
         try {
-            await fetchRequestHelper.fetchApplyToInstance(connectionData, logger)
+            await fetchRequestHelper.fetchApplyToInstance(_)(connectionData, logger)
             cb()
         } catch (err) {
             logger.log(

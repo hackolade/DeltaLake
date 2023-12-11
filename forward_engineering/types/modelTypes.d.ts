@@ -1,0 +1,10 @@
+export type ModelTypes = 'array'
+    | 'binary'
+    | 'bool'
+    | 'date'
+    | 'interval'
+    | 'map'
+    | 'numeric'
+    | 'struct'
+    | 'text'
+    | 'timestamp';
