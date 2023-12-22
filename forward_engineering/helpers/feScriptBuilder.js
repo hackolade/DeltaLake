@@ -34,7 +34,8 @@ const {getTableStatement} = require("./tableHelper");
 const {getIndexes} = require("./indexHelper");
 const {buildScript, getName, getTab, isSupportUnityCatalog, isSupportNotNullConstraints} = require("../utils/general");
 const {getViewScript} = require("./viewHelper");
-const {generateSampleForSeparateBucketTable, parseJsonData} = require('../sampleGeneration/sampleGenerationService');
+const {generateSamplesScript, getDataForSampleGeneration} = require('../sampleGeneration/sampleGenerationService');
+const { batchProcessFile } = require('../../reverse_engineering/helpers/fileHelper');
 
 /**
  * @typedef {{
@@ -136,11 +137,53 @@ const getContainerLevelViewScriptDtos = (data, _) => {
 }
 
 /**
+ * @param _ {any}
+ * @return {({
+ * data: CoreData,
+ * includeSamplesInEntityScripts: boolean,
+ * entitiesJsonSchema: Record<string, Object>,
+ * entityId: string,
+ * }) => Promise<string>}
+*/
+const getSampleScriptForContainerLevelScript = (_) => async ({data, includeSamplesInEntityScripts, entitiesJsonSchema, entityId}) => {
+	const sampleScripts = [];
+	if (includeSamplesInEntityScripts) {
+		const { jsonData, entitiesData } = getDataForSampleGeneration(data, entitiesJsonSchema);
+		const entityJsonSchema = entitiesJsonSchema[entityId] || {};
+		if (jsonData) {
+			const demoSampleJsonData = jsonData[entityId] || {};
+			const demoSample = generateSamplesScript(_)(entityJsonSchema, [demoSampleJsonData]);
+			sampleScripts.push(demoSample);
+		}
+		if (entitiesData) {
+			const entityData = entitiesData[entityId];
+			const { filePath, jsonSchema, jsonData } = entityData;
+
+			const demoSample = generateSamplesScript(_)(jsonSchema, [jsonData]);
+			sampleScripts.push(demoSample);
+
+			await batchProcessFile({
+				filePath,
+				batchSize: 1,
+				parseLine: line => JSON.parse(line),
+				batchHandler: async batch => {
+					const sample = generateSamplesScript(_)(jsonSchema, batch);
+					sampleScripts.push(sample);
+				},
+			});
+		}
+	}
+
+	return sampleScripts.join('\n\n');
+}
+
+
+/**
  * @param data {CoreData}
  * @param app {App}
- * @return {(data: ContainerLevelFEScriptData) => Array<ContainerLevelEntityDto>}
+ * @return {(data: ContainerLevelFEScriptData) => Promise<Array<ContainerLevelEntityDto>>}
  * */
-const getContainerLevelEntitiesScriptDtos = (app, data) => ({
+const getContainerLevelEntitiesScriptDtos = (app, data) => async ({
     externalDefinitions,
     modelDefinitions,
     internalDefinitions,
@@ -151,51 +194,54 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
     includeRelationshipsInEntityScripts,
     includeSamplesInEntityScripts,
 }) => {
-    const _ = app.require('lodash');
-    return data.entities.reduce((result, entityId) => {
-        const entityData = data.entityData[entityId];
+	const _ = app.require('lodash');
+	const scriptDtos = [];
 
-        const likeTableData = data.entityData[getTab(0, entityData)?.like];
-        const entityJsonSchema = entitiesJsonSchema[entityId];
-        const definitions = [internalDefinitions[entityId], modelDefinitions, externalDefinitions];
-        const createTableStatementArgs = [containerData, entityData, entityJsonSchema, definitions,];
+	for (const entityId of data.entities) {
+		const entityData = data.entityData[entityId];
 
-        const tableStatement = getTableStatement(app)(
-            ...createTableStatementArgs,
-            arePkFkConstraintsAvailable,
-            areNotNullConstraintsAvailable,
-            likeTableData,
-        );
+		const likeTableData = data.entityData[getTab(0, entityData)?.like];
+		const entityJsonSchema = entitiesJsonSchema[entityId];
+		const definitions = [internalDefinitions[entityId], modelDefinitions, externalDefinitions];
+		const createTableStatementArgs = [containerData, entityData, entityJsonSchema, definitions];
 
-        const indexScript = getIndexes(_)(...createTableStatementArgs);
+		const tableStatement = getTableStatement(app)(
+			...createTableStatementArgs,
+			arePkFkConstraintsAvailable,
+			areNotNullConstraintsAvailable,
+			likeTableData,
+		);
 
-        let relationshipScripts = [];
-        if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
-            const relationshipsWithThisTableAsChild = data.relationships
-                .filter(relationship => relationship.childCollection === entityId);
-            relationshipScripts = getCreateRelationshipScripts(app)(relationshipsWithThisTableAsChild, entitiesJsonSchema);
-        }
+		const indexScript = getIndexes(_)(...createTableStatementArgs);
 
-        let sampleScript = '';
-        if (includeSamplesInEntityScripts) {
-            sampleScript = generateSampleForSeparateBucketTable(_)({
-                entitiesJsonSchema,
-                collectionId: entityId,
-                sampleData: parseJsonData(data.jsonData),
-            });
-        }
+		let relationshipScripts = [];
+		if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
+			const relationshipsWithThisTableAsChild = data.relationships.filter(
+				relationship => relationship.childCollection === entityId,
+			);
+			relationshipScripts = getCreateRelationshipScripts(app)(relationshipsWithThisTableAsChild, entitiesJsonSchema);
+		}
 
-        let tableScript = buildScript([tableStatement, indexScript, ...relationshipScripts]);
-        if (sampleScript) {
-            // This is because SQL formatter breaks some "INSERT" statements with complex types
-            tableScript = [tableScript, sampleScript].join('\n');
-        }
+		const sampleScript = await getSampleScriptForContainerLevelScript(_)({
+			data,
+			entitiesJsonSchema,
+			entityId,
+			includeSamplesInEntityScripts,
+		});
 
-        return result.concat({
-            name: getName(entityData[0]),
-            script: tableScript,
-        });
-    }, [])
+		let tableScript = buildScript([tableStatement, indexScript, ...relationshipScripts]);
+		if (sampleScript) {
+			// This is because SQL formatter breaks some "INSERT" statements with complex types
+			tableScript = [tableScript, sampleScript].join('\n');
+		}
+
+		scriptDtos.push({
+			name: getName(entityData[0]),
+			script: tableScript,
+		});
+	}
+
+	return scriptDtos;
 }
 
 /**
@@ -204,7 +250,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
  * @return {(dto: ContainerLevelFEScriptData & {
  *      includeRelationshipsInEntityScripts: boolean,
  *      includeSamplesInEntityScripts: boolean,
- * }) => {
+ * }) => Promise<{
  *     container: string,
  *     entities: Array<{
  *      name: string,
@@ -215,9 +261,9 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => ({
  *      script: string
  *     }>,
  *     relationships: Array<string>,
- * }}
+ * }>}
  * */
-const buildContainerLevelFEScriptDto = (data, app) => ({
+const buildContainerLevelFEScriptDto = (data, app) => async ({
     internalDefinitions,
     externalDefinitions,
     modelDefinitions,
@@ -234,7 +280,7 @@ const buildContainerLevelFEScriptDto = (data, app) => ({
     const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
     const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
     const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable);
-    const entityScriptDtos = getContainerLevelEntitiesScriptDtos(app, data)({
+    const entityScriptDtos = await getContainerLevelEntitiesScriptDtos(app, data)({
         internalDefinitions,
         externalDefinitions,
         modelDefinitions,

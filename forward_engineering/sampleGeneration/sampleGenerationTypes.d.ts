@@ -1,3 +1,4 @@
+import { EntityJsonSchema } from "../types/coreApplicationDataTypes";
 import {ModelTypes} from "../types/modelTypes";
 
 export type EntityLevelParsedJsonData = {
@@ -20,3 +21,13 @@ export type SampleGenerationEntityJsonSchema = {
         }
     }
 }
+
+export type EntitiesData = {
+	[id: string]: {
+		name: string;
+		code: string | undefined;
+		jsonData: string;
+		filePath?: string;
+		jsonSchema?: EntityJsonSchema;
+	};
+};

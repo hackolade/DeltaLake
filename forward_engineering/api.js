@@ -30,9 +30,11 @@ const {
 } = require('./types/coreApplicationTypes')
 const {getSampleGenerationOptions, parseJsonData, generateSampleForDemonstration, generateSamplesScript} = require("./sampleGeneration/sampleGenerationService");
 const { batchProcessFile } = require('../reverse_engineering/helpers/fileHelper');
+const { getDataForSampleGeneration } = require('./sampleGeneration/sampleGenerationService');
 
 /**
  * @typedef {(error?: PluginError | null, result?: any | null) => void} PluginCallback
+ * @typedef {import('./sampleGeneration/sampleGenerationTypes').EntitiesData} EntitiesData
  * */
 
 /**
@@ -100,7 +102,7 @@ const parseDataForEntityLevelScript = (data) => {
  *      containerData: ContainerData | unknown,
  *      entitiesJsonSchema: EntitiesJsonSchema | unknown,
  *      jsonData: Record<string, Object>
- *      entitiesData: any, // TODO
+ *      entitiesData: EntitiesData,
  *      isInvokedFromApplyToInstance: boolean,
  * }}
  * */
@@ -111,24 +113,7 @@ const parseDataForContainerLevelScript = data => {
 	const externalDefinitions = JSON.parse(data.externalDefinitions);
 	const entitiesJsonSchema = parseEntities(data.entities, data.jsonSchema);
 	const internalDefinitions = parseEntities(data.entities, data.internalDefinitions);
-	let jsonData = undefined;
-	let entitiesData = undefined;
-    let isInvokedFromApplyToInstance = false;
-
-	if (!data.entitiesData) {
-		jsonData = parseJsonData(data.jsonData);
-        isInvokedFromApplyToInstance = true;
-	} else {
-		entitiesData = {};
-		for (const key of Object.keys(data.entitiesData)) {
-			const value = data.entitiesData[key];
-			entitiesData[key] = {
-				...value,
-				jsonData: parseJsonData(value.jsonData),
-				jsonSchema: entitiesJsonSchema[key] || {},
-			};
-		}
-	}
+	const { jsonData, entitiesData, isInvokedFromApplyToInstance } = getDataForSampleGeneration(data, entitiesJsonSchema);
 
 	return {
 		modelData,
@@ -167,17 +152,17 @@ const getScriptAndSampleResponse = (script, sample) => {
 /**
  * @param data {CoreData}
  * @param app {App}
- * @return {{
+ * @return {Promise<{
  *      container: string,
  *      entities: Array<{ name: string, script: string }>,
  *      views: Array<{ name: string, script: string }>,
- * }}
+ * }>}
  * */
-const getContainerScriptWithSeparateBuckets = (app, data,) => {
+const getContainerScriptWithSeparateBuckets = async (app, data) => {
     const parsedData = parseDataForContainerLevelScript(data);
     const sampleGenerationOptions = getSampleGenerationOptions(app, data);
 
-    const scriptData = buildContainerLevelFEScriptDto(data, app)({
+    const scriptData = await buildContainerLevelFEScriptDto(data, app)({
         ...parsedData,
         includeRelationshipsInEntityScripts: true,
         includeSamplesInEntityScripts: sampleGenerationOptions.isSampleGenerationRequired,
@@ -196,13 +181,13 @@ const getContainerScriptWithSeparateBuckets = (app, data,) => {
 /**
  * @param data {CoreData}
  * @param app {App}
- * @return {string | Array<{ title: string, script: string, mode: string }>}
+ * @return {Promise<string | Array<{ title: string, script: string, mode: string }>>}
  * */
 const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
     const _ = app.require('lodash')
     const parsedData = parseDataForContainerLevelScript(data);
     const sampleGenerationOptions = getSampleGenerationOptions(app, data);
-    const scriptData = buildContainerLevelFEScriptDto(data, app)({
+    const scriptData = await buildContainerLevelFEScriptDto(data, app)({
         ...parsedData,
         includeRelationshipsInEntityScripts: false,
         includeSamplesInEntityScripts: false,
@@ -320,7 +305,7 @@ module.exports = {
                 callback(null, script);
             } else {
                 if (data.options.separateBucket) {
-                    const scripts = getContainerScriptWithSeparateBuckets(app, data);
+                    const scripts = await getContainerScriptWithSeparateBuckets(app, data);
                     return callback(null, scripts);
                 }
                 const scripts = await getContainerScriptWithNotSeparateBuckets(app, data);
