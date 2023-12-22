@@ -22,6 +22,9 @@
 	"applyToInstanceSettings": {
 		"generateSamplesInBulk": true
 	},
+	"forwardEngineeringSettings": {
+		"generateSamplesInBulk": true
+	},
 	"additionalOptions": [
 		{
 			"id": "applyDropStatements",
@@ -38,7 +41,9 @@
 		}
 	],
 	"splitView": {
-		"byAdditionalOptions": ["INCLUDE_SAMPLES"]
+		"byAdditionalOptions": [
+			"INCLUDE_SAMPLES"
+		]
 	},
 	"numberOfDocumentsOptions": {
 		"id": "numberOfDocuments",

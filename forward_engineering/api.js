@@ -28,7 +28,8 @@ const {
     Logger,
     PluginError
 } = require('./types/coreApplicationTypes')
-const {getSampleGenerationOptions, parseJsonData, generateSampleForDemonstration} = require("./sampleGeneration/sampleGenerationService");
+const {getSampleGenerationOptions, parseJsonData, generateSampleForDemonstration, generateSamplesScript} = require("./sampleGeneration/sampleGenerationService");
+const { batchProcessFile } = require('../reverse_engineering/helpers/fileHelper');
 
 /**
  * @typedef {(error?: PluginError | null, result?: any | null) => void} PluginCallback
@@ -99,30 +100,48 @@ const parseDataForEntityLevelScript = (data) => {
  *      containerData: ContainerData | unknown,
  *      entitiesJsonSchema: EntitiesJsonSchema | unknown,
  *      jsonData: Record<string, Object>
+ *      entitiesData: any, // TODO
+ *      isInvokedFromApplyToInstance: boolean,
  * }}
  * */
-const parseDataForContainerLevelScript = (data) => {
-    const modelData = data.modelData;
-    const containerData = data.containerData;
-    const modelDefinitions = JSON.parse(data.modelDefinitions);
-    const externalDefinitions = JSON.parse(data.externalDefinitions);
-    const entitiesJsonSchema = parseEntities(data.entities, data.jsonSchema);
-    const internalDefinitions = parseEntities(
-        data.entities,
-        data.internalDefinitions
-    );
-    const jsonData = parseJsonData(data.jsonData);
+const parseDataForContainerLevelScript = data => {
+	const modelData = data.modelData;
+	const containerData = data.containerData;
+	const modelDefinitions = JSON.parse(data.modelDefinitions);
+	const externalDefinitions = JSON.parse(data.externalDefinitions);
+	const entitiesJsonSchema = parseEntities(data.entities, data.jsonSchema);
+	const internalDefinitions = parseEntities(data.entities, data.internalDefinitions);
+	let jsonData = undefined;
+	let entitiesData = undefined;
+    let isInvokedFromApplyToInstance = false;
 
-    return {
-        modelData,
-        modelDefinitions,
-        internalDefinitions,
-        externalDefinitions,
-        containerData,
-        entitiesJsonSchema,
-        jsonData,
-    }
-}
+	if (!data.entitiesData) {
+		jsonData = parseJsonData(data.jsonData);
+        isInvokedFromApplyToInstance = true;
+	} else {
+		entitiesData = {};
+		for (const key of Object.keys(data.entitiesData)) {
+			const value = data.entitiesData[key];
+			entitiesData[key] = {
+				...value,
+				jsonData: parseJsonData(value.jsonData),
+				jsonSchema: entitiesJsonSchema[key] || {},
+			};
+		}
+	}
+
+	return {
+		modelData,
+		modelDefinitions,
+		internalDefinitions,
+		externalDefinitions,
+		containerData,
+		entitiesJsonSchema,
+		jsonData,
+        entitiesData,
+        isInvokedFromApplyToInstance,
+	};
+};
 
 /**
  * @param script {string}
@@ -179,7 +198,8 @@ const getContainerScriptWithSeparateBuckets = (app, data,) => {
  * @param app {App}
  * @return {string | Array<{ title: string, script: string, mode: string }>}
  * */
-const getContainerScriptWithNotSeparateBuckets = (app, data,) => {
+const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
+    const _ = app.require('lodash')
     const parsedData = parseDataForContainerLevelScript(data);
     const sampleGenerationOptions = getSampleGenerationOptions(app, data);
     const scriptData = buildContainerLevelFEScriptDto(data, app)({
@@ -192,8 +212,32 @@ const getContainerScriptWithNotSeparateBuckets = (app, data,) => {
         return scripts;
     }
 
-    const demoSample = generateSampleForDemonstration(app, parsedData, 'container');
-    return getScriptAndSampleResponse(scripts, demoSample);
+    if (parsedData.isInvokedFromApplyToInstance) {
+        const demoSample = generateSampleForDemonstration(app, parsedData, 'container');
+        
+        return getScriptAndSampleResponse(scripts, demoSample);
+    }
+
+    const samples = []
+
+    for (const entityData of Object.values(parsedData.entitiesData || {})) {
+        const { filePath, jsonSchema, jsonData } = entityData;
+
+        const demoSample = generateSamplesScript(_)(jsonSchema, [jsonData])
+        samples.push(demoSample)
+
+        await batchProcessFile({
+            filePath,
+            batchSize: 1,
+            parseLine: line => JSON.parse(line),
+            batchHandler: async (batch) => {
+               const sample = generateSamplesScript(_)(jsonSchema, batch);
+               samples.push(sample)
+            },
+         })
+    }
+
+    return getScriptAndSampleResponse(scripts, samples.join('\n\n'));
 }
 
 module.exports = {
@@ -268,7 +312,7 @@ module.exports = {
      * @param callback {PluginCallback}
      * @param app {App}
      * */
-    generateContainerScript(data, logger, callback, app) {
+    async generateContainerScript(data, logger, callback, app) {
         try {
             const parsedData = parseDataForContainerLevelScript(data);
             if (data.isUpdateScript) {
@@ -279,7 +323,7 @@ module.exports = {
                     const scripts = getContainerScriptWithSeparateBuckets(app, data);
                     return callback(null, scripts);
                 }
-                const scripts = getContainerScriptWithNotSeparateBuckets(app, data);
+                const scripts = await getContainerScriptWithNotSeparateBuckets(app, data);
                 return callback(null, scripts);
             }
         } catch (e) {

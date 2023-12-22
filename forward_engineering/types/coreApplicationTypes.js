@@ -68,6 +68,11 @@ class CoreData {
     entities
 
     /**
+     * @type {any}
+     */
+    entitiesData
+
+    /**
      * @type {Array<any>}
      */
     views
