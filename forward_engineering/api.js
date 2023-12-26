@@ -7,7 +7,11 @@ const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestH
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
 
 const logHelper = require('../reverse_engineering/logHelper');
-const {buildEntityLevelFEScript, buildContainerLevelFEScriptDto, buildContainerLevelFEScript} = require("./helpers/feScriptBuilder");
+const {
+    buildEntityLevelFEScript,
+    buildContainerLevelFEScriptDto,
+    buildContainerLevelFEScript
+} = require("./helpers/feScriptBuilder");
 const {
     buildEntityLevelAlterScript,
     buildContainerLevelAlterScript,
@@ -28,9 +32,14 @@ const {
     Logger,
     PluginError
 } = require('./types/coreApplicationTypes')
-const {getSampleGenerationOptions, parseJsonData, generateSampleForDemonstration, generateSamplesScript} = require("./sampleGeneration/sampleGenerationService");
-const { batchProcessFile } = require('../reverse_engineering/helpers/fileHelper');
-const { getDataForSampleGeneration } = require('./sampleGeneration/sampleGenerationService');
+const {
+    getSampleGenerationOptions,
+    parseJsonData,
+    generateSampleForDemonstration,
+    generateSamplesScript
+} = require("./sampleGeneration/sampleGenerationService");
+const {batchProcessFile} = require('../reverse_engineering/helpers/fileHelper');
+const {getDataForSampleGeneration} = require('./sampleGeneration/sampleGenerationService');
 
 /**
  * @typedef {(error?: PluginError | null, result?: any | null) => void} PluginCallback
@@ -101,31 +110,31 @@ const parseDataForEntityLevelScript = (data) => {
  *      externalDefinitions: ExternalDefinitions | unknown,
  *      containerData: ContainerData | unknown,
  *      entitiesJsonSchema: EntitiesJsonSchema | unknown,
- *      jsonData: Record<string, Object>
+ *      jsonData: Record<string, Object>,
  *      entitiesData: EntitiesData,
  *      isInvokedFromApplyToInstance: boolean,
  * }}
  * */
 const parseDataForContainerLevelScript = data => {
-	const modelData = data.modelData;
-	const containerData = data.containerData;
-	const modelDefinitions = JSON.parse(data.modelDefinitions);
-	const externalDefinitions = JSON.parse(data.externalDefinitions);
-	const entitiesJsonSchema = parseEntities(data.entities, data.jsonSchema);
-	const internalDefinitions = parseEntities(data.entities, data.internalDefinitions);
-	const { jsonData, entitiesData, isInvokedFromApplyToInstance } = getDataForSampleGeneration(data, entitiesJsonSchema);
+    const modelData = data.modelData;
+    const containerData = data.containerData;
+    const modelDefinitions = JSON.parse(data.modelDefinitions);
+    const externalDefinitions = JSON.parse(data.externalDefinitions);
+    const entitiesJsonSchema = parseEntities(data.entities, data.jsonSchema);
+    const internalDefinitions = parseEntities(data.entities, data.internalDefinitions);
+    const {jsonData, entitiesData, isInvokedFromApplyToInstance} = getDataForSampleGeneration(data, entitiesJsonSchema);
 
-	return {
-		modelData,
-		modelDefinitions,
-		internalDefinitions,
-		externalDefinitions,
-		containerData,
-		entitiesJsonSchema,
-		jsonData,
+    return {
+        modelData,
+        modelDefinitions,
+        internalDefinitions,
+        externalDefinitions,
+        containerData,
+        entitiesJsonSchema,
+        jsonData,
         entitiesData,
         isInvokedFromApplyToInstance,
-	};
+    };
 };
 
 /**
@@ -199,14 +208,14 @@ const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
 
     if (parsedData.isInvokedFromApplyToInstance) {
         const demoSample = generateSampleForDemonstration(app, parsedData, 'container');
-        
+
         return getScriptAndSampleResponse(scripts, demoSample);
     }
 
     const samples = []
 
     for (const entityData of Object.values(parsedData.entitiesData || {})) {
-        const { filePath, jsonSchema, jsonData } = entityData;
+        const {filePath, jsonSchema, jsonData} = entityData;
 
         const demoSample = generateSamplesScript(_)(jsonSchema, [jsonData])
         samples.push(demoSample)
@@ -216,10 +225,10 @@ const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
             batchSize: 1,
             parseLine: line => JSON.parse(line),
             batchHandler: async (batch) => {
-               const sample = generateSamplesScript(_)(jsonSchema, batch);
-               samples.push(sample)
+                const sample = generateSamplesScript(_)(jsonSchema, batch);
+                samples.push(sample)
             },
-         })
+        })
     }
 
     return getScriptAndSampleResponse(scripts, samples.join('\n\n'));
