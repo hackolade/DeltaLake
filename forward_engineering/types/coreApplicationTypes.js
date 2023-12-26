@@ -1,3 +1,7 @@
+/**
+ * @typedef {import('../sampleGeneration/sampleGenerationTypes').EntitiesData} EntitiesData
+ * */
+
 class PluginError {
     /**
      * @type string
@@ -68,7 +72,7 @@ class CoreData {
     entities
 
     /**
-     * @type {any}
+     * @type {EntitiesData}
      */
     entitiesData
 
