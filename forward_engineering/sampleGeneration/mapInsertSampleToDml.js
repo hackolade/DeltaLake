@@ -25,7 +25,6 @@ const getRandomInt = (min, max) => {
 const mapNumberToDml = (column, sample) => {
     const numericalRepresentation = Number(sample);
     if (isNaN(numericalRepresentation)) {
-        // Return the expression as-is
         return getRandomInt(0, 100);
     }
     return numericalRepresentation;
