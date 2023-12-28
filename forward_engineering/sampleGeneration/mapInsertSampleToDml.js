@@ -14,6 +14,10 @@ const mapStringToDml = (column, sample) => {
     return wrapInSingleQuotes(sample);
 }
 
+const getRandomInt = (min, max) => {
+    return min + Math.floor(Math.random() * max);
+}
+
 /**
  * @param column {Object}
  * @param sample {any}
@@ -22,7 +26,7 @@ const mapNumberToDml = (column, sample) => {
     const numericalRepresentation = Number(sample);
     if (isNaN(numericalRepresentation)) {
         // Return the expression as-is
-        return sample;
+        return getRandomInt(0, 100);
     }
     return numericalRepresentation;
 }
