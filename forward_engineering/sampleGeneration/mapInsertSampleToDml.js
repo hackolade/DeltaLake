@@ -19,7 +19,12 @@ const mapStringToDml = (column, sample) => {
  * @param sample {any}
  * */
 const mapNumberToDml = (column, sample) => {
-    return Number(sample);
+    const numericalRepresentation = Number(sample);
+    if (isNaN(numericalRepresentation)) {
+        // Return the expression as-is
+        return sample;
+    }
+    return numericalRepresentation;
 }
 
 /**
