@@ -67,14 +67,14 @@ const {batchProcessFile} = require('../../reverse_engineering/helpers/fileHelper
  * @return {(dto: EntityLevelFEScriptData) => string}
  * */
 const buildEntityLevelFEScript = (data, app) => ({
-                                                     externalDefinitions,
-                                                     modelDefinitions,
-                                                     jsonSchema,
-                                                     internalDefinitions,
-                                                     containerData,
-                                                     entityData,
-                                                     modelData,
-                                                 }) => {
+    externalDefinitions,
+    modelDefinitions,
+    jsonSchema,
+    internalDefinitions,
+    containerData,
+    entityData,
+    modelData,
+}) => {
     const _ = app.require('lodash');
     const dbVersion = data.modelData[0].dbVersion;
     const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
@@ -144,11 +144,11 @@ const getContainerLevelViewScriptDtos = (data, _) => {
  * }) => Promise<string>}
  */
 const getSampleScriptForContainerLevelScript = (_) => async ({
-                                                                 data,
-                                                                 includeSamplesInEntityScripts,
-                                                                 entitiesJsonSchema,
-                                                                 entityId
-                                                             }) => {
+    data,
+    includeSamplesInEntityScripts,
+    entitiesJsonSchema,
+    entityId
+}) => {
     const sampleScripts = [];
     if (includeSamplesInEntityScripts) {
         const {jsonData, entitiesData} = getDataForSampleGeneration(data, entitiesJsonSchema);

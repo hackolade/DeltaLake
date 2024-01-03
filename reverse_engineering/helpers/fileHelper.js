@@ -35,12 +35,12 @@ const getCountOfLines = filePath => {
  * @param batchHandler {(batch: Array<any>) => Promise<void>}
  * */
 const batchProcessFile = async ({
-                                    filePath,
-                                    batchSize,
-                                    parseLine = (l) => l,
-                                    batchHandler = async (batch) => {},
-                                    logProgress = (lineIndex, amountOfLines) => {},
-                                }) => {
+    filePath,
+    batchSize,
+    parseLine = (l) => l,
+    batchHandler = async (batch) => {},
+    logProgress = (lineIndex, amountOfLines) => {},
+}) => {
     if (!filePath) {
         return;
     }

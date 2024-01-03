@@ -22,9 +22,7 @@
 	"applyToInstanceSettings": {
 		"generateSamplesInBulk": true
 	},
-	"forwardEngineeringSettings": {
-		"generateSamplesInBulk": true
-	},
+	"generateSamplesInBulk": true,
 	"additionalOptions": [
 		{
 			"id": "applyDropStatements",
