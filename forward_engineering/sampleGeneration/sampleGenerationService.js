@@ -4,10 +4,12 @@ const {
 } = require('../utils/general');
 const {mapInsertSampleToDml} = require("./mapInsertSampleToDml");
 const { CoreData, App } = require('../types/coreApplicationTypes');
+const { batchProcessFile } = require('../../reverse_engineering/helpers/fileHelper');
 
 /** 
  * @typedef {import('../types/coreApplicationDataTypes').EntityJsonSchema} EntityJsonSchema
  * @typedef {import('./sampleGenerationTypes').EntitiesData} EntitiesData
+ * @typedef {import('./sampleGenerationTypes').EntityData} EntityData
  * @typedef {import('./sampleGenerationTypes').ParsedJsonData} ParsedJsonData
 */
 
@@ -218,6 +220,30 @@ const getDataForSampleGeneration = (data, entitiesJsonSchema) => {
 
 	return { jsonData, entitiesData, isInvokedFromApplyToInstance };
 };
+/**
+ * @param {EntityData} entityData 
+ * @return {Promise<Array<string>>}
+ */
+const generateSamplesForEntity = (_) => async (entityData) => {
+    const { filePath, jsonSchema, jsonData } = entityData;
+
+    const demoSample = generateSamplesScript(_)(jsonSchema, [jsonData]);
+
+    const samples = [demoSample];
+
+    await batchProcessFile({
+        filePath,
+        batchSize: 1,
+        parseLine: line => JSON.parse(line),
+        batchHandler: async batch => {
+            const sample = generateSamplesScript(_)(jsonSchema, batch);
+            samples.push(sample);
+        },
+    });
+
+    return samples;
+}
+
 
 module.exports = {
     getSampleGenerationOptions,
@@ -225,5 +251,6 @@ module.exports = {
     generateSampleForDemonstration,
     generateSamplesScript,
     getDataForSampleGeneration,
+    generateSamplesForEntity,
 };
 

@@ -36,9 +36,8 @@ const {
     getSampleGenerationOptions,
     parseJsonData,
     generateSampleForDemonstration,
-    generateSamplesScript
+    generateSamplesForEntity
 } = require("./sampleGeneration/sampleGenerationService");
-const {batchProcessFile} = require('../reverse_engineering/helpers/fileHelper');
 const {getDataForSampleGeneration} = require('./sampleGeneration/sampleGenerationService');
 
 /**
@@ -212,26 +211,14 @@ const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
         return getScriptAndSampleResponse(scripts, demoSample);
     }
 
-    const samples = []
+    const sampleScripts = []
 
     for (const entityData of Object.values(parsedData.entitiesData || {})) {
-        const {filePath, jsonSchema, jsonData} = entityData;
-
-        const demoSample = generateSamplesScript(_)(jsonSchema, [jsonData])
-        samples.push(demoSample)
-
-        await batchProcessFile({
-            filePath,
-            batchSize: 1,
-            parseLine: line => JSON.parse(line),
-            batchHandler: async (batch) => {
-                const sample = generateSamplesScript(_)(jsonSchema, batch);
-                samples.push(sample)
-            },
-        })
+        const samples = await generateSamplesForEntity(_)(entityData);
+        sampleScripts.push(...samples);
     }
 
-    return getScriptAndSampleResponse(scripts, samples.join('\n\n'));
+    return getScriptAndSampleResponse(scripts, sampleScripts.join('\n\n'));
 }
 
 module.exports = {

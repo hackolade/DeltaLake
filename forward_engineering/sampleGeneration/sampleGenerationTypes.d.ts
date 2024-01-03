@@ -22,12 +22,14 @@ export type SampleGenerationEntityJsonSchema = {
     }
 }
 
+export type EntityData = {
+    name: string;
+    code: string | undefined;
+    jsonData: string;
+    filePath?: string;
+    jsonSchema?: EntityJsonSchema;
+}
+
 export type EntitiesData = {
-	[id: string]: {
-		name: string;
-		code: string | undefined;
-		jsonData: string;
-		filePath?: string;
-		jsonSchema?: EntityJsonSchema;
-	};
+	[id: string]: EntityData;
 };

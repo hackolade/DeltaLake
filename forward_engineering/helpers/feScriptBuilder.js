@@ -34,8 +34,7 @@ const {getTableStatement} = require("./tableHelper");
 const {getIndexes} = require("./indexHelper");
 const {buildScript, getName, getTab, isSupportUnityCatalog, isSupportNotNullConstraints} = require("../utils/general");
 const {getViewScript} = require("./viewHelper");
-const {generateSamplesScript, getDataForSampleGeneration} = require('../sampleGeneration/sampleGenerationService');
-const {batchProcessFile} = require('../../reverse_engineering/helpers/fileHelper');
+const {generateSamplesScript, getDataForSampleGeneration, generateSamplesForEntity} = require('../sampleGeneration/sampleGenerationService');
 
 /**
  * @typedef {{
@@ -160,20 +159,8 @@ const getSampleScriptForContainerLevelScript = (_) => async ({
         }
         if (entitiesData) {
             const entityData = entitiesData[entityId];
-            const {filePath, jsonSchema, jsonData} = entityData;
-
-            const demoSample = generateSamplesScript(_)(jsonSchema, [jsonData]);
-            sampleScripts.push(demoSample);
-
-            await batchProcessFile({
-                filePath,
-                batchSize: 1,
-                parseLine: line => JSON.parse(line),
-                batchHandler: async batch => {
-                    const sample = generateSamplesScript(_)(jsonSchema, batch);
-                    sampleScripts.push(sample);
-                },
-            });
+            const samples = await generateSamplesForEntity(_)(entityData);
+            sampleScripts.push(...samples);
         }
     }
 
