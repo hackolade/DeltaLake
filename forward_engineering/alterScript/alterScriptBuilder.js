@@ -62,17 +62,14 @@ const doesEntityLevelAlterScriptContainDropStatements = (data, app) => (entityLe
  * @param app {App}
  * @return {(dto: ContainerLevelAlterScriptData) => Array<AlterScriptDto>}
  * */
-const getContainerLevelAlterScriptDtos = (data, app) => ({
-                                                             internalDefinitions,
-                                                             externalDefinitions,
-                                                             modelDefinitions,
-                                                             entitiesJsonSchema,
-                                                         }) => {
-    const _ = app.require('lodash');
-    const deltaModelSchema = _.first(Object.values(entitiesJsonSchema)) || {};
-    const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
-    return getAlterScriptDtos(deltaModelSchema, definitions, data, app);
-}
+const getContainerLevelAlterScriptDtos =
+	(data, app) =>
+	({ internalDefinitions, externalDefinitions, modelDefinitions, entitiesJsonSchema }) => {
+		const _ = app.require('lodash');
+		const deltaModelSchema = _.first(Object.values(entitiesJsonSchema)) || {};
+		const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
+		return getAlterScriptDtos(deltaModelSchema, definitions, data, app);
+	};
 
 /**
  * @param data {CoreData}

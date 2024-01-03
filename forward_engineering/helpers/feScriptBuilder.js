@@ -187,16 +187,16 @@ const getSampleScriptForContainerLevelScript = (_) => async ({
  * @return {(data: ContainerLevelFEScriptData) => Promise<Array<ContainerLevelEntityDto>>}
  * */
 const getContainerLevelEntitiesScriptDtos = (app, data) => async ({
-                                                                      externalDefinitions,
-                                                                      modelDefinitions,
-                                                                      internalDefinitions,
-                                                                      containerData,
-                                                                      entitiesJsonSchema,
-                                                                      arePkFkConstraintsAvailable,
-                                                                      areNotNullConstraintsAvailable,
-                                                                      includeRelationshipsInEntityScripts,
-                                                                      includeSamplesInEntityScripts,
-                                                                  }) => {
+    externalDefinitions,
+    modelDefinitions,
+    internalDefinitions,
+    containerData,
+    entitiesJsonSchema,
+    arePkFkConstraintsAvailable,
+    areNotNullConstraintsAvailable,
+    includeRelationshipsInEntityScripts,
+    includeSamplesInEntityScripts,
+}) => {
     const _ = app.require('lodash');
     const scriptDtos = [];
 
@@ -267,14 +267,14 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => async ({
  * }>}
  * */
 const buildContainerLevelFEScriptDto = (data, app) => async ({
-                                                                 internalDefinitions,
-                                                                 externalDefinitions,
-                                                                 modelDefinitions,
-                                                                 entitiesJsonSchema,
-                                                                 containerData,
-                                                                 includeRelationshipsInEntityScripts,
-                                                                 includeSamplesInEntityScripts,
-                                                             }) => {
+    internalDefinitions,
+    externalDefinitions,
+    modelDefinitions,
+    entitiesJsonSchema,
+    containerData,
+    includeRelationshipsInEntityScripts,
+    includeSamplesInEntityScripts,
+}) => {
     const _ = app.require('lodash');
     const dbVersion = data.modelData[0].dbVersion;
     const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
