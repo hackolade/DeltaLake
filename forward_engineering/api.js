@@ -111,7 +111,6 @@ const parseDataForEntityLevelScript = (data) => {
  *      entitiesJsonSchema: EntitiesJsonSchema | unknown,
  *      jsonData: Record<string, Object>,
  *      entitiesData: EntitiesData,
- *      isInvokedFromApplyToInstance: boolean,
  * }}
  * */
 const parseDataForContainerLevelScript = data => {
@@ -121,7 +120,7 @@ const parseDataForContainerLevelScript = data => {
     const externalDefinitions = JSON.parse(data.externalDefinitions);
     const entitiesJsonSchema = parseEntities(data.entities, data.jsonSchema);
     const internalDefinitions = parseEntities(data.entities, data.internalDefinitions);
-    const {jsonData, entitiesData, isInvokedFromApplyToInstance} = getDataForSampleGeneration(data, entitiesJsonSchema);
+    const {jsonData, entitiesData} = getDataForSampleGeneration(data, entitiesJsonSchema);
 
     return {
         modelData,
@@ -132,7 +131,6 @@ const parseDataForContainerLevelScript = data => {
         entitiesJsonSchema,
         jsonData,
         entitiesData,
-        isInvokedFromApplyToInstance,
     };
 };
 
@@ -205,7 +203,7 @@ const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
         return scripts;
     }
 
-    if (parsedData.isInvokedFromApplyToInstance) {
+    if (parsedData.jsonData) {
         const demoSample = generateSampleForDemonstration(app, parsedData, 'container');
 
         return getScriptAndSampleResponse(scripts, demoSample);

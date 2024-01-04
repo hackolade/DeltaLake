@@ -193,19 +193,16 @@ const generateSamplesScript = (_) => (entityJsonSchema, samples) => {
  * @param {CoreData} data 
  * @param {{[id: string]: EntityJsonSchema}} entitiesJsonSchema 
  * @return {{
- * jsonData: ParsedJsonData,
- * entitiesData: EntitiesData,
- * isInvokedFromApplyToInstance: boolean
+ * jsonData: ParsedJsonData | undefined,
+ * entitiesData: EntitiesData | undefined,
  * }}
  */
 const getDataForSampleGeneration = (data, entitiesJsonSchema) => {
 	let jsonData = undefined;
 	let entitiesData = undefined;
-	let isInvokedFromApplyToInstance = false;
 
 	if (!data.entitiesData) {
 		jsonData = parseJsonData(data.jsonData);
-		isInvokedFromApplyToInstance = true;
 	} else {
 		entitiesData = {};
 		for (const key of Object.keys(data.entitiesData)) {
@@ -218,7 +215,7 @@ const getDataForSampleGeneration = (data, entitiesJsonSchema) => {
 		}
 	}
 
-	return { jsonData, entitiesData, isInvokedFromApplyToInstance };
+	return { jsonData, entitiesData };
 };
 /**
  * @param {EntityData} entityData 
