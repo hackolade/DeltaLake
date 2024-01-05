@@ -72,7 +72,7 @@ class CoreData {
     entities
 
     /**
-     * @type {EntitiesData}
+     * @type {EntitiesData | undefined}
      */
     entitiesData
 

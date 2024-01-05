@@ -110,7 +110,7 @@ const parseDataForEntityLevelScript = (data) => {
  *      containerData: ContainerData | unknown,
  *      entitiesJsonSchema: EntitiesJsonSchema | unknown,
  *      jsonData: Record<string, Object>,
- *      entitiesData: EntitiesData,
+ *      entitiesData: EntitiesData | undefined,
  * }}
  * */
 const parseDataForContainerLevelScript = data => {
