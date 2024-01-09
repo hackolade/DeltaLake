@@ -53,26 +53,26 @@ const buildStatement = (mainStatement, isActivated) => {
 
 const isEscaped = (name) => /`[\s\S]*`/.test(name);
 
-const isExtendedAsciiCharacter = (char) => char.charCodeAt(0) > MAX_STANDARD_ASCII_SYMBOL_CODE;
-
-const containExtendedAsciiCharacters = (name = '') => {
-    return name.split('').some(isExtendedAsciiCharacter);
+const checkContainSpecialCharacters = (name = '') => {
+    return !/^[A-Za-z_0-9]+$/.test(name);
 }
 
 const prepareName = (name = '') => {
     const containSpacesRegexp = /[\s-]/g;
     const isEscapedName = isEscaped(name);
     const containSpaces = containSpacesRegexp.test(name);
-    const containExtendedAsciiChars = containExtendedAsciiCharacters(name)
+    const containSpecialCharacters = checkContainSpecialCharacters(name)
     const includeReversedWords = RESERVED_WORDS_AS_ARRAY.includes(name.toLowerCase());
 	const containVariableExpression = /\$\{.+\}/g.test(name);
 
     const shouldBeWrappedInTicks = !isEscapedName
-        && (containSpaces || containExtendedAsciiChars || includeReversedWords || containVariableExpression);
+        && (containSpaces || containSpecialCharacters || includeReversedWords || containVariableExpression);
 
     if (name === '') {
         return ''
     } else if (shouldBeWrappedInTicks) {
+        name = name.replace('`', '``')
+
         return wrapInTicks(name);
     } else {
         return name;
