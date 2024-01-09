@@ -3,8 +3,24 @@ const {
     generateFullEntityNameFromBucketAndTableNames,
 } = require('../utils/general');
 const {mapInsertSampleToDml} = require("./mapInsertSampleToDml");
+const { CoreData, App } = require('../types/coreApplicationTypes');
+const { batchProcessFile } = require('../../reverse_engineering/helpers/fileHelper');
 
+/** 
+ * @typedef {import('../types/coreApplicationDataTypes').EntityJsonSchema} EntityJsonSchema
+ * @typedef {import('./sampleGenerationTypes').EntitiesData} EntitiesData
+ * @typedef {import('./sampleGenerationTypes').EntityData} EntityData
+ * @typedef {import('./sampleGenerationTypes').ParsedJsonData} ParsedJsonData
+*/
 
+/**
+ * @param {App} app 
+ * @param {CoreData} data 
+ * @return {{
+ * isSampleGenerationRequired: boolean,
+ * shouldAppendSamplesToTheResultScript: boolean
+ * }}
+ */
 const getSampleGenerationOptions = (app, data) => {
     const _ = app.require('lodash');
     const insertSamplesOption = _.get(data, 'options.additionalOptions', []).find(option => option.id === 'INCLUDE_SAMPLES') || {};
@@ -156,26 +172,6 @@ const generateSampleForDemonstration = (app, parsedData, level) => {
 }
 
 /**
- * @return {({
- *     sampleData: ContainerLevelParsedJsonData,
- *     collectionId: string,
- *     entitiesJsonSchema: Record<string, Object>,
- * }) => string}
- * */
-const generateSampleForSeparateBucketTable = (_) => ({
-                                                         entitiesJsonSchema = {},
-                                                         collectionId,
-                                                         sampleData = {}
-                                                     }) => {
-    if (!collectionId) {
-        return '';
-    }
-    const entityJsonSchema = entitiesJsonSchema[collectionId] || {};
-    const collectionSampleData = sampleData[collectionId] || {}
-    return generateSamples(_)(entityJsonSchema, [collectionSampleData]);
-}
-
-/**
  * @return {
  *      (
  *          entityJsonSchema: Object,
@@ -193,10 +189,65 @@ const generateSamplesScript = (_) => (entityJsonSchema, samples) => {
     return generateSamples(_)(entityJsonSchema, samples);
 }
 
+/**
+ * @param {CoreData} data 
+ * @param {{[id: string]: EntityJsonSchema}} entitiesJsonSchema 
+ * @return {{
+ * jsonData: ParsedJsonData | undefined,
+ * entitiesData: EntitiesData | undefined,
+ * }}
+ */
+const getDataForSampleGeneration = (data, entitiesJsonSchema) => {
+	let jsonData = undefined;
+	let entitiesData = undefined;
+
+	if (!data.entitiesData) {
+		jsonData = parseJsonData(data.jsonData);
+	} else {
+		entitiesData = {};
+		for (const key of Object.keys(data.entitiesData)) {
+			const value = data.entitiesData[key];
+			entitiesData[key] = {
+				...value,
+				jsonData: parseJsonData(value.jsonData),
+				jsonSchema: entitiesJsonSchema[key] || {},
+			};
+		}
+	}
+
+	return { jsonData, entitiesData };
+};
+/**
+ * @param {EntityData} entityData 
+ * @return {Promise<Array<string>>}
+ */
+const generateSamplesForEntity = (_) => async (entityData) => {
+    const { filePath, jsonSchema, jsonData } = entityData;
+
+    const demoSample = generateSamplesScript(_)(jsonSchema, [jsonData]);
+
+    const samples = [demoSample];
+
+    await batchProcessFile({
+        filePath,
+        batchSize: 1,
+        parseLine: line => JSON.parse(line),
+        batchHandler: async batch => {
+            const sample = generateSamplesScript(_)(jsonSchema, batch);
+            samples.push(sample);
+        },
+    });
+
+    return samples;
+}
+
+
 module.exports = {
     getSampleGenerationOptions,
     parseJsonData,
     generateSampleForDemonstration,
     generateSamplesScript,
-    generateSampleForSeparateBucketTable,
-}
+    getDataForSampleGeneration,
+    generateSamplesForEntity,
+};
+

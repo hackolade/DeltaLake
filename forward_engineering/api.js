@@ -7,7 +7,11 @@ const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestH
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
 
 const logHelper = require('../reverse_engineering/logHelper');
-const {buildEntityLevelFEScript, buildContainerLevelFEScriptDto, buildContainerLevelFEScript} = require("./helpers/feScriptBuilder");
+const {
+    buildEntityLevelFEScript,
+    buildContainerLevelFEScriptDto,
+    buildContainerLevelFEScript
+} = require("./helpers/feScriptBuilder");
 const {
     buildEntityLevelAlterScript,
     buildContainerLevelAlterScript,
@@ -28,10 +32,17 @@ const {
     Logger,
     PluginError
 } = require('./types/coreApplicationTypes')
-const {getSampleGenerationOptions, parseJsonData, generateSampleForDemonstration} = require("./sampleGeneration/sampleGenerationService");
+const {
+    getSampleGenerationOptions,
+    parseJsonData,
+    generateSampleForDemonstration,
+    generateSamplesForEntity
+} = require("./sampleGeneration/sampleGenerationService");
+const {getDataForSampleGeneration} = require('./sampleGeneration/sampleGenerationService');
 
 /**
  * @typedef {(error?: PluginError | null, result?: any | null) => void} PluginCallback
+ * @typedef {import('./sampleGeneration/sampleGenerationTypes').EntitiesData} EntitiesData
  * */
 
 /**
@@ -98,20 +109,18 @@ const parseDataForEntityLevelScript = (data) => {
  *      externalDefinitions: ExternalDefinitions | unknown,
  *      containerData: ContainerData | unknown,
  *      entitiesJsonSchema: EntitiesJsonSchema | unknown,
- *      jsonData: Record<string, Object>
+ *      jsonData: Record<string, Object>,
+ *      entitiesData: EntitiesData | undefined,
  * }}
  * */
-const parseDataForContainerLevelScript = (data) => {
+const parseDataForContainerLevelScript = data => {
     const modelData = data.modelData;
     const containerData = data.containerData;
     const modelDefinitions = JSON.parse(data.modelDefinitions);
     const externalDefinitions = JSON.parse(data.externalDefinitions);
     const entitiesJsonSchema = parseEntities(data.entities, data.jsonSchema);
-    const internalDefinitions = parseEntities(
-        data.entities,
-        data.internalDefinitions
-    );
-    const jsonData = parseJsonData(data.jsonData);
+    const internalDefinitions = parseEntities(data.entities, data.internalDefinitions);
+    const {jsonData, entitiesData} = getDataForSampleGeneration(data, entitiesJsonSchema);
 
     return {
         modelData,
@@ -121,8 +130,9 @@ const parseDataForContainerLevelScript = (data) => {
         containerData,
         entitiesJsonSchema,
         jsonData,
-    }
-}
+        entitiesData,
+    };
+};
 
 /**
  * @param script {string}
@@ -148,17 +158,17 @@ const getScriptAndSampleResponse = (script, sample) => {
 /**
  * @param data {CoreData}
  * @param app {App}
- * @return {{
+ * @return {Promise<{
  *      container: string,
  *      entities: Array<{ name: string, script: string }>,
  *      views: Array<{ name: string, script: string }>,
- * }}
+ * }>}
  * */
-const getContainerScriptWithSeparateBuckets = (app, data,) => {
+const getContainerScriptWithSeparateBuckets = async (app, data) => {
     const parsedData = parseDataForContainerLevelScript(data);
     const sampleGenerationOptions = getSampleGenerationOptions(app, data);
 
-    const scriptData = buildContainerLevelFEScriptDto(data, app)({
+    const scriptData = await buildContainerLevelFEScriptDto(data, app)({
         ...parsedData,
         includeRelationshipsInEntityScripts: true,
         includeSamplesInEntityScripts: sampleGenerationOptions.isSampleGenerationRequired,
@@ -177,12 +187,13 @@ const getContainerScriptWithSeparateBuckets = (app, data,) => {
 /**
  * @param data {CoreData}
  * @param app {App}
- * @return {string | Array<{ title: string, script: string, mode: string }>}
+ * @return {Promise<string | Array<{ title: string, script: string, mode: string }>>}
  * */
-const getContainerScriptWithNotSeparateBuckets = (app, data,) => {
+const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
+    const _ = app.require('lodash')
     const parsedData = parseDataForContainerLevelScript(data);
     const sampleGenerationOptions = getSampleGenerationOptions(app, data);
-    const scriptData = buildContainerLevelFEScriptDto(data, app)({
+    const scriptData = await buildContainerLevelFEScriptDto(data, app)({
         ...parsedData,
         includeRelationshipsInEntityScripts: false,
         includeSamplesInEntityScripts: false,
@@ -192,8 +203,20 @@ const getContainerScriptWithNotSeparateBuckets = (app, data,) => {
         return scripts;
     }
 
-    const demoSample = generateSampleForDemonstration(app, parsedData, 'container');
-    return getScriptAndSampleResponse(scripts, demoSample);
+    if (parsedData.jsonData) {
+        const demoSample = generateSampleForDemonstration(app, parsedData, 'container');
+
+        return getScriptAndSampleResponse(scripts, demoSample);
+    }
+
+    const sampleScripts = []
+
+    for (const entityData of Object.values(parsedData.entitiesData || {})) {
+        const samples = await generateSamplesForEntity(_)(entityData);
+        sampleScripts.push(...samples);
+    }
+
+    return getScriptAndSampleResponse(scripts, sampleScripts.join('\n\n'));
 }
 
 module.exports = {
@@ -268,7 +291,7 @@ module.exports = {
      * @param callback {PluginCallback}
      * @param app {App}
      * */
-    generateContainerScript(data, logger, callback, app) {
+    async generateContainerScript(data, logger, callback, app) {
         try {
             const parsedData = parseDataForContainerLevelScript(data);
             if (data.isUpdateScript) {
@@ -276,10 +299,10 @@ module.exports = {
                 callback(null, script);
             } else {
                 if (data.options.separateBucket) {
-                    const scripts = getContainerScriptWithSeparateBuckets(app, data);
+                    const scripts = await getContainerScriptWithSeparateBuckets(app, data);
                     return callback(null, scripts);
                 }
-                const scripts = getContainerScriptWithNotSeparateBuckets(app, data);
+                const scripts = await getContainerScriptWithNotSeparateBuckets(app, data);
                 return callback(null, scripts);
             }
         } catch (e) {
