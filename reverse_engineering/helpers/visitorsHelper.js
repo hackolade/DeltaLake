@@ -49,9 +49,9 @@ const getFilteredTableProperties = (tableProperties) => {
 
 const normalizeTableProperties = (tableProperties) => {
     if (Array.isArray(tableProperties)) {
-        return tableProperties.length > 1
-            ? tableProperties
-            : tableProperties[0];
+        return tableProperties.length === 1
+            ? tableProperties[0] 
+            : tableProperties;
     }
 
     return tableProperties;
