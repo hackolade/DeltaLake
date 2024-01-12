@@ -35,7 +35,7 @@ const getCheckConstraintName = (constraintName, tableName, index) => {
 const getCheckConstraintsScriptsOnColumnLevel = (ddlProvider) => (columns, tableName) => {
 	return Object.keys(columns)
 		.map(colName => ({ colName: colName.replaceAll('`', ''), ...columns[colName] }))
-		.filter(column => column.constraints.check)
+		.filter(column => column.constraints?.check)
 		.map(column => {
 			const constraintName = getCheckConstraintName(column.constraints.checkConstraintName, tableName);
 
