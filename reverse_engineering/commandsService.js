@@ -38,7 +38,7 @@ const DROP_RESOURCE_PLAN_ITEM = 'dropResourcePlanItem';
 const DROP_MAPPING = 'removeMapping';
 const UPDATE_ENTITY_LEVEL_DATA_COMMAND = 'updateCollectionProperties';
 
-const DEFAULT_BUCKET = 'New database';
+const DEFAULT_BUCKET = 'New schema';
 
 const convertCommandsToEntities = (commands, originalScript) => {
     return commands.reduce(

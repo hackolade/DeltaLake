@@ -124,7 +124,7 @@
 				"inputPlaceholder": "Optional"
 			},
 			{
-				"inputLabel": "Database name",
+				"inputLabel": "Schema name",
 				"inputKeyword": "databaseName",
 				"inputType": "text",
 				"inputPlaceholder": "Optional"

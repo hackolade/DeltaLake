@@ -2,7 +2,7 @@
 
 const {getDatabaseStatement, getUseCatalogStatement} = require('./helpers/databaseHelper');
 const {getViewScript} = require('./helpers/viewHelper');
-const {getCleanedUrl, buildScript, isSupportUnityCatalog} = require('./utils/general');
+const {getCleanedUrl, buildScript, isSupportUnityCatalog, getDBVersionNumber} = require('./utils/general');
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
 
@@ -266,7 +266,11 @@ module.exports = {
             const isUnityCatalogSupports = isSupportUnityCatalog(dbVersion);
 
             const useCatalogStatement = isUnityCatalogSupports ? getUseCatalogStatement(data.containerData) : '';
-            const databaseStatement = getDatabaseStatement(data.containerData, isUnityCatalogSupports);
+            const databaseStatement = getDatabaseStatement(
+				data.containerData,
+				isUnityCatalogSupports,
+				getDBVersionNumber(dbVersion)
+			);
 
             const script = getViewScript({
                 _,

@@ -32,7 +32,7 @@ const {getDatabaseStatement, getUseCatalogStatement} = require("./databaseHelper
 const {getCreateRelationshipScripts} = require("./relationshipHelper");
 const {getTableStatement} = require("./tableHelper");
 const {getIndexes} = require("./indexHelper");
-const {buildScript, getName, getTab, isSupportUnityCatalog, isSupportNotNullConstraints} = require("../utils/general");
+const {buildScript, getName, getTab, isSupportUnityCatalog, isSupportNotNullConstraints, getDBVersionNumber} = require("../utils/general");
 const {getViewScript} = require("./viewHelper");
 const {generateSamplesScript, getDataForSampleGeneration, generateSamplesForEntity} = require('../sampleGeneration/sampleGenerationService');
 
@@ -79,7 +79,7 @@ const buildEntityLevelFEScript = (data, app) => ({
     const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
     const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
     const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
-    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable);
+    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, getDBVersionNumber(dbVersion));
     const definitions = [modelDefinitions, internalDefinitions, externalDefinitions,];
     const tableStatements = getTableStatement(app)(
         containerData,
@@ -269,7 +269,7 @@ const buildContainerLevelFEScriptDto = (data, app) => async ({
 
     const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
     const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
-    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable);
+    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, getDBVersionNumber(dbVersion));
     const entityScriptDtos = await getContainerLevelEntitiesScriptDtos(app, data)({
         internalDefinitions,
         externalDefinitions,

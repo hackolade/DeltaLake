@@ -150,8 +150,8 @@ module.exports = app => {
             return !name || !column ? '' : assignTemplates(templates.dropTableColumn, {name, column});
         },
 
-        dropDatabase(name) {
-            return !name ? '' : assignTemplates(templates.dropDatabase, {name});
+        dropDatabase(name, bucketKeyword) {
+            return !name ? '' : assignTemplates(templates.dropDatabase, {name, bucketKeyword});
         },
 
         alterSerDeProperties({properties, serDe, name}) {

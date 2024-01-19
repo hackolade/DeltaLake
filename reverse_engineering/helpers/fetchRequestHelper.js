@@ -301,9 +301,9 @@ const fetchClusterTablesNames = (dbName, connectionInfo) =>
 const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames, isManagedLocationSupports, logger) => {
 	const async = dependencies.async;
 	const databasesPropertiesResult = await async.mapLimit(databasesNames, 40, async dbName => {
-		logger.log('info', '', `Start describe database: ${dbName} `);
+		logger.log('info', '', `Start describe schema: ${dbName} `);
 		const dbInfoResult = await executeCommand(connectionInfo, `DESCRIBE DATABASE EXTENDED \`${dbName}\``, 'sql');
-		logger.log('info', '', `Database: ${dbName} successfully described`);
+		logger.log('info', '', `Schema: ${dbName} successfully described`);
 		const dbProperties = dbInfoResult.reduce((dbProperties, row) => {
 			switch (row[0]) {
 				case 'Location':

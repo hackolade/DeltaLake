@@ -33,11 +33,12 @@ const getLocationOption = (location, managedLocation, isUnityCatalogSupports) =>
  * @param {string|undefined} dbProperties
  * @param {boolean} isActivated
  * @param {boolean} isUnityCatalogSupports
+ * @param {number} dbVersionNumber
  * @return {string}
  * */
 const getCreateStatement = ({
-	name, comment, location, managedLocation, dbProperties, isActivated, isUnityCatalogSupports
-}) => buildStatement(`CREATE DATABASE IF NOT EXISTS ${name}`, isActivated)
+	name, comment, location, managedLocation, dbProperties, isActivated, isUnityCatalogSupports, dbVersionNumber
+}) => buildStatement(`CREATE ${getBucketKeyword(dbVersionNumber)} IF NOT EXISTS ${name}`, isActivated)
 	(comment, `COMMENT '${encodeStringLiteral(comment)}'`)
 	(location || managedLocation, getLocationOption(location, managedLocation, isUnityCatalogSupports))
 	(dbProperties, `WITH DBPROPERTIES (${dbProperties})`)
@@ -60,8 +61,9 @@ const getUseCatalogStatement = (databaseData) => {
  * @return {string}
  * @param {*} containerData
  * @param {boolean} isUnityCatalogSupports
+ * @param {number} dbVersionNumber
  * */
-const getDatabaseStatement = (containerData, isUnityCatalogSupports) => {
+const getDatabaseStatement = (containerData, isUnityCatalogSupports, dbVersionNumber) => {
 	const tab = getTab(0, containerData);
 	const name = replaceSpaceWithUnderscore(prepareName(getName(tab)));
 	if (!name) {
@@ -76,10 +78,11 @@ const getDatabaseStatement = (containerData, isUnityCatalogSupports) => {
 		dbProperties: tab.dbProperties,
 		isActivated: tab.isActivated,
 		isUnityCatalogSupports,
+		dbVersionNumber
 	});
 };
 
-const getDatabaseAlterStatement = (containerData) => {
+const getDatabaseAlterStatement = (containerData, dbVersionNumber) => {
 	const tab = getTab(0, containerData);
 	if (!tab.dbProperties) {
 		return '';
@@ -88,11 +91,16 @@ const getDatabaseAlterStatement = (containerData) => {
 	if (!name) {
 		return '';
 	}
-	return `ALTER DATABASE ${name} SET DBPROPERTIES (${tab.dbProperties});\n\n`
+	return `ALTER ${getBucketKeyword(dbVersionNumber)} ${name} SET DBPROPERTIES (${tab.dbProperties});\n\n`
 };
+
+const getBucketKeyword = (dbVersionNumber) => {
+	return dbVersionNumber < 9 ? 'DATABASE' : 'SCHEMA';
+}
 
 module.exports = {
 	getUseCatalogStatement,
 	getDatabaseStatement,
-	getDatabaseAlterStatement
+	getDatabaseAlterStatement,
+	getBucketKeyword
 };

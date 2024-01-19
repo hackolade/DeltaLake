@@ -147,7 +147,7 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "text"
 			},
 			{
-				"propertyName": "Database properties",
+				"propertyName": "Schema properties",
 				"propertyKeyword": "dbProperties",
 				"propertyType": "details",
 				"template": "textarea",

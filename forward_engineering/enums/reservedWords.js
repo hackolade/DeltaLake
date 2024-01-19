@@ -25,6 +25,7 @@ const RESERVED_WORDS = {
     CURRENT_TIMESTAMP: 'current_timestamp',
     CURSOR: 'cursor',
     DATABASE: 'database',
+    SCHEMA: 'schema',
     DATE: 'date',
     DECIMAL: 'decimal',
     DELETE: 'delete',

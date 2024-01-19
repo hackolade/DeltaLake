@@ -159,7 +159,7 @@ making sure that you maintain a proper JSON format.
 				"propertyName": "Global",
 				"propertyKeyword": "viewGlobal",
 				"propertyType": "checkbox",
-				"propertyTooltip": "If specified, views are tied to a system preserved temporary database global_temp",
+				"propertyTooltip": "If specified, views are tied to a system preserved temporary schema global_temp",
 				"dependency": {
 					"key": "viewTemporary",
 					"value": true

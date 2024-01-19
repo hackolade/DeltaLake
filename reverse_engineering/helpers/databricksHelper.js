@@ -11,7 +11,7 @@ const getEntityCreateStatement = (connectionInfo, dbName, entityName, logger) =>
 const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logger) => {
 	const _ = dependencies.lodash;
 	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
-	logger.log('info', databasesNames, `Database list`);
+	logger.log('info', databasesNames, `Schema list`);
 	if (_.isEmpty(databasesNames)) {
 		return;
 	}
@@ -19,9 +19,9 @@ const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logg
 	const firstDatabaseName = _.first(databasesNames);
 	
 	const tableNames = await fetchRequestHelper.fetchClusterTablesNames(firstDatabaseName, connectionInfo);
-	logger.log('info', tableNames, `Tables list in ${firstDatabaseName} database`);
+	logger.log('info', tableNames, `Tables list in ${firstDatabaseName} schema`);
 	const viewNames = await getDatabaseViewNames(firstDatabaseName, connectionInfo, sparkVersion, logger);
-	logger.log('info', viewNames, `Views list in ${firstDatabaseName} database`);
+	logger.log('info', viewNames, `Views list in ${firstDatabaseName} schema`);
 };
 
 const fetchViewNamesFallback = async (dbName, connectionInfo, logger) => {
@@ -30,7 +30,7 @@ const fetchViewNamesFallback = async (dbName, connectionInfo, logger) => {
 		const viewNames = JSON.parse(viewNamesResponse);
 		return viewNames.map(name => [ dbName, name ]);
 	} catch (error) {
-		logger.log('warning', error, `Error getting view names from ${dbName} database via Python.`);
+		logger.log('warning', error, `Error getting view names from ${dbName} schema via Python.`);
 		return [];
 	}
 };
@@ -39,7 +39,7 @@ const fetchViewNames = (dbName, connectionInfo, logger) => {
 	try {
 		return fetchRequestHelper.fetchDatabaseViewsNames(dbName, connectionInfo);
 	} catch (error) {
-		logger.log('warning', error, `Error getting view names from ${dbName} database via SQL. Run fallback via Python.`);
+		logger.log('warning', error, `Error getting view names from ${dbName} schema via SQL. Run fallback via Python.`);
 		return fetchViewNamesFallback(dbName, connectionInfo, logger);
 	}
 };
