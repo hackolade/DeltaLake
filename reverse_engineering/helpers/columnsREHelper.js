@@ -37,7 +37,8 @@ const handleSubtype = (childType, parentType) => {
         case 'binary': return { subtype: `${parentType}<bin>` };
         case 'boolean': return { subtype: `${parentType}<bool>` };
         case 'date': return { subtype: `${parentType}<date>` };
-        case 'timestamp': return { subtype: `${parentType}<ts>` };
+        case 'timestamp':
+        case 'timestamp_ntz': return { subtype: `${parentType}<ts>` };
         case 'interval': return { subtype: `${parentType}<intrvl>` };
         case 'union': return { subtype: `${parentType}<union>` };
         default: return { subtype: `${parentType}<txt>` };
@@ -83,7 +84,8 @@ const handleType = typeContainer => {
         case 'string': return { type: 'text', mode: typeContainer.type };
         case 'boolean': return { type: 'bool' };
         case 'binary': return { type: 'binary', mode: typeContainer.type };
-        case 'timestamp': return { type: 'timestamp' };
+        case 'timestamp': return { type: 'timestamp', mode: '' };
+        case 'timestamp_ntz': return { type: 'timestamp', mode: typeContainer.type }
         case 'date': return { type: 'date' };
         case 'interval': return { type: 'interval' };
         default: return { type: 'text' };

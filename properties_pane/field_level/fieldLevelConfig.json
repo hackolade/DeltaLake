@@ -1009,6 +1009,29 @@ making sure that you maintain a proper JSON format.
 				"template": "textarea"
 			},
 			"type",
+			{
+				"propertyName": "Subtype",
+				"propertyKeyword": "mode",
+				"propertyType": "select",
+				"options": [
+					"",
+					"timestamp_ntz"
+				],
+				"data": "options",
+				"valueType": "string",
+				"dependency": [
+					{
+						"level": "model",
+						"key": "dbVersion",
+						"value": "Runtime 13"
+					},
+					{
+						"level": "model",
+						"key": "dbVersion",
+						"value": "Runtime 14"
+					}
+				]
+			},
 			"pattern",
 			"enum",
 			{

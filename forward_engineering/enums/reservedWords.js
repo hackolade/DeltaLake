@@ -100,6 +100,7 @@ const RESERVED_WORDS = {
     TABLESAMPLE: 'tablesample',
     THEN: 'then',
     TIMESTAMP: 'timestamp',
+    TIMESTAMP_NTZ: 'timestamp_ntz',
     TO: 'to',
     TRANSFORM: 'transform',
     TRIGGER: 'trigger',
