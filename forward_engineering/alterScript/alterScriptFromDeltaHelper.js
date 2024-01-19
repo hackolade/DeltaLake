@@ -251,20 +251,15 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
     const provider = require('../ddlProvider/ddlProvider')(app);
     const _ = app.require('lodash');
     const isUnityCatalogSupports = isSupportUnityCatalog(data.modelData[0].dbVersion);
-	const containersScriptDtos = getAlterContainersScriptDtos({ schema, isUnityCatalogSupports, provider, _, data });
-	const collectionsScriptDtos = getAlterCollectionsScriptDtos({ schema, definitions, provider, data, _, app });
-	const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, _);
-	let relationshipsScriptDtos = [];
-	if (isUnityCatalogSupports) {
-		relationshipsScriptDtos = getAlterRelationshipsScriptDtos({ schema, ddlProvider: provider, _ });
-	}
+    const containersScriptDtos = getAlterContainersScriptDtos({ schema, isUnityCatalogSupports, provider, _, data });
+    const collectionsScriptDtos = getAlterCollectionsScriptDtos({ schema, definitions, provider, data, _, app });
+    const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, _);
+    let relationshipsScriptDtos = [];
+    if (isUnityCatalogSupports) {
+        relationshipsScriptDtos = getAlterRelationshipsScriptDtos({ schema, ddlProvider: provider, _ });
+    }
 
-    return [
-        ...containersScriptDtos,
-        ...collectionsScriptDtos,
-        ...viewsScriptDtos,
-        ...relationshipsScriptDtos,
-    ];
+    return [...containersScriptDtos, ...collectionsScriptDtos, ...viewsScriptDtos, ...relationshipsScriptDtos];
 };
 
 /**
