@@ -160,6 +160,13 @@ const getNumeric = (property) => {
 	}
 };
 
+const getTimestamp = (property) => {
+	const type = property.type;
+	const mode = property.mode;
+
+	return mode || type;
+}
+
 const getJsonType = getTypeByProperty => property => {
 	if (!property.physicalType) {
 		return 'string';
@@ -274,6 +281,8 @@ const getTypeByProperty = (definitions = []) => property => {
 			return getArray(getTypeByProperty(definitions))(property);
 		case 'map':
 			return getMap(getTypeByProperty(definitions))(property);
+		case 'timestamp':
+			return getTimestamp(property);
 		case undefined:
 			return 'string';
 		default:

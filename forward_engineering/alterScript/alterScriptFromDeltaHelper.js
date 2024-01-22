@@ -57,17 +57,18 @@ const assertNoEmptyStatements = (scripts) => {
 }
 
 /**
- * @return Array<AlterScriptDto>
+ * @return {Array<AlterScriptDto>}
  * */
-const getAlterContainersScriptDtos = (schema, isUnityCatalogSupports, provider, _) => {
+const getAlterContainersScriptDtos = ({ schema, isUnityCatalogSupports, provider, _, data }) => {
+    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
     const addedScriptDtos = getItems(schema, 'containers', 'added').map(
-        getAddContainerScriptDto(isUnityCatalogSupports)
+        getAddContainerScriptDto(isUnityCatalogSupports, dbVersionNumber)
     ).filter(Boolean);
     const deletedScriptDtos = getItems(schema, 'containers', 'deleted').map(
-        getDeleteContainerScriptDto(provider)
+        getDeleteContainerScriptDto(provider, dbVersionNumber)
     ).filter(Boolean);
     const modifiedScriptDtos = getItems(schema, 'containers', 'modified').flatMap(
-        getModifyContainerScriptDtos(provider, _, isUnityCatalogSupports)
+        getModifyContainerScriptDtos(provider, _, isUnityCatalogSupports, dbVersionNumber)
     ).filter(Boolean);
 
     return [
@@ -250,20 +251,15 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
     const provider = require('../ddlProvider/ddlProvider')(app);
     const _ = app.require('lodash');
     const isUnityCatalogSupports = isSupportUnityCatalog(data.modelData[0].dbVersion);
-    const containersScriptDtos = getAlterContainersScriptDtos(schema, isUnityCatalogSupports, provider, _);
-    const collectionsScriptDtos = getAlterCollectionsScriptDtos({schema, definitions, provider, data, _, app});
+    const containersScriptDtos = getAlterContainersScriptDtos({ schema, isUnityCatalogSupports, provider, _, data });
+    const collectionsScriptDtos = getAlterCollectionsScriptDtos({ schema, definitions, provider, data, _, app });
     const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, _);
     let relationshipsScriptDtos = [];
     if (isUnityCatalogSupports) {
-        relationshipsScriptDtos = getAlterRelationshipsScriptDtos({schema, ddlProvider: provider, _});
+        relationshipsScriptDtos = getAlterRelationshipsScriptDtos({ schema, ddlProvider: provider, _ });
     }
 
-    return [
-        ...containersScriptDtos,
-        ...collectionsScriptDtos,
-        ...viewsScriptDtos,
-        ...relationshipsScriptDtos,
-    ];
+    return [...containersScriptDtos, ...collectionsScriptDtos, ...viewsScriptDtos, ...relationshipsScriptDtos];
 };
 
 /**

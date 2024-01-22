@@ -70,6 +70,7 @@ const mapTypeThatCanBeModelledAsExpressionToDml = (column, sample= '', expressio
  * @param sample {any}
  * */
 const mapTimestampToDml = (column, sample = '') => {
+    // The same keyword used for TIMESTAMP and TIMESTAMP_NTZ types because it is possible to insert TIMESTAMP into TIMESTAMP_NTZ
     return mapTypeThatCanBeModelledAsExpressionToDml(column, sample, 'TIMESTAMP');
 }
 

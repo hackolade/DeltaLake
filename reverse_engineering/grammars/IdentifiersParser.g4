@@ -236,6 +236,7 @@ dateLiteral
 
 timestampLiteral
     : KW_TIMESTAMP StringLiteral
+    | KW_TIMESTAMP StringLiteral KW_AS KW_TIMESTAMP_NTZ
     | KW_CURRENT_TIMESTAMP
     ;
 

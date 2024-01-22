@@ -947,12 +947,12 @@ class Visitor extends HiveParserVisitor {
     }
 
     visitPrimitiveType(ctx) {
-        const timestampLocal = ctx.KW_TIMESTAMPLOCALTZ() || ctx.KW_LOCAL();
+        const timestampLocal = ctx.KW_TIMESTAMPLOCALTZ() || ctx.KW_LOCAL() || ctx.KW_TIMESTAMP_NTZ();
         const decimal = ctx.KW_DECIMAL();
         const varchar = ctx.KW_VARCHAR();
         const char = ctx.KW_CHAR();
         if (timestampLocal) {
-            return { type: 'timestamp' };
+            return { type: 'timestamp', mode: Boolean(ctx.KW_TIMESTAMP_NTZ()) ? 'timestamp_ntz' : '' };
         }
         if (decimal) {
             const decimalType = { type: 'numeric', mode: 'decimal' };
@@ -1002,8 +1002,14 @@ class Visitor extends HiveParserVisitor {
                 return {
                     type: 'interval',
                 };
-            case 'binary':
             case 'timestamp':
+                return { type: 'timestamp', mode: '' }
+            case "timestamp_ntz":
+                return {
+                    type: 'timestamp',
+                    mode: hiveType
+                };
+            case 'binary':
             case 'date':
             case 'interval':
             default:

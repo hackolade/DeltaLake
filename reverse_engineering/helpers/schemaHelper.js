@@ -187,8 +187,18 @@ const parsePrimitive = ([ type ]) => {
 			return {
 				type: "interval"
 			};
-		case "binary":
 		case "timestamp":
+			return {
+				type: hiveType,
+				mode: ''
+			}
+		case "timestamp_ntz":
+			debugger
+			return {
+				type: "timestamp",
+				mode: hiveType
+			}
+		case "binary":
 		case "date":
 		case "interval":
 		default:
