@@ -18,43 +18,43 @@
 	"descriptor": [
 		{
 			"schema": {
-				"mode": "timestamp_ntz"
+				"mode": ""
 			},
 			"format": "YYYY-MM-DD hh:mm:ss"
 		},
 		{
 			"schema": {
-				"mode": "timestamp_ntz"
+				"mode": ""
 			},
 			"format": "YYYY-MM-DD hh:mm:ss.nnn"
 		},
 		{
 			"schema": {
-				"mode": "timestamp_ntz"
+				"mode": ""
 			},
 			"format": "YYYY-MM-DD hh:mm:ss.nnnnnn"
 		},
 		{
 			"schema": {
-				"mode": "timestamp_ntz"
+				"mode": ""
 			},
 			"format": "YYYY-MM-DD hh:mm:ss.nnnnnnnnn"
 		},
 		{
 			"schema": {
-				"mode": ""
+				"mode": "timestamp_ntz"
 			},
 			"format": "YYYY-MM-DD hh:mm:ssZ"
 		},
 		{
 			"schema": {
-				"mode": ""
+				"mode": "timestamp_ntz"
 			},
 			"format": "YYYY-MM-DD hh:mm:ss.nnnZ"
 		},
 		{
 			"schema": {
-				"mode": ""
+				"mode": "timestamp_ntz"
 			},
 			"format": "YYYY-MM-DD hh:mm:ss.nnnnnnZ"
 		}
