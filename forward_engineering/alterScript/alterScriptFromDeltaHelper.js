@@ -60,15 +60,15 @@ const assertNoEmptyStatements = (scripts) => {
  * @return {Array<AlterScriptDto>}
  * */
 const getAlterContainersScriptDtos = ({ schema, isUnityCatalogSupports, provider, _, data }) => {
-    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
+    const dbVersion = data.modelData[0].dbVersion;
     const addedScriptDtos = getItems(schema, 'containers', 'added').map(
-        getAddContainerScriptDto(isUnityCatalogSupports, dbVersionNumber)
+        getAddContainerScriptDto(isUnityCatalogSupports, dbVersion)
     ).filter(Boolean);
     const deletedScriptDtos = getItems(schema, 'containers', 'deleted').map(
-        getDeleteContainerScriptDto(provider, dbVersionNumber)
+        getDeleteContainerScriptDto(provider, dbVersion)
     ).filter(Boolean);
     const modifiedScriptDtos = getItems(schema, 'containers', 'modified').flatMap(
-        getModifyContainerScriptDtos(provider, _, isUnityCatalogSupports, dbVersionNumber)
+        getModifyContainerScriptDtos(provider, _, isUnityCatalogSupports, dbVersion)
     ).filter(Boolean);
 
     return [
@@ -86,26 +86,26 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
         items.filter(item => item.compMod?.[compMode]).flatMap(getScript);
 
     const getColumnScripts = (items, getScript) => items.filter(item => !item.compMod).flatMap(getScript);
-    const dbVersionNumber = getDBVersionNumber(data.modelData[0].dbVersion);
+    const dbVersion = data.modelData[0].dbVersion;
 
     const getDeletedColumnsScriptsMethod = (app, definitions, provider) => {
-        if (dbVersionNumber < Runtime.RUNTIME_SUPPORTING_MODIFYING_COLUMNS_WITHOUT_NEED_TO_RECREATE_TABLE) {
-            return getDeleteColumnScripsForOlderRuntime(app, definitions, provider, dbVersionNumber);
+        if (getDBVersionNumber(dbVersion) < Runtime.RUNTIME_SUPPORTING_MODIFYING_COLUMNS_WITHOUT_NEED_TO_RECREATE_TABLE) {
+            return getDeleteColumnScripsForOlderRuntime(app, definitions, provider, dbVersion);
         }
-        return getDeleteColumnsScripts(app, definitions, provider, dbVersionNumber)
+        return getDeleteColumnsScripts(app, definitions, provider, dbVersion)
     }
 
     const getModifyColumnsScriptsMethod =  (app, definitions, provider) => {
-        if (dbVersionNumber < Runtime.RUNTIME_SUPPORTING_MODIFYING_COLUMNS_WITHOUT_NEED_TO_RECREATE_TABLE) {
-            return getModifyColumnsScriptsForOlderRuntime(app, definitions, provider, dbVersionNumber);
+        if (getDBVersionNumber(dbVersion) < Runtime.RUNTIME_SUPPORTING_MODIFYING_COLUMNS_WITHOUT_NEED_TO_RECREATE_TABLE) {
+            return getModifyColumnsScriptsForOlderRuntime(app, definitions, provider, dbVersion);
         }
-        return getModifyColumnsScripts(app, definitions, provider, dbVersionNumber)
+        return getModifyColumnsScripts(app, definitions, provider, dbVersion)
     }
 
     const addedCollectionsScriptDtos = getCollectionScripts(
         getItems(schema, 'entities', 'added'),
         'created',
-        getAddCollectionsScripts(app, definitions, dbVersionNumber)
+        getAddCollectionsScripts(app, definitions, dbVersion)
     );
     const deletedCollectionsScriptDtos = getCollectionScripts(
         getItems(schema, 'entities', 'deleted'),
@@ -115,20 +115,20 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
     const modifiedCollectionsScriptDtos = getCollectionScripts(
         getItems(schema, 'entities', 'modified'),
         'modified',
-        getModifyCollectionsScripts(app, definitions, provider, dbVersionNumber)
+        getModifyCollectionsScripts(app, definitions, provider, dbVersion)
     );
     const modifiedCollectionCommentsScriptDtos = getItems(schema, 'entities', 'modified')
         .flatMap(item => getModifyCollectionCommentsScripts(provider)(item));
 
     let modifiedCollectionPrimaryKeysScriptDtos = [];
-    if (dbVersionNumber >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
+    if (getDBVersionNumber(dbVersion) >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
         modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified')
             .flatMap(item => getModifyPkConstraintsScripts(_, provider)(item));
     }
 
     const addedColumnsScriptDtos = getColumnScripts(
         getItems(schema, 'entities', 'added'),
-        getAddColumnsScripts(app, definitions, provider, dbVersionNumber)
+        getAddColumnsScripts(app, definitions, provider, dbVersion)
     );
     const deletedColumnsScriptDtos = getColumnScripts(
         getItems(schema, 'entities', 'deleted'),
