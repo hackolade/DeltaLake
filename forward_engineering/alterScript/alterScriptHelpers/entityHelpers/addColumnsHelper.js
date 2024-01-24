@@ -53,9 +53,9 @@ const getAddNotNullConstraintScriptDtos = (_, ddlProvider) => (collection, colum
         .filter(Boolean);
 }
 
-const getAddColumnsScriptsForModifyModifyCollectionScript = (_, provider) => (entity, definitions, modifyScript) => {
+const getAddColumnsScriptsForModifyModifyCollectionScript = (_, provider) => (entity, definitions, modifyScript, dbVersion) => {
     const entityData = {...entity, ..._.omit(entity.role, ['properties'])};
-    const {columns} = getColumns(entityData, true, definitions);
+    const {columns} = getColumns(entityData, definitions, dbVersion);
 
     // "NOT NULL" constraint is baked right into the "column statement". We are unsetting "not null" constraint
     // property on each column so that we could add these constraints in separate statements and not have it duplicated.
@@ -110,7 +110,7 @@ const getAddColumnsScripts = (app, definitions, provider, dbVersion) => (entity)
     if (modifyScript.type === 'new') {
         return getAddColumnsScriptsForNewModifyCollectionScript(_, provider)(entity, definitions, modifyScript);
     }
-    return getAddColumnsScriptsForModifyModifyCollectionScript(_, provider)(entity, definitions, modifyScript);
+    return getAddColumnsScriptsForModifyModifyCollectionScript(_, provider)(entity, definitions, modifyScript, dbVersion);
 };
 
 module.exports = {

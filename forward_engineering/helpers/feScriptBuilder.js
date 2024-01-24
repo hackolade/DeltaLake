@@ -79,7 +79,7 @@ const buildEntityLevelFEScript = (data, app) => ({
     const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
     const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
     const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
-    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, getDBVersionNumber(dbVersion));
+    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, dbVersion);
     const definitions = [modelDefinitions, internalDefinitions, externalDefinitions,];
     const tableStatements = getTableStatement(app)(
         containerData,
@@ -88,6 +88,8 @@ const buildEntityLevelFEScript = (data, app) => ({
         definitions,
         arePkFkConstraintsAvailable,
         areNotNullConstraintsAvailable,
+        null,
+        dbVersion
     );
     const indexScript = getIndexes(_)(containerData, entityData, jsonSchema, definitions);
 
@@ -190,6 +192,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => async ({
     for (const entityId of data.entities) {
         const entityData = data.entityData[entityId];
 
+        const dbVersion = data.modelData[0].dbVersion;
         const likeTableData = data.entityData[getTab(0, entityData)?.like];
         const entityJsonSchema = entitiesJsonSchema[entityId];
         const definitions = [internalDefinitions[entityId], modelDefinitions, externalDefinitions];
@@ -200,6 +203,7 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => async ({
             arePkFkConstraintsAvailable,
             areNotNullConstraintsAvailable,
             likeTableData,
+            dbVersion
         );
 
         const indexScript = getIndexes(_)(...createTableStatementArgs);
@@ -269,7 +273,7 @@ const buildContainerLevelFEScriptDto = (data, app) => async ({
 
     const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
     const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
-    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, getDBVersionNumber(dbVersion));
+    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, dbVersion);
     const entityScriptDtos = await getContainerLevelEntitiesScriptDtos(app, data)({
         internalDefinitions,
         externalDefinitions,

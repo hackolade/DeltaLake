@@ -242,7 +242,8 @@ const prepareScript = (...scripts) => scripts.filter(Boolean);
  * @param dbVersionString {string}
  * @return {number}
  * */
-const getDBVersionNumber = dbVersionString => ~~(dbVersionString.split(' ')[1]);
+const getDBVersionNumber = (dbVersionString) =>
+    typeof dbVersionString === 'number' ? dbVersionString : ~~dbVersionString.split(' ')[1];
 
 const getDifferentItems = (_) => (newItems = [], oldItems = []) => {
     const intersection = _.intersectionWith(newItems, oldItems, _.isEqual);

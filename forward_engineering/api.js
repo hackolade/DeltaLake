@@ -269,7 +269,7 @@ module.exports = {
             const databaseStatement = getDatabaseStatement(
 				data.containerData,
 				isUnityCatalogSupports,
-				getDBVersionNumber(dbVersion)
+				dbVersion
 			);
 
             const script = getViewScript({

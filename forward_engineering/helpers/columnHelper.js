@@ -6,7 +6,7 @@ const {
 	getTypeDescriptor,
 	prepareName,
 	commentDeactivatedStatements,
-	encodeStringLiteral, wrapInBrackets,
+	encodeStringLiteral, wrapInBrackets, isSupportUnityCatalog, isSupportNotNullConstraints, getDBVersionNumber,
 } = require('../utils/general');
 const { getCheckConstraint } = require("./constrainthelper");
 
@@ -160,11 +160,11 @@ const getNumeric = (property) => {
 	}
 };
 
-const getTimestamp = (property) => {
+const getTimestamp = (property, dbVersion) => {
 	const type = property.type;
 	const mode = property.mode;
 
-	return mode || type;
+	return getDBVersionNumber(dbVersion) >= 13 ? mode || type : type;
 }
 
 const getJsonType = getTypeByProperty => property => {
@@ -185,31 +185,31 @@ const getUnionTypeFromMultiple = getTypeByProperty => property => {
 	return `uniontype<${types.join(',')}>`;
 };
 
-const getUnionFromOneOf = getTypeByProperty => property => {
-	const types = property.oneOf.reduce((types, item) => {
-		return Object.keys(item.properties || {}).reduce((types, itemName) => {
-			const itemProperty = item.properties[itemName];
-			const name = getName(itemProperty) || itemName;
-			const propertyType = getTypeByProperty(itemProperty);
+const getUnionFromOneOf = (getTypeByProperty) => (property) => {
+    const types = property.oneOf.reduce((types, item) => {
+        return Object.keys(item.properties || {}).reduce((types, itemName) => {
+            const itemProperty = item.properties[itemName];
+            const name = getName(itemProperty) || itemName;
+            const propertyType = getTypeByProperty(itemProperty);
 
-			if (!Array.isArray(types[name])) {
-				types[name] = [];
-			}
+            if (!Array.isArray(types[name])) {
+                types[name] = [];
+            }
 
-			types[name].push(propertyType);
+            types[name].push(propertyType);
 
-			return types;
-		}, types);
-	}, {});
+            return types;
+        }, types);
+    }, {});
 
-	return Object.keys(types).reduce((result, propertyName) => {
-		result[propertyName] = `uniontype<${(types[propertyName] || []).join(', ')}>`;
+    return Object.keys(types).reduce((result, propertyName) => {
+        result[propertyName] = `uniontype<${(types[propertyName] || []).join(', ')}>`;
 
-		return result;
-	}, {});
+        return result;
+    }, {});
 };
 
-const getUnionFromAllOf = getTypeByProperty => property => {
+const getUnionFromAllOf = (getTypeByProperty) => property => {
 	return property.allOf.reduce((types, subschema) => {
 		if (!Array.isArray(subschema.oneOf)) {
 			return types;
@@ -254,9 +254,9 @@ const getDefinitionByReference = (definitions, reference) => {
 	return allDefinitions[definitionName] || definitionName;
 };
 
-const getTypeByProperty = (definitions = []) => property => {
+const getTypeByProperty = (definitions = [], dbVersion) => property => {
 	if (Array.isArray(property.type)) {
-		return getUnionTypeFromMultiple(getTypeByProperty(definitions))(property);
+		return getUnionTypeFromMultiple(getTypeByProperty(definitions, dbVersion))(property);
 	}
 
 	if (property.$ref) {
@@ -266,7 +266,7 @@ const getTypeByProperty = (definitions = []) => property => {
 	switch(property.type) {
 		case 'jsonObject':
 		case 'jsonArray':
-			return getJsonType(getTypeByProperty(definitions))(property);
+			return getJsonType(getTypeByProperty(definitions, dbVersion))(property);
 		case 'text':
 			return getText(property);
 		case 'numeric':
@@ -276,13 +276,13 @@ const getTypeByProperty = (definitions = []) => property => {
 		case 'interval':
 			return 'string';
 		case 'struct':
-			return getStruct(getTypeByProperty(definitions), definitions)(property);
+			return getStruct(getTypeByProperty(definitions, dbVersion), definitions)(property);
 		case 'array':
-			return getArray(getTypeByProperty(definitions))(property);
+			return getArray(getTypeByProperty(definitions, dbVersion))(property);
 		case 'map':
-			return getMap(getTypeByProperty(definitions))(property);
+			return getMap(getTypeByProperty(definitions, dbVersion))(property);
 		case 'timestamp':
-			return getTimestamp(property);
+			return getTimestamp(property, dbVersion);
 		case undefined:
 			return 'string';
 		default:
@@ -331,7 +331,10 @@ const getGeneratedExpression = (expressionData, defaultValue = '') => {
 	return ` GENERATED ${generatedType} AS ${wrapInBrackets(expressionData.expression)}`;
 };
 
-const getColumns = (jsonSchema, arePkFkColumnConstraintsAvailable, areNotNullConstraintsAvailable, definitions) => {
+const getColumns = (jsonSchema, definitions, dbVersion) => {
+    const arePkFkColumnConstraintsAvailable = isSupportUnityCatalog(dbVersion);
+    const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
+
 	const deactivatedColumnNames = new Set();
 	let columns = Object.keys(jsonSchema.properties || {}).reduce((hash, columnName) => {
 		const property = jsonSchema.properties[columnName];
@@ -350,7 +353,7 @@ const getColumns = (jsonSchema, arePkFkColumnConstraintsAvailable, areNotNullCon
 			hash,
 			getColumn(
 				prepareName(name),
-				getTypeByProperty(definitions)(property),
+				getTypeByProperty(definitions, dbVersion)(property),
 				getDescription(definitions, property),
 				{
 					unique: property.unique,
@@ -365,7 +368,7 @@ const getColumns = (jsonSchema, arePkFkColumnConstraintsAvailable, areNotNullCon
 	}, {});
 
 	if (Array.isArray(jsonSchema.oneOf)) {
-		const unions = getUnionFromOneOf(getTypeByProperty(definitions))(jsonSchema);
+		const unions = getUnionFromOneOf(getTypeByProperty(definitions, dbVersion))(jsonSchema);
 
 		columns = Object.keys(unions).reduce((hash, typeName) => Object.assign(
 			{},
@@ -375,7 +378,7 @@ const getColumns = (jsonSchema, arePkFkColumnConstraintsAvailable, areNotNullCon
 	}
 
 	if (Array.isArray(jsonSchema.allOf)) {
-		const unions = getUnionFromAllOf(getTypeByProperty(definitions))(jsonSchema);
+		const unions = getUnionFromAllOf(getTypeByProperty(definitions, dbVersion))(jsonSchema);
 
 		columns = Object.keys(unions).reduce((hash, typeName) => Object.assign(
 			{},
