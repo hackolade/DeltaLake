@@ -5,7 +5,7 @@
 		"dbVendor": "Delta Lake"
 	},
 	"container": {
-		"name": "New_database",
+		"name": "New_schema",
 		"indexes": []
 	},
 	"collection": {
