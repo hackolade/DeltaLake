@@ -45,7 +45,7 @@ const createSingleRelationship = (_, ddlProvider) => (relationship, entitiesJson
     const childBucketName = prepareName(childTable?.bucketName);
     const parentBucketName = prepareName(parentTable?.bucketName);
 
-    if (!parentTable || !childTable || !childBucketName || !parentBucketName) {
+    if (!parentTable || !childTable) {
         return '';
     }
     const childFieldIds = getChildFieldIds(relationship);
