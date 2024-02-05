@@ -15,6 +15,7 @@ const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const {getCheckConstraintsScriptsOnColumnLevel, getCheckConstraintsScriptsOnTableLevel, buildConstraints } = require("./entityHelpers/checkConstraintHelper");
 const constraintHelper = require('./constrainthelper');
+const { getColumnTagsStatement } = require('./unityTagsHelper');
 
 const getCreateStatement = (_) => ({
 	dbName, tableName, isTemporary, isExternal, using, likeStatement, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
@@ -277,6 +278,7 @@ const getTableStatement = (app) => (
 ) => {
 	const _ = app.require('lodash');
 	const ddlProvider = require('../ddlProvider/ddlProvider')(app);
+	const {getEntityTagsStatement} = require('../helpers/unityTagsHelper');
 
 	const dbName = replaceSpaceWithUnderscore(prepareName(getName(getTab(0, containerData))));
 	const tableData = getTab(0, entityData);
@@ -318,6 +320,9 @@ const getTableStatement = (app) => (
 
 	const statementsDelimiter = ';\n';
 
+	const entityUnityTags = getEntityTagsStatement(entityJsonSchema, fullTableName);
+	tableStatement = tableStatement + entityUnityTags;
+
 	const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(ddlProvider)(columns, fullTableName).join('\n');
 	const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(ddlProvider)(entityJsonSchema, fullTableName).join('\n');
 	const constraintsStatements = buildConstraints(constraintsStatementsOnTable, constraintsStatementsOnColumns);
@@ -325,6 +330,9 @@ const getTableStatement = (app) => (
 	if (!_.isEmpty(constraintsStatements)) {
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements;
 	}
+
+	const columnsUnityTags = getColumnTagsStatement(_, entityJsonSchema.properties, fullTableName);
+	tableStatement = tableStatement + columnsUnityTags;
 
 	return tableStatement;
 };

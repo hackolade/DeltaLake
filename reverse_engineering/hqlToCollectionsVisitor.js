@@ -122,6 +122,7 @@ class Visitor extends HiveParserVisitor {
             childDbName: database,
             childCollection: table,
         }));
+        // debugger;
 
         return [
             {

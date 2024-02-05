@@ -8,6 +8,7 @@ const {
 	encodeStringLiteral,
 	prepareName
 } = require('../utils/general');
+const { getCatalogTagsStatement, getSchemaTagsStatement } = require('../helpers/unityTagsHelper');
 
 /**
  * @param {string|undefined} location
@@ -50,11 +51,11 @@ const getCreateStatement = ({
  * @return {string}
  * */
 const getUseCatalogStatement = (databaseData) => {
-	const databaseDetails = getTab(0, databaseData);
+    const databaseDetails = getTab(0, databaseData);
 
-	return databaseDetails.catalogName
-		? `USE CATALOG ${prepareName(databaseDetails.catalogName)};`
-		: '';
+    return databaseDetails.catalogName
+        ? `USE CATALOG ${prepareName(databaseDetails.catalogName)};`
+        : '';
 };
 
 /**
@@ -64,22 +65,32 @@ const getUseCatalogStatement = (databaseData) => {
  * @param {number} dbVersionNumber
  * */
 const getDatabaseStatement = (containerData, isUnityCatalogSupports, dbVersionNumber) => {
-	const tab = getTab(0, containerData);
-	const name = replaceSpaceWithUnderscore(prepareName(getName(tab)));
-	if (!name) {
-		return '';
-	}
+    const UNITY_TAGS_RUNTIME_REQUIRED = 13;
+    const tab = getTab(0, containerData);
+    const name = replaceSpaceWithUnderscore(prepareName(getName(tab)));
+    if (!name) {
+        return '';
+    }
 
-	return getCreateStatement({
-		name: name,
-		comment: tab.description,
-		location: tab.location,
-		managedLocation: tab.managedLocation,
-		dbProperties: tab.dbProperties,
-		isActivated: tab.isActivated,
-		isUnityCatalogSupports,
-		dbVersionNumber
-	});
+    let unityCatalogTags = '';
+    let unitySchemaTags = '';
+    const createStatement = getCreateStatement({
+        name: name,
+        comment: tab.description,
+        location: tab.location,
+        managedLocation: tab.managedLocation,
+        dbProperties: tab.dbProperties,
+        isActivated: tab.isActivated,
+        isUnityCatalogSupports,
+        dbVersionNumber
+    });
+
+    if (dbVersionNumber >= UNITY_TAGS_RUNTIME_REQUIRED) {
+        unityCatalogTags = getCatalogTagsStatement(tab);
+        unitySchemaTags = getSchemaTagsStatement(tab, name);
+    }
+
+    return [createStatement, unityCatalogTags, unitySchemaTags].join('\n\n');
 };
 
 const getDatabaseAlterStatement = (containerData, dbVersionNumber) => {

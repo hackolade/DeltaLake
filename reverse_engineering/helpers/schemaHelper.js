@@ -193,7 +193,7 @@ const parsePrimitive = ([ type ]) => {
 				mode: ''
 			}
 		case "timestamp_ntz":
-			debugger
+			// debugger
 			return {
 				type: "timestamp",
 				mode: hiveType

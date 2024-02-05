@@ -121,6 +121,7 @@ module.exports = {
 			};
 
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
+			// debugger;
 			logger.log('info', clusterState, 'Cluster state info');
 			const dbCollectionsNames = await databricksHelper.getDatabaseCollectionNames(connectionData, clusterState.spark_version, logger);
 
@@ -178,6 +179,7 @@ module.exports = {
 			const dataBaseNames = data.collectionData.dataBaseNames;
 			const fieldInference = data.fieldInference;
 			const isUnityCatalogSupports = isSupportUnityCatalog(modelData.spark_version);
+			// debugger;
 
 			progress({ message: 'Start getting data from entities', containerName: 'databases', entityName: 'entities' });
 			const isManagedLocationSupports = isUnityCatalogSupports && data.database !== DEFAULT_DATABRICKS_CATALOG_NAME;
@@ -194,6 +196,7 @@ module.exports = {
 
 			let warnings = [];
 			let relationships = [];
+			let tags = [];
 
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];

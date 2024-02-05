@@ -709,6 +709,31 @@ const convertDbProperties = (dbProperties = '') => {
 		.join(',\n');
 };
 
+const fetchTagsForUnityCatalogs = async (connectionInfo, logger) => {
+		try {
+			const language = 'sql';
+			const catalogTagsQuery = 'SELECT * FROM system.information_schema.catalog_tags;';
+			const schemaTagsQuery = 'SELECT * FROM system.information_schema.schema_tags;';
+			const tableTagsQuery = 'SELECT * FROM system.information_schema.table_tags;';
+			const columnTagsQuery = 'SELECT * FROM system.information_schema.column_tags;';
+
+			const catalogTags = await executeCommand(connectionInfo, catalogTagsQuery, language);
+			const schemaTags = await executeCommand(connectionInfo, schemaTagsQuery, language);
+			const tableTags = await executeCommand(connectionInfo, tableTagsQuery, language);
+			const columnTags = await executeCommand(connectionInfo, columnTagsQuery, language);
+
+			return {
+				catalogTags,
+				schemaTags,
+				tableTags,
+				columnTags
+			};
+		} catch (error) {
+			logger.log('error', error, 'Error during retrieve tags');
+			return '';
+		}
+}
+
 module.exports = {
 	fetchClusterProperties,
 	fetchApplyToInstance,
@@ -724,4 +749,5 @@ module.exports = {
 	fetchEntitySchema,
 	useCatalog,
 	fetchSample,
+	fetchTagsForUnityCatalogs,
 };
