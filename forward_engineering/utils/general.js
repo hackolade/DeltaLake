@@ -196,8 +196,6 @@ const getEntityData = (object, properties = [], type = 'new') =>
 
 const getFullEntityName = (dbName, entityName) => dbName ? `${dbName}.${entityName}` : entityName;
 
-const getFullColumnName = (entityName, columnName) => entityName ? `${entityName}.${columnName}` : columnName;
-
 /**
  * @param bucketName {string}
  * @param tableName {string}
@@ -302,7 +300,6 @@ module.exports = {
     wrapInBrackets,
     getEntityData,
     getFullEntityName,
-    getFullColumnName,
     generateFullEntityName,
     getEntityNameFromCollection,
     getEntityProperties,

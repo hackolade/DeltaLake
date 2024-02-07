@@ -75,10 +75,9 @@ const getColumnTagsStatement = (_, columns, fullTableName) => {
                 return undefined;
             }
 
-            const fullColumnName = getFullEntityName(fullTableName, colName);
             const tags = buildTagPairs(schema.unityColumnTags);
 
-            return `ALTER COLUMN ${fullColumnName} SET TAGS (${tags});`;
+            return `ALTER TABLE ${fullTableName} ALTER COLUMN ${colName} SET TAGS (${tags});`;
         })
         .filter(Boolean);
 };
