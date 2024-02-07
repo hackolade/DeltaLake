@@ -78,7 +78,6 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
     if (!didPropertiesChange) {
         const alterCommentsScriptDtos = getAlterCommentsScriptDtos(provider)(container);
         const alterDatabaseScript = getDatabaseAlterStatement([containerData], dbVersionNumber);
-        const unsettedTags = getUnsetesTags()
         if (!alterDatabaseScript?.length) {
             return alterCommentsScriptDtos;
         }
@@ -90,7 +89,6 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
                     isDropScript: false,
                 }]
             },
-            ...unsettedTags
         ];
     }
     const databaseName = getDatabaseName({role: {...containerData, name: names.old}});

@@ -709,18 +709,31 @@ const convertDbProperties = (dbProperties = '') => {
 		.join(',\n');
 };
 
+const getFetchForUnityTags = (connectionInfo, logger) => async (query) => {
+	try {
+		const language = 'sql';
+
+		return await executeCommand(connectionInfo, query, language)
+	} catch (error) {
+		logger.log('error', error, 'Error during retrieve tags');
+
+		return [];
+	}
+}
+
 const fetchTagsForUnityCatalogs = async (connectionInfo, logger) => {
 		try {
-			const language = 'sql';
+			const fetchUnityTagsForSingleLevel = getFetchForUnityTags(connectionInfo, logger);
+
 			const catalogTagsQuery = 'SELECT * FROM system.information_schema.catalog_tags;';
 			const schemaTagsQuery = 'SELECT * FROM system.information_schema.schema_tags;';
 			const tableTagsQuery = 'SELECT * FROM system.information_schema.table_tags;';
 			const columnTagsQuery = 'SELECT * FROM system.information_schema.column_tags;';
 
-			const catalogTags = await executeCommand(connectionInfo, catalogTagsQuery, language);
-			const schemaTags = await executeCommand(connectionInfo, schemaTagsQuery, language);
-			const tableTags = await executeCommand(connectionInfo, tableTagsQuery, language);
-			const columnTags = await executeCommand(connectionInfo, columnTagsQuery, language);
+			const catalogTags = await fetchUnityTagsForSingleLevel(catalogTagsQuery);
+			const schemaTags = await fetchUnityTagsForSingleLevel(schemaTagsQuery);
+			const tableTags = await fetchUnityTagsForSingleLevel(tableTagsQuery);
+			const columnTags = await fetchUnityTagsForSingleLevel(columnTagsQuery);
 
 			return {
 				catalogTags,
@@ -730,7 +743,7 @@ const fetchTagsForUnityCatalogs = async (connectionInfo, logger) => {
 			};
 		} catch (error) {
 			logger.log('error', error, 'Error during retrieve tags');
-			return '';
+			return {};
 		}
 }
 

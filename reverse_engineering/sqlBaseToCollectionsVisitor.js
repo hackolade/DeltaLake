@@ -34,7 +34,6 @@ class Visitor extends SqlBaseVisitor {
 		const querySelectProperties = this.visitIfExists(ctx, 'query');
 		const using = this.visitIfExists(ctx, 'tableProvider');
 		const tableProvider = tableClauses.createFileFormat?.serDeLibrary;
-		// debugger;
 		return {
 			isExternal: tableHeader.isExternal,
 			isTemporary: tableHeader.isTemporary,

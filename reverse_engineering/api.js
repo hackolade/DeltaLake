@@ -14,6 +14,7 @@ const { getCleanedUrl } = require('../forward_engineering/utils/general');
 const { parseViewStatement } = require('./parseViewStatement');
 const { parseDDLStatements } = require('./parseDDLStatements');
 const { isSupportUnityCatalog } = require("./helpers/databricksHelper");
+const unityTagsHelper = require("./helpers/unityTagsHelper");
 const { adaptJsonSchema } = require('./adaptJsonSchema')
 
 const DEFAULT_DATABRICKS_CATALOG_NAME = 'hive_metastore';
@@ -121,7 +122,7 @@ module.exports = {
 			};
 
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
-			// debugger;
+
 			logger.log('info', clusterState, 'Cluster state info');
 			const dbCollectionsNames = await databricksHelper.getDatabaseCollectionNames(connectionData, clusterState.spark_version, logger);
 
@@ -179,7 +180,7 @@ module.exports = {
 			const dataBaseNames = data.collectionData.dataBaseNames;
 			const fieldInference = data.fieldInference;
 			const isUnityCatalogSupports = isSupportUnityCatalog(modelData.spark_version);
-			// debugger;
+			const unityTags = await unityTagsHelper.getNormalizedUnityTags(connectionData, logger);
 
 			progress({ message: 'Start getting data from entities', containerName: 'databases', entityName: 'entities' });
 			const isManagedLocationSupports = isUnityCatalogSupports && data.database !== DEFAULT_DATABRICKS_CATALOG_NAME;
@@ -196,7 +197,6 @@ module.exports = {
 
 			let warnings = [];
 			let relationships = [];
-			let tags = [];
 
 			const entitiesPromises = await dataBaseNames.reduce(async (packagesPromise, dbName) => {
 				const dbData = clusterData[dbName];
@@ -208,7 +208,18 @@ module.exports = {
 						const ddl = ddlByEntity[`${dbName}.${table.name}`]
 
 						progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
-						let tableData = await tableDDlHelper.getTableData({ ...table, ddl }, data, logger);
+						const { tableTags, columnTags } = unityTags;
+						const dbInfoForTags = {
+							schemaName: dbName,
+							tableName: table.name,
+							catalogName: dbData.dbProperties.catalogName
+						};
+						const filteredUnityTagsByTable = unityTagsHelper.filterUnityTagsByTable(dbInfoForTags, { tableTags, columnTags });
+						let tableData = await tableDDlHelper.getTableData(
+							{ ...table, ddl },
+							{ ...data, unityTags: filteredUnityTagsByTable },
+							logger
+						);
 
 						const columnsOfTypeString = (tableData.properties || []).filter(property => property.mode === 'string');
 						const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
@@ -241,7 +252,7 @@ module.exports = {
 							validation: {
 								jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns }
 							},
-							bucketInfo: dbData.dbProperties
+							bucketInfo: unityTagsHelper.applyUnityTagsToSchema(dbName, dbData.dbProperties, unityTags)
 						};
 
 						if (fieldInference.active === 'field') {
