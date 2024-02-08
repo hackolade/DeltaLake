@@ -55,10 +55,10 @@ const getEntityData = (_) => (collection) => {
 /**
  * @return {(collection: Object, definitions: any) => AlterScriptDto[]}
  * */
-const getUpdateTypesScriptDtos = (_, ddlProvider) => (collection, definitions) => {
+const getUpdateTypesScriptDtos = (_, ddlProvider) => (collection, definitions, dbVersion) => {
     const fullTableName = generateFullEntityName(collection);
     const entityData = getEntityData(_)(collection);
-    const {columns: columnsInfo} = getColumns(entityData.role, true, definitions);
+    const {columns: columnsInfo} = getColumns(entityData.role, definitions, dbVersion);
 
 
     return _.toPairs(collection.properties)

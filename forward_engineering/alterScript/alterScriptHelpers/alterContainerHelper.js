@@ -20,12 +20,12 @@ const getDatabaseName = container => {
 
 /**
  * @param {boolean} isUnityCatalogSupports
- * @param {number} dbVersionNumber
+ * @param {string} dbVersion
  * @return {(container: AlterScriptDto | undefined) => AlterScriptDto | undefined}
  * */
-const getAddContainerScriptDto = (isUnityCatalogSupports, dbVersionNumber) => container => {
+const getAddContainerScriptDto = (isUnityCatalogSupports, dbVersion) => container => {
     const dataContainer = [container.role || {}]
-    const script = getDatabaseStatement(dataContainer, isUnityCatalogSupports, dbVersionNumber);
+    const script = getDatabaseStatement(dataContainer, isUnityCatalogSupports, dbVersion);
     if (!script?.length) {
         return undefined;
     }
@@ -40,9 +40,9 @@ const getAddContainerScriptDto = (isUnityCatalogSupports, dbVersionNumber) => co
 /**
  * @return {(container: Object) => AlterScriptDto}
  * */
-const getDeleteContainerScriptDto = (provider, dbVersionNumber) => container => {
+const getDeleteContainerScriptDto = (provider, dbVersion) => container => {
     const databaseName = getDatabaseName(container);
-    const script = provider.dropDatabase(databaseName, getBucketKeyword(dbVersionNumber));
+    const script = provider.dropDatabase(databaseName, getBucketKeyword(dbVersion));
     return {
         scripts: [{
             isDropScript: true,
@@ -69,7 +69,7 @@ const extractNamesFromCompMod = (compMod) => {
 /**
  * @return {(container: Object) => Array<AlterScriptDto>}
  * */
-const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVersionNumber) => container => {
+const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVersion) => container => {
     const compMod = _.get(container, 'role.compMod', {});
     const names = extractNamesFromCompMod(compMod);
 
@@ -77,7 +77,7 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
     const containerData = {...getContainerData(compMod), name: names.new};
     if (!didPropertiesChange) {
         const alterCommentsScriptDtos = getAlterCommentsScriptDtos(provider)(container);
-        const alterDatabaseScript = getDatabaseAlterStatement([containerData], dbVersionNumber);
+        const alterDatabaseScript = getDatabaseAlterStatement([containerData], dbVersion);
         if (!alterDatabaseScript?.length) {
             return alterCommentsScriptDtos;
         }
@@ -92,8 +92,8 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
         ];
     }
     const databaseName = getDatabaseName({role: {...containerData, name: names.old}});
-    const deletedScript = provider.dropDatabase(databaseName, getBucketKeyword(dbVersionNumber));
-    const addedScriptDto = getAddContainerScriptDto(isUnityCatalogSupports, dbVersionNumber)({role: containerData});
+    const deletedScript = provider.dropDatabase(databaseName, getBucketKeyword(dbVersion));
+    const addedScriptDto = getAddContainerScriptDto(isUnityCatalogSupports, dbVersion)({role: containerData});
 
     return [
         {

@@ -6,7 +6,9 @@ const {
     getFullEntityName,
     getContainerName,
     getEntityProperties,
-    wrapInSingleQuotes
+    wrapInSingleQuotes,
+    isSupportUnityCatalog,
+    isSupportNotNullConstraints,
 } = require("../../../utils/general");
 const {getTableStatement} = require("../../../helpers/tableHelper");
 const {AlterScriptDto} = require("../../types/AlterScriptDto");
@@ -56,19 +58,29 @@ const getDropAndRecreateCollectionScriptDtos = (app, ddlProvider) => (collection
     const compMod = _.get(collection, 'role.compMod', {});
     const fullCollectionName = generateFullEntityName(collection);
     const roleData = getEntityData(compMod, tableProperties.concat(otherTableProperties));
-    const hydratedCollection = hydrateCollection(_)({
-        ...collection,
-        role: {...collection.role, ...roleData}
-    }, definitions);
-    const addCollectionScript = getTableStatement(app)(...hydratedCollection, true, dbVersion);
+    const hydratedCollection = hydrateCollection(_)(
+        {
+            ...collection,
+            role: { ...collection.role, ...roleData },
+        },
+        definitions
+    );
+    const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
+    const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
+    const addCollectionScript = getTableStatement(app)(
+        ...hydratedCollection,
+        arePkFkConstraintsAvailable,
+        areNotNullConstraintsAvailable,
+        null,
+        dbVersion
+    );
     const deleteCollectionScript = ddlProvider.dropTable(fullCollectionName);
     return {
         type: 'new',
         script: [
             AlterScriptDto.getInstance([deleteCollectionScript], true, true),
             AlterScriptDto.getInstance([addCollectionScript], true, false),
-        ]
-            .filter(Boolean),
+        ].filter(Boolean),
     };
 }
 

@@ -275,6 +275,7 @@ const getTableStatement = (app) => (
 	arePkFkConstraintsAvailable,
 	areNotNullConstraintsAvailable,
 	likeTableData,
+	dbVersion
 ) => {
 	const _ = app.require('lodash');
 	const ddlProvider = require('../ddlProvider/ddlProvider')(app);
@@ -286,7 +287,7 @@ const getTableStatement = (app) => (
 	const isTableActivated = tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
 	const tableName = replaceSpaceWithUnderscore(prepareName(getName(tableData)));
 	const fullTableName = getFullEntityName(dbName, tableName);
-	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, arePkFkConstraintsAvailable, areNotNullConstraintsAvailable, definitions);
+	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, definitions, dbVersion);
 	const keyNames = keyHelper.getKeyNames(tableData, entityJsonSchema, definitions);
 	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
 	const primaryKeyStatement = arePkFkConstraintsAvailable
