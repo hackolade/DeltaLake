@@ -7,7 +7,7 @@
  * @property {string} unityTagValue
  */
 
-const { wrapInSingleQuotes, getFullColumnName, getFullEntityName } = require('../utils/general');
+const { wrapInSingleQuotes } = require('../utils/general');
 
 /**
  * @param {Array<UnityTag>} tags
