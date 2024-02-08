@@ -528,14 +528,14 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Entity Tags",
 				"propertyKeyword": "unityEntityTags",
-				"propertyTooltip": "Contains all the tags that have been applied to all the catalogs within the metastore.",
+				"propertyTooltip": "Contains all the tags that have been applied to the table within the metastore. Available only in Unity Catalog",
 				"propertyType": "group",
 				"groupItemLimit": 20,
 				"structure": [
 					{
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
-						"propertyTooltip": "The key of the tag. The key length must be between 1 and 127 UTF-8 characters, inclusive",
+						"propertyTooltip": "The key of the tag",
 						"propertyType": "text"
 					},
 					{
