@@ -421,6 +421,34 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Column Tags",
+				"propertyKeyword": "unityColumnTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag.",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		],
 		"numeric": [
@@ -726,6 +754,34 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Column Tags",
+				"propertyKeyword": "unityColumnTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag.",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		],
 		"bool": [
@@ -795,6 +851,34 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Column Tags",
+				"propertyKeyword": "unityColumnTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag.",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		],
 		"binary": [
@@ -991,6 +1075,34 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Column Tags",
+				"propertyKeyword": "unityColumnTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag.",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		],
 		"___1": [],
@@ -1214,6 +1326,34 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Column Tags",
+				"propertyKeyword": "unityColumnTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag.",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		],
 		"date": [
@@ -1413,6 +1553,34 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Column Tags",
+				"propertyKeyword": "unityColumnTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag.",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		],
 		"interval": [
@@ -1611,6 +1779,34 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Column Tags",
+				"propertyKeyword": "unityColumnTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag.",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		],
 		"___2": [],
@@ -1828,6 +2024,34 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Column Tags",
+				"propertyKeyword": "unityColumnTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag.",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		],
 		"map": [
@@ -2086,6 +2310,34 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Column Tags",
+				"propertyKeyword": "unityColumnTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag.",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		],
 		"struct": [
@@ -2284,6 +2536,34 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Column Tags",
+				"propertyKeyword": "unityColumnTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag.",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		]
 	}

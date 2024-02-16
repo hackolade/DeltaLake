@@ -709,6 +709,44 @@ const convertDbProperties = (dbProperties = '') => {
 		.join(',\n');
 };
 
+const getFetchForUnityTags = (connectionInfo, logger) => async (query) => {
+	try {
+		const language = 'sql';
+
+		return await executeCommand(connectionInfo, query, language)
+	} catch (error) {
+		logger.log('error', error, 'Error during retrieve tags');
+
+		return [];
+	}
+}
+
+const fetchTagsForUnityCatalogs = async (connectionInfo, logger) => {
+		try {
+			const fetchUnityTagsForSingleLevel = getFetchForUnityTags(connectionInfo, logger);
+
+			const catalogTagsQuery = 'SELECT * FROM system.information_schema.catalog_tags;';
+			const schemaTagsQuery = 'SELECT * FROM system.information_schema.schema_tags;';
+			const tableTagsQuery = 'SELECT * FROM system.information_schema.table_tags;';
+			const columnTagsQuery = 'SELECT * FROM system.information_schema.column_tags;';
+
+			const catalogTags = await fetchUnityTagsForSingleLevel(catalogTagsQuery);
+			const schemaTags = await fetchUnityTagsForSingleLevel(schemaTagsQuery);
+			const tableTags = await fetchUnityTagsForSingleLevel(tableTagsQuery);
+			const columnTags = await fetchUnityTagsForSingleLevel(columnTagsQuery);
+
+			return {
+				catalogTags,
+				schemaTags,
+				tableTags,
+				columnTags
+			};
+		} catch (error) {
+			logger.log('error', error, 'Error during retrieve tags');
+			return {};
+		}
+}
+
 module.exports = {
 	fetchClusterProperties,
 	fetchApplyToInstance,
@@ -724,4 +762,5 @@ module.exports = {
 	fetchEntitySchema,
 	useCatalog,
 	fetchSample,
+	fetchTagsForUnityCatalogs,
 };

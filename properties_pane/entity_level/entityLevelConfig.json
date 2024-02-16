@@ -524,6 +524,34 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Entity Tags",
+				"propertyKeyword": "unityEntityTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the table within the metastore. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		],
 		"columnsRatio": [4.1, 5]

@@ -5,23 +5,26 @@ const ExprErrorListener = require('../antlrErrorListener');
 const columnREHelper = require('./columnsREHelper')
 const antlr4 = require('antlr4');
 const { dependencies } = require('../appDependencies');
+const { applyUnityTagsToTable, applyUnityTagsToTableProperties } = require('./unityTagsHelper');
 
 const getTableData = async (table, data, logger) => {
 	const { ddl, nullableMap, indexes } = table;
 	let tableData = {};
 	try {
 		tableData = getTableDataFromDDl(ddl);
+		tableData = applyUnityTagsToTable(data.unityTags?.tableTags, tableData);
 	} catch (e) {
 		logger.log('info', data, `Error parsing ddl statement below. Falling back on alternate method. \n${ddl}\n`, data.hiddenKeys);
 		return {};
 	}
 	const BloomIndxs = convertIndexes(indexes)
-	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: ![true, 'true'].includes(nullableMap[property.name]) }))
-	const tableSchema = tablePropertiesWithNotNullConstraints.reduce((schema, property) => ({ ...schema, [property.name]: property }), {})
-	const requiredColumns = tablePropertiesWithNotNullConstraints.filter(column => column.required).map(column => column.name);
+	const tablePropertiesWithNotNullConstraints = tableData.properties.map(property => ({ ...property, required: ![true, 'true'].includes(nullableMap[property.name]) }));
+	const tablePropertiesWithUnityTags = applyUnityTagsToTableProperties(data.unityTags?.columnTags, tablePropertiesWithNotNullConstraints);
+	const tableSchema = tablePropertiesWithUnityTags.reduce((schema, property) => ({ ...schema, [property.name]: property }), {})
+	const requiredColumns = tablePropertiesWithUnityTags.filter(column => column.required).map(column => column.name);
 	tableData = {
 		...tableData,
-		properties: tablePropertiesWithNotNullConstraints,
+		properties: tablePropertiesWithUnityTags,
 		schema: tableSchema,
 		requiredColumns
 	};

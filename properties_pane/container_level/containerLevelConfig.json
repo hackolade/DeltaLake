@@ -162,6 +162,69 @@ making sure that you maintain a proper JSON format.
 				"addTimestampButton": true,
 				"propertyType": "details",
 				"template": "textarea"
+			},
+			{
+				"propertyName": "Catalog Tags",
+				"propertyKeyword": "unityCatalogTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the catalog. Available only in Unity Catalogs",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag. The key length must be between 1 and 127 UTF-8 characters, inclusive",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				],
+				"dependency": {
+					"key": "catalogName",
+					"exist": true
+				}
+			},
+			{
+				"propertyName": "Schema Tags",
+				"propertyKeyword": "unitySchemaTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the schema within. Available only in Unity Catalogs",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag.",
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$"
+						}
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false,
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
+							"maxLength": 255
+						}
+					}
+				]
 			}
 		],
 		"containerLevelKeys": []
