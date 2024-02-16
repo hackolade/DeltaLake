@@ -91,7 +91,7 @@ const getDatabaseStatement = (containerData, isUnityCatalogSupports, dbVersion) 
         unitySchemaTags = getSchemaTagsStatement(tab, name);
     }
 
-    return [createStatement, unityCatalogTags, unitySchemaTags].join('\n\n');
+    return [createStatement, unityCatalogTags, unitySchemaTags].filter(Boolean).join('\n\n');
 };
 
 const getDatabaseAlterStatement = (containerData, dbVersion) => {
