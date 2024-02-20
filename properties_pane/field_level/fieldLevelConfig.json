@@ -1317,6 +1317,9 @@ making sure that you maintain a proper JSON format.
 				]
 			},
 			"dependencies",
+			"foreignCollection",
+			"foreignField",
+			"relationshipType",
 			"sample",
 			{
 				"propertyName": "Remarks",
@@ -1544,6 +1547,9 @@ making sure that you maintain a proper JSON format.
 				]
 			},
 			"dependencies",
+			"foreignCollection",
+			"foreignField",
+			"relationshipType",
 			"sample",
 			{
 				"propertyName": "Remarks",
@@ -1770,6 +1776,9 @@ making sure that you maintain a proper JSON format.
 				]
 			},
 			"dependencies",
+			"foreignCollection",
+			"foreignField",
+			"relationshipType",
 			"sample",
 			{
 				"propertyName": "Remarks",
