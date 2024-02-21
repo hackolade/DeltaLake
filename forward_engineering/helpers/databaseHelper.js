@@ -10,6 +10,7 @@ const {
 	getDBVersionNumber
 } = require('../utils/general');
 const { getCatalogTagsStatement, getSchemaTagsStatement } = require('../helpers/unityTagsHelper');
+const { Runtime } = require('../enums/runtime');
 
 /**
  * @param {string|undefined} location
@@ -66,7 +67,6 @@ const getUseCatalogStatement = (databaseData) => {
  * @param {string} dbVersion
  * */
 const getDatabaseStatement = (containerData, isUnityCatalogSupports, dbVersion) => {
-    const UNITY_TAGS_RUNTIME_REQUIRED = '13';
 	const tab = getTab(0, containerData);
 	const name = replaceSpaceWithUnderscore(prepareName(getName(tab)));
 	if (!name) {
@@ -86,7 +86,7 @@ const getDatabaseStatement = (containerData, isUnityCatalogSupports, dbVersion) 
         dbVersion
     });
 
-    if (dbVersion >= UNITY_TAGS_RUNTIME_REQUIRED) {
+    if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
         unityCatalogTags = getCatalogTagsStatement(tab);
         unitySchemaTags = getSchemaTagsStatement(tab, name);
     }
