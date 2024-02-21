@@ -433,20 +433,19 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
 				],
 				"dependency": {
@@ -806,20 +805,19 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
 				],
 				"dependency": {
@@ -943,20 +941,19 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
 				],
 				"dependency": {
@@ -1207,20 +1204,19 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
 				],
 				"dependency": {
@@ -1501,20 +1497,19 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
 				],
 				"dependency": {
@@ -1771,20 +1766,19 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
 				],
 				"dependency": {
@@ -2040,20 +2034,19 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
 				],
 				"dependency": {
@@ -2325,20 +2318,19 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
 				],
 				"dependency": {
@@ -2651,20 +2643,19 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
 				],
 				"dependency": {
@@ -2917,20 +2908,19 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
 				],
 				"dependency": {
