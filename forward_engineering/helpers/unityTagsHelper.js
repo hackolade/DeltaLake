@@ -14,8 +14,10 @@ const { wrapInSingleQuotes } = require('../utils/general');
  * @returns {string}
  */
 const buildTagPairs = (tags) => {
-    return tags.filter(tag => tag?.unityTagKey).reduce((statement, tag, idx) => {
-        const isLastPair = idx === tags.length - 1;
+    const tagsWithKeys = tags.filter(tag => tag?.unityTagKey);
+
+    return tagsWithKeys.reduce((statement, tag, idx) => {
+        const isLastPair = idx === tagsWithKeys.length - 1;
         const comaIfNeeded = isLastPair ? '\n' : ',\n';
         let currentTag = wrapInSingleQuotes(tag.unityTagKey);
 
