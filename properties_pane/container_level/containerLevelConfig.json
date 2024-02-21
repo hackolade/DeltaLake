@@ -191,8 +191,53 @@ making sure that you maintain a proper JSON format.
 					}
 				],
 				"dependency": {
-					"key": "catalogName",
-					"exist": true
+					"type": "and",
+					"values": [
+						{
+							"key": "catalogName",
+							"exist": true
+						},
+						{
+							"type": "not",
+							"values": [
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 6"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 7"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 8"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 9"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 10"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 11"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 12"
+								}
+							]
+						}
+					]
 				}
 			},
 			{
@@ -224,7 +269,47 @@ making sure that you maintain a proper JSON format.
 							"maxLength": 255
 						}
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"containerLevelKeys": []
