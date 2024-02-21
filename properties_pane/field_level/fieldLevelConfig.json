@@ -821,7 +821,47 @@ making sure that you maintain a proper JSON format.
 							"maxLength": 255
 						}
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"bool": [
@@ -918,7 +958,47 @@ making sure that you maintain a proper JSON format.
 							"maxLength": 255
 						}
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"binary": [
@@ -1142,7 +1222,47 @@ making sure that you maintain a proper JSON format.
 							"maxLength": 255
 						}
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"___1": [],
@@ -1396,7 +1516,47 @@ making sure that you maintain a proper JSON format.
 							"maxLength": 255
 						}
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"date": [
@@ -1626,7 +1786,47 @@ making sure that you maintain a proper JSON format.
 							"maxLength": 255
 						}
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"interval": [
@@ -1855,7 +2055,47 @@ making sure that you maintain a proper JSON format.
 							"maxLength": 255
 						}
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"___2": [],
@@ -2100,7 +2340,47 @@ making sure that you maintain a proper JSON format.
 							"maxLength": 255
 						}
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"map": [
@@ -2386,7 +2666,47 @@ making sure that you maintain a proper JSON format.
 							"maxLength": 255
 						}
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"struct": [
@@ -2612,7 +2932,47 @@ making sure that you maintain a proper JSON format.
 							"maxLength": 255
 						}
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		]
 	}
