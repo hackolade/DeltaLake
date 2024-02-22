@@ -9,13 +9,15 @@ const {
 	encodeStringLiteral,
 	prepareName,
 	getDifferentItems,
-	getFullEntityName
+	getFullEntityName,
+	getDBVersionNumber
 } = require('../utils/general');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const {getCheckConstraintsScriptsOnColumnLevel, getCheckConstraintsScriptsOnTableLevel, buildConstraints } = require("./entityHelpers/checkConstraintHelper");
 const constraintHelper = require('./constrainthelper');
 const { getColumnTagsStatement } = require('./unityTagsHelper');
+const { Runtime } = require('../enums/runtime');
 
 const getCreateStatement = (_) => ({
 	dbName, tableName, isTemporary, isExternal, using, likeStatement, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
@@ -321,8 +323,10 @@ const getTableStatement = (app) => (
 
 	const statementsDelimiter = ';\n';
 
-	const entityUnityTags = getEntityTagsStatement(entityJsonSchema, fullTableName);
-	tableStatement = tableStatement + entityUnityTags;
+    if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
+		const entityUnityTags = getEntityTagsStatement(entityJsonSchema, fullTableName);
+		tableStatement = tableStatement + entityUnityTags;
+	}
 
 	const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(ddlProvider)(columns, fullTableName).join('\n');
 	const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(ddlProvider)(entityJsonSchema, fullTableName).join('\n');
@@ -332,8 +336,10 @@ const getTableStatement = (app) => (
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements;
 	}
 
-	const columnsUnityTags = getColumnTagsStatement(_, entityJsonSchema.properties, fullTableName);
-	tableStatement = tableStatement + columnsUnityTags;
+    if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
+		const columnsUnityTags = getColumnTagsStatement(_, entityJsonSchema.properties, fullTableName);
+		tableStatement = tableStatement + columnsUnityTags;
+    }
 
 	return tableStatement;
 };

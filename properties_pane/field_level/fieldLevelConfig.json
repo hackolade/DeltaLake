@@ -433,22 +433,61 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"numeric": [
@@ -766,22 +805,61 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"bool": [
@@ -863,22 +941,61 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"binary": [
@@ -1087,22 +1204,61 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"___1": [],
@@ -1341,22 +1497,61 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"date": [
@@ -1571,22 +1766,61 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"interval": [
@@ -1800,22 +2034,61 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"___2": [],
@@ -2045,22 +2318,61 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"map": [
@@ -2331,22 +2643,61 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		],
 		"struct": [
@@ -2557,22 +2908,61 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
 						"propertyTooltip": "The key of the tag.",
-						"propertyType": "text"
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
+							"maxLength": 255
+						}
 					},
 					{
 						"propertyName": "Value",
 						"propertyKeyword": "unityTagValue",
-						"propertyTooltip": "The value of the tag. The value length must be less than or equal to 255 UTF-8 characters.",
+						"propertyTooltip": "The value of the tag.",
 						"propertyType": "details",
 						"template": "textarea",
-						"markdown": false,
-						"shouldValidate": true,
-						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+=._-]+$",
-							"maxLength": 255
-						}
+						"markdown": false
 					}
-				]
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
 			}
 		]
 	}
