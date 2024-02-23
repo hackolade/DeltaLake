@@ -122,6 +122,19 @@ const applyUnityTagsToSchema = (dbName, dbInfo, tagsToApply) => {
     };
 };
 
+const getUnityTagsForView = (viewTags) => {
+    if (!viewTags.length) {
+        return {};
+    }
+
+    const unityViewTags = viewTags.map(tag => ({
+        unityTagKey: tag.tagKey,
+        unityTagValue: tag.tagValue
+    }));
+
+    return { unityViewTags };
+}
+
 const filterUnityTagsByTable = (dbInfo, unityTags) => {
     const { catalogName, schemaName, tableName } = dbInfo;
     const { tableTags: allTableTags, columnTags: allColumnTags } = unityTags;
@@ -140,10 +153,23 @@ const filterUnityTagsByTable = (dbInfo, unityTags) => {
     };
 };
 
+const filterUnityTagsByView = (dbInfo, unityTags) => {
+    const { catalogName, schemaName, viewName } = dbInfo;
+    const { tableTags: tableAndViewTags } = unityTags;
+
+    return tableAndViewTags.filter((tag) => {
+        return tag.catalogName === catalogName
+            && tag.schemaName === schemaName
+            && tag.tableName === viewName;
+    });
+};
+
 module.exports = {
     getNormalizedUnityTags,
     applyUnityTagsToTableProperties,
     applyUnityTagsToTable,
     applyUnityTagsToSchema,
+    getUnityTagsForView,
     filterUnityTagsByTable,
+    filterUnityTagsByView
 };
