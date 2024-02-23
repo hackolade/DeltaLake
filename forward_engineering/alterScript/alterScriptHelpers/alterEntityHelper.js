@@ -18,6 +18,7 @@ const {getModifiedCommentOnColumnScriptDtos} = require("./columnHelpers/comments
 const {AlterScriptDto} = require("../types/AlterScriptDto");
 const {getModifiedDefaultColumnValueScriptDtos} = require("./columnHelpers/defaultValueHelper");
 const {getUpdateTypesScriptDtos} = require("./columnHelpers/alterTypeHelper");
+const { getModifyUnityColumnTagsScriptDtos } = require('./columnHelpers/alterUnityTagsHelper');
 
 const hydrateAlterColumnName = (_) => (entity, properties = {}) => {
     const collectionName = generateFullEntityName(entity);
@@ -233,7 +234,9 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
     const alterColumnScriptDtos = AlterScriptDto.getInstances(alterColumnScripts, true, false);
-
+    const unityColumnTagsDtos = Object.keys(properties).flatMap(columnName =>
+        getModifyUnityColumnTagsScriptDtos(ddlProvider)(collection, hydratedAlterColumnName.collectionName, columnName),
+		);
     if (modifiedScript.type === 'new') {
         return [dropIndexScriptDto, ...(modifiedScript.script || []), addIndexScriptDto]
             .filter(Boolean);
@@ -250,7 +253,8 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
         ...modifyCheckConstraintsScriptDtos,
         ...modifiedDefaultColumnValueScriptDtos,
         ...(modifiedScript.script || []),
-        addIndexScriptDto
+        addIndexScriptDto,
+        ...unityColumnTagsDtos,
     ]
         .filter(Boolean);
 };

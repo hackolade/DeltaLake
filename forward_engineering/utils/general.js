@@ -207,7 +207,7 @@ const generateFullEntityNameFromBucketAndTableNames = (bucketName, tableName) =>
     return getFullEntityName(dbName, entityName);
 }
 
-const generateFullEntityName = entity => {
+const generateFullEntityName = (entity) => {
     const compMod = entity?.role?.compMod || {};
     const entityData = entity?.role || {};
     const bucketName = getContainerName(compMod);

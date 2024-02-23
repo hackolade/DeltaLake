@@ -2,6 +2,7 @@ const {getDatabaseStatement, getDatabaseAlterStatement, getBucketKeyword} = requ
 const {getEntityData, getIsChangeProperties, prepareName, replaceSpaceWithUnderscore} = require('../../utils/general');
 const {getAlterCommentsScriptDtos} = require("./containerHelpers/commentsHelper");
 const {AlterScriptDto} = require("../types/AlterScriptDto");
+const { getModifyUnityCatalogTagsScriptDtos, getModifyUnitySchemaTagsScriptDtos } = require('./containerHelpers/alterUnityTagsHelper');
 
 
 const containerProperties = ['comment', 'location', 'dbProperties', 'description'];
@@ -78,8 +79,11 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
     if (!didPropertiesChange) {
         const alterCommentsScriptDtos = getAlterCommentsScriptDtos(provider)(container);
         const alterDatabaseScript = getDatabaseAlterStatement([containerData], dbVersion);
+        const alterUnityCatalogTagsScript = getModifyUnityCatalogTagsScriptDtos(provider)(container, compMod?.catalogName?.new);
+        const alterUnitySchemaTagsScript = getModifyUnitySchemaTagsScriptDtos(provider)(container, names?.new);
+
         if (!alterDatabaseScript?.length) {
-            return alterCommentsScriptDtos;
+            return [...alterCommentsScriptDtos, ...alterUnityCatalogTagsScript, ...alterUnitySchemaTagsScript];
         }
         return [
             ...alterCommentsScriptDtos,
@@ -89,6 +93,8 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
                     isDropScript: false,
                 }]
             },
+            ...alterUnityCatalogTagsScript,
+            ...alterUnitySchemaTagsScript,
         ];
     }
     const databaseName = getDatabaseName({role: {...containerData, name: names.old}});

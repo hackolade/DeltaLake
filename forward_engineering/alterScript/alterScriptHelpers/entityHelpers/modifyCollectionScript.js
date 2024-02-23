@@ -14,6 +14,7 @@ const {getTableStatement} = require("../../../helpers/tableHelper");
 const {AlterScriptDto} = require("../../types/AlterScriptDto");
 const {getModifiedTablePropertiesScriptDtos} = require("./modifyPropertiesHelper");
 const { getModifyCheckConstraintsScriptDtos } = require('./checkConstraintsHelper');
+const { getModifyUnityEntityTagsScriptDtos } = require("./alterUnityTagsHelper");
 
 const tableProperties = ['compositeClusteringKey', 'compositePartitionKey', 'isActivated', 'numBuckets', 'skewedby', 'skewedOn', 'skewStoredAsDir', 'sortedByKey', 'storedAsTable', 'temporaryTable', 'using', 'rowFormat', 'fieldsTerminatedBy', 'fieldsescapedBy', 'collectionItemsTerminatedBy', 'mapKeysTerminatedBy', 'linesTerminatedBy', 'nullDefinedAs', 'inputFormatClassname', 'outputFormatClassname'];
 const otherTableProperties = ['code', 'collectionName', 'tableProperties', 'description', 'properties', 'serDeLibrary', 'serDeProperties', 'location',];
@@ -125,6 +126,7 @@ const getModifyCollectionScriptDtos = (app, ddlProvider) => (collection) => {
     const tablePropertiesScriptDtos = getModifiedTablePropertiesScriptDtos(_, ddlProvider)(collection);
     const serDeProperties = ddlProvider.alterSerDeProperties(hydratedSerDeProperties);
     const modifyLocationScriptDto = getModifyLocationScriptDto(app, ddlProvider)(collection);
+    const unityEntityTagsDtos = getModifyUnityEntityTagsScriptDtos(ddlProvider)(collection, fullCollectionName);
 
     return {
         type: 'modify',
@@ -134,6 +136,7 @@ const getModifyCollectionScriptDtos = (app, ddlProvider) => (collection) => {
             ...checkConstraintsDtos,
             AlterScriptDto.getInstance([serDeProperties], true, false),
             modifyLocationScriptDto,
+            ...unityEntityTagsDtos,
         ]
             .filter(Boolean),
     };

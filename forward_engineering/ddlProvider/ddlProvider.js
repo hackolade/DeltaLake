@@ -324,5 +324,78 @@ module.exports = app => {
             return assignTemplates(templates.setTableLocation, templatesConfig);
         },
 
+        /**
+         * @param name {string}
+         * @param tags {string}
+         * @return {string}
+         * */
+        setCatalogTags(name, tags) {
+            return assignTemplates(templates.setCatalogTags, { name, tags });
+        },
+
+        /**
+         * @param name {string}
+         * @param tags {string}
+         * @return {string}
+         * */
+        unsetCatalogTags(name, tags) {
+            return assignTemplates(templates.unsetCatalogTags, { name, tags });
+        },
+
+        /**
+         * @param name {string}
+         * @param tags {string}
+         * @return {string}
+         * */
+        setSchemaTags(name, tags) {
+            return assignTemplates(templates.setSchemaTags, { name, tags });
+        },
+
+        /**
+         * @param name {string}
+         * @param tags {string}
+         * @return {string}
+         * */
+        unsetSchemaTags(name, tags) {
+            return assignTemplates(templates.unsetSchemaTags, { name, tags });
+        },
+
+        /**
+         * @param name {string}
+         * @param tags {string}
+         * @return {string}
+         * */
+        setEntityTags(name, tags) {
+            return assignTemplates(templates.setTableTags, { name, tags });
+        },
+
+        /**
+         * @param name {string}
+         * @param tags {string}
+         * @return {string}
+         * */
+        unsetEntityTags(name, tags) {
+            return assignTemplates(templates.unsetTableTags, { name, tags });
+        },
+
+        /**
+         * @param tableName {string}
+         * @param columnName {string}
+         * @param tags {string}
+         * @return {string}
+         * */
+        setColumnTags(tableName, columnName, tags) {
+            return assignTemplates(templates.setColumnTags, { tableName, columnName, tags });
+        },
+
+        /**
+         * @param tableName {string}
+         * @param columnName {string}
+         * @param tags {string}
+         * @return {string}
+         * */
+        unsetColumnTags(tableName, columnName, tags) {
+            return assignTemplates(templates.unsetColumnTags, { tableName, columnName, tags });
+        },
     }
 };

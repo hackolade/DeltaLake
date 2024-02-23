@@ -84,9 +84,41 @@ const getColumnTagsStatement = (_, columns, fullTableName) => {
         .filter(Boolean);
 };
 
+/**
+ * @param {UnityTag[]} unsetTags
+ * @returns {string}
+ */
+const getUnsetTagsNamesParamString = unsetTags => {
+	return unsetTags.map(({ unityTagKey }) => wrapInSingleQuotes(unityTagKey)).join(', ');
+};
+
+/**
+ * @param {UnityTag[]} tagsToFilter
+ * @param {UnityTag[]} filterBy
+ * @returns {UnityTag[]}
+ */
+const getUnityTagsFromCompMod = (tagsToFilter, filterBy) => {
+	return tagsToFilter.filter(tag => {
+		if (!filterBy.length) {
+			return true;
+		}
+
+		const correspondingTag = filterBy.find(filterTag => filterTag.id === tag.id);
+
+		if (!correspondingTag) {
+			return true;
+		}
+
+		return correspondingTag.unityTagKey !== tag.unityTagKey || correspondingTag.unityTagValue !== tag.unityTagValue;
+	});
+};
+
 module.exports = {
     getCatalogTagsStatement,
     getSchemaTagsStatement,
     getEntityTagsStatement,
-    getColumnTagsStatement
+    getColumnTagsStatement,
+    buildTagPairs,
+    getUnsetTagsNamesParamString,
+    getUnityTagsFromCompMod,
 };
