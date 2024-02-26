@@ -1,5 +1,5 @@
 const {getDatabaseStatement, getDatabaseAlterStatement, getBucketKeyword} = require('../../helpers/databaseHelper')
-const {getEntityData, getIsChangeProperties, prepareName, replaceSpaceWithUnderscore} = require('../../utils/general');
+const {getEntityData, getIsChangeProperties, prepareName, replaceSpaceWithUnderscore, isSupportUnityCatalog} = require('../../utils/general');
 const {getAlterCommentsScriptDtos} = require("./containerHelpers/commentsHelper");
 const {AlterScriptDto} = require("../types/AlterScriptDto");
 const { getModifyUnityCatalogTagsScriptDtos, getModifyUnitySchemaTagsScriptDtos } = require('./containerHelpers/alterUnityTagsHelper');
@@ -76,12 +76,15 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
 
     const didPropertiesChange = getIsChangeProperties(_)({...compMod, name: names}, otherContainerProperties);
     const containerData = {...getContainerData(compMod), name: names.new};
+    const catalogName = isSupportUnityCatalog(dbVersion) ? prepareName(compMod?.catalogName?.new) : undefined;
+    const databaseName = getDatabaseName({role: {...containerData, name: names.old}});
+    const fullDatabaseName = catalogName ? `${catalogName}.${databaseName}` : databaseName;
     if (!didPropertiesChange) {
         const alterCommentsScriptDtos = getAlterCommentsScriptDtos(provider)(container);
         const alterDatabaseScript = getDatabaseAlterStatement([containerData], dbVersion);
-        const alterUnityCatalogTagsScript = getModifyUnityCatalogTagsScriptDtos(provider)(container, compMod?.catalogName?.new);
-        const alterUnitySchemaTagsScript = getModifyUnitySchemaTagsScriptDtos(provider)(container, names?.new);
-
+        const alterUnityCatalogTagsScript = getModifyUnityCatalogTagsScriptDtos(provider)(container, catalogName);
+        const alterUnitySchemaTagsScript = getModifyUnitySchemaTagsScriptDtos(provider)(container, fullDatabaseName);
+        
         if (!alterDatabaseScript?.length) {
             return [...alterCommentsScriptDtos, ...alterUnityCatalogTagsScript, ...alterUnitySchemaTagsScript];
         }
@@ -97,7 +100,6 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
             ...alterUnitySchemaTagsScript,
         ];
     }
-    const databaseName = getDatabaseName({role: {...containerData, name: names.old}});
     const deletedScript = provider.dropDatabase(databaseName, getBucketKeyword(dbVersion));
     const addedScriptDto = getAddContainerScriptDto(isUnityCatalogSupports, dbVersion)({role: containerData});
 

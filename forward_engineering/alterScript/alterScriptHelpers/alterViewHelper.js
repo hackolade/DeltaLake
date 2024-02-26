@@ -93,8 +93,8 @@ const getAddViewsScripts = (_) => view => {
 /**
  * @return {(view: Object) => AlterScriptDto}
  * */
-const getDeleteViewsScripts = provider => view => {
-    const viewName = generateFullEntityName(view);
+const getDeleteViewsScripts = (provider, dbVersion) => view => {
+    const viewName = generateFullEntityName({ entity: view, dbVersion });
     const script = provider.dropView(viewName);
     return {
         isActivated: true,
@@ -108,7 +108,7 @@ const getDeleteViewsScripts = provider => view => {
 /**
  * @return {(view: Object) => Array<AlterScriptDto>}
  * */
-const getModifyViewsScripts = (provider, _) => view => {
+const getModifyViewsScripts = (provider, _, dbVersion) => view => {
     const comparedProperties = compareProperties(_)(view, viewProperties);
     if (comparedProperties) {
         const hydratedAlterView = hydrateAlterView(_)(view);
@@ -121,7 +121,7 @@ const getModifyViewsScripts = (provider, _) => view => {
             }]
         }));
     }
-    const viewName = generateFullEntityName(view);
+    const viewName = generateFullEntityName({ entity: view, dbVersion });
     const dropViewScript = provider.dropView(viewName);
     const hydratedView = hydrateView(_)(view);
     const addViewScript = getViewScript({_, ...hydratedView});

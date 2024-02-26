@@ -51,7 +51,7 @@ const getUnsetUnityCatalogTagsScriptsDtosFrom = ddlProvider => (entityData, name
 };
 
 /**
- * @param ddlProvider {ddlProvider}
+ * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
 const getModifyUnityCatalogTagsScriptDtos = ddlProvider => (entityData, name) => {
@@ -102,7 +102,7 @@ const getUnsetUnitySchemaTagsScriptsDtosFrom = ddlProvider => (entityData, name)
 };
 
 /**
- * @param ddlProvider {ddlProvider}
+ * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
 const getModifyUnitySchemaTagsScriptDtos = ddlProvider => (entityData, name) => {

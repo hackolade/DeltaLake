@@ -57,7 +57,7 @@ const getUnsetUnityColumnTagsScriptsDtosFrom = ddlProvider => (entityData, table
 };
 
 /**
- * @param ddlProvider {ddlProvider}
+ * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
 const getModifyUnityColumnTagsScriptDtos = ddlProvider => (entityData, tableName, columnName) => {
