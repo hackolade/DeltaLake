@@ -155,15 +155,6 @@ making sure that you maintain a proper JSON format.
 				"valueType": "string"
 			},
 			{
-				"propertyName": "Remarks",
-				"propertyKeyword": "comments",
-				"shouldValidate": false,
-				"propertyTooltip": "remarks",
-				"addTimestampButton": true,
-				"propertyType": "details",
-				"template": "textarea"
-			},
-			{
 				"propertyName": "Catalog Tags",
 				"propertyKeyword": "unityCatalogTags",
 				"propertyTooltip": "Contains all the tags that have been applied to the catalog. Available only in Unity Catalogs",
@@ -173,11 +164,11 @@ making sure that you maintain a proper JSON format.
 					{
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
-						"propertyTooltip": "The key of the tag. The key length must be between 1 and 127 UTF-8 characters, inclusive",
+						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
+						"shouldValidate": true,
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
-							"maxLength": 127
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
 						}
 					},
 					{
@@ -249,11 +240,10 @@ making sure that you maintain a proper JSON format.
 					{
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
-						"propertyTooltip": "The key of the tag.",
+						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]+$",
-							"maxLength": 255
+							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
 						}
 					},
 					{
@@ -305,6 +295,15 @@ making sure that you maintain a proper JSON format.
 						}
 					]
 				}
+			},
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
 			}
 		],
 		"containerLevelKeys": []
