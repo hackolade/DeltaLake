@@ -82,6 +82,7 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
     if (!didPropertiesChange) {
         const alterCommentsScriptDtos = getAlterCommentsScriptDtos(provider)(container);
         const alterDatabaseScript = getDatabaseAlterStatement([containerData], dbVersion);
+        const alterDatabaseScriptDto = AlterScriptDto.getInstance([alterDatabaseScript], true, false)
         const alterUnityCatalogTagsScript = getModifyUnityCatalogTagsScriptDtos(provider)(container, catalogName);
         const alterUnitySchemaTagsScript = getModifyUnitySchemaTagsScriptDtos(provider)(container, fullDatabaseName);
         
@@ -90,26 +91,17 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
         }
         return [
             ...alterCommentsScriptDtos,
-            {
-                scripts: [{
-                    script: alterDatabaseScript,
-                    isDropScript: false,
-                }]
-            },
+            alterDatabaseScriptDto,
             ...alterUnityCatalogTagsScript,
             ...alterUnitySchemaTagsScript,
         ];
     }
     const deletedScript = provider.dropDatabase(databaseName, getBucketKeyword(dbVersion));
     const addedScriptDto = getAddContainerScriptDto(isUnityCatalogSupports, dbVersion)({role: containerData});
+    const deletedScriptDto = AlterScriptDto.getInstance([deletedScript], true, true);
 
     return [
-        {
-            scripts: [{
-                script: deletedScript,
-                isDropScript: true,
-            }]
-        },
+        deletedScriptDto,
         addedScriptDto
     ].filter(Boolean);
 };

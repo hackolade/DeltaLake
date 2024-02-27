@@ -378,6 +378,24 @@ module.exports = app => {
             return assignTemplates(templates.unsetTableTags, { name, tags });
         },
 
+         /**
+         * @param name {string}
+         * @param tags {string}
+         * @return {string}
+         * */
+         setViewTags(name, tags) {
+            return assignTemplates(templates.setViewTags, { name, tags });
+        },
+
+        /**
+         * @param name {string}
+         * @param tags {string}
+         * @return {string}
+         * */
+        unsetViewTags(name, tags) {
+            return assignTemplates(templates.unsetViewTags, { name, tags });
+        },
+
         /**
          * @param tableName {string}
          * @param columnName {string}

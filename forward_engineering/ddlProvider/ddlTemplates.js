@@ -73,6 +73,10 @@ module.exports = {
 
 	unsetTableTags: 'ALTER TABLE ${name}\nUNSET TAGS (${tags});',
 
+	setViewTags: 'ALTER VIEW ${name}\nSET TAGS (${tags});',
+
+	unsetViewTags: 'ALTER VIEW ${name}\nUNSET TAGS (${tags});',
+
 	setColumnTags: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName}\nSET TAGS (${tags});',
 
 	unsetColumnTags: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName}\nUNSET TAGS (${tags});', 

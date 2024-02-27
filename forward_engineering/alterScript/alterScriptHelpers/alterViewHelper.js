@@ -10,8 +10,9 @@ const {
     getFullEntityName
 } = require('../../utils/general');
 const {AlterScriptDto} = require("../types/AlterScriptDto");
+const { getModifyUnityViewTagsScriptDtos } = require('./entityHelpers/alterUnityTagsHelper');
 
-const viewProperties = ['code', 'name', 'tableProperties', 'selectStatement'];
+const viewProperties = ['code', 'name', 'tableProperties', 'selectStatement', 'unityViewTags'];
 const otherViewProperties = ['viewTemporary', 'viewOrReplace', 'isGlobal', 'description'];
 
 const compareProperties = (_) => (view, properties) => {
@@ -110,34 +111,22 @@ const getDeleteViewsScripts = (provider, dbVersion) => view => {
  * */
 const getModifyViewsScripts = (provider, _, dbVersion) => view => {
     const comparedProperties = compareProperties(_)(view, viewProperties);
+    const viewName = generateFullEntityName({ entity: view, dbVersion });
     if (comparedProperties) {
         const hydratedAlterView = hydrateAlterView(_)(view);
         const alterViewScript = prepareScript(...provider.alterView(hydratedAlterView));
-        return alterViewScript.map(script => ({
-            isActivated: true,
-            scripts: [{
-                isDropScript: false,
-                script
-            }]
-        }));
+        const alterUnityViewTagsScriptDtos = getModifyUnityViewTagsScriptDtos(provider)(view, viewName)
+        const alterViewScriptDtos = alterViewScript.map(script => AlterScriptDto.getInstance([script], true, false));
+
+        return [...alterViewScriptDtos, ...alterUnityViewTagsScriptDtos];
     }
-    const viewName = generateFullEntityName({ entity: view, dbVersion });
     const dropViewScript = provider.dropView(viewName);
     const hydratedView = hydrateView(_)(view);
     const addViewScript = getViewScript({_, ...hydratedView});
-    return [{
-        isActivated: true,
-        scripts: [{
-            isDropScript: true,
-            script: dropViewScript
-        }]
-    }, [{
-        isActivated: true,
-        scripts: [{
-            isDropScript: false,
-            script: addViewScript
-        }]
-    }]];
+    const dropViewScriptDto = AlterScriptDto.getInstance([dropViewScript], true, true)
+    const addViewScriptDto = AlterScriptDto.getInstance([addViewScript], true, false)
+
+    return [dropViewScriptDto, addViewScriptDto];
 };
 
 module.exports = {
