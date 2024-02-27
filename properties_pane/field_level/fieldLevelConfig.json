@@ -414,15 +414,6 @@ making sure that you maintain a proper JSON format.
 			"relationshipType",
 			"sample",
 			{
-				"propertyName": "Remarks",
-				"propertyKeyword": "comments",
-				"shouldValidate": false,
-				"propertyTooltip": "remarks",
-				"addTimestampButton": true,
-				"propertyType": "details",
-				"template": "textarea"
-			},
-			{
 				"propertyName": "Column Tags",
 				"propertyKeyword": "unityColumnTags",
 				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
@@ -487,6 +478,15 @@ making sure that you maintain a proper JSON format.
 						}
 					]
 				}
+			},
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
 			}
 		],
 		"numeric": [

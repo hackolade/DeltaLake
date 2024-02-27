@@ -119,6 +119,14 @@ making sure that you maintain a proper JSON format.
 		"lowerTab": "Details",
 		"structure": [
 			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			{
 				"propertyKeyword": "viewOn",
 				"hidden": true
 			},
@@ -195,14 +203,6 @@ making sure that you maintain a proper JSON format.
 						"valueType": "string"
 					}
 				]
-			},
-			{
-				"propertyName": "Comments",
-				"propertyKeyword": "description",
-				"propertyTooltip": "comments",
-				"addTimestampButton": false,
-				"propertyType": "details",
-				"template": "textarea"
 			},
 			{
 				"propertyName": "Remarks",
