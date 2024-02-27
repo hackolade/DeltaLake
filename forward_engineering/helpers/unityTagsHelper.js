@@ -113,6 +113,16 @@ const getUnityTagsFromCompMod = (tagsToFilter, filterBy) => {
 	});
 };
 
+const getViewTagsStatement = (viewSchema, viewName) => {
+    if (!viewSchema.unityViewTags.length) {
+        return '';
+    }
+
+    const tags = buildTagPairs(viewSchema.unityViewTags);
+
+    return `ALTER VIEW ${viewName} SET TAGS (${tags});`;
+};
+
 module.exports = {
     getCatalogTagsStatement,
     getSchemaTagsStatement,
@@ -121,4 +131,5 @@ module.exports = {
     buildTagPairs,
     getUnsetTagsNamesParamString,
     getUnityTagsFromCompMod,
+    getViewTagsStatement
 };
