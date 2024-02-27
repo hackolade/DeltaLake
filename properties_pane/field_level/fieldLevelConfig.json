@@ -435,7 +435,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])[a-zA-Z\\d]{1,255}$"
 						}
 					},
 					{
@@ -806,7 +806,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])[a-zA-Z\\d]{1,255}$"
 						}
 					},
 					{
@@ -941,7 +941,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])[a-zA-Z\\d]{1,255}$"
 						}
 					},
 					{
@@ -1203,7 +1203,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])[a-zA-Z\\d]{1,255}$"
 						}
 					},
 					{
@@ -1495,7 +1495,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])[a-zA-Z\\d]{1,255}$"
 						}
 					},
 					{
@@ -1763,7 +1763,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])[a-zA-Z\\d]{1,255}$"
 						}
 					},
 					{
@@ -2030,7 +2030,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])[a-zA-Z\\d]{1,255}$"
 						}
 					},
 					{
@@ -2313,7 +2313,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])[a-zA-Z\\d]{1,255}$"
 						}
 					},
 					{
@@ -2637,7 +2637,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])[a-zA-Z\\d]{1,255}$"
 						}
 					},
 					{
@@ -2901,7 +2901,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])[a-zA-Z\\d]{1,255}$"
 						}
 					},
 					{
