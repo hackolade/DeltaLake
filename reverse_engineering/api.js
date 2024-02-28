@@ -291,6 +291,11 @@ module.exports = {
 					async (name) => {
 						progress({ message: 'Start processing data from view', containerName: dbName, entityName: name });
 						const ddl = ddlByEntity[`${dbName}.${name}`];
+						const viewTags = unityTagsHelper.filterUnityTagsByView({
+							schemaName: dbName,
+							viewName: name,
+							catalogName: dbData.dbProperties.catalogName
+						}, unityTags);
 						let viewData = {};
 						let jsonSchema;
 						let documentTemplate;
@@ -310,7 +315,10 @@ module.exports = {
 								}
 							}
 
-							viewData = viewDDLHelper.getViewDataFromDDl(ddl);
+							viewData = {
+								...viewDDLHelper.getViewDataFromDDl(ddl),
+								...unityTagsHelper.getUnityTagsForView(viewTags)
+							};
 							jsonSchema = viewDDLHelper.getJsonSchema(viewSchema, viewSample);
 
 							if (fieldInference.active === 'field') {

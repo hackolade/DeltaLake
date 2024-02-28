@@ -2,6 +2,7 @@
 
 const { prepareName, encodeStringLiteral } = require('../utils/general');
 const { getTablePropertiesClause } = require('./tableHelper');
+const { getViewTagsStatement } = require('./unityTagsHelper');
 
 const getColumnNames = (_) => (collectionRefsDefinitionsMap, columns) => {
 	return _.uniq(Object.keys(columns).map(name => {
@@ -119,7 +120,16 @@ module.exports = {
 			}
 		}
 
-		return script.join('\n  ') + ';\n\n\n\n\n'
+		if (schema.unityViewTags) {
+			const unityTagsStatements = getViewTagsStatement(schema, name);
+
+			script.push(';\n');
+			script.push(unityTagsStatements);
+
+			return script.join('\n  ');
+		} else {
+			return script.join('\n  ') + ';\n\n\n\n\n';
+		}
 	},
 };
 

@@ -526,10 +526,10 @@ making sure that you maintain a proper JSON format.
 					{
 						"propertyName": "Key",
 						"propertyKeyword": "unityTagKey",
-						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, except for the following characters: '.', ',', '-', '=', '/', ':', ' ' (blank space)",
+						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^[a-zA-Z0-9!@#\\$%\\^\\&*\\)\\(+_;]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])[a-zA-Z\\d]{1,255}$"
 						}
 					},
 					{
@@ -698,7 +698,7 @@ making sure that you maintain a proper JSON format.
 						"propertyKeyword": "noRely",
 						"propertyType": "checkbox",
 						"propertyTooltip": "Databricks does not exploit the constraint to rewrite a query."
-					},
+					}
 				]
 			},
 			{
