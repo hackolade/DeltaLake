@@ -121,7 +121,7 @@ module.exports = {
 		}
 
 		if (schema.unityViewTags) {
-			const unityTagsStatements = getViewTagsStatement(schema, name);
+			const unityTagsStatements = getViewTagsStatement({ viewSchema: schema, viewName: name });
 
 			script.push(';\n');
 			script.push(unityTagsStatements);

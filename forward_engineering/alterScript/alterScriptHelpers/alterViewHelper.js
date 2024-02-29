@@ -115,7 +115,7 @@ const getModifyViewsScripts = (provider, _, dbVersion) => view => {
     if (comparedProperties) {
         const hydratedAlterView = hydrateAlterView(_)(view);
         const alterViewScript = prepareScript(...provider.alterView(hydratedAlterView));
-        const alterUnityViewTagsScriptDtos = getModifyUnityViewTagsScriptDtos(provider)(view, viewName)
+        const alterUnityViewTagsScriptDtos = getModifyUnityViewTagsScriptDtos({ ddlProvider: provider })( { viewData: view, viewName })
         const alterViewScriptDtos = alterViewScript.map(script => AlterScriptDto.getInstance([script], true, false));
 
         return [...alterViewScriptDtos, ...alterUnityViewTagsScriptDtos];
@@ -126,7 +126,7 @@ const getModifyViewsScripts = (provider, _, dbVersion) => view => {
     const dropViewScriptDto = AlterScriptDto.getInstance([dropViewScript], true, true)
     const addViewScriptDto = AlterScriptDto.getInstance([addViewScript], true, false)
 
-    return [dropViewScriptDto, addViewScriptDto];
+    return [dropViewScriptDto, addViewScriptDto].filter(Boolean);
 };
 
 module.exports = {

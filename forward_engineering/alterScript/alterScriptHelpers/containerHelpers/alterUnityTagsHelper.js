@@ -5,8 +5,7 @@ const { AlterScriptDto } = require('../../types/AlterScriptDto');
 
 /**
  * @callback GetAlterScriptDtoFunction
- * @param {Object} entityData
- * @param {string} name
+ * @param {{ entityData: Object, name: string }} args
  * @returns Array<AlterScriptDto>
  */
 
@@ -14,18 +13,18 @@ const { AlterScriptDto } = require('../../types/AlterScriptDto');
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getSetUnityCatalogTagsDtos = ddlProvider => (entityData, name) => {
+const getSetUnityCatalogTagsDtos = ({ ddlProvider }) => ({ entityData, name }) => {
 	const unityTags = entityData?.role?.compMod?.unityCatalogTags || {};
 	const newUnityTags = unityTags.new || [];
 	const oldUnityTags = unityTags.old || [];
 
-	const setTags = getUnityTagsFromCompMod(newUnityTags, oldUnityTags);
+	const setTags = getUnityTagsFromCompMod({ tagsToFilter: newUnityTags, filterBy: oldUnityTags});
 
 	if (!setTags.length) {
 		return [];
 	}
 
-	const script = ddlProvider.setCatalogTags(name, buildTagPairs(setTags));
+	const script = ddlProvider.setCatalogTags({ name, tags: buildTagPairs(setTags) });
 
 	return [AlterScriptDto.getInstance([script], true, false)];
 };
@@ -34,18 +33,18 @@ const getSetUnityCatalogTagsDtos = ddlProvider => (entityData, name) => {
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getUnsetUnityCatalogTagsScriptsDtosFrom = ddlProvider => (entityData, name) => {
+const getUnsetUnityCatalogTagsScriptsDtosFrom = ({ ddlProvider }) => ({ entityData, name }) => {
 	const unityTags = entityData?.role?.compMod?.unityCatalogTags || {};
 	const newUnityTags = unityTags.new || [];
 	const oldUnityTags = unityTags.old || [];
 
-	const unsetTags = getUnityTagsFromCompMod(oldUnityTags, newUnityTags);
+	const unsetTags = getUnityTagsFromCompMod({ tagsToFilter: oldUnityTags, filterBy: newUnityTags});
 
 	if (!unsetTags.length) {
 		return [];
 	}
 
-	const script = ddlProvider.unsetCatalogTags(name, getUnsetTagsNamesParamString(unsetTags));
+	const script = ddlProvider.unsetCatalogTags({ name, tags: getUnsetTagsNamesParamString({ unsetTags }) });
 
 	return [AlterScriptDto.getInstance([script], true, true)];
 };
@@ -54,9 +53,12 @@ const getUnsetUnityCatalogTagsScriptsDtosFrom = ddlProvider => (entityData, name
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getModifyUnityCatalogTagsScriptDtos = ddlProvider => (entityData, name) => {
-	const unsetUnityTagsScriptDtosFromTable = getUnsetUnityCatalogTagsScriptsDtosFrom(ddlProvider)(entityData, name);
-	const setUnityTagsScriptDtosFromTable = getSetUnityCatalogTagsDtos(ddlProvider)(entityData, name);
+const getModifyUnityCatalogTagsScriptDtos = ({ ddlProvider }) => ({ entityData, name }) => {
+	const unsetUnityTagsScriptDtosFromTable = getUnsetUnityCatalogTagsScriptsDtosFrom({ ddlProvider })({
+		entityData,
+		name,
+	});
+	const setUnityTagsScriptDtosFromTable = getSetUnityCatalogTagsDtos({ ddlProvider })({ entityData, name });
 
 	return [...unsetUnityTagsScriptDtosFromTable, ...setUnityTagsScriptDtosFromTable].filter(Boolean);
 };
@@ -65,18 +67,18 @@ const getModifyUnityCatalogTagsScriptDtos = ddlProvider => (entityData, name) =>
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getSetUnitySchemaTagsDtos = ddlProvider => (entityData, name) => {
+const getSetUnitySchemaTagsDtos = ({ ddlProvider }) => ({ entityData, name }) => {
 	const unityTags = entityData?.role?.compMod?.unitySchemaTags || {};
 	const newUnityTags = unityTags.new || [];
 	const oldUnityTags = unityTags.old || [];
 
-	const setTags = getUnityTagsFromCompMod(newUnityTags, oldUnityTags);
+	const setTags = getUnityTagsFromCompMod({ tagsToFilter: newUnityTags, filterBy: oldUnityTags});
 
 	if (!setTags.length) {
 		return [];
 	}
 
-	const script = ddlProvider.setSchemaTags(name, buildTagPairs(setTags));
+	const script = ddlProvider.setSchemaTags({ name, tags: buildTagPairs(setTags) });
 
 	return [AlterScriptDto.getInstance([script], true, false)];
 };
@@ -85,18 +87,18 @@ const getSetUnitySchemaTagsDtos = ddlProvider => (entityData, name) => {
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getUnsetUnitySchemaTagsScriptsDtosFrom = ddlProvider => (entityData, name) => {
+const getUnsetUnitySchemaTagsScriptsDtosFrom = ({ ddlProvider }) => ({ entityData, name }) => {
 	const unityTags = entityData?.role?.compMod?.unitySchemaTags || {};
 	const newUnityTags = unityTags.new || [];
 	const oldUnityTags = unityTags.old || [];
 
-	const unsetTags = getUnityTagsFromCompMod(oldUnityTags, newUnityTags);
+	const unsetTags = getUnityTagsFromCompMod({ tagsToFilter: oldUnityTags, filterBy: newUnityTags});
 
 	if (!unsetTags.length) {
 		return [];
 	}
 
-	const script = ddlProvider.unsetSchemaTags(name, getUnsetTagsNamesParamString(unsetTags));
+	const script = ddlProvider.unsetSchemaTags({ name, tags: getUnsetTagsNamesParamString({ unsetTags }) });
 
 	return [AlterScriptDto.getInstance([script], true, true)];
 };
@@ -105,9 +107,12 @@ const getUnsetUnitySchemaTagsScriptsDtosFrom = ddlProvider => (entityData, name)
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getModifyUnitySchemaTagsScriptDtos = ddlProvider => (entityData, name) => {
-	const unsetUnityTagsScriptDtosFromTable = getUnsetUnitySchemaTagsScriptsDtosFrom(ddlProvider)(entityData, name);
-	const setUnityTagsScriptDtosFromTable = getSetUnitySchemaTagsDtos(ddlProvider)(entityData, name);
+const getModifyUnitySchemaTagsScriptDtos = ({ ddlProvider }) => ({ entityData, name }) => {
+	const unsetUnityTagsScriptDtosFromTable = getUnsetUnitySchemaTagsScriptsDtosFrom({ ddlProvider })({
+		entityData,
+		name,
+	});
+	const setUnityTagsScriptDtosFromTable = getSetUnitySchemaTagsDtos({ ddlProvider })({ entityData, name });
 
 	return [...unsetUnityTagsScriptDtosFromTable, ...setUnityTagsScriptDtosFromTable].filter(Boolean);
 };

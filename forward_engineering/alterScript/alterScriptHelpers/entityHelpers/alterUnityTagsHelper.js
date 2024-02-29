@@ -4,15 +4,13 @@ const { AlterScriptDto } = require('../../types/AlterScriptDto');
 
 /**
  * @callback GetAlterScriptDtoFunction
- * @param {Object} entityData
- * @param {string} entityName
+ * @param {{ entityData: Object, name: string }} args
  * @returns Array<AlterScriptDto>
  */
 
 /**
  * @callback GetAlterScriptDtoFunctionForViews
- * @param {Object} viewData
- * @param {string} viewName
+ * @param {{ viewData: Object, viewName: string }} args
  * @returns Array<AlterScriptDto>
  */
 
@@ -20,18 +18,18 @@ const { AlterScriptDto } = require('../../types/AlterScriptDto');
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getSetUnityEntityTagsDtos = ddlProvider => (entityData, entityName) => {
+const getSetUnityEntityTagsDtos = ({ ddlProvider }) => ({ entityData, entityName }) => {
 	const unityTags = entityData?.role?.compMod?.unityEntityTags || {};
 	const newUnityTags = unityTags.new || [];
 	const oldUnityTags = unityTags.old || [];
 
-	const setTags = getUnityTagsFromCompMod(newUnityTags, oldUnityTags);
+	const setTags = getUnityTagsFromCompMod({ tagsToFilter: newUnityTags, filterBy: oldUnityTags});
 
 	if (!setTags.length) {
 		return [];
 	}
 
-	const script = ddlProvider.setEntityTags(entityName, buildTagPairs(setTags));
+	const script = ddlProvider.setEntityTags({name: entityName, tags: buildTagPairs(setTags) });
 
 	return [AlterScriptDto.getInstance([script], true, false)];
 };
@@ -40,18 +38,18 @@ const getSetUnityEntityTagsDtos = ddlProvider => (entityData, entityName) => {
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getUnsetUnityEntityTagsScriptsDtosFrom = ddlProvider => (entityData, entityName) => {
+const getUnsetUnityEntityTagsScriptsDtosFrom = ({ ddlProvider }) => ({ entityData, entityName }) => {
 	const unityTags = entityData?.role?.compMod?.unityEntityTags || {};
 	const newUnityTags = unityTags.new || [];
 	const oldUnityTags = unityTags.old || [];
 
-	const unsetTags = getUnityTagsFromCompMod(oldUnityTags, newUnityTags);
+	const unsetTags = getUnityTagsFromCompMod({ tagsToFilter: oldUnityTags, filterBy: newUnityTags});
 
 	if (!unsetTags.length) {
 		return [];
 	}
 
-	const script = ddlProvider.unsetEntityTags(entityName, getUnsetTagsNamesParamString(unsetTags));
+	const script = ddlProvider.unsetEntityTags({ name: entityName, tags: getUnsetTagsNamesParamString({ unsetTags }) });
 
 	return [AlterScriptDto.getInstance([script], true, true)];
 };
@@ -60,9 +58,12 @@ const getUnsetUnityEntityTagsScriptsDtosFrom = ddlProvider => (entityData, entit
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getModifyUnityEntityTagsScriptDtos = ddlProvider => (entityData, entityName) => {
-	const unsetUnityTagsScriptDtosFromTable = getUnsetUnityEntityTagsScriptsDtosFrom(ddlProvider)(entityData, entityName);
-	const setUnityTagsScriptDtosFromTable = getSetUnityEntityTagsDtos(ddlProvider)(entityData, entityName);
+const getModifyUnityEntityTagsScriptDtos = ({ ddlProvider }) => ({ entityData, entityName }) => {
+	const unsetUnityTagsScriptDtosFromTable = getUnsetUnityEntityTagsScriptsDtosFrom({ ddlProvider })({
+		entityData,
+		entityName,
+	});
+	const setUnityTagsScriptDtosFromTable = getSetUnityEntityTagsDtos({ ddlProvider })({ entityData, entityName });
 
 	return [...unsetUnityTagsScriptDtosFromTable, ...setUnityTagsScriptDtosFromTable].filter(Boolean);
 };
@@ -71,18 +72,18 @@ const getModifyUnityEntityTagsScriptDtos = ddlProvider => (entityData, entityNam
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunctionForViews}
  */
-const getSetUnityViewTagsDtos = ddlProvider => (viewData, viewName) => {
+const getSetUnityViewTagsDtos = ({ ddlProvider }) => ({ viewData, viewName }) => {
 	const unityTags = viewData?.role?.compMod?.unityViewTags || {};
 	const newUnityTags = unityTags.new || [];
 	const oldUnityTags = unityTags.old || [];
 
-	const setTags = getUnityTagsFromCompMod(newUnityTags, oldUnityTags);
+	const setTags = getUnityTagsFromCompMod({ tagsToFilter: newUnityTags, filterBy: oldUnityTags});
 
 	if (!setTags.length) {
 		return [];
 	}
 
-	const script = ddlProvider.setViewTags(viewName, buildTagPairs(setTags));
+	const script = ddlProvider.setViewTags({ name: viewName, tags: buildTagPairs(setTags) });
 
 	return [AlterScriptDto.getInstance([script], true, false)];
 };
@@ -91,18 +92,18 @@ const getSetUnityViewTagsDtos = ddlProvider => (viewData, viewName) => {
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunctionForViews}
  */
-const getUnsetUnityViewTagsScriptsDtosFrom = ddlProvider => (viewData, viewName) => {
+const getUnsetUnityViewTagsScriptsDtosFrom = ({ ddlProvider }) => ({ viewData, viewName }) => {
 	const unityTags = viewData?.role?.compMod?.unityViewTags || {};
 	const newUnityTags = unityTags.new || [];
 	const oldUnityTags = unityTags.old || [];
 
-	const unsetTags = getUnityTagsFromCompMod(oldUnityTags, newUnityTags);
+	const unsetTags = getUnityTagsFromCompMod({ tagsToFilter: oldUnityTags, filterBy: newUnityTags});
 
 	if (!unsetTags.length) {
 		return [];
 	}
 
-	const script = ddlProvider.unsetViewTags(viewName, getUnsetTagsNamesParamString(unsetTags));
+	const script = ddlProvider.unsetViewTags({ name: viewName, tags: getUnsetTagsNamesParamString({ unsetTags }) });
 
 	return [AlterScriptDto.getInstance([script], true, true)];
 };
@@ -111,9 +112,12 @@ const getUnsetUnityViewTagsScriptsDtosFrom = ddlProvider => (viewData, viewName)
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunctionForViews}
  */
-const getModifyUnityViewTagsScriptDtos = ddlProvider => (viewData, viewName) => {
-	const unsetUnityTagsScriptDtosFromTable = getUnsetUnityViewTagsScriptsDtosFrom(ddlProvider)(viewData, viewName);
-	const setUnityTagsScriptDtosFromTable = getSetUnityViewTagsDtos(ddlProvider)(viewData, viewName);
+const getModifyUnityViewTagsScriptDtos = ({ ddlProvider }) => ({ viewData, viewName }) => {
+	const unsetUnityTagsScriptDtosFromTable = getUnsetUnityViewTagsScriptsDtosFrom({ ddlProvider })({
+		viewData,
+		viewName,
+	});
+	const setUnityTagsScriptDtosFromTable = getSetUnityViewTagsDtos({ ddlProvider })({ viewData, viewName });
 
 	return [...unsetUnityTagsScriptDtosFromTable, ...setUnityTagsScriptDtosFromTable].filter(Boolean);
 };

@@ -235,7 +235,11 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
     const alterColumnScriptDtos = AlterScriptDto.getInstances(alterColumnScripts, true, false);
     const unityColumnTagsDtos = Object.keys(properties).flatMap(columnName =>
-        getModifyUnityColumnTagsScriptDtos(ddlProvider)(collection, hydratedAlterColumnName.collectionName, columnName),
+			getModifyUnityColumnTagsScriptDtos({ ddlProvider })({
+				entityData: collection,
+				tableName: hydratedAlterColumnName.collectionName,
+				columnName,
+			}),
 		);
     if (modifiedScript.type === 'new') {
         return [dropIndexScriptDto, ...(modifiedScript.script || []), addIndexScriptDto]

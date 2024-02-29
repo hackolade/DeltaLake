@@ -329,7 +329,7 @@ module.exports = app => {
          * @param tags {string}
          * @return {string}
          * */
-        setCatalogTags(name, tags) {
+        setCatalogTags({ name, tags }) {
             return assignTemplates(templates.setCatalogTags, { name, tags });
         },
 
@@ -338,7 +338,7 @@ module.exports = app => {
          * @param tags {string}
          * @return {string}
          * */
-        unsetCatalogTags(name, tags) {
+        unsetCatalogTags({ name, tags }) {
             return assignTemplates(templates.unsetCatalogTags, { name, tags });
         },
 
@@ -347,7 +347,7 @@ module.exports = app => {
          * @param tags {string}
          * @return {string}
          * */
-        setSchemaTags(name, tags) {
+        setSchemaTags({ name, tags }) {
             return assignTemplates(templates.setSchemaTags, { name, tags });
         },
 
@@ -356,7 +356,7 @@ module.exports = app => {
          * @param tags {string}
          * @return {string}
          * */
-        unsetSchemaTags(name, tags) {
+        unsetSchemaTags({ name, tags }) {
             return assignTemplates(templates.unsetSchemaTags, { name, tags });
         },
 
@@ -365,7 +365,7 @@ module.exports = app => {
          * @param tags {string}
          * @return {string}
          * */
-        setEntityTags(name, tags) {
+        setEntityTags({ name, tags }) {
             return assignTemplates(templates.setTableTags, { name, tags });
         },
 
@@ -374,7 +374,7 @@ module.exports = app => {
          * @param tags {string}
          * @return {string}
          * */
-        unsetEntityTags(name, tags) {
+        unsetEntityTags({ name, tags }) {
             return assignTemplates(templates.unsetTableTags, { name, tags });
         },
 
@@ -383,7 +383,7 @@ module.exports = app => {
          * @param tags {string}
          * @return {string}
          * */
-         setViewTags(name, tags) {
+         setViewTags({ name, tags }) {
             return assignTemplates(templates.setViewTags, { name, tags });
         },
 
@@ -392,7 +392,7 @@ module.exports = app => {
          * @param tags {string}
          * @return {string}
          * */
-        unsetViewTags(name, tags) {
+        unsetViewTags({ name, tags }) {
             return assignTemplates(templates.unsetViewTags, { name, tags });
         },
 
@@ -402,7 +402,7 @@ module.exports = app => {
          * @param tags {string}
          * @return {string}
          * */
-        setColumnTags(tableName, columnName, tags) {
+        setColumnTags({ tableName, columnName, tags }) {
             return assignTemplates(templates.setColumnTags, { tableName, columnName, tags });
         },
 
@@ -412,7 +412,7 @@ module.exports = app => {
          * @param tags {string}
          * @return {string}
          * */
-        unsetColumnTags(tableName, columnName, tags) {
+        unsetColumnTags({ tableName, columnName, tags}) {
             return assignTemplates(templates.unsetColumnTags, { tableName, columnName, tags });
         },
     }

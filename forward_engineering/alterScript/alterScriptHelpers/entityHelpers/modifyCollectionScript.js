@@ -126,7 +126,7 @@ const getModifyCollectionScriptDtos = (app, ddlProvider) => ({ collection, dbVer
     const tablePropertiesScriptDtos = getModifiedTablePropertiesScriptDtos(_, ddlProvider)({ collection, dbVersion });
     const serDeProperties = ddlProvider.alterSerDeProperties(hydratedSerDeProperties);
     const modifyLocationScriptDto = getModifyLocationScriptDto(app, ddlProvider)({ collection, dbVersion });
-    const unityEntityTagsDtos = getModifyUnityEntityTagsScriptDtos(ddlProvider)(collection, fullCollectionName);
+    const unityEntityTagsDtos = getModifyUnityEntityTagsScriptDtos({ ddlProvider })({ entityData: collection, name: fullCollectionName });
 
     return {
         type: 'modify',

@@ -84,21 +84,11 @@ const getColumnTagsStatement = (_, columns, fullTableName) => {
         .filter(Boolean);
 };
 
-const getViewTagsStatement = (viewSchema, viewName) => {
-    if (!viewSchema.unityViewTags.length) {
-        return '';
-    }
-
-    const tags = buildTagPairs(viewSchema.unityViewTags);
-
-    return `ALTER VIEW ${viewName} SET TAGS (${tags});`;
-};
-
 /**
  * @param {UnityTag[]} unsetTags
  * @returns {string}
  */
-const getUnsetTagsNamesParamString = unsetTags => {
+const getUnsetTagsNamesParamString = ({ unsetTags }) => {
 	return unsetTags.map(({ unityTagKey }) => wrapInSingleQuotes(unityTagKey)).join(', ');
 };
 
@@ -107,7 +97,7 @@ const getUnsetTagsNamesParamString = unsetTags => {
  * @param {UnityTag[]} filterBy
  * @returns {UnityTag[]}
  */
-const getUnityTagsFromCompMod = (tagsToFilter, filterBy) => {
+const getUnityTagsFromCompMod = ({ tagsToFilter, filterBy }) => {
 	return tagsToFilter.filter(tag => {
 		if (!filterBy.length) {
 			return true;
@@ -123,7 +113,7 @@ const getUnityTagsFromCompMod = (tagsToFilter, filterBy) => {
 	});
 };
 
-const getViewTagsStatement = (viewSchema, viewName) => {
+const getViewTagsStatement = ({ viewSchema, viewName }) => {
     if (!viewSchema.unityViewTags.length) {
         return '';
     }
@@ -142,5 +132,4 @@ module.exports = {
     buildTagPairs,
     getUnsetTagsNamesParamString,
     getUnityTagsFromCompMod,
-    getViewTagsStatement
 };
