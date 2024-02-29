@@ -86,14 +86,15 @@ module.exports = {
 		const comment = schema.description;
 		let tablePropertyStatements = '';
 		const tableProperties = schema.tableProperties && Array.isArray(schema.tableProperties) ? filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime']) : [];
+		const viewUnityTagsStatements = schema.unityViewTags && getViewTagsStatement(schema, name);
 
 		if (tableProperties.length) {
 			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`;
-		};
+		}
 		script.push(createStatement);
 		if (schema.selectStatement) {
 			const columnList = view.columnList ? ` (${view.columnList})` : ' ';
-			return createStatement + `${columnList} ${comment ? ' COMMENT \'' + encodeStringLiteral(comment) + '\'' : ''} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n`;
+			return createStatement + `${columnList} ${comment ? ' COMMENT \'' + encodeStringLiteral(comment) + '\'' : ''} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n${viewUnityTagsStatements}`;
 		}
 
 		if (_.isEmpty(columns)) {
@@ -120,16 +121,14 @@ module.exports = {
 			}
 		}
 
-		if (schema.unityViewTags) {
-			const unityTagsStatements = getViewTagsStatement(schema, name);
-
+		if (viewUnityTagsStatements) {
 			script.push(';\n');
-			script.push(unityTagsStatements);
+			script.push(viewUnityTagsStatements);
 
 			return script.join('\n  ');
-		} else {
-			return script.join('\n  ') + ';\n\n\n\n\n';
 		}
+
+		return script.join('\n  ') + ';\n\n\n\n\n';
 	},
 };
 
