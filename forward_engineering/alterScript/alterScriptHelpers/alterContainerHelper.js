@@ -1,7 +1,8 @@
 const {getDatabaseStatement, getDatabaseAlterStatement, getBucketKeyword} = require('../../helpers/databaseHelper')
-const {getEntityData, getIsChangeProperties, prepareName, replaceSpaceWithUnderscore} = require('../../utils/general');
+const {getEntityData, getIsChangeProperties, prepareName, replaceSpaceWithUnderscore, isSupportUnityCatalog} = require('../../utils/general');
 const {getAlterCommentsScriptDtos} = require("./containerHelpers/commentsHelper");
 const {AlterScriptDto} = require("../types/AlterScriptDto");
+const { getModifyUnityCatalogTagsScriptDtos, getModifyUnitySchemaTagsScriptDtos } = require('./containerHelpers/alterUnityTagsHelper');
 
 
 const containerProperties = ['comment', 'location', 'dbProperties', 'description'];
@@ -75,33 +76,35 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
 
     const didPropertiesChange = getIsChangeProperties(_)({...compMod, name: names}, otherContainerProperties);
     const containerData = {...getContainerData(compMod), name: names.new};
+    const catalogName = isSupportUnityCatalog(dbVersion) ? prepareName(compMod?.catalogName?.new) : undefined;
+    const databaseName = getDatabaseName({role: {...containerData, name: names.old}});
+    const fullDatabaseName = catalogName ? `${catalogName}.${databaseName}` : databaseName;
     if (!didPropertiesChange) {
         const alterCommentsScriptDtos = getAlterCommentsScriptDtos(provider)(container);
         const alterDatabaseScript = getDatabaseAlterStatement([containerData], dbVersion);
+        const alterDatabaseScriptDto = AlterScriptDto.getInstance([alterDatabaseScript], true, false)
+        const alterUnityCatalogTagsScript = getModifyUnityCatalogTagsScriptDtos(provider)(container, catalogName);
+				const alterUnitySchemaTagsScript = getModifyUnitySchemaTagsScriptDtos({ ddlProvider: provider })({
+					entityData: container,
+					name: fullDatabaseName,
+				});
+        
         if (!alterDatabaseScript?.length) {
-            return alterCommentsScriptDtos;
+            return [...alterCommentsScriptDtos, ...alterUnityCatalogTagsScript, ...alterUnitySchemaTagsScript];
         }
         return [
             ...alterCommentsScriptDtos,
-            {
-                scripts: [{
-                    script: alterDatabaseScript,
-                    isDropScript: false,
-                }]
-            },
+            alterDatabaseScriptDto,
+            ...alterUnityCatalogTagsScript,
+            ...alterUnitySchemaTagsScript,
         ];
     }
-    const databaseName = getDatabaseName({role: {...containerData, name: names.old}});
     const deletedScript = provider.dropDatabase(databaseName, getBucketKeyword(dbVersion));
     const addedScriptDto = getAddContainerScriptDto(isUnityCatalogSupports, dbVersion)({role: containerData});
+    const deletedScriptDto = AlterScriptDto.getInstance([deletedScript], true, true);
 
     return [
-        {
-            scripts: [{
-                script: deletedScript,
-                isDropScript: true,
-            }]
-        },
+        deletedScriptDto,
         addedScriptDto
     ].filter(Boolean);
 };

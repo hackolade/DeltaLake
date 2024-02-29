@@ -60,4 +60,24 @@ module.exports = {
 	serDeProperties: ' WITH SERDEPROPERTIES (${properties})',
 
 	dropDatabase: 'DROP ${bucketKeyword} IF EXISTS ${name};',
+
+	setCatalogTags: 'ALTER CATALOG ${name}\nSET TAGS (${tags});',
+
+	unsetCatalogTags: 'ALTER CATALOG ${name}\nUNSET TAGS (${tags});',
+
+	setSchemaTags: 'ALTER SCHEMA ${name}\nSET TAGS (${tags});',
+
+	unsetSchemaTags: 'ALTER SCHEMA ${name}\nUNSET TAGS (${tags});',
+
+	setTableTags: 'ALTER TABLE ${name}\nSET TAGS (${tags});',
+
+	unsetTableTags: 'ALTER TABLE ${name}\nUNSET TAGS (${tags});',
+
+	setViewTags: 'ALTER VIEW ${name}\nSET TAGS (${tags});',
+
+	unsetViewTags: 'ALTER VIEW ${name}\nUNSET TAGS (${tags});',
+
+	setColumnTags: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName}\nSET TAGS (${tags});',
+
+	unsetColumnTags: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName}\nUNSET TAGS (${tags});', 
 }

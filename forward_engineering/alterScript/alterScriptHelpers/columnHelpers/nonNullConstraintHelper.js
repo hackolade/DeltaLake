@@ -3,10 +3,10 @@ const {AlterScriptDto} = require("../../types/AlterScriptDto");
 
 
 /**
- * @return {(collection: Object) => Array<AlterScriptDto>}
+ * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
-const getModifyNonNullColumnsScriptDtos = (_, ddlProvider) => (collection) => {
-    const fullTableName = generateFullEntityName(collection);
+const getModifyNonNullColumnsScriptDtos = (_, ddlProvider) => ({ collection, dbVersion }) => {
+    const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
 
     const currentRequiredColumnNames = collection.required || [];
     const previousRequiredColumnNames = collection.role.required || [];
