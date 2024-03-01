@@ -93,11 +93,10 @@ const getModifyCheckConstraintsScriptDtos = (ddlProvider, _) => (fullTableName, 
 };
 
 /**
- * @return {(collection: Object) => Array<AlterScriptDto>}
+ * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
-const getCheckConstraintsScriptDtos = (_, ddlProvider) => (collection) => {
-    const fullTableName = generateFullEntityName(collection);
-
+const getCheckConstraintsScriptDtos = (_, ddlProvider) => ({ collection, dbVersion }) => {
+    const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
     const addCheckConstraintsScriptDtos = getAddCheckConstraintsScriptsDtos(ddlProvider, _)(fullTableName, collection);
     const modifyCheckConstraintsScripts = getModifyCheckConstraintsScriptDtos(ddlProvider, _)(fullTableName, collection);
     const removeCheckConstraintScripts = getRemoveCheckConstraintsScriptsDtos(ddlProvider, _)(fullTableName, collection);

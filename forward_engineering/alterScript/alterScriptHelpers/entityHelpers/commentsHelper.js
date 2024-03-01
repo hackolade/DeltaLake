@@ -4,10 +4,10 @@ const {AlterScriptDto} = require("../../types/AlterScriptDto");
 
 
 /**
- * @return {(collection: Object) => AlterScriptDto | undefined}
+ * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => AlterScriptDto | undefined}
  * */
-const getUpdatedCommentOnCollectionScriptDto = (ddlProvider) => (collection) => {
-    const descriptionInfo = collection?.role.compMod?.description;
+const getUpdatedCommentOnCollectionScriptDto = (ddlProvider) => ({ collection, dbVersion }) => {
+    const descriptionInfo = collection?.role?.compMod?.description;
     if (!descriptionInfo) {
         return undefined;
     }
@@ -19,7 +19,7 @@ const getUpdatedCommentOnCollectionScriptDto = (ddlProvider) => (collection) => 
 
     const scriptGenerationConfig = {
         entityType: EntitiesThatSupportComments.TABLE,
-        entityName: generateFullEntityName(collection),
+        entityName: generateFullEntityName({ entity: collection, dbVersion }),
         comment: wrapInSingleQuotes(newComment),
     }
     const script = ddlProvider.updateComment(scriptGenerationConfig);
@@ -32,10 +32,10 @@ const getUpdatedCommentOnCollectionScriptDto = (ddlProvider) => (collection) => 
 }
 
 /**
- * @return {(collection: Object) => AlterScriptDto | undefined}
+ * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => AlterScriptDto | undefined}
  * */
-const getDeletedCommentOnCollectionScriptDto = (ddlProvider) => (collection) => {
-    const descriptionInfo = collection?.role.compMod?.description;
+const getDeletedCommentOnCollectionScriptDto = (ddlProvider) => ({ collection, dbVersion }) => {
+    const descriptionInfo = collection?.role?.compMod?.description;
     if (!descriptionInfo) {
         return undefined;
     }
@@ -47,7 +47,7 @@ const getDeletedCommentOnCollectionScriptDto = (ddlProvider) => (collection) => 
 
     const scriptGenerationConfig = {
         entityType: EntitiesThatSupportComments.TABLE,
-        entityName: generateFullEntityName(collection),
+        entityName: generateFullEntityName({ entity: collection, dbVersion }),
     }
     const script = ddlProvider.dropComment(scriptGenerationConfig);
     return {
@@ -60,11 +60,11 @@ const getDeletedCommentOnCollectionScriptDto = (ddlProvider) => (collection) => 
 
 
 /**
- * @return {(x: Object) => Array<AlterScriptDto>}
+ * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
-const getModifyCollectionCommentsScripts = (ddlProvider) => collection => {
-    const updatedCommentScriptDto = getUpdatedCommentOnCollectionScriptDto(ddlProvider)(collection);
-    const deletedCommentScriptDto = getDeletedCommentOnCollectionScriptDto(ddlProvider)(collection);
+const getModifyCollectionCommentsScripts = (ddlProvider) => ({ collection, dbVersion }) => {
+    const updatedCommentScriptDto = getUpdatedCommentOnCollectionScriptDto(ddlProvider)({ collection, dbVersion });
+    const deletedCommentScriptDto = getDeletedCommentOnCollectionScriptDto(ddlProvider)({ collection, dbVersion });
 
     return [
         updatedCommentScriptDto,

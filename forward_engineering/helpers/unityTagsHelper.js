@@ -94,10 +94,52 @@ const getViewTagsStatement = (viewSchema, viewName) => {
     return `ALTER VIEW ${viewName} SET TAGS (${tags});`;
 };
 
+/**
+ * @param {UnityTag[]} unsetTags
+ * @returns {string}
+ */
+const getUnsetTagsNamesParamString = ({ unsetTags }) => {
+	return unsetTags.map(({ unityTagKey }) => wrapInSingleQuotes(unityTagKey)).join(', ');
+};
+
+/**
+ * @param {UnityTag[]} tagsToFilter
+ * @param {UnityTag[]} filterBy
+ * @returns {UnityTag[]}
+ */
+const getUnityTagsFromCompMod = ({ tagsToFilter, filterBy }) => {
+	return tagsToFilter.filter(tag => {
+		if (!filterBy.length) {
+			return true;
+		}
+
+		const correspondingTag = filterBy.find(filterTag => filterTag.id === tag.id);
+
+		if (!correspondingTag) {
+			return true;
+		}
+
+		return correspondingTag.unityTagKey !== tag.unityTagKey || correspondingTag.unityTagValue !== tag.unityTagValue;
+	});
+};
+
+const getViewTagsStatement = ({ viewSchema, viewName }) => {
+    if (!viewSchema.unityViewTags.length) {
+        return '';
+    }
+
+    const tags = buildTagPairs(viewSchema.unityViewTags);
+
+    return `ALTER VIEW ${viewName} SET TAGS (${tags});`;
+};
+
 module.exports = {
     getCatalogTagsStatement,
     getSchemaTagsStatement,
     getEntityTagsStatement,
     getColumnTagsStatement,
-    getViewTagsStatement
+    getViewTagsStatement,
+    buildTagPairs,
+    getUnsetTagsNamesParamString,
+    getUnityTagsFromCompMod,
 };

@@ -2,9 +2,9 @@ const {generateFullEntityName, prepareName, wrapInSingleQuotes} = require("../..
 const {AlterScriptDto} = require("../../types/AlterScriptDto");
 
 /**
- * @return {(collection: Object) => Array<AlterScriptDto>}
+ * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
-const getUpdatedCommentOnColumnScriptDtos = (_, ddlProvider) => (collection) => {
+const getUpdatedCommentOnColumnScriptDtos = (_, ddlProvider) => ({ collection, dbVersion }) => {
     return _.toPairs(collection.properties)
         .filter(([name, jsonSchema]) => {
             const newComment = jsonSchema.description;
@@ -15,7 +15,7 @@ const getUpdatedCommentOnColumnScriptDtos = (_, ddlProvider) => (collection) => 
         .map(([name, jsonSchema]) => {
             const newComment = jsonSchema.description;
             const scriptGenerationConfig = {
-                fullTableName: generateFullEntityName(collection),
+                fullTableName: generateFullEntityName({ entity: collection, dbVersion }),
                 columnName: prepareName(name),
                 comment: wrapInSingleQuotes(newComment),
             }
@@ -26,9 +26,9 @@ const getUpdatedCommentOnColumnScriptDtos = (_, ddlProvider) => (collection) => 
 }
 
 /**
- * @return {(collection: Object) => Array<AlterScriptDto>}
+ * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
-const getDeletedCommentOnColumnScripts = (_, ddlProvider) => (collection) => {
+const getDeletedCommentOnColumnScripts = (_, ddlProvider) => ({ collection, dbVersion }) => {
     return _.toPairs(collection.properties)
         .filter(([name, jsonSchema]) => {
             const newComment = jsonSchema.description;
@@ -38,7 +38,7 @@ const getDeletedCommentOnColumnScripts = (_, ddlProvider) => (collection) => {
         })
         .map(([name, jsonSchema]) => {
             const scriptGenerationConfig = {
-                fullTableName: generateFullEntityName(collection),
+                fullTableName: generateFullEntityName({ entity: collection, dbVersion }),
                 columnName: prepareName(name),
             }
             return ddlProvider.dropCommentOnColumn(scriptGenerationConfig);
@@ -48,11 +48,11 @@ const getDeletedCommentOnColumnScripts = (_, ddlProvider) => (collection) => {
 }
 
 /**
- * @return {(collection: Object) => Array<AlterScriptDto>}
+ * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
-const getModifiedCommentOnColumnScriptDtos = (_, ddlProvider) => (collection) => {
-    const updatedCommentScripts = getUpdatedCommentOnColumnScriptDtos(_, ddlProvider)(collection);
-    const deletedCommentScripts = getDeletedCommentOnColumnScripts(_, ddlProvider)(collection);
+const getModifiedCommentOnColumnScriptDtos = (_, ddlProvider) => ({ collection, dbVersion }) => {
+    const updatedCommentScripts = getUpdatedCommentOnColumnScriptDtos(_, ddlProvider)({ collection, dbVersion });
+    const deletedCommentScripts = getDeletedCommentOnColumnScripts(_, ddlProvider)({ collection, dbVersion });
     return [...updatedCommentScripts, ...deletedCommentScripts];
 }
 
