@@ -73,7 +73,8 @@ const getDropAndRecreateCollectionScriptDtos = (app, ddlProvider) => (collection
         arePkFkConstraintsAvailable,
         areNotNullConstraintsAvailable,
         null,
-        dbVersion
+        dbVersion,
+        true
     );
     const deleteCollectionScript = ddlProvider.dropTable(fullCollectionName);
     return {
