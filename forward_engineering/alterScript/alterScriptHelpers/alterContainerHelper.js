@@ -83,11 +83,11 @@ const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVer
         const alterCommentsScriptDtos = getAlterCommentsScriptDtos(provider)(container);
         const alterDatabaseScript = getDatabaseAlterStatement([containerData], dbVersion);
         const alterDatabaseScriptDto = AlterScriptDto.getInstance([alterDatabaseScript], true, false)
-        const alterUnityCatalogTagsScript = getModifyUnityCatalogTagsScriptDtos(provider)(container, catalogName);
-				const alterUnitySchemaTagsScript = getModifyUnitySchemaTagsScriptDtos({ ddlProvider: provider })({
-					entityData: container,
-					name: fullDatabaseName,
-				});
+        const alterUnityCatalogTagsScript = getModifyUnityCatalogTagsScriptDtos({ ddlProvider: provider })({ entityData: container, name: catalogName });
+        const alterUnitySchemaTagsScript = getModifyUnitySchemaTagsScriptDtos({ ddlProvider: provider })({
+            entityData: container,
+            name: fullDatabaseName,
+        });
         
         if (!alterDatabaseScript?.length) {
             return [...alterCommentsScriptDtos, ...alterUnityCatalogTagsScript, ...alterUnitySchemaTagsScript];

@@ -85,7 +85,7 @@ const getColumnTagsStatement = (_, columns, fullTableName) => {
 };
 
 /**
- * @param {UnityTag[]} unsetTags
+ * @param {{unsetTags: UnityTag[]}} param
  * @returns {string}
  */
 const getUnsetTagsNamesParamString = ({ unsetTags }) => {
@@ -93,8 +93,7 @@ const getUnsetTagsNamesParamString = ({ unsetTags }) => {
 };
 
 /**
- * @param {UnityTag[]} tagsToFilter
- * @param {UnityTag[]} filterBy
+ * @param {{tagsToFilter: UnityTag[], filterBy: UnityTag[]}} param
  * @returns {UnityTag[]}
  */
 const getUnityTagsFromCompMod = ({ tagsToFilter, filterBy }) => {
