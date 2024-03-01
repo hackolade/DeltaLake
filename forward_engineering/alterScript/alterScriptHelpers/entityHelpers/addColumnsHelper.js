@@ -1,9 +1,11 @@
 const {getColumns, getColumnsStatement} = require("../../../helpers/columnHelper");
-const {getEntityProperties, generateFullEntityName, prepareName} = require("../../../utils/general");
+const {getEntityProperties, generateFullEntityName, prepareName, getDBVersionNumber} = require("../../../utils/general");
 const {getIndexes} = require("../../../helpers/indexHelper");
 const {AlterScriptDto} = require("../../types/AlterScriptDto");
 const {hydrateIndex} = require("./indexHelper");
 const {generateModifyCollectionScript} = require("./modifyCollectionScript");
+const { Runtime } = require("../../../enums/runtime");
+const { getColumnTagsStatement } = require("../../../helpers/unityTagsHelper");
 
 /**
  * @typedef {{
@@ -69,19 +71,22 @@ const getAddColumnsScriptsForModifyModifyCollectionScript = (_, provider) => (en
     const addIndexScript = getIndexes(_)(...hydratedAddIndex);
     const addColumnScript = provider.addTableColumns({name: fullCollectionName, columns: columnStatement});
 
+    const isUnityTagsSupported = getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION 
+    const columnsUnityTagsScript = isUnityTagsSupported ? getColumnTagsStatement(_, properties, fullCollectionName) : [];
+    const addColumnScriptWithUnityTags = isUnityTagsSupported ? [addColumnScript, ...columnsUnityTagsScript].join('\n') : addColumnScript;
+
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
-    const addColumnScriptDto = AlterScriptDto.getInstance([addColumnScript], true, false);
+    const addColumnScriptDto = AlterScriptDto.getInstance([addColumnScriptWithUnityTags], true, false);
     const notNullConstraintScriptDtos = getAddNotNullConstraintScriptDtos(_, provider)({ collection: entity, columns, dbVersion });
 
     return [
-        dropIndexScriptDto,
-        addColumnScriptDto,
-        ...notNullConstraintScriptDtos,
-        ...(modifyScript.script || []),
-        addIndexScriptDto
-    ]
-        .filter(Boolean);
+			dropIndexScriptDto,
+			addColumnScriptDto,
+			...notNullConstraintScriptDtos,
+			...(modifyScript.script || []),
+			addIndexScriptDto,
+		].filter(Boolean);
 }
 
 const getAddColumnsScriptsForNewModifyCollectionScript = (_, provider) => (entity, definitions, modifyScript, dbVersion) => {
@@ -89,7 +94,6 @@ const getAddColumnsScriptsForNewModifyCollectionScript = (_, provider) => (entit
     const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)({ entity, properties, definitions, dbVersion });
     const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(_)(...hydratedAddIndex);
-
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
 
