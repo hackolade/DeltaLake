@@ -79,11 +79,17 @@ const getAlterContainersScriptDtos = ({ schema, isUnityCatalogSupports, provider
 };
 
 /**
- * @param {{alterScriptDtos: Array<AlterScriptDto>, existingAlterStatements: Set<string>}} param
- * @returns {{alterScriptDtos: Array<AlterScriptDto>, existingAlterStatements: Set<string>}}
+ * @typedef FilterOutExistingStatementsParams
+ * @type {object}
+ * @property {Array<AlterScriptDto>} alterScriptDtos
+ * @property {Set<string>} existingAlterStatements
+ */
+/**
+ * @param {FilterOutExistingStatementsParams} param
+ * @returns {FilterOutExistingStatementsParams}
  */
 const filterOutExistingStatements = ({ alterScriptDtos, existingAlterStatements }) => {
-	const newAlterScriptDtos = alterScriptDtos
+	const filteredAlterScriptDtos = alterScriptDtos
 		.filter(Boolean)
 		.flatMap(alterScriptDto => {
 			return alterScriptDto.scripts?.map(scriptDto => {
@@ -94,12 +100,12 @@ const filterOutExistingStatements = ({ alterScriptDtos, existingAlterStatements 
 			});
 		})
 		.filter(Boolean);
-	const newExistingAlterScriptStatements = new Set([
+	const filteredExistingAlterScriptStatements = new Set([
 		...Array.from(existingAlterStatements),
 		...alterScriptDtos.flatMap(dto => dto?.scripts?.map(scriptDto => scriptDto?.script)).filter(Boolean),
 	]);
 
-	return { alterScriptDtos: newAlterScriptDtos, existingAlterStatements: newExistingAlterScriptStatements };
+	return { alterScriptDtos: filteredAlterScriptDtos, existingAlterStatements: filteredExistingAlterScriptStatements };
 };
 
 /**
