@@ -42,7 +42,7 @@ const getEntityLevelAlterScriptDtos = (data, app) => ({
  * */
 const buildEntityLevelAlterScript = (data, app) => (entityLevelAlterScriptDto) => {
     const alterScriptDtos = getEntityLevelAlterScriptDtos(data, app)(entityLevelAlterScriptDto);
-    return joinAlterScriptDtosIntoAlterScript(alterScriptDtos, data);
+return joinAlterScriptDtosIntoAlterScript(alterScriptDtos, data);
 }
 
 /**
