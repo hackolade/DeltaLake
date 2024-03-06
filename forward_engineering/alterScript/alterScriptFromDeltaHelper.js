@@ -90,7 +90,7 @@ const getAlterContainersScriptDtos = ({ schema, isUnityCatalogSupports, provider
  */
 const filterOutExistingStatements = ({ alterScriptDtos, existingAlterStatements }) => {
 	const filteredAlterScriptDtos = alterScriptDtos
-		.filter(dto => dto)
+		.filter(Boolean)
 		.flatMap(alterScriptDto =>
 			alterScriptDto?.scripts
 				.filter(scriptDto => !existingAlterStatements.has(scriptDto?.script))
