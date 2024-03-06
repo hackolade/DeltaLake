@@ -84,16 +84,6 @@ const getColumnTagsStatement = (_, columns, fullTableName) => {
         .filter(Boolean);
 };
 
-const getViewTagsStatement = (viewSchema, viewName) => {
-    if (!viewSchema.unityViewTags.length) {
-        return '';
-    }
-
-    const tags = buildTagPairs(viewSchema.unityViewTags);
-
-    return `ALTER VIEW ${viewName} SET TAGS (${tags});`;
-};
-
 /**
  * @param {{unsetTags: UnityTag[]}} param
  * @returns {string}
