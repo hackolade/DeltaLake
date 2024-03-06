@@ -90,19 +90,19 @@ const getAlterContainersScriptDtos = ({ schema, isUnityCatalogSupports, provider
  */
 const filterOutExistingStatements = ({ alterScriptDtos, existingAlterStatements }) => {
 	const filteredAlterScriptDtos = alterScriptDtos
-		.filter(Boolean)
-		.flatMap(alterScriptDto => {
-			return alterScriptDto.scripts?.map(scriptDto => {
-				if (existingAlterStatements.has(scriptDto?.script)) {
-					return undefined;
-				}
-				return AlterScriptDto.getInstance([scriptDto.script], alterScriptDto.isActivated, scriptDto.isDropScript);
-			});
-		})
+		.filter(dto => dto)
+		.flatMap(alterScriptDto =>
+			alterScriptDto?.scripts
+				.filter(scriptDto => !existingAlterStatements.has(scriptDto?.script))
+				.map(scriptDto =>
+					AlterScriptDto.getInstance([scriptDto.script], alterScriptDto.isActivated, scriptDto.isDropScript),
+				),
+		)
 		.filter(Boolean);
+
 	const filteredExistingAlterScriptStatements = new Set([
 		...Array.from(existingAlterStatements),
-		...alterScriptDtos.flatMap(dto => dto?.scripts?.map(scriptDto => scriptDto?.script)).filter(Boolean),
+		...alterScriptDtos.flatMap(dto => dto?.scripts.map(scriptDto => scriptDto?.script)).filter(Boolean),
 	]);
 
 	return { alterScriptDtos: filteredAlterScriptDtos, existingAlterStatements: filteredExistingAlterScriptStatements };
@@ -187,23 +187,21 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
     );
     const {
         alterScriptDtos: modifiedColumnsScriptDtosWithNoDuplicates,
-        existingAlterStatements: _existingAlterStatementsWithModifiedColumns,
     } = filterOutExistingStatements({
         alterScriptDtos: modifiedColumnsScriptDtos,
         existingAlterStatements: existingAlterStatementsWithDeletedColumns,
     });
 
-    return [
-			...deletedCollectionsScriptDtos,
-			...addedCollectionsScriptDtos,
-			...modifiedCollectionsScriptDtos,
-			...modifiedCollectionCommentsScriptDtos,
-			...modifiedCollectionPrimaryKeysScriptDtos,
-            ...deletedColumnsScriptDtosWithNoDuplicates,
-            ...addedColumnsScriptDtosWithNoDuplicates,
-            ...modifiedColumnsScriptDtosWithNoDuplicates
-		]
-			.filter(Boolean);
+	return [
+		...deletedCollectionsScriptDtos,
+		...addedCollectionsScriptDtos,
+		...modifiedCollectionsScriptDtos,
+		...modifiedCollectionCommentsScriptDtos,
+		...modifiedCollectionPrimaryKeysScriptDtos,
+		...deletedColumnsScriptDtosWithNoDuplicates,
+		...addedColumnsScriptDtosWithNoDuplicates,
+		...modifiedColumnsScriptDtosWithNoDuplicates,
+	].filter(Boolean);
 };
 
 /**
