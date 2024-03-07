@@ -86,7 +86,7 @@ module.exports = {
 		const comment = schema.description;
 		let tablePropertyStatements = '';
 		const tableProperties = schema.tableProperties && Array.isArray(schema.tableProperties) ? filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime']) : [];
-		const viewUnityTagsStatements = schema.unityViewTags && getViewTagsStatement(schema, name);
+		const viewUnityTagsStatements = schema.unityViewTags && getViewTagsStatement({schema, name});
 
 		if (tableProperties.length) {
 			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`;
