@@ -112,8 +112,8 @@ const getUnityTagsFromCompMod = ({ tagsToFilter, filterBy }) => {
 	});
 };
 
-const getViewTagsStatement = ({ viewSchema, viewName }) => {
-    if (!viewSchema.unityViewTags.length) {
+const getViewTagsStatement = (viewSchema, viewName) => {
+    if (!viewSchema.unityViewTags?.length) {
         return '';
     }
 
