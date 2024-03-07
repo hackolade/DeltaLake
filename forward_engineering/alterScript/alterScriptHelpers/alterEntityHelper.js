@@ -79,7 +79,8 @@ const getAddCollectionsScripts = (app, definitions, dbVersion) => entity => {
         arePkFkConstraintsAvailable,
         areNotNullConstraintsAvailable,
         null,
-        dbVersion
+        dbVersion,
+        true
     );
     const indexScript = getIndexes(_)(...hydrateAddIndexes(_)(entity, indexes, properties, definitions));
 
@@ -191,7 +192,8 @@ const getDeleteColumnScripsForOlderRuntime = (app, definitions, provider, dbVers
         arePkFkConstraintsAvailable,
         areNotNullConstraintsAvailable,
         null,
-        dbVersion
+        dbVersion,
+        true
     );
 
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
@@ -309,7 +311,8 @@ const getModifyColumnsScriptsForOlderRuntime = (
             arePkFkConstraintsAvailable,
             areNotNullConstraintsAvailable,
             null,
-            dbVersion
+            dbVersion,
+            true
         );
         tableModificationScriptDtos = [
             AlterScriptDto.getInstance([deleteCollectionScript], true, true),
