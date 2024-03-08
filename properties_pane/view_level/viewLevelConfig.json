@@ -204,20 +204,7 @@ making sure that you maintain a proper JSON format.
 					}
 				]
 			},
-			{
-				"propertyName": "Remarks",
-				"propertyKeyword": "comments",
-				"shouldValidate": false,
-				"propertyTooltip": "remarks",
-				"addTimestampButton": true,
-				"propertyType": "details",
-				"template": "textarea"
-			},			
-			{
-				"propertyKeyword": "pipeline",
-				"hidden": true
-			},
-			{
+{
 				"propertyName": "View Tags",
 				"propertyKeyword": "unityViewTags",
 				"propertyTooltip": "Contains all the tags that have been applied to the view within the metastore. Available only in Unity Catalog",
@@ -282,6 +269,19 @@ making sure that you maintain a proper JSON format.
 						}
 					]
 				}
+			},
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			},			
+			{
+				"propertyKeyword": "pipeline",
+				"hidden": true
 			}
 		]
 	}
