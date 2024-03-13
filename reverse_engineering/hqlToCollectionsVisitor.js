@@ -47,6 +47,7 @@ const ALLOWED_COMMANDS = [
     HiveParser.RULE_dropDatabaseStatement,
     HiveParser.RULE_createViewStatement,
     HiveParser.RULE_createMaterializedViewStatement,
+    HiveParser.RULE_unityTags,
     HiveParser.RULE_alterStatement,
     HiveParser.RULE_dropMaterializedViewStatement,
     HiveParser.RULE_dropViewStatement,
@@ -1543,6 +1544,29 @@ class Visitor extends HiveParserVisitor {
             bucketName: database,
             collectionName: table,
         };
+    }
+
+    visitTagsPair(ctx) {
+        const unityTagKey = getTextFromStringLiteral(ctx);
+        const unityTagValueCtx = ctx.tagValue();
+        const unityTagValue = getTextFromStringLiteral(unityTagValueCtx);
+
+        return {
+            unityTagKey,
+            unityTagValue
+        }
+    }
+
+    visitUnityTags(ctx) {
+        const { database, table } = this.visit(ctx.tableName());
+        const tagsPairs = this.visit(ctx.tagsPair());
+
+        return tagsPairs.map(pair => ({
+            ...pair,
+            ...(ctx.KW_CATALOG() && { catalogName: table }),
+            ...(ctx.KW_SCHEMA() && { schemaName: table }),
+            ...(ctx.KW_TABLE() || ctx.KW_VIEW() && { schemaName: database, tableName: table })
+        }));
     }
 
     getText(expression) {

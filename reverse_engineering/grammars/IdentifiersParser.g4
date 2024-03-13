@@ -518,7 +518,7 @@ descFuncNames
 
 identifier
     : Identifier
-    | '{''{' (Identifier) '}''}'
+    | LCURLY LCURLY (Identifier) RCURLY RCURLY
     | nonReserved
     | databricksAllowedReservedNames
     ;
