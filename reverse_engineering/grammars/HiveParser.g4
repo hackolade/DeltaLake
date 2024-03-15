@@ -141,8 +141,8 @@ replStatusStatement
       ;
 
 ddlStatement
-    : createDatabaseStatement
-    | switchCatalogStatement
+    : switchCatalogStatement
+    | createDatabaseStatement
     | switchDatabaseStatement
     | dropDatabaseStatement
     | createTableStatement

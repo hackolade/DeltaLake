@@ -1143,12 +1143,23 @@ class Visitor extends HiveParserVisitor {
         return Boolean(ctx[funcName]) && ctx[funcName]() ? this.visit(ctx[funcName]()) : defaultValue;
     }
 
+    visitSwitchCatalogStatement(ctx) {
+        const a = ctx.identifier();
+        if (!ctx.KW_CATALOG()) {
+            return '';
+        }
+
+        return this.visit(ctx.identifier());
+    }
+
     visitCreateDatabaseStatement(ctx) {
         const name = this.visit(ctx.identifier());
         const description = this.visitWhenExists(ctx, 'databaseComment');
         const locationPropertyName = Boolean(ctx?.dbLocation()?.KW_MANAGED()) ? 'managedLocation' : 'location';
         const locationValue = removeSingleDoubleQuotes(ctx?.dbLocation()?.StringLiteral()?.getText() || '');
         const dbProperties = removeParentheses(ctx?.dbProperties()?.getText() || '');
+        const a = ctx.parentCtx.switchCatalogStatement();
+        const catalogName = this.visit(ctx.parentCtx.switchCatalogStatement());
 
         return {
             type: CREATE_BUCKET_COMMAND,

@@ -16,6 +16,7 @@ const RENAME_COLLECTION_COMMAND = 'renameCollection';
 const CREATE_BUCKET_COMMAND = 'createBucket';
 const REMOVE_BUCKET_COMMAND = 'removeBucket';
 const USE_BUCKET_COMMAND = 'useBucket';
+// const USE_CATALOG_COMMAND = 'useCatalog';
 const ADD_FIELDS_TO_COLLECTION_COMMAND = 'addFieldsToCollection';
 const ADD_COLLECTION_LEVEL_INDEX_COMMAND = 'addCollectionLevelIndex';
 const ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND = 'addCollectionLevelBloomfilterIndex';
@@ -196,6 +197,10 @@ const useBucket = (entitiesData, bucket, statementData) => {
         currentBucket: statementData.bucketName,
     };
 };
+
+// const useCatalog = (entitiesData, bucket, statementData) => {
+//     debugger;
+// }
 
 const addFieldsToCollection = (entitiesData, bucket, statementData) => {
     const { entities } = entitiesData;
@@ -854,6 +859,7 @@ const COMMANDS_ACTION_MAP = {
     [CREATE_BUCKET_COMMAND]: createBucket,
     [REMOVE_BUCKET_COMMAND]: removeBucket,
     [USE_BUCKET_COMMAND]: useBucket,
+    [USE_CATALOG_COMMAND]: useCatalog,
     [ADD_FIELDS_TO_COLLECTION_COMMAND]: addFieldsToCollection,
     [ADD_COLLECTION_LEVEL_INDEX_COMMAND]: addIndexToCollection,
     [ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND]: addBloomfilterIndexToCollection,
