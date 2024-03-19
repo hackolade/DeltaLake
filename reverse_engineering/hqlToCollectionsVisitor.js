@@ -6,6 +6,7 @@ const {
     CREATE_BUCKET_COMMAND,
     REMOVE_BUCKET_COMMAND,
     USE_BUCKET_COMMAND,
+    USE_CATALOG_COMMAND,
     ADD_FIELDS_TO_COLLECTION_COMMAND,
     UPDATE_FIELD_COMMAND,
     CREATE_VIEW_COMMAND,
@@ -43,6 +44,7 @@ const ALLOWED_COMMANDS = [
     HiveParser.RULE_createTableStatement,
     HiveParser.RULE_dropTableStatement,
     HiveParser.RULE_createDatabaseStatement,
+    HiveParser.RULE_switchCatalogStatement,
     HiveParser.RULE_switchDatabaseStatement,
     HiveParser.RULE_dropDatabaseStatement,
     HiveParser.RULE_createViewStatement,
@@ -1144,12 +1146,12 @@ class Visitor extends HiveParserVisitor {
     }
 
     visitSwitchCatalogStatement(ctx) {
-        const a = ctx.identifier();
-        if (!ctx.KW_CATALOG()) {
-            return '';
+        if (ctx.KW_CATALOG()) {
+            return {
+                type: USE_CATALOG_COMMAND,
+                catalogName: this.visit(ctx.identifier())
+            };
         }
-
-        return this.visit(ctx.identifier());
     }
 
     visitCreateDatabaseStatement(ctx) {
@@ -1158,8 +1160,6 @@ class Visitor extends HiveParserVisitor {
         const locationPropertyName = Boolean(ctx?.dbLocation()?.KW_MANAGED()) ? 'managedLocation' : 'location';
         const locationValue = removeSingleDoubleQuotes(ctx?.dbLocation()?.StringLiteral()?.getText() || '');
         const dbProperties = removeParentheses(ctx?.dbProperties()?.getText() || '');
-        const a = ctx.parentCtx.switchCatalogStatement();
-        const catalogName = this.visit(ctx.parentCtx.switchCatalogStatement());
 
         return {
             type: CREATE_BUCKET_COMMAND,
@@ -1560,7 +1560,7 @@ class Visitor extends HiveParserVisitor {
     visitTagsPair(ctx) {
         const unityTagKey = getTextFromStringLiteral(ctx);
         const unityTagValueCtx = ctx.tagValue();
-        const unityTagValue = getTextFromStringLiteral(unityTagValueCtx);
+        const unityTagValue =unityTagValueCtx ? getTextFromStringLiteral(unityTagValueCtx) : '';
 
         return {
             unityTagKey,
@@ -1570,13 +1570,21 @@ class Visitor extends HiveParserVisitor {
 
     visitUnityTags(ctx) {
         const { database, table } = this.visit(ctx.tableName());
+        const columnName = this.visitWhenExists(ctx, 'identifier', '');
         const tagsPairs = this.visit(ctx.tagsPair());
+        const isCatalogTags = !!ctx.KW_CATALOG();
+        const isSchemaTags = !!ctx.KW_SCHEMA();
+        const isViewTags = !!ctx.KW_VIEW();
+        const isTableTags = !!ctx.KW_TABLE() && !ctx.KW_COLUMN();
+        const isColumnTags = !!ctx.KW_TABLE() && !!ctx.KW_COLUMN();
 
         return tagsPairs.map(pair => ({
             ...pair,
-            ...(ctx.KW_CATALOG() && { catalogName: table }),
-            ...(ctx.KW_SCHEMA() && { schemaName: table }),
-            ...(ctx.KW_TABLE() || ctx.KW_VIEW() && { schemaName: database, tableName: table })
+            ...(isCatalogTags && { catalogName: table }),
+            ...(isSchemaTags && { schemaName: table }),
+            ...(isViewTags && { schemaName: database, tableName: table }),
+            ...(isTableTags && { schemaName: database, tableName: table }),
+            ...(isColumnTags && {schemaName: database, tableName: table,  name: columnName })
         }));
     }
 

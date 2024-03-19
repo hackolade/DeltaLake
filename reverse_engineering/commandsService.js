@@ -16,7 +16,7 @@ const RENAME_COLLECTION_COMMAND = 'renameCollection';
 const CREATE_BUCKET_COMMAND = 'createBucket';
 const REMOVE_BUCKET_COMMAND = 'removeBucket';
 const USE_BUCKET_COMMAND = 'useBucket';
-// const USE_CATALOG_COMMAND = 'useCatalog';
+const USE_CATALOG_COMMAND = 'useCatalog';
 const ADD_FIELDS_TO_COLLECTION_COMMAND = 'addFieldsToCollection';
 const ADD_COLLECTION_LEVEL_INDEX_COMMAND = 'addCollectionLevelIndex';
 const ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND = 'addCollectionLevelBloomfilterIndex';
@@ -44,7 +44,7 @@ const DEFAULT_BUCKET = 'New schema';
 const convertCommandsToEntities = (commands, originalScript) => {
     return commands.reduce(
         (entitiesData, statementData) => {
-            const command = statementData && statementData.type;
+            const command = statementData?.type;
 
             if (!command) {
                 return entitiesData;
@@ -62,6 +62,7 @@ const convertCommandsToEntities = (commands, originalScript) => {
             entities: [],
             views: [],
             currentBucket: DEFAULT_BUCKET,
+            currentCatalog: '',
             buckets: {},
             relationships: [],
             modelProperties: {},
@@ -171,12 +172,13 @@ const removeCollection = (entitiesData, bucket, statementData) => {
 };
 
 const createBucket = (entitiesData, bucket, statementData) => {
-    const { buckets } = entitiesData;
+    const { buckets, currentCatalog } = entitiesData;
     const bucketName = statementData.name;
+    const bucketData = statementData.data || {};
     return {
         ...entitiesData,
         currentBucket: bucketName,
-        buckets: { ...buckets, [bucketName]: statementData.data || {} },
+        buckets: { ...buckets, [bucketName]: { ...bucketData, catalogName: currentCatalog } },
     };
 };
 
@@ -198,9 +200,12 @@ const useBucket = (entitiesData, bucket, statementData) => {
     };
 };
 
-// const useCatalog = (entitiesData, bucket, statementData) => {
-//     debugger;
-// }
+const useCatalog = (entitiesData, bucket, statementData) => {
+    return {
+        ...entitiesData,
+        currentCatalog: statementData.catalogName,
+    };
+}
 
 const addFieldsToCollection = (entitiesData, bucket, statementData) => {
     const { entities } = entitiesData;
@@ -891,6 +896,7 @@ module.exports = {
     CREATE_BUCKET_COMMAND,
     REMOVE_BUCKET_COMMAND,
     USE_BUCKET_COMMAND,
+    USE_CATALOG_COMMAND,
     ADD_FIELDS_TO_COLLECTION_COMMAND,
     UPDATE_FIELD_COMMAND,
     CREATE_VIEW_COMMAND,
