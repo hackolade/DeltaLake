@@ -38,6 +38,8 @@ const UPDATE_ITEM_IN_RESOURCE_PLAN = 'updateItemInResourcePlan';
 const DROP_RESOURCE_PLAN_ITEM = 'dropResourcePlanItem';
 const DROP_MAPPING = 'removeMapping';
 const UPDATE_ENTITY_LEVEL_DATA_COMMAND = 'updateCollectionProperties';
+const UPDATE_BUCKET_LEVEL_DATA_COMMAND = 'updateBucketProperties';
+const UPDATE_CATALOG_LEVEL_DATA_COMMAND = 'updateCatalogProperties';
 
 const DEFAULT_BUCKET = 'New schema';
 
@@ -837,6 +839,45 @@ const updateEntityLevelData = (entitiesData, bucket, statementData) => {
     };
 }
 
+const updateBucketLevelData = (entitiesData, bucket, statementData) => {
+    const { buckets } = entitiesData;
+    const bucketData = buckets[bucket];
+
+    if (!bucketData) {
+        return entitiesData;
+    }
+
+    return {
+        ...entitiesData,
+        buckets: {
+            ...buckets,
+            [bucket]: merge(bucketData, statementData.data),
+        }
+    };
+}
+
+const updateCatalogLevelData = (entitiesData, bucket, statementData) => {
+    const { buckets, currentCatalog } = entitiesData;
+    const updatedBuckets = Object.entries(buckets).reduce((result, [bucketName, bucketData]) => {
+        if (bucketData.catalogName !== currentCatalog) {
+            return result;
+        }
+
+        return {
+            ...result,
+            [bucketName]: {
+                ...bucketData,
+                ...statementData.data,
+            }
+        };
+    }, buckets);
+
+    return {
+        ...entitiesData,
+        buckets: updatedBuckets
+    };
+};
+
 const getResourcePlanIndex = (resourcePlans, resourceName) => {
     return dependencies.lodash.findIndex(resourcePlans, (plan) => plan.name === resourceName);
 };
@@ -887,6 +928,8 @@ const COMMANDS_ACTION_MAP = {
     [DROP_MAPPING]: removeMapping,
     [RENAME_COLLECTION_COMMAND]: renameCollection,
     [UPDATE_ENTITY_LEVEL_DATA_COMMAND]: updateEntityLevelData,
+    [UPDATE_BUCKET_LEVEL_DATA_COMMAND]: updateBucketLevelData,
+    [UPDATE_CATALOG_LEVEL_DATA_COMMAND]: updateCatalogLevelData,
 };
 
 module.exports = {
@@ -918,4 +961,6 @@ module.exports = {
     DROP_MAPPING,
     RENAME_COLLECTION_COMMAND,
     UPDATE_ENTITY_LEVEL_DATA_COMMAND,
+    UPDATE_BUCKET_LEVEL_DATA_COMMAND,
+    UPDATE_CATALOG_LEVEL_DATA_COMMAND,
 };

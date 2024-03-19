@@ -29,6 +29,8 @@ const {
     DROP_RESOURCE_PLAN_ITEM,
     DROP_MAPPING,
     RENAME_COLLECTION_COMMAND,
+    UPDATE_BUCKET_LEVEL_DATA_COMMAND,
+    UPDATE_CATALOG_LEVEL_DATA_COMMAND
 } = require('./commandsService');
 
 const schemaHelper = require('./thriftService/schemaHelper');
@@ -1570,7 +1572,6 @@ class Visitor extends HiveParserVisitor {
 
     visitUnityTags(ctx) {
         const { database, table } = this.visit(ctx.tableName());
-        const columnName = this.visitWhenExists(ctx, 'identifier', '');
         const tagsPairs = this.visit(ctx.tagsPair());
         const isCatalogTags = !!ctx.KW_CATALOG();
         const isSchemaTags = !!ctx.KW_SCHEMA();
@@ -1578,14 +1579,61 @@ class Visitor extends HiveParserVisitor {
         const isTableTags = !!ctx.KW_TABLE() && !ctx.KW_COLUMN();
         const isColumnTags = !!ctx.KW_TABLE() && !!ctx.KW_COLUMN();
 
-        return tagsPairs.map(pair => ({
-            ...pair,
-            ...(isCatalogTags && { catalogName: table }),
-            ...(isSchemaTags && { schemaName: table }),
-            ...(isViewTags && { schemaName: database, tableName: table }),
-            ...(isTableTags && { schemaName: database, tableName: table }),
-            ...(isColumnTags && {schemaName: database, tableName: table,  name: columnName })
-        }));
+        if (isCatalogTags) {
+            return {
+                type: UPDATE_CATALOG_LEVEL_DATA_COMMAND,
+                data: {
+                    unityCatalogTags: tagsPairs,
+                }
+            };
+        }
+
+        if (isSchemaTags) {
+            return {
+                type: UPDATE_BUCKET_LEVEL_DATA_COMMAND,
+                bucketName: table,
+                data: {
+                    unitySchemaTags: tagsPairs,
+                }
+            };
+        }
+
+        if (isTableTags) {
+           return {
+            type: UPDATE_ENTITY_LEVEL_DATA_COMMAND,
+            bucketName: database,
+            collectionName: table,
+            data: {
+                unityEntityTags: tagsPairs,
+            }
+        }
+        }
+
+        if (isViewTags) {
+            return {
+                type: UPDATE_VIEW_LEVEL_DATA_COMMAND,
+                bucketName: database,
+                viewName: table,
+                data: {
+                    unityViewTags: tagsPairs,
+                }
+            }
+        }
+
+        if (isColumnTags) {
+            const columnName = this.visit(ctx.identifier());
+
+            return {
+                type: UPDATE_FIELD_COMMAND,
+                bucketName: database,
+                collectionName: table,
+                name: columnName,
+                nameTo: columnName,
+                data: {
+                    unityColumnTags: tagsPairs,
+                }
+            }
+        }
     }
 
     getText(expression) {
