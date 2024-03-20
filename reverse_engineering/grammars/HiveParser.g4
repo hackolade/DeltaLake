@@ -141,12 +141,14 @@ replStatusStatement
       ;
 
 ddlStatement
-    : createDatabaseStatement
+    : switchCatalogStatement
+    | createDatabaseStatement
     | switchDatabaseStatement
     | dropDatabaseStatement
     | createTableStatement
     | dropTableStatement
     | truncateTableStatement
+    | unityTags
     | alterStatement
     | descStatement
     | showStatement
@@ -239,7 +241,9 @@ dbPropertiesList
       keyValueProperty (COMMA keyValueProperty)*
     ;
 
-
+switchCatalogStatement
+    : KW_USE KW_CATALOG identifier
+    ;
 switchDatabaseStatement
     : KW_USE identifier
     ;
@@ -284,6 +288,18 @@ truncateTableStatement
 
 dropTableStatement
     : KW_DROP KW_TABLE ifExists? tableName KW_PURGE? replicationClause?
+    ;
+
+tagValue
+    : EQUAL StringLiteral
+    ;
+
+tagsPair
+    : StringLiteral tagValue?
+    ;
+
+unityTags
+    : KW_ALTER (KW_CATALOG | KW_SCHEMA | KW_TABLE | KW_VIEW) tableName KW_AS? (KW_ALTER KW_COLUMN identifier)?  KW_SET KW_TAGS LPAREN tagsPair (COMMA tagsPair)* RPAREN
     ;
 
 alterStatement

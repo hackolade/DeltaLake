@@ -155,6 +155,11 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
     return this.visitChildren(ctx);
   }
 
+  // Visit a parse tree produced by HiveParser#switchCatalogStatement.
+  visitSwitchCatalogStatement(ctx) {
+    return this.visitChildren(ctx);
+  }
+
   // Visit a parse tree produced by HiveParser#switchDatabaseStatement.
   visitSwitchDatabaseStatement(ctx) {
     return this.visitChildren(ctx);
@@ -182,6 +187,21 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 
   // Visit a parse tree produced by HiveParser#dropTableStatement.
   visitDropTableStatement(ctx) {
+    return this.visitChildren(ctx);
+  }
+
+  // Visit a parse tree produced by HiveParser#tagValue.
+  visitTagValue(ctx) {
+    return this.visitChildren(ctx);
+  }
+
+  // Visit a parse tree produced by HiveParser#tagsPair.
+  visitTagsPair(ctx) {
+    return this.visitChildren(ctx);
+  }
+
+  // Visit a parse tree produced by HiveParser#unityTags.
+  visitUnityTags(ctx) {
     return this.visitChildren(ctx);
   }
 
