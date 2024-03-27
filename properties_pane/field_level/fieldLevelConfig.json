@@ -168,7 +168,21 @@ making sure that you maintain a proper JSON format.
 			"format",
 			"pattern",
 			"minLength",
-			"maxLength",
+			{
+				"propertyName": "Max length",
+				"propertyKeyword": "maxLength",
+				"propertyType": "numeric",
+				"shouldValidate": true,
+				"allowNegative": false,
+				"valueType": "number",
+				"typeDecorator": {
+					"useAngleBrackets": false,
+					"dependency": {
+						"key": "mode",
+						"value": "varchar"
+					}
+				}
+			},
 			"enum",
 			{
 				"propertyName": "Not null",
