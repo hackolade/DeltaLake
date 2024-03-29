@@ -178,9 +178,19 @@ making sure that you maintain a proper JSON format.
 				"typeDecorator": {
 					"useAngleBrackets": false,
 					"dependency": {
-						"key": "mode",
-						"value": "varchar"
+						"type": "or",
+						"values": [
+							{
+								"key": "mode",
+								"value": "char"
+							},
+							{
+								"key": "mode",
+								"value": "varchar"
+							}
+						]
 					}
+					
 				}
 			},
 			"enum",
