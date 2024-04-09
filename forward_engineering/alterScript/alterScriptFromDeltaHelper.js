@@ -157,9 +157,9 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
             .flatMap(item => getModifyPkConstraintsScripts(_, provider)({ collection: item, dbVersion }));
     }
 
-    const addedColumnsData = getItems(schema, 'entities', 'added').filter(item => !item?.compMod?.created)
+    const addedColumnsItems = getItems(schema, 'entities', 'added').filter(item => !item?.compMod?.created)
     const addedColumnsScriptDtos = getColumnScripts(
-			addedColumnsData,
+			addedColumnsItems,
 			getAddColumnsScripts(app, definitions, provider, dbVersion),
 		);
     const {
@@ -170,9 +170,9 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
         existingAlterStatements,
     });
 
-    const deletedColumnsData = getItems(schema, 'entities', 'deleted').filter(item => !item?.compMod?.deleted)
+    const deletedColumnsItems = getItems(schema, 'entities', 'deleted').filter(item => !item?.compMod?.deleted)
     const deletedColumnsScriptDtos = getColumnScripts(
-        deletedColumnsData,
+        deletedColumnsItems,
         getDeletedColumnsScriptsMethod(app, definitions, provider),
     );
     const {
