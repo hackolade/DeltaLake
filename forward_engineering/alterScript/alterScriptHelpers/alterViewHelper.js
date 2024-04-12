@@ -10,8 +10,9 @@ const {
     getFullEntityName
 } = require('../../utils/general');
 const {AlterScriptDto} = require("../types/AlterScriptDto");
+const { getModifyUnityViewTagsScriptDtos } = require('./entityHelpers/alterUnityTagsHelper');
 
-const viewProperties = ['code', 'name', 'tableProperties', 'selectStatement'];
+const viewProperties = ['code', 'name', 'tableProperties', 'selectStatement', 'unityViewTags'];
 const otherViewProperties = ['viewTemporary', 'viewOrReplace', 'isGlobal', 'description'];
 
 const compareProperties = (_) => (view, properties) => {
@@ -93,8 +94,8 @@ const getAddViewsScripts = (_) => view => {
 /**
  * @return {(view: Object) => AlterScriptDto}
  * */
-const getDeleteViewsScripts = provider => view => {
-    const viewName = generateFullEntityName(view);
+const getDeleteViewsScripts = (provider, dbVersion) => view => {
+    const viewName = generateFullEntityName({ entity: view, dbVersion });
     const script = provider.dropView(viewName);
     return {
         isActivated: true,
@@ -108,36 +109,24 @@ const getDeleteViewsScripts = provider => view => {
 /**
  * @return {(view: Object) => Array<AlterScriptDto>}
  * */
-const getModifyViewsScripts = (provider, _) => view => {
+const getModifyViewsScripts = (provider, _, dbVersion) => view => {
     const comparedProperties = compareProperties(_)(view, viewProperties);
+    const viewName = generateFullEntityName({ entity: view, dbVersion });
     if (comparedProperties) {
         const hydratedAlterView = hydrateAlterView(_)(view);
         const alterViewScript = prepareScript(...provider.alterView(hydratedAlterView));
-        return alterViewScript.map(script => ({
-            isActivated: true,
-            scripts: [{
-                isDropScript: false,
-                script
-            }]
-        }));
+        const alterUnityViewTagsScriptDtos = getModifyUnityViewTagsScriptDtos({ ddlProvider: provider })( { viewData: view, viewName })
+        const alterViewScriptDtos = alterViewScript.map(script => AlterScriptDto.getInstance([script], true, false));
+
+        return [...alterViewScriptDtos, ...alterUnityViewTagsScriptDtos];
     }
-    const viewName = generateFullEntityName(view);
     const dropViewScript = provider.dropView(viewName);
     const hydratedView = hydrateView(_)(view);
     const addViewScript = getViewScript({_, ...hydratedView});
-    return [{
-        isActivated: true,
-        scripts: [{
-            isDropScript: true,
-            script: dropViewScript
-        }]
-    }, [{
-        isActivated: true,
-        scripts: [{
-            isDropScript: false,
-            script: addViewScript
-        }]
-    }]];
+    const dropViewScriptDto = AlterScriptDto.getInstance([dropViewScript], true, true)
+    const addViewScriptDto = AlterScriptDto.getInstance([addViewScript], true, false)
+
+    return [dropViewScriptDto, addViewScriptDto].filter(Boolean);
 };
 
 module.exports = {

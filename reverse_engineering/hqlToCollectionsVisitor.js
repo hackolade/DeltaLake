@@ -6,6 +6,7 @@ const {
     CREATE_BUCKET_COMMAND,
     REMOVE_BUCKET_COMMAND,
     USE_BUCKET_COMMAND,
+    USE_CATALOG_COMMAND,
     ADD_FIELDS_TO_COLLECTION_COMMAND,
     UPDATE_FIELD_COMMAND,
     CREATE_VIEW_COMMAND,
@@ -28,6 +29,8 @@ const {
     DROP_RESOURCE_PLAN_ITEM,
     DROP_MAPPING,
     RENAME_COLLECTION_COMMAND,
+    UPDATE_BUCKET_LEVEL_DATA_COMMAND,
+    UPDATE_CATALOG_LEVEL_DATA_COMMAND
 } = require('./commandsService');
 
 const schemaHelper = require('./thriftService/schemaHelper');
@@ -43,10 +46,12 @@ const ALLOWED_COMMANDS = [
     HiveParser.RULE_createTableStatement,
     HiveParser.RULE_dropTableStatement,
     HiveParser.RULE_createDatabaseStatement,
+    HiveParser.RULE_switchCatalogStatement,
     HiveParser.RULE_switchDatabaseStatement,
     HiveParser.RULE_dropDatabaseStatement,
     HiveParser.RULE_createViewStatement,
     HiveParser.RULE_createMaterializedViewStatement,
+    HiveParser.RULE_unityTags,
     HiveParser.RULE_alterStatement,
     HiveParser.RULE_dropMaterializedViewStatement,
     HiveParser.RULE_dropViewStatement,
@@ -1142,6 +1147,15 @@ class Visitor extends HiveParserVisitor {
         return Boolean(ctx[funcName]) && ctx[funcName]() ? this.visit(ctx[funcName]()) : defaultValue;
     }
 
+    visitSwitchCatalogStatement(ctx) {
+        if (ctx.KW_CATALOG()) {
+            return {
+                type: USE_CATALOG_COMMAND,
+                catalogName: this.visit(ctx.identifier())
+            };
+        }
+    }
+
     visitCreateDatabaseStatement(ctx) {
         const name = this.visit(ctx.identifier());
         const description = this.visitWhenExists(ctx, 'databaseComment');
@@ -1543,6 +1557,83 @@ class Visitor extends HiveParserVisitor {
             bucketName: database,
             collectionName: table,
         };
+    }
+
+    visitTagsPair(ctx) {
+        const unityTagKey = getTextFromStringLiteral(ctx);
+        const unityTagValueCtx = ctx.tagValue();
+        const unityTagValue =unityTagValueCtx ? getTextFromStringLiteral(unityTagValueCtx) : '';
+
+        return {
+            unityTagKey,
+            unityTagValue
+        }
+    }
+
+    visitUnityTags(ctx) {
+        const { database, table } = this.visit(ctx.tableName());
+        const tagsPairs = this.visit(ctx.tagsPair());
+        const isCatalogTags = !!ctx.KW_CATALOG();
+        const isSchemaTags = !!ctx.KW_SCHEMA();
+        const isViewTags = !!ctx.KW_VIEW();
+        const isTableTags = !!ctx.KW_TABLE() && !ctx.KW_COLUMN();
+        const isColumnTags = !!ctx.KW_TABLE() && !!ctx.KW_COLUMN();
+
+        if (isCatalogTags) {
+            return {
+                type: UPDATE_CATALOG_LEVEL_DATA_COMMAND,
+                data: {
+                    unityCatalogTags: tagsPairs,
+                }
+            };
+        }
+
+        if (isSchemaTags) {
+            return {
+                type: UPDATE_BUCKET_LEVEL_DATA_COMMAND,
+                bucketName: table,
+                data: {
+                    unitySchemaTags: tagsPairs,
+                }
+            };
+        }
+
+        if (isTableTags) {
+           return {
+            type: UPDATE_ENTITY_LEVEL_DATA_COMMAND,
+            bucketName: database,
+            collectionName: table,
+            data: {
+                unityEntityTags: tagsPairs,
+            }
+        }
+        }
+
+        if (isViewTags) {
+            return {
+                type: UPDATE_VIEW_LEVEL_DATA_COMMAND,
+                bucketName: database,
+                viewName: table,
+                data: {
+                    unityViewTags: tagsPairs,
+                }
+            }
+        }
+
+        if (isColumnTags) {
+            const columnName = this.visit(ctx.identifier());
+
+            return {
+                type: UPDATE_FIELD_COMMAND,
+                bucketName: database,
+                collectionName: table,
+                name: columnName,
+                nameTo: columnName,
+                data: {
+                    unityColumnTags: tagsPairs,
+                }
+            }
+        }
     }
 
     getText(expression) {

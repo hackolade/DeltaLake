@@ -2,9 +2,9 @@ const { AlterScriptDto } = require('../../types/AlterScriptDto');
 const {generateFullEntityName, prepareName} = require("../../../utils/general");
 
 /**
- * @return {(collection: Object) => Array<AlterScriptDto>}
+ * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
-const getUpdatedDefaultColumnValueScriptDtos = (_, ddlProvider) => (collection) => {
+const getUpdatedDefaultColumnValueScriptDtos = (_, ddlProvider) => ({ collection, dbVersion }) => {
     return _.toPairs(collection.properties)
         .filter(([name, jsonSchema]) => {
             const newDefaultValue = jsonSchema.default;
@@ -15,7 +15,7 @@ const getUpdatedDefaultColumnValueScriptDtos = (_, ddlProvider) => (collection) 
         .map(([name, jsonSchema]) => {
             const newDefaultValue = jsonSchema.default;
             const scriptGenerationConfig = {
-                fullTableName: generateFullEntityName(collection),
+                fullTableName: generateFullEntityName({ entity: collection, dbVersion }),
                 columnName: prepareName(name),
                 defaultValue: newDefaultValue,
             }
@@ -26,9 +26,9 @@ const getUpdatedDefaultColumnValueScriptDtos = (_, ddlProvider) => (collection) 
 }
 
 /**
- * @return {(collection: Object) => Array<AlterScriptDto>}
+ * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
-const getDeletedDefaultColumnValueScriptDtos = (_, ddlProvider) => (collection) => {
+const getDeletedDefaultColumnValueScriptDtos = (_, ddlProvider) => ({ collection, dbVersion }) => {
     return _.toPairs(collection.properties)
         .filter(([name, jsonSchema]) => {
             const newDefault = jsonSchema.default;
@@ -38,7 +38,7 @@ const getDeletedDefaultColumnValueScriptDtos = (_, ddlProvider) => (collection) 
         })
         .map(([name, jsonSchema]) => {
             const scriptGenerationConfig = {
-                fullTableName: generateFullEntityName(collection),
+                fullTableName: generateFullEntityName({ entity: collection, dbVersion }),
                 columnName: prepareName(name),
             }
             return ddlProvider.dropColumnDefaultValue(scriptGenerationConfig);
@@ -49,11 +49,11 @@ const getDeletedDefaultColumnValueScriptDtos = (_, ddlProvider) => (collection) 
 
 
 /**
- * @return {(collection: Object) => Array<AlterScriptDto>}
+ * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
-const getModifiedDefaultColumnValueScriptDtos = (_, ddlProvider) => (collection) => {
-    const updatedDefaultValuesScriptDtos = getUpdatedDefaultColumnValueScriptDtos(_, ddlProvider)(collection);
-    const dropDefaultValuesScriptDtos = getDeletedDefaultColumnValueScriptDtos(_, ddlProvider)(collection);
+const getModifiedDefaultColumnValueScriptDtos = (_, ddlProvider) => ({ collection, dbVersion }) => {
+    const updatedDefaultValuesScriptDtos = getUpdatedDefaultColumnValueScriptDtos(_, ddlProvider)({ collection, dbVersion });
+    const dropDefaultValuesScriptDtos = getDeletedDefaultColumnValueScriptDtos(_, ddlProvider)({ collection, dbVersion });
     return [
         ...updatedDefaultValuesScriptDtos,
         ...dropDefaultValuesScriptDtos,

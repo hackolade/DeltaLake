@@ -2,6 +2,7 @@
 
 const { prepareName, encodeStringLiteral } = require('../utils/general');
 const { getTablePropertiesClause } = require('./tableHelper');
+const { getViewTagsStatement } = require('./unityTagsHelper');
 
 const getColumnNames = (_) => (collectionRefsDefinitionsMap, columns) => {
 	return _.uniq(Object.keys(columns).map(name => {
@@ -85,14 +86,15 @@ module.exports = {
 		const comment = schema.description;
 		let tablePropertyStatements = '';
 		const tableProperties = schema.tableProperties && Array.isArray(schema.tableProperties) ? filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime']) : [];
+		const viewUnityTagsStatements = schema.unityViewTags && getViewTagsStatement({viewSchema: schema, viewName: name});
 
 		if (tableProperties.length) {
 			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`;
-		};
+		}
 		script.push(createStatement);
 		if (schema.selectStatement) {
 			const columnList = view.columnList ? ` (${view.columnList})` : ' ';
-			return createStatement + `${columnList} ${comment ? ' COMMENT \'' + encodeStringLiteral(comment) + '\'' : ''} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n`;
+			return createStatement + `${columnList} ${comment ? ' COMMENT \'' + encodeStringLiteral(comment) + '\'' : ''} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n${viewUnityTagsStatements}`;
 		}
 
 		if (_.isEmpty(columns)) {
@@ -119,7 +121,14 @@ module.exports = {
 			}
 		}
 
-		return script.join('\n  ') + ';\n\n\n\n\n'
+		if (viewUnityTagsStatements) {
+			script.push(';\n');
+			script.push(viewUnityTagsStatements);
+
+			return script.join('\n  ');
+		}
+
+		return script.join('\n  ') + ';\n\n\n\n\n';
 	},
 };
 

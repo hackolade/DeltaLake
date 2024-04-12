@@ -9,15 +9,19 @@ const {
 	encodeStringLiteral,
 	prepareName,
 	getDifferentItems,
-	getFullEntityName
+	getFullEntityName,
+	getDBVersionNumber,
+	generateFullEntityName
 } = require('../utils/general');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
 const {getCheckConstraintsScriptsOnColumnLevel, getCheckConstraintsScriptsOnTableLevel, buildConstraints } = require("./entityHelpers/checkConstraintHelper");
 const constraintHelper = require('./constrainthelper');
+const { getColumnTagsStatement } = require('./unityTagsHelper');
+const { Runtime } = require('../enums/runtime');
 
 const getCreateStatement = (_) => ({
-	dbName, tableName, isTemporary, isExternal, using, likeStatement, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
+	fullTableName, isTemporary, isExternal, using, likeStatement, columnStatement, primaryKeyStatement, foreignKeyStatement, comment, partitionedByKeys,
 	clusteredKeys, sortedKeys, numBuckets, skewedStatement, rowFormatStatement, storedAsStatement, location, tableProperties, selectStatement,
 	isActivated, tableOptions, orReplace, ifNotExists,
 }) => {
@@ -26,7 +30,6 @@ const getCreateStatement = (_) => ({
 	const orReplaceStatement = orReplace ? 'OR REPLACE' : '';
 	const isNotExistsStatement = ifNotExists ? ' IF NOT EXISTS' : '';
 	const tempExtStatement = ' ' + [orReplaceStatement, temporary, external].filter(d => d).map(item => item + ' ').join('');
-	const fullTableName = dbName ? `${dbName}.${tableName}` : tableName;
 
 	if (using && likeStatement) {
 		return getCreateLikeStatement(_)({
@@ -264,6 +267,8 @@ const getStoredAsStatement = (tableData) => {
  * 	arePkFkConstraintsAvailable: boolean,
  * 	areNotNullConstraintsAvailable: boolean,
  * 	likeTableData: any,
+ *  dbVersion: string,
+ *	isCalledFromAlterScript: boolean,
  * ) => string}
  * */
 const getTableStatement = (app) => (
@@ -274,17 +279,21 @@ const getTableStatement = (app) => (
 	arePkFkConstraintsAvailable,
 	areNotNullConstraintsAvailable,
 	likeTableData,
-	dbVersion
+	dbVersion,
+	isCalledFromAlterScript = false,
 ) => {
 	const _ = app.require('lodash');
 	const ddlProvider = require('../ddlProvider/ddlProvider')(app);
+	const {getEntityTagsStatement} = require('../helpers/unityTagsHelper');
 
 	const dbName = replaceSpaceWithUnderscore(prepareName(getName(getTab(0, containerData))));
 	const tableData = getTab(0, entityData);
 	const container = getTab(0, containerData);
 	const isTableActivated = tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
 	const tableName = replaceSpaceWithUnderscore(prepareName(getName(tableData)));
-	const fullTableName = getFullEntityName(dbName, tableName);
+	const fullTableName = isCalledFromAlterScript
+		? generateFullEntityName({ entity: { role: tableData }, dbVersion })
+		: getFullEntityName(dbName, tableName); 
 	const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, definitions, dbVersion);
 	const keyNames = keyHelper.getKeyNames(tableData, entityJsonSchema, definitions);
 	const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
@@ -292,8 +301,7 @@ const getTableStatement = (app) => (
 		? constraintHelper.getPrimaryKeyStatement(_)(entityJsonSchema, keyNames.primaryKeys, deactivatedColumnNames, isTableActivated)
 		: '';
 	let tableStatement = getCreateStatement(_)({
-		dbName,
-		tableName,
+		fullTableName,
 		isTemporary: tableData.temporaryTable,
 		isExternal: tableData.externalTable,
 		orReplace: tableData.orReplace,
@@ -319,6 +327,11 @@ const getTableStatement = (app) => (
 
 	const statementsDelimiter = ';\n';
 
+    if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
+		const entityUnityTags = getEntityTagsStatement(entityJsonSchema, fullTableName);
+		tableStatement = tableStatement + entityUnityTags;
+	}
+
 	const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(ddlProvider)(columns, fullTableName).join('\n');
 	const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(ddlProvider)(entityJsonSchema, fullTableName).join('\n');
 	const constraintsStatements = buildConstraints(constraintsStatementsOnTable, constraintsStatementsOnColumns);
@@ -326,6 +339,11 @@ const getTableStatement = (app) => (
 	if (!_.isEmpty(constraintsStatements)) {
 		tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements;
 	}
+
+    if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
+		const columnsUnityTags = getColumnTagsStatement(_, entityJsonSchema.properties, fullTableName);
+		tableStatement = [tableStatement, ...columnsUnityTags].join('\n');
+    }
 
 	return tableStatement;
 };

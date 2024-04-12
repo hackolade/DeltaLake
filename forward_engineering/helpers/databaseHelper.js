@@ -9,6 +9,8 @@ const {
 	prepareName,
 	getDBVersionNumber
 } = require('../utils/general');
+const { getCatalogTagsStatement, getSchemaTagsStatement } = require('../helpers/unityTagsHelper');
+const { Runtime } = require('../enums/runtime');
 
 /**
  * @param {string|undefined} location
@@ -51,11 +53,11 @@ const getCreateStatement = ({
  * @return {string}
  * */
 const getUseCatalogStatement = (databaseData) => {
-	const databaseDetails = getTab(0, databaseData);
+    const databaseDetails = getTab(0, databaseData);
 
-	return databaseDetails.catalogName
-		? `USE CATALOG ${prepareName(databaseDetails.catalogName)};`
-		: '';
+    return databaseDetails.catalogName
+        ? `USE CATALOG ${prepareName(databaseDetails.catalogName)};`
+        : '';
 };
 
 /**
@@ -71,16 +73,25 @@ const getDatabaseStatement = (containerData, isUnityCatalogSupports, dbVersion) 
 		return '';
 	}
 
-	return getCreateStatement({
-		name: name,
-		comment: tab.description,
-		location: tab.location,
-		managedLocation: tab.managedLocation,
-		dbProperties: tab.dbProperties,
-		isActivated: tab.isActivated,
-		isUnityCatalogSupports,
-		dbVersion
-	});
+    let unityCatalogTags = '';
+    let unitySchemaTags = '';
+    const createStatement = getCreateStatement({
+        name: name,
+        comment: tab.description,
+        location: tab.location,
+        managedLocation: tab.managedLocation,
+        dbProperties: tab.dbProperties,
+        isActivated: tab.isActivated,
+        isUnityCatalogSupports,
+        dbVersion
+    });
+
+    if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
+        unityCatalogTags = getCatalogTagsStatement(tab);
+        unitySchemaTags = getSchemaTagsStatement(tab, name);
+    }
+
+    return [createStatement, unityCatalogTags, unitySchemaTags].filter(Boolean).join('\n\n');
 };
 
 const getDatabaseAlterStatement = (containerData, dbVersion) => {

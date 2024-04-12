@@ -63,10 +63,10 @@ const getDeleteTablePropertyScriptDto = (_, ddlProvider) => (properties, fullCol
     return AlterScriptDto.getInstance([script], true, true);
 }
 
-const getModifiedTablePropertiesScriptDtos = (_, ddlProvider) => (collection) => {
+const getModifiedTablePropertiesScriptDtos = (_, ddlProvider) => ({ collection, dbVersion }) => {
     const compMod = _.get(collection, 'role.compMod', {});
     const tableProperties = compMod.tableProperties || {};
-    const fullCollectionName = generateFullEntityName(collection);
+    const fullCollectionName = generateFullEntityName({ entity: collection, dbVersion });
     const propertiesDiffMap = buildTablePropertiesDiffMap(tableProperties);
 
     const addedPropertiesScriptDto = getAddTablePropertyScriptDto(_, ddlProvider)(propertiesDiffMap.added, fullCollectionName);

@@ -207,12 +207,21 @@ const generateFullEntityNameFromBucketAndTableNames = (bucketName, tableName) =>
     return getFullEntityName(dbName, entityName);
 }
 
-const generateFullEntityName = entity => {
-    const compMod = entity?.role?.compMod || {};
-    const entityData = entity?.role || {};
-    const bucketName = getContainerName(compMod);
-    const tableName = getName(entityData);
-    return generateFullEntityNameFromBucketAndTableNames(bucketName, tableName);
+/**
+ * @param {Object} param
+ * @param {Object} param.entity
+ * @param {string} param.dbVersion
+ * @returns 
+ */
+const generateFullEntityName = ({ entity, dbVersion }) => {
+	const compMod = entity?.role?.compMod || {};
+	const catalogName = isSupportUnityCatalog(dbVersion) && prepareName(compMod?.bucketProperties?.catalogName);
+	const entityData = entity?.role || {};
+	const bucketName = getContainerName(compMod);
+	const tableName = getName(entityData);
+	const bucketAndTableNames = generateFullEntityNameFromBucketAndTableNames(bucketName, tableName);
+
+	return catalogName ? `${catalogName}.${bucketAndTableNames}` : bucketAndTableNames;
 };
 
 const getEntityNameFromCollection = (collection) => {

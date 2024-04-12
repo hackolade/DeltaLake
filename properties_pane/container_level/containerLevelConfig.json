@@ -155,6 +155,148 @@ making sure that you maintain a proper JSON format.
 				"valueType": "string"
 			},
 			{
+				"propertyName": "Catalog Tags",
+				"propertyKeyword": "unityCatalogTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the catalog. Available only in Unity Catalogs",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
+						"propertyType": "text",
+						"shouldValidate": true,
+						"validation": {
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+						}
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				],
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"key": "catalogName",
+							"exist": true
+						},
+						{
+							"type": "not",
+							"values": [
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 6"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 7"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 8"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 9"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 10"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 11"
+								},
+								{
+									"level": "model",
+									"key": "dbVersion",
+									"value": "Runtime 12"
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Schema Tags",
+				"propertyKeyword": "unitySchemaTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the schema within. Available only in Unity Catalogs",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
+						"propertyType": "text",
+						"validation": {
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+						}
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
+			},
+			{
 				"propertyName": "Remarks",
 				"propertyKeyword": "comments",
 				"shouldValidate": false,

@@ -1,9 +1,11 @@
 const {getColumns, getColumnsStatement} = require("../../../helpers/columnHelper");
-const {getEntityProperties, generateFullEntityName, prepareName} = require("../../../utils/general");
+const {getEntityProperties, generateFullEntityName, prepareName, getDBVersionNumber} = require("../../../utils/general");
 const {getIndexes} = require("../../../helpers/indexHelper");
 const {AlterScriptDto} = require("../../types/AlterScriptDto");
 const {hydrateIndex} = require("./indexHelper");
 const {generateModifyCollectionScript} = require("./modifyCollectionScript");
+const { Runtime } = require("../../../enums/runtime");
+const { getColumnTagsStatement } = require("../../../helpers/unityTagsHelper");
 
 /**
  * @typedef {{
@@ -35,10 +37,10 @@ const getColumnsWithoutNotNullConstraint = (_) => (columns) => {
 }
 
 /**
- * @return {(collection: Object, columns: Columns) => Array<AlterScriptDto> }
+ * @return {({ collection, columns, dbVersion }: { collection: Object, columns: Columns, dbVersion: string }) => Array<AlterScriptDto> }
  * */
-const getAddNotNullConstraintScriptDtos = (_, ddlProvider) => (collection, columns) => {
-    const fullTableName = generateFullEntityName(collection);
+const getAddNotNullConstraintScriptDtos = (_, ddlProvider) => ({ collection, columns, dbVersion }) => {
+    const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
 
     return _.toPairs(columns)
         .map(([name, jsonSchema]) => {
@@ -63,33 +65,35 @@ const getAddColumnsScriptsForModifyModifyCollectionScript = (_, provider) => (en
 
     const properties = getEntityProperties(entity);
     const columnStatement = getColumnsStatement(columnsWithoutNotNull);
-    const fullCollectionName = generateFullEntityName(entity);
-    const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(entity, properties, definitions);
+    const fullCollectionName = generateFullEntityName({ entity, dbVersion });
+    const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)({ entity, properties, definitions, dbVersion });
     const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(_)(...hydratedAddIndex);
     const addColumnScript = provider.addTableColumns({name: fullCollectionName, columns: columnStatement});
 
+    const isUnityTagsSupported = getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION 
+    const columnsUnityTagsScript = isUnityTagsSupported ? getColumnTagsStatement(_, properties, fullCollectionName) : [];
+    const addColumnScriptWithUnityTags = isUnityTagsSupported ? [addColumnScript, ...columnsUnityTagsScript].join('\n') : addColumnScript;
+
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
-    const addColumnScriptDto = AlterScriptDto.getInstance([addColumnScript], true, false);
-    const notNullConstraintScriptDtos = getAddNotNullConstraintScriptDtos(_, provider)(entity, columns);
+    const addColumnScriptDto = AlterScriptDto.getInstance([addColumnScriptWithUnityTags], true, false);
+    const notNullConstraintScriptDtos = getAddNotNullConstraintScriptDtos(_, provider)({ collection: entity, columns, dbVersion });
 
     return [
-        dropIndexScriptDto,
-        addColumnScriptDto,
-        ...notNullConstraintScriptDtos,
-        ...(modifyScript.script || []),
-        addIndexScriptDto
-    ]
-        .filter(Boolean);
+			dropIndexScriptDto,
+			addColumnScriptDto,
+			...notNullConstraintScriptDtos,
+			...(modifyScript.script || []),
+			addIndexScriptDto,
+		].filter(Boolean);
 }
 
-const getAddColumnsScriptsForNewModifyCollectionScript = (_, provider) => (entity, definitions, modifyScript) => {
+const getAddColumnsScriptsForNewModifyCollectionScript = (_, provider) => (entity, definitions, modifyScript, dbVersion) => {
     const properties = getEntityProperties(entity);
-    const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)(entity, properties, definitions);
+    const {hydratedAddIndex, hydratedDropIndex} = hydrateIndex(_)({ entity, properties, definitions, dbVersion });
     const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
     const addIndexScript = getIndexes(_)(...hydratedAddIndex);
-
     const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
     const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
 
@@ -108,7 +112,7 @@ const getAddColumnsScripts = (app, definitions, provider, dbVersion) => (entity)
 
     const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider, dbVersion);
     if (modifyScript.type === 'new') {
-        return getAddColumnsScriptsForNewModifyCollectionScript(_, provider)(entity, definitions, modifyScript);
+        return getAddColumnsScriptsForNewModifyCollectionScript(_, provider)(entity, definitions, modifyScript, dbVersion);
     }
     return getAddColumnsScriptsForModifyModifyCollectionScript(_, provider)(entity, definitions, modifyScript, dbVersion);
 };

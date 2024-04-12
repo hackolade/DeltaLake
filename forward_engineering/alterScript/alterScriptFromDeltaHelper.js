@@ -79,9 +79,40 @@ const getAlterContainersScriptDtos = ({ schema, isUnityCatalogSupports, provider
 };
 
 /**
+ * @typedef FilterOutExistingStatementsParams
+ * @type {object}
+ * @property {Array<AlterScriptDto>} alterScriptDtos
+ * @property {Set<string>} existingAlterStatements
+ */
+/**
+ * @param {FilterOutExistingStatementsParams} param
+ * @returns {FilterOutExistingStatementsParams}
+ */
+const filterOutExistingStatements = ({ alterScriptDtos, existingAlterStatements }) => {
+	const filteredAlterScriptDtos = alterScriptDtos
+		.filter(Boolean)
+		.flatMap(alterScriptDto =>
+			alterScriptDto?.scripts
+				.filter(scriptDto => !existingAlterStatements.has(scriptDto?.script))
+				.map(scriptDto =>
+					AlterScriptDto.getInstance([scriptDto.script], alterScriptDto.isActivated, scriptDto.isDropScript),
+				),
+		)
+		.filter(Boolean);
+
+	const filteredExistingAlterScriptStatements = new Set([
+		...Array.from(existingAlterStatements),
+		...alterScriptDtos.flatMap(dto => dto?.scripts.map(scriptDto => scriptDto?.script)).filter(Boolean),
+	]);
+
+	return { alterScriptDtos: filteredAlterScriptDtos, existingAlterStatements: filteredExistingAlterScriptStatements };
+};
+
+/**
  * @return Array<AlterScriptDto>
  * */
 const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, app}) => {
+    const existingAlterStatements = new Set();
     const getCollectionScripts = (items, compMode, getScript) =>
         items.filter(item => item.compMod?.[compMode]).flatMap(getScript);
 
@@ -110,7 +141,7 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
     const deletedCollectionsScriptDtos = getCollectionScripts(
         getItems(schema, 'entities', 'deleted'),
         'deleted',
-        getDeleteCollectionsScripts(app, provider)
+        getDeleteCollectionsScripts(app, provider, dbVersion)
     );
     const modifiedCollectionsScriptDtos = getCollectionScripts(
         getItems(schema, 'entities', 'modified'),
@@ -118,43 +149,65 @@ const getAlterCollectionsScriptDtos = ({schema, definitions, provider, data, _, 
         getModifyCollectionsScripts(app, definitions, provider, dbVersion)
     );
     const modifiedCollectionCommentsScriptDtos = getItems(schema, 'entities', 'modified')
-        .flatMap(item => getModifyCollectionCommentsScripts(provider)(item));
+        .flatMap(item => getModifyCollectionCommentsScripts(provider)({ collection: item, dbVersion }));
 
     let modifiedCollectionPrimaryKeysScriptDtos = [];
     if (getDBVersionNumber(dbVersion) >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
         modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified')
-            .flatMap(item => getModifyPkConstraintsScripts(_, provider)(item));
+            .flatMap(item => getModifyPkConstraintsScripts(_, provider)({ collection: item, dbVersion }));
     }
 
     const addedColumnsScriptDtos = getColumnScripts(
-        getItems(schema, 'entities', 'added'),
-        getAddColumnsScripts(app, definitions, provider, dbVersion)
-    );
+			getItems(schema, 'entities', 'added'),
+			getAddColumnsScripts(app, definitions, provider, dbVersion),
+		);
+    const {
+        alterScriptDtos: addedColumnsScriptDtosWithNoDuplicates,
+        existingAlterStatements: existingAlterStatementsWithAddedColumns,
+    } = filterOutExistingStatements({
+        alterScriptDtos: addedColumnsScriptDtos,
+        existingAlterStatements,
+    });
+
     const deletedColumnsScriptDtos = getColumnScripts(
         getItems(schema, 'entities', 'deleted'),
-        getDeletedColumnsScriptsMethod(app, definitions, provider)
+        getDeletedColumnsScriptsMethod(app, definitions, provider),
     );
+    const {
+        alterScriptDtos: deletedColumnsScriptDtosWithNoDuplicates,
+        existingAlterStatements: existingAlterStatementsWithDeletedColumns,
+    } = filterOutExistingStatements({
+        alterScriptDtos: deletedColumnsScriptDtos,
+        existingAlterStatements: existingAlterStatementsWithAddedColumns,
+    });
+
     const modifiedColumnsScriptDtos = getColumnScripts(
         getItems(schema, 'entities', 'modified'),
-        getModifyColumnsScriptsMethod(app, definitions, provider)
+        getModifyColumnsScriptsMethod(app, definitions, provider),
     );
+    const {
+        alterScriptDtos: modifiedColumnsScriptDtosWithNoDuplicates,
+    } = filterOutExistingStatements({
+        alterScriptDtos: modifiedColumnsScriptDtos,
+        existingAlterStatements: existingAlterStatementsWithDeletedColumns,
+    });
 
-    return [
-        ...deletedCollectionsScriptDtos,
-        ...addedCollectionsScriptDtos,
-        ...modifiedCollectionsScriptDtos,
-        ...modifiedCollectionCommentsScriptDtos,
-        ...modifiedCollectionPrimaryKeysScriptDtos,
-        ...deletedColumnsScriptDtos,
-        ...addedColumnsScriptDtos,
-        ...modifiedColumnsScriptDtos
-    ];
+	return [
+		...deletedCollectionsScriptDtos,
+		...addedCollectionsScriptDtos,
+		...modifiedCollectionsScriptDtos,
+		...modifiedCollectionCommentsScriptDtos,
+		...modifiedCollectionPrimaryKeysScriptDtos,
+		...deletedColumnsScriptDtosWithNoDuplicates,
+		...addedColumnsScriptDtosWithNoDuplicates,
+		...modifiedColumnsScriptDtosWithNoDuplicates,
+	].filter(Boolean);
 };
 
 /**
  * @return Array<AlterScriptDto>
  * */
-const getAlterViewsScriptDtos = (schema, provider, _) => {
+const getAlterViewsScriptDtos = (schema, provider, _, dbVersion) => {
 
     /**
      * @return Array<AlterScriptDto>
@@ -180,11 +233,11 @@ const getAlterViewsScriptDtos = (schema, provider, _) => {
     const deletedViewScriptDtos = getViewScripts(
         getItems(schema, 'views', 'deleted'),
         'deleted',
-        getDeleteViewsScripts(provider)
+        getDeleteViewsScripts(provider, dbVersion)
     );
     const modifiedViewScriptDtos = getColumnScripts(
         getItems(schema, 'views', 'modified'),
-        getModifyViewsScripts(provider, _)
+        getModifyViewsScripts(provider, _, dbVersion)
     );
 
     return [
@@ -250,10 +303,11 @@ const getAlterStatementsWithCommentedUnwantedDDL = (scriptDtos, data) => {
 const getAlterScriptDtos = (schema, definitions, data, app) => {
     const provider = require('../ddlProvider/ddlProvider')(app);
     const _ = app.require('lodash');
-    const isUnityCatalogSupports = isSupportUnityCatalog(data.modelData[0].dbVersion);
+    const dbVersion = data.modelData[0].dbVersion;
+    const isUnityCatalogSupports = isSupportUnityCatalog(dbVersion);
     const containersScriptDtos = getAlterContainersScriptDtos({ schema, isUnityCatalogSupports, provider, _, data });
     const collectionsScriptDtos = getAlterCollectionsScriptDtos({ schema, definitions, provider, data, _, app });
-    const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, _);
+    const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, _, dbVersion);
     let relationshipsScriptDtos = [];
     if (isUnityCatalogSupports) {
         relationshipsScriptDtos = getAlterRelationshipsScriptDtos({ schema, ddlProvider: provider, _ });

@@ -16,6 +16,7 @@ const RENAME_COLLECTION_COMMAND = 'renameCollection';
 const CREATE_BUCKET_COMMAND = 'createBucket';
 const REMOVE_BUCKET_COMMAND = 'removeBucket';
 const USE_BUCKET_COMMAND = 'useBucket';
+const USE_CATALOG_COMMAND = 'useCatalog';
 const ADD_FIELDS_TO_COLLECTION_COMMAND = 'addFieldsToCollection';
 const ADD_COLLECTION_LEVEL_INDEX_COMMAND = 'addCollectionLevelIndex';
 const ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND = 'addCollectionLevelBloomfilterIndex';
@@ -37,13 +38,15 @@ const UPDATE_ITEM_IN_RESOURCE_PLAN = 'updateItemInResourcePlan';
 const DROP_RESOURCE_PLAN_ITEM = 'dropResourcePlanItem';
 const DROP_MAPPING = 'removeMapping';
 const UPDATE_ENTITY_LEVEL_DATA_COMMAND = 'updateCollectionProperties';
+const UPDATE_BUCKET_LEVEL_DATA_COMMAND = 'updateBucketProperties';
+const UPDATE_CATALOG_LEVEL_DATA_COMMAND = 'updateCatalogProperties';
 
 const DEFAULT_BUCKET = 'New schema';
 
 const convertCommandsToEntities = (commands, originalScript) => {
     return commands.reduce(
         (entitiesData, statementData) => {
-            const command = statementData && statementData.type;
+            const command = statementData?.type;
 
             if (!command) {
                 return entitiesData;
@@ -61,6 +64,7 @@ const convertCommandsToEntities = (commands, originalScript) => {
             entities: [],
             views: [],
             currentBucket: DEFAULT_BUCKET,
+            currentCatalog: '',
             buckets: {},
             relationships: [],
             modelProperties: {},
@@ -170,12 +174,13 @@ const removeCollection = (entitiesData, bucket, statementData) => {
 };
 
 const createBucket = (entitiesData, bucket, statementData) => {
-    const { buckets } = entitiesData;
+    const { buckets, currentCatalog } = entitiesData;
     const bucketName = statementData.name;
+    const bucketData = statementData.data || {};
     return {
         ...entitiesData,
         currentBucket: bucketName,
-        buckets: { ...buckets, [bucketName]: statementData.data || {} },
+        buckets: { ...buckets, [bucketName]: { ...bucketData, catalogName: currentCatalog } },
     };
 };
 
@@ -196,6 +201,13 @@ const useBucket = (entitiesData, bucket, statementData) => {
         currentBucket: statementData.bucketName,
     };
 };
+
+const useCatalog = (entitiesData, bucket, statementData) => {
+    return {
+        ...entitiesData,
+        currentCatalog: statementData.catalogName,
+    };
+}
 
 const addFieldsToCollection = (entitiesData, bucket, statementData) => {
     const { entities } = entitiesData;
@@ -827,6 +839,45 @@ const updateEntityLevelData = (entitiesData, bucket, statementData) => {
     };
 }
 
+const updateBucketLevelData = (entitiesData, bucket, statementData) => {
+    const { buckets } = entitiesData;
+    const bucketData = buckets[bucket];
+
+    if (!bucketData) {
+        return entitiesData;
+    }
+
+    return {
+        ...entitiesData,
+        buckets: {
+            ...buckets,
+            [bucket]: merge(bucketData, statementData.data),
+        }
+    };
+}
+
+const updateCatalogLevelData = (entitiesData, bucket, statementData) => {
+    const { buckets, currentCatalog } = entitiesData;
+    const updatedBuckets = Object.entries(buckets).reduce((result, [bucketName, bucketData]) => {
+        if (bucketData.catalogName !== currentCatalog) {
+            return result;
+        }
+
+        return {
+            ...result,
+            [bucketName]: {
+                ...bucketData,
+                ...statementData.data,
+            }
+        };
+    }, buckets);
+
+    return {
+        ...entitiesData,
+        buckets: updatedBuckets
+    };
+};
+
 const getResourcePlanIndex = (resourcePlans, resourceName) => {
     return dependencies.lodash.findIndex(resourcePlans, (plan) => plan.name === resourceName);
 };
@@ -854,6 +905,7 @@ const COMMANDS_ACTION_MAP = {
     [CREATE_BUCKET_COMMAND]: createBucket,
     [REMOVE_BUCKET_COMMAND]: removeBucket,
     [USE_BUCKET_COMMAND]: useBucket,
+    [USE_CATALOG_COMMAND]: useCatalog,
     [ADD_FIELDS_TO_COLLECTION_COMMAND]: addFieldsToCollection,
     [ADD_COLLECTION_LEVEL_INDEX_COMMAND]: addIndexToCollection,
     [ADD_COLLECTION_LEVEL_BLOOMFILTER_INDEX_COMMAND]: addBloomfilterIndexToCollection,
@@ -876,6 +928,8 @@ const COMMANDS_ACTION_MAP = {
     [DROP_MAPPING]: removeMapping,
     [RENAME_COLLECTION_COMMAND]: renameCollection,
     [UPDATE_ENTITY_LEVEL_DATA_COMMAND]: updateEntityLevelData,
+    [UPDATE_BUCKET_LEVEL_DATA_COMMAND]: updateBucketLevelData,
+    [UPDATE_CATALOG_LEVEL_DATA_COMMAND]: updateCatalogLevelData,
 };
 
 module.exports = {
@@ -885,6 +939,7 @@ module.exports = {
     CREATE_BUCKET_COMMAND,
     REMOVE_BUCKET_COMMAND,
     USE_BUCKET_COMMAND,
+    USE_CATALOG_COMMAND,
     ADD_FIELDS_TO_COLLECTION_COMMAND,
     UPDATE_FIELD_COMMAND,
     CREATE_VIEW_COMMAND,
@@ -906,4 +961,6 @@ module.exports = {
     DROP_MAPPING,
     RENAME_COLLECTION_COMMAND,
     UPDATE_ENTITY_LEVEL_DATA_COMMAND,
+    UPDATE_BUCKET_LEVEL_DATA_COMMAND,
+    UPDATE_CATALOG_LEVEL_DATA_COMMAND,
 };
