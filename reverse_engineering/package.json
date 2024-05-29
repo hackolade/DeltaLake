@@ -1,13 +1,8 @@
 {
-  "name": "DeltaLake",
-  "version": "1.0.0",
-  "description": "",
-  "author": "Hackolade",
-  "dependencies": {
-    "abort-controller": "^3.0.0",
-    "antlr4": "4.9.2",
-    "node-fetch": "^2.6.7"
-  },
-  "type": "multi",
-  "installed": true
+    "name": "DeltaLake",
+    "version": "1.0.0",
+    "description": "",
+    "author": "Hackolade",
+    "type": "multi",
+    "installed": true
 }

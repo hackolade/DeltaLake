@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 const jsonSchemaHelper = require('./jsonSchemaHelper');
 
@@ -9,7 +9,7 @@ const sortedKey = getNameByPath => (keys, paths) => {
 
 		return {
 			name: getNameByPath(path),
-			type: key.type === 'ascending' ? 'ASC' : 'DESC'
+			type: key.type === 'ascending' ? 'ASC' : 'DESC',
 		};
 	});
 };
@@ -20,15 +20,13 @@ const getKeyNames = (tableData, jsonSchema, definitions) => {
 	const skewedby = tableData.skewedby || [];
 	const sortedByKey = tableData.sortedByKey || [];
 
-	const ids = [
-		...compositeClusteringKey,
-		...compositePartitionKey,
-		...skewedby,
-		...sortedByKey,
-	].map(key => key.keyId);
+	const ids = [...compositeClusteringKey, ...compositePartitionKey, ...skewedby, ...sortedByKey].map(
+		key => key.keyId,
+	);
 
 	const keysPaths = jsonSchemaHelper.getPathsByIds(ids, [jsonSchema, ...definitions]);
-	const primaryKeysPath = jsonSchemaHelper.getPrimaryKeys(jsonSchema)
+	const primaryKeysPath = jsonSchemaHelper
+		.getPrimaryKeys(jsonSchema)
 		.filter(pkPath => !keysPaths.find(path => path[path.length - 1] === pkPath[pkPath.length - 1]));
 	const idToNameHashTable = jsonSchemaHelper.getIdToNameHashTable([jsonSchema, ...definitions]);
 	const getNameByPath = jsonSchemaHelper.getNameByPath.bind(null, idToNameHashTable);
@@ -38,10 +36,10 @@ const getKeyNames = (tableData, jsonSchema, definitions) => {
 		compositeClusteringKey: filterPaths(compositeClusteringKey, keysPaths).map(getNameByPath),
 		compositePartitionKey: filterPaths(compositePartitionKey, keysPaths).map(getNameByPath),
 		skewedby: filterPaths(skewedby, keysPaths).map(getNameByPath),
-		sortedByKey: sortedKey(getNameByPath)(sortedByKey, filterPaths(sortedByKey, keysPaths))
+		sortedByKey: sortedKey(getNameByPath)(sortedByKey, filterPaths(sortedByKey, keysPaths)),
 	};
 };
 
 module.exports = {
-	getKeyNames
+	getKeyNames,
 };

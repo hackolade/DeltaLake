@@ -5,7 +5,7 @@ const { dependencies } = require('../appDependencies');
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 const { generateSamplesScript } = require('../../forward_engineering/sampleGeneration/sampleGenerationService');
-const {batchProcessFile} = require("./fileHelper");
+const { batchProcessFile } = require('./fileHelper');
 
 const JSON_OBJECTS_DELIMITER = '}, {';
 const BATCH_SIZE = 5000;
@@ -91,26 +91,26 @@ const destroyActiveContext = () => {
  *     entityJsonSchema: Object,
  * ) => Promise<any>}
  * */
-const sendSampleBatch = (_) => (connectionInfo, samples, entityJsonSchema) => {
+const sendSampleBatch = _ => (connectionInfo, samples, entityJsonSchema) => {
 	const script = generateSamplesScript(_)(entityJsonSchema, samples);
-	return executeCommand(connectionInfo, script, 'sql')
-}
+	return executeCommand(connectionInfo, script, 'sql');
+};
 
 /**
  * @param lineNumber {number}
  * @return {boolean}
  * */
-const shouldLogStep = (lineNumber) => {
+const shouldLogStep = lineNumber => {
 	if (lineNumber < 1000) {
 		return lineNumber % 100 === 0;
 	}
 	return lineNumber % 1000 === 0;
-}
+};
 
 /**
  * @return {(lineIndex: number, amountOfLines: number) => void}
  * */
-const logProgressOfSendingSampleBatches = (logger) => (lineIndex, amountOfLines) => {
+const logProgressOfSendingSampleBatches = logger => (lineIndex, amountOfLines) => {
 	if (!shouldLogStep(lineIndex)) {
 		return;
 	}
@@ -120,7 +120,7 @@ const logProgressOfSendingSampleBatches = (logger) => (lineIndex, amountOfLines)
 	logger.progress({ message });
 };
 
-const sendSampleBatches = (_, logger) => async (connectionInfo) => {
+const sendSampleBatches = (_, logger) => async connectionInfo => {
 	const { entitiesData } = connectionInfo;
 
 	for (const entityData of Object.values(entitiesData)) {
@@ -131,27 +131,26 @@ const sendSampleBatches = (_, logger) => async (connectionInfo) => {
 			filePath,
 			batchSize: BATCH_SIZE,
 			parseLine: line => JSON.parse(line),
-			batchHandler: (batch) => {
+			batchHandler: batch => {
 				return sendSampleBatch(_)(connectionInfo, batch, jsonSchema);
 			},
 			logProgress: logProgressOfSendingSampleBatches(logger),
-		})
+		});
 	}
-}
+};
 
-const fetchApplyToInstance = (_) => async (connectionInfo, logger) => {
+const fetchApplyToInstance = _ => async (connectionInfo, logger) => {
 	const progress = message => {
 		logger.log('info', message, 'Applying to instance');
-		logger.progress({message});
+		logger.progress({ message });
 	};
 
 	progress({ message: `Applying script: \n ${connectionInfo.script}` });
 
 	await Promise.race([
-		executeCommand(connectionInfo, connectionInfo.script, 'sql')
-			.then(() => {
-				return sendSampleBatches(_, logger)(connectionInfo);
-			}),
+		executeCommand(connectionInfo, connectionInfo.script, 'sql').then(() => {
+			return sendSampleBatches(_, logger)(connectionInfo);
+		}),
 		new Promise((_r, rej) =>
 			setTimeout(() => {
 				throw new Error('Timeout exceeded for script\n' + connectionInfo.script);
@@ -298,7 +297,13 @@ const fetchDatabaseViewsNamesViaPython = (dbName, connectionInfo) =>
 const fetchClusterTablesNames = (dbName, connectionInfo) =>
 	executeCommand(connectionInfo, `SHOW TABLES IN \`${dbName}\``, 'sql');
 
-const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames, isManagedLocationSupports, logger) => {
+const fetchClusterData = async (
+	connectionInfo,
+	collectionsNames,
+	databasesNames,
+	isManagedLocationSupports,
+	logger,
+) => {
 	const async = dependencies.async;
 	const databasesPropertiesResult = await async.mapLimit(databasesNames, 40, async dbName => {
 		logger.log('info', '', `Start describe schema: ${dbName} `);
@@ -316,7 +321,7 @@ const fetchClusterData = async (connectionInfo, collectionsNames, databasesNames
 				case 'Catalog Name':
 					return { ...dbProperties, catalogName: row[1] };
 				default:
-					return dbProperties
+					return dbProperties;
 			}
 		}, {});
 		return { dbName, dbProperties };
@@ -350,7 +355,7 @@ const splitJsonObjects = (jsonString = '') => jsonString.split(JSON_OBJECTS_DELI
  * @param {string} corruptedJsonData
  * @return {string}
  */
-const filterCorruptedEnd = (corruptedJsonData) => {
+const filterCorruptedEnd = corruptedJsonData => {
 	const splittedData = splitJsonObjects(corruptedJsonData);
 	return splittedData.slice(0, splittedData.length - 1).join(JSON_OBJECTS_DELIMITER);
 };
@@ -359,7 +364,7 @@ const filterCorruptedEnd = (corruptedJsonData) => {
  * @param {string} corruptedJsonData
  * @return {string}
  */
-const filterCorruptedStart = (corruptedJsonData) => {
+const filterCorruptedStart = corruptedJsonData => {
 	const splittedData = splitJsonObjects(corruptedJsonData);
 	return splittedData.slice(1).join(JSON_OBJECTS_DELIMITER);
 };
@@ -372,8 +377,8 @@ const filterCorruptedStart = (corruptedJsonData) => {
 const filterCorruptedData = (databasesTablesInfoResult, isTruncatedInMiddle) => {
 	if (isTruncatedInMiddle) {
 		const warningDelimiter = '*** WARNING: max output size exceeded, skipping output. ***';
-		const [ firstChunk, lastChunk ] = databasesTablesInfoResult.split(warningDelimiter);
-		return [ filterCorruptedEnd(firstChunk), filterCorruptedStart(lastChunk) ].join(', ');
+		const [firstChunk, lastChunk] = databasesTablesInfoResult.split(warningDelimiter);
+		return [filterCorruptedEnd(firstChunk), filterCorruptedStart(lastChunk)].join(', ');
 	}
 
 	return filterCorruptedEnd(databasesTablesInfoResult) + '}]}';
@@ -391,7 +396,9 @@ const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionIn
 	logger.log('info', '', `Finish retrieving tables info: ${databasesTablesInfoResult}`);
 
 	const isTruncatedResponse = /\*\*\* WARNING: skipped \d* bytes of output \*\*\*$/.test(databasesTablesInfoResult);
-	const isTruncatedInMiddle = /\*\*\* WARNING: max output size exceeded, skipping output. \*\*\*/.test(databasesTablesInfoResult);
+	const isTruncatedInMiddle = /\*\*\* WARNING: max output size exceeded, skipping output. \*\*\*/.test(
+		databasesTablesInfoResult,
+	);
 
 	try {
 		if (!isTruncatedResponse && !isTruncatedInMiddle) {
@@ -402,10 +409,12 @@ const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionIn
 		const fullCompletedData = filterCorruptedData(databasesTablesInfoResult, isTruncatedInMiddle);
 		const parsedData = JSON.parse(fullCompletedData);
 		const mergedDataChunks = mergeChunksOfData(previousData, parsedData);
-		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilteredEntities(collectionsNames, mergedDataChunks);
+		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilteredEntities(
+			collectionsNames,
+			mergedDataChunks,
+		);
 
 		return fetchFieldMetadata(filteredDbNames, filteredTableNames, connectionInfo, logger, mergedDataChunks);
-
 	} catch (error) {
 		logger.log('error', { error }, `\nDatabricks response: ${databasesTablesInfoResult}\n`);
 		throw error;
@@ -709,43 +718,43 @@ const convertDbProperties = (dbProperties = '') => {
 		.join(',\n');
 };
 
-const getFetchForUnityTags = (connectionInfo, logger) => async (query) => {
+const getFetchForUnityTags = (connectionInfo, logger) => async query => {
 	try {
 		const language = 'sql';
 
-		return await executeCommand(connectionInfo, query, language)
+		return await executeCommand(connectionInfo, query, language);
 	} catch (error) {
 		logger.log('error', error, 'Error during retrieve tags');
 
 		return [];
 	}
-}
+};
 
 const fetchTagsForUnityCatalogs = async (connectionInfo, logger) => {
-		try {
-			const fetchUnityTagsForSingleLevel = getFetchForUnityTags(connectionInfo, logger);
+	try {
+		const fetchUnityTagsForSingleLevel = getFetchForUnityTags(connectionInfo, logger);
 
-			const catalogTagsQuery = 'SELECT * FROM system.information_schema.catalog_tags;';
-			const schemaTagsQuery = 'SELECT * FROM system.information_schema.schema_tags;';
-			const tableTagsQuery = 'SELECT * FROM system.information_schema.table_tags;';
-			const columnTagsQuery = 'SELECT * FROM system.information_schema.column_tags;';
+		const catalogTagsQuery = 'SELECT * FROM system.information_schema.catalog_tags;';
+		const schemaTagsQuery = 'SELECT * FROM system.information_schema.schema_tags;';
+		const tableTagsQuery = 'SELECT * FROM system.information_schema.table_tags;';
+		const columnTagsQuery = 'SELECT * FROM system.information_schema.column_tags;';
 
-			const catalogTags = await fetchUnityTagsForSingleLevel(catalogTagsQuery);
-			const schemaTags = await fetchUnityTagsForSingleLevel(schemaTagsQuery);
-			const tableTags = await fetchUnityTagsForSingleLevel(tableTagsQuery);
-			const columnTags = await fetchUnityTagsForSingleLevel(columnTagsQuery);
+		const catalogTags = await fetchUnityTagsForSingleLevel(catalogTagsQuery);
+		const schemaTags = await fetchUnityTagsForSingleLevel(schemaTagsQuery);
+		const tableTags = await fetchUnityTagsForSingleLevel(tableTagsQuery);
+		const columnTags = await fetchUnityTagsForSingleLevel(columnTagsQuery);
 
-			return {
-				catalogTags,
-				schemaTags,
-				tableTags,
-				columnTags
-			};
-		} catch (error) {
-			logger.log('error', error, 'Error during retrieve tags');
-			return {};
-		}
-}
+		return {
+			catalogTags,
+			schemaTags,
+			tableTags,
+			columnTags,
+		};
+	} catch (error) {
+		logger.log('error', error, 'Error during retrieve tags');
+		return {};
+	}
+};
 
 module.exports = {
 	fetchClusterProperties,

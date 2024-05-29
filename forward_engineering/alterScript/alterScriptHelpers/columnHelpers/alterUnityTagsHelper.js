@@ -12,7 +12,8 @@ const { AlterScriptDto } = require('../../types/AlterScriptDto');
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getSetUnityColumnTagsDtos = ({ ddlProvider }) =>
+const getSetUnityColumnTagsDtos =
+	({ ddlProvider }) =>
 	({ entityData, tableName, columnName }) => {
 		const unityTags = {
 			new: entityData?.properties?.[columnName]?.unityColumnTags,
@@ -21,7 +22,7 @@ const getSetUnityColumnTagsDtos = ({ ddlProvider }) =>
 		const newUnityTags = unityTags.new || [];
 		const oldUnityTags = unityTags.old || [];
 
-		const setTags = getUnityTagsFromCompMod({ tagsToFilter: newUnityTags, filterBy: oldUnityTags});
+		const setTags = getUnityTagsFromCompMod({ tagsToFilter: newUnityTags, filterBy: oldUnityTags });
 
 		if (!setTags.length) {
 			return [];
@@ -30,13 +31,14 @@ const getSetUnityColumnTagsDtos = ({ ddlProvider }) =>
 		const script = ddlProvider.setColumnTags({ tableName, columnName, tags: buildTagPairs(setTags) });
 
 		return [AlterScriptDto.getInstance([script], true, false)];
-	};//
+	}; //
 
 /**
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getUnsetUnityColumnTagsScriptsDtosFrom = ({ ddlProvider }) =>
+const getUnsetUnityColumnTagsScriptsDtosFrom =
+	({ ddlProvider }) =>
 	({ entityData, tableName, columnName }) => {
 		const unityTags = {
 			new: entityData?.properties?.[columnName]?.unityColumnTags,
@@ -45,13 +47,17 @@ const getUnsetUnityColumnTagsScriptsDtosFrom = ({ ddlProvider }) =>
 		const newUnityTags = unityTags.new || [];
 		const oldUnityTags = unityTags.old || [];
 
-		const unsetTags = getUnityTagsFromCompMod({ tagsToFilter: oldUnityTags, filterBy: newUnityTags});
+		const unsetTags = getUnityTagsFromCompMod({ tagsToFilter: oldUnityTags, filterBy: newUnityTags });
 
 		if (!unsetTags.length) {
 			return [];
 		}
 
-		const script = ddlProvider.unsetColumnTags({ tableName, columnName, tags: getUnsetTagsNamesParamString({ unsetTags }) });
+		const script = ddlProvider.unsetColumnTags({
+			tableName,
+			columnName,
+			tags: getUnsetTagsNamesParamString({ unsetTags }),
+		});
 
 		return [AlterScriptDto.getInstance([script], true, true)];
 	};
@@ -60,7 +66,8 @@ const getUnsetUnityColumnTagsScriptsDtosFrom = ({ ddlProvider }) =>
  * @param ddlProvider {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getModifyUnityColumnTagsScriptDtos = ({ ddlProvider }) =>
+const getModifyUnityColumnTagsScriptDtos =
+	({ ddlProvider }) =>
 	({ entityData, tableName, columnName }) => {
 		const unsetUnityTagsScriptDtosFromTable = getUnsetUnityColumnTagsScriptsDtosFrom({ ddlProvider })({
 			entityData,

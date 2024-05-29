@@ -13,13 +13,15 @@
 		"static": false,
 		"default": "",
 		"enum": [],
-		"sample":"",
+		"sample": "",
 		"pattern": "",
-		"comments":"",
+		"comments": "",
 		"format": ""
 	},
-	"descriptor": [{
-		"format": "PnYnMnDTnHnMnS"
-	}],
+	"descriptor": [
+		{
+			"format": "PnYnMnDTnHnMnS"
+		}
+	],
 	"hiddenOnEntity": "view"
 }

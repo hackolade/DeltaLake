@@ -1,12 +1,11 @@
-'use strict'
+'use strict';
 const { dependencies } = require('../appDependencies');
-const fetchRequestHelper = require('./fetchRequestHelper')
-const { convertCustomTags, cleanEntityName, isSupportGettingListOfViews } = require('./utils')
-
+const fetchRequestHelper = require('./fetchRequestHelper');
+const { convertCustomTags, cleanEntityName, isSupportGettingListOfViews } = require('./utils');
 
 const getEntityCreateStatement = (connectionInfo, dbName, entityName, logger) => {
 	return fetchRequestHelper.fetchCreateStatementRequest(`\`${dbName}\`.\`${entityName}\``, connectionInfo, logger);
-}
+};
 
 const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logger) => {
 	const _ = dependencies.lodash;
@@ -17,7 +16,7 @@ const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logg
 	}
 
 	const firstDatabaseName = _.first(databasesNames);
-	
+
 	const tableNames = await fetchRequestHelper.fetchClusterTablesNames(firstDatabaseName, connectionInfo);
 	logger.log('info', tableNames, `Tables list in ${firstDatabaseName} schema`);
 	const viewNames = await getDatabaseViewNames(firstDatabaseName, connectionInfo, sparkVersion, logger);
@@ -28,7 +27,7 @@ const fetchViewNamesFallback = async (dbName, connectionInfo, logger) => {
 	try {
 		const viewNamesResponse = await fetchRequestHelper.fetchDatabaseViewsNamesViaPython(dbName, connectionInfo);
 		const viewNames = JSON.parse(viewNamesResponse);
-		return viewNames.map(name => [ dbName, name ]);
+		return viewNames.map(name => [dbName, name]);
 	} catch (error) {
 		logger.log('warning', error, `Error getting view names from ${dbName} schema via Python.`);
 		return [];
@@ -39,7 +38,11 @@ const fetchViewNames = (dbName, connectionInfo, logger) => {
 	try {
 		return fetchRequestHelper.fetchDatabaseViewsNames(dbName, connectionInfo);
 	} catch (error) {
-		logger.log('warning', error, `Error getting view names from ${dbName} schema via SQL. Run fallback via Python.`);
+		logger.log(
+			'warning',
+			error,
+			`Error getting view names from ${dbName} schema via SQL. Run fallback via Python.`,
+		);
 		return fetchViewNamesFallback(dbName, connectionInfo, logger);
 	}
 };
@@ -50,11 +53,11 @@ const getDatabaseViewNames = async (dbName, connectionInfo, sparkVersion, logger
 	if (!isSupportGettingListOfViews(sparkVersion)) {
 		return { views, viewNames };
 	}
-	
+
 	const viewsResult = await fetchViewNames(dbName, connectionInfo, logger);
 	viewNames = viewsResult.map(([namespace, viewName]) => viewName);
 	views = viewNames.map(viewName => `${viewName} (v)`);
-	
+
 	return { views, viewNames };
 };
 
@@ -68,15 +71,15 @@ const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) 
 	const databasesNames = connectionInfo.databaseName
 		? [connectionInfo.databaseName]
 		: await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
-	
+
 	return await async.mapLimit(databasesNames, 30, async dbName => {
-		const { views, viewNames } = await getDatabaseViewNames(dbName, connectionInfo, sparkVersion, logger)
+		const { views, viewNames } = await getDatabaseViewNames(dbName, connectionInfo, sparkVersion, logger);
 		const tablesResult = await fetchRequestHelper.fetchClusterTablesNames(dbName, connectionInfo);
 		const tables = tablesResult.reduce((databaseTables, [dbName, tableName]) => {
 			if (viewNames.includes(tableName)) {
 				return databaseTables;
 			}
-			return [...databaseTables, tableName]
+			return [...databaseTables, tableName];
 		}, []);
 
 		const dbCollections = [...tables, ...views];
@@ -84,10 +87,10 @@ const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) 
 		return {
 			dbName,
 			dbCollections,
-			isEmpty: dependencies.lodash.isEmpty(dbCollections)
-		}
+			isEmpty: dependencies.lodash.isEmpty(dbCollections),
+		};
 	});
-}
+};
 
 const getClusterStateInfo = async (connectionInfo, logger) => {
 	const clusterProperties = await fetchRequestHelper.fetchClusterProperties(connectionInfo);
@@ -109,26 +112,26 @@ const getClusterStateInfo = async (connectionInfo, logger) => {
 		enable_elastic_disk: clusterProperties.enable_elastic_disk,
 		aws_attributes: clusterProperties.aws_attributes,
 		isRunning: clusterProperties.state === 'RUNNING',
-		state: clusterProperties.state
+		state: clusterProperties.state,
 	};
-}
+};
 
 const getRuntimeVersion = (sparkVersion = '') => sparkVersion.split('.')[0];
 
-const getDatabricksRuntimeVersion = (sparkVersion) => `Runtime ${getRuntimeVersion(sparkVersion)}`;
+const getDatabricksRuntimeVersion = sparkVersion => `Runtime ${getRuntimeVersion(sparkVersion)}`;
 
-const isSupportUnityCatalog = (sparkVersion) => {
+const isSupportUnityCatalog = sparkVersion => {
 	const runtimeVersion = getRuntimeVersion(sparkVersion);
 	const MINIMUM_UNITY_CATALOG_SUPPORT_VERSION = 11;
 	return Number(runtimeVersion) >= MINIMUM_UNITY_CATALOG_SUPPORT_VERSION;
-}
+};
 
 const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkVersion, logger) => {
 	const async = dependencies.async;
 	const entitiesNames = dependencies.lodash.flatMap(databasesNames, dbName => {
 		return (collectionsNames[dbName] || []).map(entityName => ({ dbName, name: entityName }));
 	});
-	
+
 	return async.mapLimit(entitiesNames, 40, async entity => {
 		const entityName = cleanEntityName(sparkVersion, entity.name);
 		logger.log('info', { db: entity.dbName, entity: entityName }, 'Getting entity DDL');
@@ -138,14 +141,20 @@ const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkV
 		logger.log('info', { db: entity.dbName, entity: entityName }, 'DDL retrieved successfully');
 
 		return {
-			[`${entity.dbName}.${entityName}`]: ddlStatement
+			[`${entity.dbName}.${entityName}`]: ddlStatement,
 		};
 	});
-}
+};
 
 const getClusterData = (connectionInfo, databasesNames, collectionsNames, isManagedLocationSupports, logger) => {
-	return fetchRequestHelper.fetchClusterData(connectionInfo, collectionsNames, databasesNames, isManagedLocationSupports, logger);
-}
+	return fetchRequestHelper.fetchClusterData(
+		connectionInfo,
+		collectionsNames,
+		databasesNames,
+		isManagedLocationSupports,
+		logger,
+	);
+};
 
 module.exports = {
 	getFirstDatabaseCollectionName,

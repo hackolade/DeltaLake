@@ -27,14 +27,24 @@
  * }} ContainerLevelEntityDto
  * */
 
-
-const {getDatabaseStatement, getUseCatalogStatement} = require("./databaseHelper");
-const {getCreateRelationshipScripts} = require("./relationshipHelper");
-const {getTableStatement} = require("./tableHelper");
-const {getIndexes} = require("./indexHelper");
-const {buildScript, getName, getTab, isSupportUnityCatalog, isSupportNotNullConstraints, getDBVersionNumber} = require("../utils/general");
-const {getViewScript} = require("./viewHelper");
-const {generateSamplesScript, getDataForSampleGeneration, generateSamplesForEntity} = require('../sampleGeneration/sampleGenerationService');
+const { getDatabaseStatement, getUseCatalogStatement } = require('./databaseHelper');
+const { getCreateRelationshipScripts } = require('./relationshipHelper');
+const { getTableStatement } = require('./tableHelper');
+const { getIndexes } = require('./indexHelper');
+const {
+	buildScript,
+	getName,
+	getTab,
+	isSupportUnityCatalog,
+	isSupportNotNullConstraints,
+	getDBVersionNumber,
+} = require('../utils/general');
+const { getViewScript } = require('./viewHelper');
+const {
+	generateSamplesScript,
+	getDataForSampleGeneration,
+	generateSamplesForEntity,
+} = require('../sampleGeneration/sampleGenerationService');
 
 /**
  * @typedef {{
@@ -65,50 +75,53 @@ const {generateSamplesScript, getDataForSampleGeneration, generateSamplesForEnti
  * @param app {App}
  * @return {(dto: EntityLevelFEScriptData) => string}
  * */
-const buildEntityLevelFEScript = (data, app) => ({
-    externalDefinitions,
-    modelDefinitions,
-    jsonSchema,
-    internalDefinitions,
-    containerData,
-    entityData,
-    modelData,
-}) => {
-    const _ = app.require('lodash');
-    const dbVersion = data.modelData[0].dbVersion;
-    const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
-    const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
-    const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
-    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, dbVersion);
-    const definitions = [modelDefinitions, internalDefinitions, externalDefinitions,];
-    const tableStatements = getTableStatement(app)(
-        containerData,
-        entityData,
-        jsonSchema,
-        definitions,
-        arePkFkConstraintsAvailable,
-        areNotNullConstraintsAvailable,
-        null,
-        dbVersion
-    );
-    const indexScript = getIndexes(_)(containerData, entityData, jsonSchema, definitions);
+const buildEntityLevelFEScript =
+	(data, app) =>
+	({
+		externalDefinitions,
+		modelDefinitions,
+		jsonSchema,
+		internalDefinitions,
+		containerData,
+		entityData,
+		modelData,
+	}) => {
+		const _ = app.require('lodash');
+		const dbVersion = data.modelData[0].dbVersion;
+		const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
+		const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
+		const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
+		const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, dbVersion);
+		const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
+		const tableStatements = getTableStatement(app)(
+			containerData,
+			entityData,
+			jsonSchema,
+			definitions,
+			arePkFkConstraintsAvailable,
+			areNotNullConstraintsAvailable,
+			null,
+			dbVersion,
+		);
+		const indexScript = getIndexes(_)(containerData, entityData, jsonSchema, definitions);
 
-    let relationshipScripts = [];
-    if (arePkFkConstraintsAvailable) {
-        const entityId = jsonSchema.GUID;
-        const relationshipsWithThisTableAsChild = modelData[1]?.relationships.filter(relationship => relationship.childCollection === entityId);
-        relationshipScripts = getCreateRelationshipScripts(app)(relationshipsWithThisTableAsChild, jsonSchema);
-    }
+		let relationshipScripts = [];
+		if (arePkFkConstraintsAvailable) {
+			const entityId = jsonSchema.GUID;
+			const relationshipsWithThisTableAsChild = modelData[1]?.relationships.filter(
+				relationship => relationship.childCollection === entityId,
+			);
+			relationshipScripts = getCreateRelationshipScripts(app)(relationshipsWithThisTableAsChild, jsonSchema);
+		}
 
-    return buildScript([
-        useCatalogStatement,
-        databaseStatement,
-        tableStatements,
-        ...relationshipScripts,
-        indexScript
-    ]);
-}
-
+		return buildScript([
+			useCatalogStatement,
+			databaseStatement,
+			tableStatements,
+			...relationshipScripts,
+			indexScript,
+		]);
+	};
 
 /**
  * @param data {CoreData}
@@ -116,24 +129,26 @@ const buildEntityLevelFEScript = (data, app) => ({
  * @return {Array<ContainerLevelEntityDto>}
  * */
 const getContainerLevelViewScriptDtos = (data, _) => {
-    return data.views.map(viewId => {
-        const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
-        const viewData = data.viewData[viewId];
-        const viewScript = getViewScript({
-            _,
-            schema: viewSchema,
-            viewData: viewData,
-            containerData: data.containerData,
-            collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
-            isKeyspaceActivated: true,
-        });
+	return data.views
+		.map(viewId => {
+			const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
+			const viewData = data.viewData[viewId];
+			const viewScript = getViewScript({
+				_,
+				schema: viewSchema,
+				viewData: viewData,
+				containerData: data.containerData,
+				collectionRefsDefinitionsMap: data.collectionRefsDefinitionsMap,
+				isKeyspaceActivated: true,
+			});
 
-        return {
-            name: getName(viewData[0]),
-            script: buildScript([viewScript]),
-        };
-    }).filter(({script}) => !_.isEmpty(script));
-}
+			return {
+				name: getName(viewData[0]),
+				script: buildScript([viewScript]),
+			};
+		})
+		.filter(({ script }) => !_.isEmpty(script));
+};
 
 /**
  * @param _ {any}
@@ -144,99 +159,100 @@ const getContainerLevelViewScriptDtos = (data, _) => {
  *      entityId: string,
  * }) => Promise<string>}
  */
-const getSampleScriptForContainerLevelScript = (_) => async ({
-    data,
-    includeSamplesInEntityScripts,
-    entitiesJsonSchema,
-    entityId
-}) => {
-    const sampleScripts = [];
-    if (includeSamplesInEntityScripts) {
-        const {jsonData, entitiesData} = getDataForSampleGeneration(data, entitiesJsonSchema);
-        const entityJsonSchema = entitiesJsonSchema[entityId] || {};
-        if (jsonData) {
-            const demoSampleJsonData = jsonData[entityId] || {};
-            const demoSample = generateSamplesScript(_)(entityJsonSchema, [demoSampleJsonData]);
-            sampleScripts.push(demoSample);
-        }
-        if (entitiesData) {
-            const entityData = entitiesData[entityId];
-            const samples = await generateSamplesForEntity(_)(entityData);
-            sampleScripts.push(...samples);
-        }
-    }
+const getSampleScriptForContainerLevelScript =
+	_ =>
+	async ({ data, includeSamplesInEntityScripts, entitiesJsonSchema, entityId }) => {
+		const sampleScripts = [];
+		if (includeSamplesInEntityScripts) {
+			const { jsonData, entitiesData } = getDataForSampleGeneration(data, entitiesJsonSchema);
+			const entityJsonSchema = entitiesJsonSchema[entityId] || {};
+			if (jsonData) {
+				const demoSampleJsonData = jsonData[entityId] || {};
+				const demoSample = generateSamplesScript(_)(entityJsonSchema, [demoSampleJsonData]);
+				sampleScripts.push(demoSample);
+			}
+			if (entitiesData) {
+				const entityData = entitiesData[entityId];
+				const samples = await generateSamplesForEntity(_)(entityData);
+				sampleScripts.push(...samples);
+			}
+		}
 
-    return sampleScripts.join('\n\n');
-}
-
+		return sampleScripts.join('\n\n');
+	};
 
 /**
  * @param data {CoreData}
  * @param app {App}
  * @return {(data: ContainerLevelFEScriptData) => Promise<Array<ContainerLevelEntityDto>>}
  * */
-const getContainerLevelEntitiesScriptDtos = (app, data) => async ({
-    externalDefinitions,
-    modelDefinitions,
-    internalDefinitions,
-    containerData,
-    entitiesJsonSchema,
-    arePkFkConstraintsAvailable,
-    areNotNullConstraintsAvailable,
-    includeRelationshipsInEntityScripts,
-    includeSamplesInEntityScripts,
-}) => {
-    const _ = app.require('lodash');
-    const scriptDtos = [];
+const getContainerLevelEntitiesScriptDtos =
+	(app, data) =>
+	async ({
+		externalDefinitions,
+		modelDefinitions,
+		internalDefinitions,
+		containerData,
+		entitiesJsonSchema,
+		arePkFkConstraintsAvailable,
+		areNotNullConstraintsAvailable,
+		includeRelationshipsInEntityScripts,
+		includeSamplesInEntityScripts,
+	}) => {
+		const _ = app.require('lodash');
+		const scriptDtos = [];
 
-    for (const entityId of data.entities) {
-        const entityData = data.entityData[entityId];
+		for (const entityId of data.entities) {
+			const entityData = data.entityData[entityId];
 
-        const dbVersion = data.modelData[0].dbVersion;
-        const likeTableData = data.entityData[getTab(0, entityData)?.like];
-        const entityJsonSchema = entitiesJsonSchema[entityId];
-        const definitions = [internalDefinitions[entityId], modelDefinitions, externalDefinitions];
-        const createTableStatementArgs = [containerData, entityData, entityJsonSchema, definitions];
+			const dbVersion = data.modelData[0].dbVersion;
+			const likeTableData = data.entityData[getTab(0, entityData)?.like];
+			const entityJsonSchema = entitiesJsonSchema[entityId];
+			const definitions = [internalDefinitions[entityId], modelDefinitions, externalDefinitions];
+			const createTableStatementArgs = [containerData, entityData, entityJsonSchema, definitions];
 
-        const tableStatement = getTableStatement(app)(
-            ...createTableStatementArgs,
-            arePkFkConstraintsAvailable,
-            areNotNullConstraintsAvailable,
-            likeTableData,
-            dbVersion
-        );
+			const tableStatement = getTableStatement(app)(
+				...createTableStatementArgs,
+				arePkFkConstraintsAvailable,
+				areNotNullConstraintsAvailable,
+				likeTableData,
+				dbVersion,
+			);
 
-        const indexScript = getIndexes(_)(...createTableStatementArgs);
+			const indexScript = getIndexes(_)(...createTableStatementArgs);
 
-        let relationshipScripts = [];
-        if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
-            const relationshipsWithThisTableAsChild = data.relationships.filter(
-                relationship => relationship.childCollection === entityId,
-            );
-            relationshipScripts = getCreateRelationshipScripts(app)(relationshipsWithThisTableAsChild, entitiesJsonSchema);
-        }
+			let relationshipScripts = [];
+			if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
+				const relationshipsWithThisTableAsChild = data.relationships.filter(
+					relationship => relationship.childCollection === entityId,
+				);
+				relationshipScripts = getCreateRelationshipScripts(app)(
+					relationshipsWithThisTableAsChild,
+					entitiesJsonSchema,
+				);
+			}
 
-        const sampleScript = await getSampleScriptForContainerLevelScript(_)({
-            data,
-            entitiesJsonSchema,
-            entityId,
-            includeSamplesInEntityScripts,
-        });
+			const sampleScript = await getSampleScriptForContainerLevelScript(_)({
+				data,
+				entitiesJsonSchema,
+				entityId,
+				includeSamplesInEntityScripts,
+			});
 
-        let tableScript = buildScript([tableStatement, indexScript, ...relationshipScripts]);
-        if (sampleScript) {
-            // This is because SQL formatter breaks some "INSERT" statements with complex types
-            tableScript = [tableScript, sampleScript].join('\n');
-        }
+			let tableScript = buildScript([tableStatement, indexScript, ...relationshipScripts]);
+			if (sampleScript) {
+				// This is because SQL formatter breaks some "INSERT" statements with complex types
+				tableScript = [tableScript, sampleScript].join('\n');
+			}
 
-        scriptDtos.push({
-            name: getName(entityData[0]),
-            script: tableScript,
-        });
-    }
+			scriptDtos.push({
+				name: getName(entityData[0]),
+				script: tableScript,
+			});
+		}
 
-    return scriptDtos;
-}
+		return scriptDtos;
+	};
 
 /**
  * @param data {CoreData}
@@ -257,62 +273,66 @@ const getContainerLevelEntitiesScriptDtos = (app, data) => async ({
  *     relationships: Array<string>,
  * }>}
  * */
-const buildContainerLevelFEScriptDto = (data, app) => async ({
-    internalDefinitions,
-    externalDefinitions,
-    modelDefinitions,
-    entitiesJsonSchema,
-    containerData,
-    includeRelationshipsInEntityScripts,
-    includeSamplesInEntityScripts,
-}) => {
-    const _ = app.require('lodash');
-    const dbVersion = data.modelData[0].dbVersion;
-    const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
-    const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
+const buildContainerLevelFEScriptDto =
+	(data, app) =>
+	async ({
+		internalDefinitions,
+		externalDefinitions,
+		modelDefinitions,
+		entitiesJsonSchema,
+		containerData,
+		includeRelationshipsInEntityScripts,
+		includeSamplesInEntityScripts,
+	}) => {
+		const _ = app.require('lodash');
+		const dbVersion = data.modelData[0].dbVersion;
+		const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
+		const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
 
-    const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
-    const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
-    const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, dbVersion);
-    const entityScriptDtos = await getContainerLevelEntitiesScriptDtos(app, data)({
-        internalDefinitions,
-        externalDefinitions,
-        modelDefinitions,
-        containerData,
-        entitiesJsonSchema,
-        arePkFkConstraintsAvailable,
-        areNotNullConstraintsAvailable,
-        includeRelationshipsInEntityScripts,
-        includeSamplesInEntityScripts,
-    });
+		const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
+		const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
+		const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, dbVersion);
+		const entityScriptDtos = await getContainerLevelEntitiesScriptDtos(
+			app,
+			data,
+		)({
+			internalDefinitions,
+			externalDefinitions,
+			modelDefinitions,
+			containerData,
+			entitiesJsonSchema,
+			arePkFkConstraintsAvailable,
+			areNotNullConstraintsAvailable,
+			includeRelationshipsInEntityScripts,
+			includeSamplesInEntityScripts,
+		});
 
-    let relationshipScrips = [];
-    if (!includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
-        relationshipScrips = getCreateRelationshipScripts(app)(data.relationships, entitiesJsonSchema);
-    }
+		let relationshipScrips = [];
+		if (!includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
+			relationshipScrips = getCreateRelationshipScripts(app)(data.relationships, entitiesJsonSchema);
+		}
 
-    return {
-        catalog: useCatalogStatement,
-        container: databaseStatement,
-        entities: entityScriptDtos,
-        views: viewsScriptDtos,
-        relationships: relationshipScrips,
-    };
+		return {
+			catalog: useCatalogStatement,
+			container: databaseStatement,
+			entities: entityScriptDtos,
+			views: viewsScriptDtos,
+			relationships: relationshipScrips,
+		};
+	};
 
-}
-
-const buildContainerLevelFEScript = (containerLevelFEScriptDto) => {
-    return buildScript([
-        containerLevelFEScriptDto.catalog,
-        containerLevelFEScriptDto.container,
-        ...(containerLevelFEScriptDto.entities.map(e => e.script)),
-        ...(containerLevelFEScriptDto.views.map(v => v.script)),
-        ...(containerLevelFEScriptDto.relationships),
-    ]);
-}
+const buildContainerLevelFEScript = containerLevelFEScriptDto => {
+	return buildScript([
+		containerLevelFEScriptDto.catalog,
+		containerLevelFEScriptDto.container,
+		...containerLevelFEScriptDto.entities.map(e => e.script),
+		...containerLevelFEScriptDto.views.map(v => v.script),
+		...containerLevelFEScriptDto.relationships,
+	]);
+};
 
 module.exports = {
-    buildEntityLevelFEScript,
-    buildContainerLevelFEScriptDto,
-    buildContainerLevelFEScript,
-}
+	buildEntityLevelFEScript,
+	buildContainerLevelFEScriptDto,
+	buildContainerLevelFEScript,
+};
