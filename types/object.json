@@ -1,0 +1,26 @@
+{
+	"name": "object",
+	"parentType": "document",
+	"structureType": true,
+	"hiddenOnEntity": "view",
+	"defaultValues": {
+		"subtype": "object",
+		"properties": []
+	},
+	"subtypes": {
+		"object": {
+			"childValueType": [
+				"text",
+				"numeric",
+				"bool",
+				"binary",
+				"timestamp",
+				"date",
+				"interval",
+				"array",
+				"map",
+				"struct"
+			]
+		}
+	}
+}
