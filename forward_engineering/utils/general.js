@@ -54,7 +54,7 @@ const buildStatement = (mainStatement, isActivated) => {
 const isEscaped = name => /`[\s\S]*`/.test(name);
 
 const checkContainSpecialCharacters = (name = '') => {
-	return !/^[A-Za-z_0-9]+$/.test(name);
+	return !/^\w$/.test(name);
 };
 
 const prepareName = (name = '') => {
@@ -255,6 +255,7 @@ const prepareScript = (...scripts) => scripts.filter(Boolean);
  * @return {number}
  * */
 const getDBVersionNumber = dbVersionString =>
+	// eslint-disable-next-line no-bitwise
 	typeof dbVersionString === 'number' ? dbVersionString : ~~dbVersionString.split(' ')[1];
 
 const getDifferentItems =

@@ -3,6 +3,8 @@
 .idea
 node_modules
 reverse_engineering/node_modules
+reverse_engineering/parser
 forward_engineering/node_modules
+forward_engineering/sampleGeneration/sampleGenerationTypes.d.ts
 build
 release

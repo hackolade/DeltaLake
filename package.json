@@ -52,6 +52,7 @@
         "@sqltools/formatter": "1.2.5",
         "abort-controller": "3.0.0",
         "antlr4": "4.9.2",
+        "lodash": "4.17.21",
         "node-fetch": "2.6.7"
     },
     "lint-staged": {
@@ -67,8 +68,8 @@
     },
     "devDependencies": {
         "@hackolade/hck-esbuild-plugins-pack": "0.0.1",
-        "@typescript-eslint/parser": "7.11.0",
         "@typescript-eslint/eslint-plugin": "7.11.0",
+        "@typescript-eslint/parser": "7.11.0",
         "esbuild": "0.20.2",
         "esbuild-plugin-clean": "1.0.1",
         "eslint": "8.57.0",
