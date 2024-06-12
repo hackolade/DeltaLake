@@ -54,7 +54,7 @@ const buildStatement = (mainStatement, isActivated) => {
 const isEscaped = name => /`[\s\S]*`/.test(name);
 
 const checkContainSpecialCharacters = (name = '') => {
-	return !/^\w$/.test(name);
+	return !/^\w+$/.test(name);
 };
 
 const prepareName = (name = '') => {
