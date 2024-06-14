@@ -146,12 +146,7 @@ making sure that you maintain a proper JSON format.
 				"propertyKeyword": "tableRole",
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
-				"options": [
-					"Dimension",
-					"Fact",
-					"Outrigger",
-					"Staging"
-				],
+				"options": ["Dimension", "Fact", "Outrigger", "Staging"],
 				"dependency": {
 					"level": "model",
 					"key": "modelingMethodology",
@@ -163,14 +158,7 @@ making sure that you maintain a proper JSON format.
 				"propertyKeyword": "vaultComponent",
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
-				"options": [
-					"Hub",
-					"Link",
-					"Satellite",
-					"Bridge",
-					"Point in Time",
-					"Reference"
-				],
+				"options": ["Hub", "Link", "Satellite", "Bridge", "Point in Time", "Reference"],
 				"dependency": {
 					"level": "model",
 					"key": "modelingMethodology",
@@ -201,45 +189,21 @@ making sure that you maintain a proper JSON format.
 				"propertyKeyword": "using",
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
-				"options": [
-					"",
-					"delta",
-					"CSVfile",
-					"Hive",
-					"JSONfile",
-					"JDBC",
-					"ORC",
-					"Parquet",
-					"LIBSVM",
-					"textfile"
-				]
+				"options": ["", "delta", "CSVfile", "Hive", "JSONfile", "JDBC", "ORC", "Parquet", "LIBSVM", "textfile"]
 			},
 			{
 				"propertyName": "Stored as",
 				"propertyKeyword": "storedAsTable",
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
-				"options": [
-					"",
-					"textfile",
-					"sequencefile",
-					"ORC",
-					"Parquet",
-					"Avro",
-					"RCfile",
-					"input/output format"
-				]
+				"options": ["", "textfile", "sequencefile", "ORC", "Parquet", "Avro", "RCfile", "input/output format"]
 			},
 			{
 				"propertyName": "Row format",
 				"propertyKeyword": "rowFormat",
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
-				"options": [
-					"",
-					"delimited",
-					"SerDe"
-				]
+				"options": ["", "delimited", "SerDe"]
 			},
 			{
 				"propertyName": "Fields terminated by",
@@ -624,7 +588,7 @@ making sure that you maintain a proper JSON format.
 									}
 								]
 							}
-						}, 
+						},
 						{
 							"tooltip": "Remove or update the existing composite primary key definition prior to unlock the possibility to create a new composite primary key definition for this table",
 							"dependency": {
@@ -716,33 +680,36 @@ making sure that you maintain a proper JSON format.
 						"template": "collectiontree",
 						"isCompositeKey": true,
 						"disabledItemStrategy": "default"
-					}]
+					}
+				]
 			}
 		]
 	},
 	{
 		"lowerTab": "Bloom Filter Indexes",
-		"structure": [{
-			"propertyName": "Bloom Filter Index",
-			"propertyType": "group",
-			"propertyKeyword": "BloomIndxs",
-			"propertyTooltip": "",
-			"structure": [
-				{
-					"propertyName": "Columns",
-					"propertyKeyword": "forColumns",
-					"propertyType": "fieldList",
-					"template": "orderedList"
-				},
-				{
-					"propertyName": "Options",
-					"propertyKeyword": "options",
-					"propertyTooltip": "options",
-					"propertyType": "details",
-					"template": "textarea"
-				}
-			]
-		}]
+		"structure": [
+			{
+				"propertyName": "Bloom Filter Index",
+				"propertyType": "group",
+				"propertyKeyword": "BloomIndxs",
+				"propertyTooltip": "",
+				"structure": [
+					{
+						"propertyName": "Columns",
+						"propertyKeyword": "forColumns",
+						"propertyType": "fieldList",
+						"template": "orderedList"
+					},
+					{
+						"propertyName": "Options",
+						"propertyKeyword": "options",
+						"propertyTooltip": "options",
+						"propertyType": "details",
+						"template": "textarea"
+					}
+				]
+			}
+		]
 	},
 	{
 		"lowerTab": "Check Constraints",

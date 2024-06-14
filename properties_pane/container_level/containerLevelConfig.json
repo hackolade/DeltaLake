@@ -307,65 +307,65 @@ making sure that you maintain a proper JSON format.
 			}
 		],
 		"containerLevelKeys": []
-	// },
-	// {
-	// 	"lowerTab": "Functions",
-	// 	"structure": [{
-	// 		"propertyName": "Functions",
-	// 		"propertyType": "group",
-	// 		"propertyKeyword": "UDFs",
-	// 		"propertyTooltip": "Creates a temporary or permanent function. Temporary functions are scoped at a session level where as permanent functions are created in the persistent catalog and are made available to all sessions. The resources specified in the USING clause are made available to all executors when they are executed for the first time.",
-	// 		"structure": [
-	// 			{
-	// 				"propertyName": "Name",
-	// 				"propertyKeyword": "funcName",
-	// 				"propertyTooltip": "A name of function to be created.",
-	// 				"propertyType": "text"
-	// 			},
-	// 			{
-	// 				"propertyName": "Or replace",
-	// 				"propertyKeyword": "funcOrReplace",
-	// 				"propertyType": "checkbox",
-	// 				"propertyTooltip": "If specified, the resources for the function are reloaded. This is mainly useful to pick up any changes made to the implementation of the function. This parameter is mutually exclusive to IF NOT EXISTS and cannot be specified together."
-	// 			},
-	// 			{
-	// 				"propertyName": "Temporary",
-	// 				"propertyKeyword": "funcTemporary",
-	// 				"propertyType": "checkbox",
-	// 				"propertyTooltip": "Indicates the scope of function being created. When TEMPORARY is specified, the created function is valid and visible in the current session. No persistent entry is made in the catalog for these kind of functions."
-	// 			},
-	// 			{
-	// 				"propertyName": "If not exist",
-	// 				"propertyKeyword": "funcIfNotExist",
-	// 				"propertyTooltip": "If specified, creates the function only when it does not exist. The creation of function succeeds (no error is thrown) if the specified function already exists in the system. This parameter is mutually exclusive to OR REPLACE and cannot be specified together.",
-	// 				"defaultValue": true,
-	// 				"propertyType": "checkbox"
-	// 			},
-	// 			{
-	// 				"propertyName": "Class name",
-	// 				"propertyKeyword": "funcClassName",
-	// 				"propertyTooltip": "The name of the class that provides the implementation for function to be created. ",
-	// 				"propertyType": "details",
-	// 				"template": "textarea",
-	// 				"markdown": false
-	// 			},
-	// 			{
-	// 				"propertyName": "Resource locations",
-	// 				"propertyKeyword": "funcResourceLocations",
-	// 				"propertyTooltip": "The list of resources that contain the implementation of the function along with its dependencies.",
-	// 				"propertyType": "details",
-	// 				"template": "textarea",
-	// 				"markdown": false
-	// 			},
-	// 			{
-	// 				"propertyName": "Comments",
-	// 				"propertyKeyword": "funcComments",
-	// 				"propertyTooltip": "comments",
-	// 				"addTimestampButton": false,
-	// 				"propertyType": "details",
-	// 				"template": "textarea"
-	// 			}
-	// 		]
-	// 	}]
+		// },
+		// {
+		// 	"lowerTab": "Functions",
+		// 	"structure": [{
+		// 		"propertyName": "Functions",
+		// 		"propertyType": "group",
+		// 		"propertyKeyword": "UDFs",
+		// 		"propertyTooltip": "Creates a temporary or permanent function. Temporary functions are scoped at a session level where as permanent functions are created in the persistent catalog and are made available to all sessions. The resources specified in the USING clause are made available to all executors when they are executed for the first time.",
+		// 		"structure": [
+		// 			{
+		// 				"propertyName": "Name",
+		// 				"propertyKeyword": "funcName",
+		// 				"propertyTooltip": "A name of function to be created.",
+		// 				"propertyType": "text"
+		// 			},
+		// 			{
+		// 				"propertyName": "Or replace",
+		// 				"propertyKeyword": "funcOrReplace",
+		// 				"propertyType": "checkbox",
+		// 				"propertyTooltip": "If specified, the resources for the function are reloaded. This is mainly useful to pick up any changes made to the implementation of the function. This parameter is mutually exclusive to IF NOT EXISTS and cannot be specified together."
+		// 			},
+		// 			{
+		// 				"propertyName": "Temporary",
+		// 				"propertyKeyword": "funcTemporary",
+		// 				"propertyType": "checkbox",
+		// 				"propertyTooltip": "Indicates the scope of function being created. When TEMPORARY is specified, the created function is valid and visible in the current session. No persistent entry is made in the catalog for these kind of functions."
+		// 			},
+		// 			{
+		// 				"propertyName": "If not exist",
+		// 				"propertyKeyword": "funcIfNotExist",
+		// 				"propertyTooltip": "If specified, creates the function only when it does not exist. The creation of function succeeds (no error is thrown) if the specified function already exists in the system. This parameter is mutually exclusive to OR REPLACE and cannot be specified together.",
+		// 				"defaultValue": true,
+		// 				"propertyType": "checkbox"
+		// 			},
+		// 			{
+		// 				"propertyName": "Class name",
+		// 				"propertyKeyword": "funcClassName",
+		// 				"propertyTooltip": "The name of the class that provides the implementation for function to be created. ",
+		// 				"propertyType": "details",
+		// 				"template": "textarea",
+		// 				"markdown": false
+		// 			},
+		// 			{
+		// 				"propertyName": "Resource locations",
+		// 				"propertyKeyword": "funcResourceLocations",
+		// 				"propertyTooltip": "The list of resources that contain the implementation of the function along with its dependencies.",
+		// 				"propertyType": "details",
+		// 				"template": "textarea",
+		// 				"markdown": false
+		// 			},
+		// 			{
+		// 				"propertyName": "Comments",
+		// 				"propertyKeyword": "funcComments",
+		// 				"propertyTooltip": "comments",
+		// 				"addTimestampButton": false,
+		// 				"propertyType": "details",
+		// 				"template": "textarea"
+		// 			}
+		// 		]
+		// 	}]
 	}
 ]

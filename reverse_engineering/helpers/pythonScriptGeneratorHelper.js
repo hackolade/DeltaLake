@@ -36,6 +36,6 @@ print(json.dumps(viewNames))
 `;
 
 module.exports = {
-  getClusterData,
-  getViewNamesCommand,
+	getClusterData,
+	getViewNamesCommand,
 };

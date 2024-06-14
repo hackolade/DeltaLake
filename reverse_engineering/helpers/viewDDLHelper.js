@@ -1,6 +1,6 @@
-const SqlBaseLexer = require('../parser/SQLBase/SqlBaseLexer')
-const SqlBaseParser = require('../parser/SQLBase/SqlBaseParser')
-const SqlBaseToCollectionVisitor = require('../sqlBaseToCollectionsVisitor')
+const SqlBaseLexer = require('../parser/SQLBase/SqlBaseLexer');
+const SqlBaseParser = require('../parser/SQLBase/SqlBaseParser');
+const SqlBaseToCollectionVisitor = require('../sqlBaseToCollectionsVisitor');
 const ExprErrorListener = require('../antlrErrorListener');
 const antlr4 = require('antlr4');
 const { dependencies } = require('../appDependencies');
@@ -21,10 +21,15 @@ const getViewDataFromDDl = statement => {
 	const sqlBaseToCOllectionVisitor = new SqlBaseToCollectionVisitor();
 	let parsedViewData = tree.accept(sqlBaseToCOllectionVisitor);
 	if (!_.isEmpty(parsedViewData.selectStatement)) {
-		parsedViewData.selectStatement = statement.substring(parsedViewData.selectStatement.select.start, parsedViewData.selectStatement.select.stop)
+		parsedViewData.selectStatement = statement.substring(
+			parsedViewData.selectStatement.select.start,
+			parsedViewData.selectStatement.select.stop,
+		);
 	}
 	if (!_.isEmpty(parsedViewData.colList) && Array.isArray(parsedViewData.colList)) {
-		parsedViewData.columnList = parsedViewData.colList.map(({ identifier, comment }) => `${identifier}${comment ? ` COMMENT '${comment}'` : ''}`).join(', ');
+		parsedViewData.columnList = parsedViewData.colList
+			.map(({ identifier, comment }) => `${identifier}${comment ? ` COMMENT '${comment}'` : ''}`)
+			.join(', ');
 	}
 	return {
 		code: parsedViewData.identifier,
@@ -36,8 +41,8 @@ const getViewDataFromDDl = statement => {
 		selectStatement: parsedViewData.selectStatement,
 		tableProperties: filterRedundantProperties(parsedViewData.tableProperties, ['transient_lastDdlTime']),
 		columnList: parsedViewData.columnList,
-	}
-}
+	};
+};
 
 const filterRedundantProperties = (tableProperties, propertiesList) => {
 	if (!Array.isArray(tableProperties)) {
@@ -57,7 +62,7 @@ const getJsonSchema = (viewSchema, viewSample) => {
 			...result,
 			[row[COL_NAME]]: {
 				...(row[COL_COMMENT] && { comments: row[COL_COMMENT] }),
-				...schemaHelper.getJsonSchema(row[COL_TYPE], viewSample?.[i])
+				...schemaHelper.getJsonSchema(row[COL_TYPE], viewSample?.[i]),
 			},
 		};
 	}, {});

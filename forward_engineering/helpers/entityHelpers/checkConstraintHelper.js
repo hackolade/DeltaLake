@@ -27,12 +27,11 @@ const getCheckConstraintName = (constraintName, tableName, index) => {
 	return wrapInTicks(generatedName);
 };
 
-
 /**
  * @param ddlProvider {Object}
  * @returns GetStatementsFunction
  * */
-const getCheckConstraintsScriptsOnColumnLevel = (ddlProvider) => (columns, tableName) => {
+const getCheckConstraintsScriptsOnColumnLevel = ddlProvider => (columns, tableName) => {
 	return Object.keys(columns)
 		.map(colName => ({ colName: colName.replaceAll('`', ''), ...columns[colName] }))
 		.filter(column => column.constraints?.check)
@@ -47,10 +46,14 @@ const getCheckConstraintsScriptsOnColumnLevel = (ddlProvider) => (columns, table
  * @param ddlProvider {Object}
  * @returns GetStatementsFunction
  * */
-const getCheckConstraintsScriptsOnTableLevel = (ddlProvider) => (entityJsonSchema, tableName) => {
+const getCheckConstraintsScriptsOnTableLevel = ddlProvider => (entityJsonSchema, tableName) => {
 	if (entityJsonSchema.chkConstr?.length) {
 		return entityJsonSchema.chkConstr.map((checkConstr, index) => {
-			const constraintName = getCheckConstraintName(checkConstr.chkConstrName, entityJsonSchema.collectionName, index);
+			const constraintName = getCheckConstraintName(
+				checkConstr.chkConstrName,
+				entityJsonSchema.collectionName,
+				index,
+			);
 
 			return ddlProvider.setCheckConstraint(tableName, constraintName, checkConstr.constrExpression);
 		});
@@ -78,5 +81,5 @@ const buildConstraints = (tableConstraints, columnConstraints) => {
 module.exports = {
 	getCheckConstraintsScriptsOnColumnLevel,
 	getCheckConstraintsScriptsOnTableLevel,
-	buildConstraints
+	buildConstraints,
 };
