@@ -133,11 +133,7 @@ making sure that you maintain a proper JSON format.
 				"propertyName": "Subtype",
 				"propertyKeyword": "mode",
 				"propertyType": "select",
-				"options": [
-					"string",
-					"varchar",
-					"char"
-				],
+				"options": ["string", "varchar", "char"],
 				"data": "options",
 				"valueType": "string"
 			},
@@ -190,7 +186,6 @@ making sure that you maintain a proper JSON format.
 							}
 						]
 					}
-					
 				}
 			},
 			"enum",
@@ -210,7 +205,7 @@ making sure that you maintain a proper JSON format.
 							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
 							"dependency": {
 								"key": "compositePrimaryKey",
-								"value": true 
+								"value": true
 							}
 						},
 						{
@@ -294,23 +289,29 @@ making sure that you maintain a proper JSON format.
 						},
 						{
 							"type": "or",
-							"values": [{
-								"key": "compositePrimaryKey",
-								"value": false
-							}, {
-								"key": "compositePrimaryKey",
-								"exist": false
-							}]
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
 						},
 						{
 							"type": "or",
-							"values": [{
-								"key": "compositeUniqueKey",
-								"value": false
-							}, {
-								"key": "compositeUniqueKey",
-								"exist": false
-							}]
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
 						}
 					]
 				},
@@ -417,10 +418,7 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Type",
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
-						"options": [
-							"always",
-							"by default"
-						],
+						"options": ["always", "by default"],
 						"defaultValue": "always"
 					},
 					{
@@ -530,15 +528,7 @@ making sure that you maintain a proper JSON format.
 				"propertyName": "Subtype",
 				"propertyKeyword": "mode",
 				"propertyType": "select",
-				"options": [
-					"tinyint",
-					"smallint",
-					"int",
-					"bigint",
-					"float",
-					"double",
-					"decimal"
-				],
+				"options": ["tinyint", "smallint", "int", "bigint", "float", "double", "decimal"],
 				"data": "options",
 				"valueType": "string"
 			},
@@ -589,7 +579,7 @@ making sure that you maintain a proper JSON format.
 							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
 							"dependency": {
 								"key": "compositePrimaryKey",
-								"value": true 
+								"value": true
 							}
 						},
 						{
@@ -734,11 +724,7 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Type",
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
-						"options": [
-							"",
-							"always",
-							"by default"
-						],
+						"options": ["", "always", "by default"],
 						"defaultValue": "always"
 					},
 					{
@@ -926,10 +912,7 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Type",
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
-						"options": [
-							"always",
-							"by default"
-						],
+						"options": ["always", "by default"],
 						"defaultValue": "always"
 					},
 					{
@@ -1050,7 +1033,7 @@ making sure that you maintain a proper JSON format.
 							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
 							"dependency": {
 								"key": "compositePrimaryKey",
-								"value": true 
+								"value": true
 							}
 						},
 						{
@@ -1189,10 +1172,7 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Type",
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
-						"options": [
-							"always",
-							"by default"
-						],
+						"options": ["always", "by default"],
 						"defaultValue": "always"
 					},
 					{
@@ -1301,10 +1281,7 @@ making sure that you maintain a proper JSON format.
 				"propertyName": "Subtype",
 				"propertyKeyword": "mode",
 				"propertyType": "select",
-				"options": [
-					"",
-					"timestamp_ntz"
-				],
+				"options": ["", "timestamp_ntz"],
 				"data": "options",
 				"valueType": "string",
 				"dependency": [
@@ -1338,7 +1315,7 @@ making sure that you maintain a proper JSON format.
 							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
 							"dependency": {
 								"key": "compositePrimaryKey",
-								"value": true 
+								"value": true
 							}
 						},
 						{
@@ -1477,10 +1454,7 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Type",
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
-						"options": [
-							"always",
-							"by default"
-						],
+						"options": ["always", "by default"],
 						"defaultValue": "always"
 					},
 					{
@@ -1606,7 +1580,7 @@ making sure that you maintain a proper JSON format.
 							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
 							"dependency": {
 								"key": "compositePrimaryKey",
-								"value": true 
+								"value": true
 							}
 						},
 						{
@@ -1745,10 +1719,7 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Type",
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
-						"options": [
-							"always",
-							"by default"
-						],
+						"options": ["always", "by default"],
 						"defaultValue": "always"
 					},
 					{
@@ -1873,7 +1844,7 @@ making sure that you maintain a proper JSON format.
 							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
 							"dependency": {
 								"key": "compositePrimaryKey",
-								"value": true 
+								"value": true
 							}
 						},
 						{
@@ -2012,10 +1983,7 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Type",
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
-						"options": [
-							"always",
-							"by default"
-						],
+						"options": ["always", "by default"],
 						"defaultValue": "always"
 					},
 					{
@@ -2160,7 +2128,7 @@ making sure that you maintain a proper JSON format.
 							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
 							"dependency": {
 								"key": "compositePrimaryKey",
-								"value": true 
+								"value": true
 							}
 						},
 						{
@@ -2298,10 +2266,7 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Type",
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
-						"options": [
-							"always",
-							"by default"
-						],
+						"options": ["always", "by default"],
 						"defaultValue": "always"
 					},
 					{
@@ -2410,21 +2375,13 @@ making sure that you maintain a proper JSON format.
 				"propertyName": "Key type",
 				"propertyKeyword": "keyType",
 				"propertyType": "select",
-				"options": [
-					"",
-					"text",
-					"numeric"
-				]
+				"options": ["", "text", "numeric"]
 			},
 			{
 				"propertyName": "Key subtype",
 				"propertyKeyword": "keySubtype",
 				"propertyType": "select",
-				"options": [
-					"string",
-					"varchar",
-					"char"
-				],
+				"options": ["string", "varchar", "char"],
 				"dependency": {
 					"key": "keyType",
 					"value": "text"
@@ -2434,15 +2391,7 @@ making sure that you maintain a proper JSON format.
 				"propertyName": "Key subtype",
 				"propertyKeyword": "keySubtype",
 				"propertyType": "select",
-				"options": [
-					"tinyint",
-					"smallint",
-					"int",
-					"bigint",
-					"float",
-					"double",
-					"decimal"
-				],
+				"options": ["tinyint", "smallint", "int", "bigint", "float", "double", "decimal"],
 				"dependency": {
 					"key": "keyType",
 					"value": "numeric"
@@ -2484,7 +2433,7 @@ making sure that you maintain a proper JSON format.
 							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
 							"dependency": {
 								"key": "compositePrimaryKey",
-								"value": true 
+								"value": true
 							}
 						},
 						{
@@ -2622,10 +2571,7 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Type",
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
-						"options": [
-							"always",
-							"by default"
-						],
+						"options": ["always", "by default"],
 						"defaultValue": "always"
 					},
 					{
@@ -2749,7 +2695,7 @@ making sure that you maintain a proper JSON format.
 							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
 							"dependency": {
 								"key": "compositePrimaryKey",
-								"value": true 
+								"value": true
 							}
 						},
 						{
@@ -2887,10 +2833,7 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Type",
 						"propertyKeyword": "generatedType",
 						"propertyType": "select",
-						"options": [
-							"always",
-							"by default"
-						],
+						"options": ["always", "by default"],
 						"defaultValue": "always"
 					},
 					{

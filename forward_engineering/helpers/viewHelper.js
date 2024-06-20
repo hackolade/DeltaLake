@@ -1,46 +1,52 @@
-'use strict'
+'use strict';
 
 const { prepareName, encodeStringLiteral } = require('../utils/general');
 const { getTablePropertiesClause } = require('./tableHelper');
 const { getViewTagsStatement } = require('./unityTagsHelper');
 
-const getColumnNames = (_) => (collectionRefsDefinitionsMap, columns) => {
-	return _.uniq(Object.keys(columns).map(name => {
-		const id = _.get(columns, [name, 'GUID']);
+const getColumnNames = _ => (collectionRefsDefinitionsMap, columns) => {
+	return _.uniq(
+		Object.keys(columns).map(name => {
+			const id = _.get(columns, [name, 'GUID']);
 
-		const itemDataId = Object.keys(collectionRefsDefinitionsMap).find(viewFieldId => {
-			const definitionData = collectionRefsDefinitionsMap[viewFieldId];
+			const itemDataId = Object.keys(collectionRefsDefinitionsMap).find(viewFieldId => {
+				const definitionData = collectionRefsDefinitionsMap[viewFieldId];
 
-			return definitionData.definitionId === id;
-		});
-		const itemData = collectionRefsDefinitionsMap[itemDataId] || {};
-		if (!itemData.name) {
-			return prepareName(itemData.name);
-		}
-		const collection = _.first(itemData.collection) || {};
-		const collectionName = collection.code || collection.collectionName;
-		const db = _.first(itemData.bucket) || {};
-		const dbName = db.code || db.name;
+				return definitionData.definitionId === id;
+			});
+			const itemData = collectionRefsDefinitionsMap[itemDataId] || {};
+			if (!itemData.name) {
+				return prepareName(itemData.name);
+			}
+			const collection = _.first(itemData.collection) || {};
+			const collectionName = collection.code || collection.collectionName;
+			const db = _.first(itemData.bucket) || {};
+			const dbName = db.code || db.name;
 
-		return `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
-	})).filter(_.identity);
+			return `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
+		}),
+	).filter(_.identity);
 };
 
-const getFromStatement = (_) => (collectionRefsDefinitionsMap, columns) => {
-	const sourceCollections = _.uniq(Object.keys(columns).map(name => {
-		const refId = columns[name].refId;
-		const source = collectionRefsDefinitionsMap[refId];
-		if (!source) {
-			return;
-		}
-		const collection = _.first(source?.collection) || {};
-		const bucket = _.first(source?.bucket) || {};
-		const collectionName = prepareName(collection.collectionName || collection.code);
-		const bucketName = prepareName(bucket.name || bucket.code || '');
-		const fullCollectionName = bucketName ? `${bucketName}.${collectionName}` : `${collectionName}`;
+const getFromStatement = _ => (collectionRefsDefinitionsMap, columns) => {
+	const sourceCollections = _.uniq(
+		Object.keys(columns)
+			.map(name => {
+				const refId = columns[name].refId;
+				const source = collectionRefsDefinitionsMap[refId];
+				if (!source) {
+					return;
+				}
+				const collection = _.first(source?.collection) || {};
+				const bucket = _.first(source?.bucket) || {};
+				const collectionName = prepareName(collection.collectionName || collection.code);
+				const bucketName = prepareName(bucket.name || bucket.code || '');
+				const fullCollectionName = bucketName ? `${bucketName}.${collectionName}` : `${collectionName}`;
 
-		return fullCollectionName;
-	}).filter(Boolean));
+				return fullCollectionName;
+			})
+			.filter(Boolean),
+	);
 	if (_.isEmpty(sourceCollections)) {
 		return '';
 	}
@@ -48,25 +54,18 @@ const getFromStatement = (_) => (collectionRefsDefinitionsMap, columns) => {
 	return 'FROM ' + sourceCollections.join(' INNER JOIN ');
 };
 
-const retrivePropertyFromConfig = (config, tab, propertyName, defaultValue = "") => ((config || [])[tab] || {})[propertyName] || defaultValue;
+const retrivePropertyFromConfig = (config, tab, propertyName, defaultValue = '') =>
+	((config || [])[tab] || {})[propertyName] || defaultValue;
 
-const retrieveContainerName = (containerConfig) => retrivePropertyFromConfig(
-	containerConfig, 0, "code",
-	retrivePropertyFromConfig(containerConfig, 0, "name", "")
-);
+const retrieveContainerName = containerConfig =>
+	retrivePropertyFromConfig(containerConfig, 0, 'code', retrivePropertyFromConfig(containerConfig, 0, 'name', ''));
 
 const replaceSpaceWithUnderscore = (name = '') => {
 	return name.replace(/\s/g, '_');
-}
+};
 
 module.exports = {
-	getViewScript({
-		_,
-		schema,
-		viewData,
-		containerData,
-		collectionRefsDefinitionsMap,
-	}) {
+	getViewScript({ _, schema, viewData, containerData, collectionRefsDefinitionsMap }) {
 		let script = [];
 		const columns = schema.properties || {};
 		const view = _.first(viewData) || {};
@@ -82,11 +81,15 @@ module.exports = {
 		const orReplace = schema.viewOrReplace;
 		const ifNotExists = view.viewIfNotExist;
 		const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
-		const createStatement = `CREATE ${(orReplace && !ifNotExists) ? 'OR REPLACE ' : ''}${isGlobal ? 'GLOBAL ' : ''}${isTemporary ? 'TEMPORARY ' : ''}VIEW${ifNotExists ? ' IF NOT EXISTS' : ''} ${name}`;
+		const createStatement = `CREATE ${orReplace && !ifNotExists ? 'OR REPLACE ' : ''}${isGlobal ? 'GLOBAL ' : ''}${isTemporary ? 'TEMPORARY ' : ''}VIEW${ifNotExists ? ' IF NOT EXISTS' : ''} ${name}`;
 		const comment = schema.description;
 		let tablePropertyStatements = '';
-		const tableProperties = schema.tableProperties && Array.isArray(schema.tableProperties) ? filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime']) : [];
-		const viewUnityTagsStatements = schema.unityViewTags && getViewTagsStatement({viewSchema: schema, viewName: name});
+		const tableProperties =
+			schema.tableProperties && Array.isArray(schema.tableProperties)
+				? filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime'])
+				: [];
+		const viewUnityTagsStatements =
+			schema.unityViewTags && getViewTagsStatement({ viewSchema: schema, viewName: name });
 
 		if (tableProperties.length) {
 			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`;
@@ -94,7 +97,10 @@ module.exports = {
 		script.push(createStatement);
 		if (schema.selectStatement) {
 			const columnList = view.columnList ? ` (${view.columnList})` : ' ';
-			return createStatement + `${columnList} ${comment ? ' COMMENT \'' + encodeStringLiteral(comment) + '\'' : ''} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n${viewUnityTagsStatements}`;
+			return (
+				createStatement +
+				`${columnList} ${comment ? " COMMENT '" + encodeStringLiteral(comment) + "'" : ''} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n${viewUnityTagsStatements}`
+			);
 		}
 
 		if (_.isEmpty(columns)) {

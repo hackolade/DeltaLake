@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 const {
 	buildStatement,
@@ -7,7 +7,7 @@ const {
 	replaceSpaceWithUnderscore,
 	encodeStringLiteral,
 	prepareName,
-	getDBVersionNumber
+	getDBVersionNumber,
 } = require('../utils/general');
 const { getCatalogTagsStatement, getSchemaTagsStatement } = require('../helpers/unityTagsHelper');
 const { Runtime } = require('../enums/runtime');
@@ -40,24 +40,30 @@ const getLocationOption = (location, managedLocation, isUnityCatalogSupports) =>
  * @return {string}
  * */
 const getCreateStatement = ({
-	name, comment, location, managedLocation, dbProperties, isActivated, isUnityCatalogSupports, dbVersion
-}) => buildStatement(`CREATE ${getBucketKeyword(dbVersion)} IF NOT EXISTS ${name}`, isActivated)
-	(comment, `COMMENT '${encodeStringLiteral(comment)}'`)
-	(location || managedLocation, getLocationOption(location, managedLocation, isUnityCatalogSupports))
-	(dbProperties, `WITH DBPROPERTIES (${dbProperties})`)
-	(true, ';')
-		();
-
+	name,
+	comment,
+	location,
+	managedLocation,
+	dbProperties,
+	isActivated,
+	isUnityCatalogSupports,
+	dbVersion,
+}) =>
+	buildStatement(`CREATE ${getBucketKeyword(dbVersion)} IF NOT EXISTS ${name}`, isActivated)(
+		comment,
+		`COMMENT '${encodeStringLiteral(comment)}'`,
+	)(location || managedLocation, getLocationOption(location, managedLocation, isUnityCatalogSupports))(
+		dbProperties,
+		`WITH DBPROPERTIES (${dbProperties})`,
+	)(true, ';')();
 
 /**
  * @return {string}
  * */
-const getUseCatalogStatement = (databaseData) => {
-    const databaseDetails = getTab(0, databaseData);
+const getUseCatalogStatement = databaseData => {
+	const databaseDetails = getTab(0, databaseData);
 
-    return databaseDetails.catalogName
-        ? `USE CATALOG ${prepareName(databaseDetails.catalogName)};`
-        : '';
+	return databaseDetails.catalogName ? `USE CATALOG ${prepareName(databaseDetails.catalogName)};` : '';
 };
 
 /**
@@ -73,25 +79,25 @@ const getDatabaseStatement = (containerData, isUnityCatalogSupports, dbVersion) 
 		return '';
 	}
 
-    let unityCatalogTags = '';
-    let unitySchemaTags = '';
-    const createStatement = getCreateStatement({
-        name: name,
-        comment: tab.description,
-        location: tab.location,
-        managedLocation: tab.managedLocation,
-        dbProperties: tab.dbProperties,
-        isActivated: tab.isActivated,
-        isUnityCatalogSupports,
-        dbVersion
-    });
+	let unityCatalogTags = '';
+	let unitySchemaTags = '';
+	const createStatement = getCreateStatement({
+		name: name,
+		comment: tab.description,
+		location: tab.location,
+		managedLocation: tab.managedLocation,
+		dbProperties: tab.dbProperties,
+		isActivated: tab.isActivated,
+		isUnityCatalogSupports,
+		dbVersion,
+	});
 
-    if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
-        unityCatalogTags = getCatalogTagsStatement(tab);
-        unitySchemaTags = getSchemaTagsStatement(tab, name);
-    }
+	if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
+		unityCatalogTags = getCatalogTagsStatement(tab);
+		unitySchemaTags = getSchemaTagsStatement(tab, name);
+	}
 
-    return [createStatement, unityCatalogTags, unitySchemaTags].filter(Boolean).join('\n\n');
+	return [createStatement, unityCatalogTags, unitySchemaTags].filter(Boolean).join('\n\n');
 };
 
 const getDatabaseAlterStatement = (containerData, dbVersion) => {
@@ -103,16 +109,16 @@ const getDatabaseAlterStatement = (containerData, dbVersion) => {
 	if (!name) {
 		return '';
 	}
-	return `ALTER ${getBucketKeyword(dbVersion)} ${name} SET DBPROPERTIES (${tab.dbProperties});\n\n`
+	return `ALTER ${getBucketKeyword(dbVersion)} ${name} SET DBPROPERTIES (${tab.dbProperties});\n\n`;
 };
 
-const getBucketKeyword = (dbVersion) => {
+const getBucketKeyword = dbVersion => {
 	return getDBVersionNumber(dbVersion) < 9 ? 'DATABASE' : 'SCHEMA';
-}
+};
 
 module.exports = {
 	getUseCatalogStatement,
 	getDatabaseStatement,
 	getDatabaseAlterStatement,
-	getBucketKeyword
+	getBucketKeyword,
 };

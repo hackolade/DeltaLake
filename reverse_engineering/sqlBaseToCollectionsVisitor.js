@@ -13,7 +13,7 @@ class Visitor extends SqlBaseVisitor {
 	}
 
 	visitSingleStatement(ctx) {
-		return this.visit(ctx.statement())
+		return this.visit(ctx.statement());
 	}
 
 	visitCreateTable(ctx) {
@@ -63,10 +63,9 @@ class Visitor extends SqlBaseVisitor {
 			query: querySelectProperties,
 			primaryKey: compositePrimaryKeys,
 			fkConstraints,
-        	chkConstr: checkConstraints
-		}
+			chkConstr: checkConstraints,
+		};
 	}
-
 
 	visitCreateView(ctx) {
 		const identifier = getName(ctx.multipartIdentifier());
@@ -81,18 +80,18 @@ class Visitor extends SqlBaseVisitor {
 			comment: this.visitIfExists(ctx, 'commentSpec', '')[0] || '',
 			selectStatement: this.visitIfExists(ctx, 'query'),
 			tableProperties: this.visitIfExists(ctx, 'tablePropertyList', '')?.[0],
-		}
+		};
 	}
 
 	visitIdentifierCommentList(ctx) {
-		return this.visit(ctx.identifierComment())
+		return this.visit(ctx.identifierComment());
 	}
 
 	visitIdentifierComment(ctx) {
 		return {
 			identifier: getName(ctx.identifier()),
-			comment: this.visitIfExists(ctx, 'commentSpec', '')
-		}
+			comment: this.visitIfExists(ctx, 'commentSpec', ''),
+		};
 	}
 
 	visitQuery(ctx) {
@@ -100,23 +99,23 @@ class Visitor extends SqlBaseVisitor {
 			select: {
 				start: ctx.start.start,
 				stop: ctx.stop.stop + 1,
-			}
-		}
+			},
+		};
 	}
 
 	visitCreateTableHeader(ctx) {
 		return {
 			isExternal: this.visitFlagValue(ctx, 'EXTERNAL'),
 			isTemporary: this.visitFlagValue(ctx, 'TEMPORARY'),
-			tableName: getName(ctx.multipartIdentifier())
-		}
+			tableName: getName(ctx.multipartIdentifier()),
+		};
 	}
 
 	visitTableConstraint(ctx) {
 		return {
 			pkConstraint: this.visitIfExists(ctx, 'primaryKeyConstraint'),
 			fkConstraint: this.visitIfExists(ctx, 'foreignKeyConstraint'),
-		}
+		};
 	}
 
 	visitPrimaryKeyConstraint(ctx) {
@@ -128,8 +127,8 @@ class Visitor extends SqlBaseVisitor {
 	}
 
 	visitForeignKeyConstraint(ctx) {
-		const [ catalog, parentDatabase, parentCollection ] = this.visit(ctx.multipartIdentifier()).filter(Boolean);
-		const [ childField, parentField ] = this.visitIfExists(ctx, 'keyNameList', []);
+		const [catalog, parentDatabase, parentCollection] = this.visit(ctx.multipartIdentifier()).filter(Boolean);
+		const [childField, parentField] = this.visitIfExists(ctx, 'keyNameList', []);
 		return {
 			relationshipName: this.visitIfExists(ctx, 'tableConstraintName', ''),
 			relationshipType: 'Foreign Key',
@@ -154,8 +153,8 @@ class Visitor extends SqlBaseVisitor {
 			notEnforced: this.visitFlagValue(ctx, 'ENFORCED', false),
 			deferrable: this.visitFlagValue(ctx, 'DEFERRABLE', false),
 			initiallyDeferrable: this.visitFlagValue(ctx, 'DEFERRED', false),
-			noRely: this.visitFlagValue(ctx, 'NORELY', false)
-		}
+			noRely: this.visitFlagValue(ctx, 'NORELY', false),
+		};
 	}
 
 	visitColTypeList(ctx) {
@@ -168,7 +167,7 @@ class Visitor extends SqlBaseVisitor {
 			colType: this.visit(ctx.dataType()),
 			colComment: this.visitIfExists(ctx, 'commentSpec', ''),
 			...this.visitIfExists(ctx, 'columnConstraint', {}),
-		}
+		};
 	}
 
 	visitColumnConstraint(ctx) {
@@ -219,7 +218,7 @@ class Visitor extends SqlBaseVisitor {
 			generatedType: ctx.KW_DEFAULT() ? 'by default' : 'always',
 			asIdentity: true,
 			...(hasIdentityOptions && { identity: this.visit(ctx.identityOptions()) }),
-		}
+		};
 	}
 
 	visitIdentityOptions(ctx) {
@@ -239,25 +238,24 @@ class Visitor extends SqlBaseVisitor {
 
 	visitMapDataType(ctx) {
 		return {
-			type: "map",
+			type: 'map',
 			key: this.visit(ctx.key),
 			val: this.visit(ctx.val),
-		}
-
+		};
 	}
 
 	visitStructDataType(ctx) {
 		return {
-			type: "struct",
-			params: this.visitIfExists(ctx, 'complexColTypeList', '')
-		}
+			type: 'struct',
+			params: this.visitIfExists(ctx, 'complexColTypeList', ''),
+		};
 	}
 
 	visitArrayDataType(ctx) {
 		return {
-			type: "array",
+			type: 'array',
 			elements: this.visit(ctx.dataType()),
-		}
+		};
 	}
 
 	visitPrimitiveDataType(ctx) {
@@ -265,11 +263,11 @@ class Visitor extends SqlBaseVisitor {
 			type: getName(ctx.identifier()).toLowerCase(),
 			precision: getLabelValue(ctx, 'precision'),
 			scale: getLabelValue(ctx, 'scale'),
-		}
+		};
 	}
 
 	visitComplexColTypeList(ctx) {
-		return this.visit(ctx.complexColType())
+		return this.visit(ctx.complexColType());
 	}
 
 	visitComplexColType(ctx) {
@@ -277,8 +275,8 @@ class Visitor extends SqlBaseVisitor {
 			colName: getName(ctx.identifier()),
 			colType: this.visit(ctx.dataType()),
 			isNotNull: this.visitFlagValue(ctx, 'NULL'),
-			colComment: this.visitIfExists(ctx, 'commentSpec', '')
-		}
+			colComment: this.visitIfExists(ctx, 'commentSpec', ''),
+		};
 	}
 
 	visitCreateTableClauses(ctx) {
@@ -292,7 +290,7 @@ class Visitor extends SqlBaseVisitor {
 			commentSpec: this.visitIfExists(ctx, 'commentSpec', [])[0],
 			tableProperties: this.visitIfExists(ctx, 'tableProperties', [])?.[0]?.[1],
 			tableOptions: this.visitIfExists(ctx, 'tableOptions', '')?.[0] || '',
-		}
+		};
 	}
 
 	visitTableOptions(ctx) {
@@ -310,7 +308,7 @@ class Visitor extends SqlBaseVisitor {
 		return options.match(regExp)[1] || '';
 	}
 
-	visitTablePropertyList(ctx){
+	visitTablePropertyList(ctx) {
 		return this.visit(ctx.tableProperty());
 	}
 
@@ -337,13 +335,13 @@ class Visitor extends SqlBaseVisitor {
 	visitTableFileFormat(ctx) {
 		return {
 			inputFormatClassname: getLabelValue(ctx, 'inFmt'),
-			outputFormatClassname: getLabelValue(ctx, 'outFmt')
+			outputFormatClassname: getLabelValue(ctx, 'outFmt'),
 		};
 	}
 
 	visitGenericFileFormat(ctx) {
 		return {
-			serDeLibrary: getName(ctx.identifier())
+			serDeLibrary: getName(ctx.identifier()),
 		};
 	}
 
@@ -355,7 +353,7 @@ class Visitor extends SqlBaseVisitor {
 			keysTerminatedBy: getLabelValue(ctx, 'keysTerminatedBy'),
 			linesSeparatedBy: getLabelValue(ctx, 'linesSeparatedBy'),
 			nullDefinedAs: getLabelValue(ctx, 'nullDefinedAs'),
-			collectionItemsTerminatedBy: getLabelValue(ctx, 'collectionItemsTerminatedBy')
+			collectionItemsTerminatedBy: getLabelValue(ctx, 'collectionItemsTerminatedBy'),
 		};
 	}
 
@@ -363,14 +361,14 @@ class Visitor extends SqlBaseVisitor {
 		return {
 			format: 'SerDe',
 			serDeLibrary: getLabelValue(ctx, 'name'),
-			serDeProperties: getName(ctx.tablePropertyList())
+			serDeProperties: getName(ctx.tablePropertyList()),
 		};
 	}
 
 	visitSkewSpec(ctx) {
 		return {
 			skewedBy: this.visit(ctx.identifierList()),
-			skewedOn: getName(ctx.constantList()) || getName(ctx.nestedConstantList())
+			skewedOn: getName(ctx.constantList()) || getName(ctx.nestedConstantList()),
 		};
 	}
 
@@ -378,7 +376,7 @@ class Visitor extends SqlBaseVisitor {
 		return {
 			clusteredBy: this.visit(ctx.identifierList()),
 			sortedBy: this.visitIfExists(ctx, 'orderedIdentifierList'),
-			bucketsNum: getName(ctx.INTEGER_VALUE())
+			bucketsNum: getName(ctx.INTEGER_VALUE()),
 		};
 	}
 
@@ -390,14 +388,13 @@ class Visitor extends SqlBaseVisitor {
 		const desc = this.visitFlagValue(ctx, 'DESC');
 		return {
 			name: getName(ctx.errorCapturingIdentifier()),
-			ordering: desc ? 'DESC' : 'ASC'
+			ordering: desc ? 'DESC' : 'ASC',
 		};
 	}
 
 	visitPartitionFieldList(ctx) {
 		return this.visit(ctx.partitionField());
 	}
-
 
 	visitPartitionTransform(ctx) {
 		return getName(ctx.transform());
@@ -443,13 +440,13 @@ class Visitor extends SqlBaseVisitor {
 
 const getLabelValue = (context, label) => {
 	return context[label]?.text ? removeQuotes(context[label]?.text) : '';
-}
+};
 
 const getCommentValue = (context, label) => {
 	const comment = context[label]?.text ? removeValueQuotes(context[label]?.text) : '';
 
 	return removeEscapingBackSlash(comment);
-}
+};
 
 const getName = context => {
 	if (!context || dependencies.lodash.isEmpty(context)) {
@@ -460,7 +457,7 @@ const getName = context => {
 
 const removeQuotes = (string = '') => string.replace(/['`"]+/gm, '');
 
-const removeValueQuotes = (string = '') => string.replace(/^(['"`])([\s\S]*)\1$/, '$2')
+const removeValueQuotes = (string = '') => string.replace(/^(['"`])([\s\S]*)\1$/, '$2');
 
 const removeEscapingBackSlash = (string = '') => string.replace(/\\(['\\])/g, '$1');
 
@@ -480,9 +477,9 @@ const fillColumnsWithPkConstraints = (columns = [], pkConstraints = []) => {
 				notEnforced: columnConstraint.notEnforced || false,
 				deferrable: columnConstraint.deferrable || false,
 				initiallyDeferrable: columnConstraint.initiallyDeferrable || false,
-				noRely: columnConstraint.noRely || false
-			}
-		}
+				noRely: columnConstraint.noRely || false,
+			},
+		};
 	});
 };
 

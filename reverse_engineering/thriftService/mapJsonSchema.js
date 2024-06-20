@@ -1,5 +1,4 @@
-
-const mapJsonSchema = (_) => (jsonSchema, parentJsonSchema, callback, key) => {
+const mapJsonSchema = _ => (jsonSchema, parentJsonSchema, callback, key) => {
 	const mapProperties = (properties, mapper) =>
 		Object.keys(properties).reduce((newProperties, propertyName) => {
 			const schema = mapper(properties[propertyName], propertyName);
@@ -42,10 +41,10 @@ const mapJsonSchema = (_) => (jsonSchema, parentJsonSchema, callback, key) => {
 			parentJsonSchema.properties = {};
 		}
 
-		Object.keys(subSchema.properties).forEach((key) => {
+		Object.keys(subSchema.properties).forEach(key => {
 			if (_.has(parentJsonSchema, 'properties.' + key)) {
 				return;
-			} 
+			}
 
 			parentJsonSchema.properties[key] = subSchema.properties[key];
 		});

@@ -8,47 +8,52 @@ const splitTableAndViewNames = names => {
 
 const getCount = (count, recordSamplingSettings) => {
 	const per = recordSamplingSettings.relative.value;
-	const size = (recordSamplingSettings.active === 'absolute')
-		? recordSamplingSettings.absolute.value
-		: Math.round(count / 100 * per);
+	const size =
+		recordSamplingSettings.active === 'absolute'
+			? recordSamplingSettings.absolute.value
+			: Math.round((count / 100) * per);
 	return size;
 };
 
 const prepareNamesForInsertionIntoScalaCode = (databasesNames, collectionsNames) =>
-	databasesNames.reduce((entities, dbName) => {
-		const { tables } = splitTableAndViewNames(collectionsNames[dbName]);
-		const tableNames = tables.map(tableName => `\"${tableName}\"`).join(', ');
+	databasesNames.reduce(
+		(entities, dbName) => {
+			const { tables } = splitTableAndViewNames(collectionsNames[dbName]);
+			const tableNames = tables.map(tableName => `\"${tableName}\"`).join(', ');
 
-		return {
-			tableNames: [...entities.tableNames, `\"${dbName}\": [${tableNames}]`],
-			dbNames: databasesNames.map(name => `\"${name}\"`)
-		}
-	}, { viewNames: [], tableNames: [] })
+			return {
+				tableNames: [...entities.tableNames, `\"${dbName}\": [${tableNames}]`],
+				dbNames: databasesNames.map(name => `\"${name}\"`),
+			};
+		},
+		{ viewNames: [], tableNames: [] },
+	);
 
 const convertCustomTags = (custom_tags, logger) => {
 	try {
 		return Object.keys(custom_tags).reduce((tags, tagKey) => {
-			return [...tags, { customTagKey: tagKey, customtagvalue: custom_tags[tagKey] }]
+			return [...tags, { customTagKey: tagKey, customtagvalue: custom_tags[tagKey] }];
 		}, []);
 	} catch (e) {
 		logger.log('error', custom_tags, 'Error converting custom tags');
-		return []
+		return [];
 	}
-}
+};
 
 const isView = name => name.slice(-4) === ' (v)';
-const isViewDdl = (statement = '') => /^create (or replace |global |temporary ){0,1}view/.test(statement.toLocaleLowerCase());
+const isViewDdl = (statement = '') =>
+	/^create (or replace |global |temporary ){0,1}view/.test(statement.toLocaleLowerCase());
 const isTableDdl = (statement = '') => /^create (or replace ){0,1}table/.test(statement.toLocaleLowerCase());
 
 const cleanEntityName = (sparkVersion, name = '') => {
 	return isSupportGettingListOfViews(sparkVersion) ? name.replace(/ \(v\)$/, '') : name;
-}
+};
 
 const isSupportGettingListOfViews = (sparkVersionString = '') => {
 	const MAX_NOT_SUPPORT_VERSION = 6;
 	const databricksRuntimeMajorVersion = parseInt(sparkVersionString.slice(0, sparkVersionString.indexOf('.')));
 	return databricksRuntimeMajorVersion > MAX_NOT_SUPPORT_VERSION;
-}
+};
 
 const getErrorMessage = (error = {}) => {
 	if (typeof error === 'string') {
@@ -64,7 +69,7 @@ const getErrorMessage = (error = {}) => {
 
 const removeParentheses = string => string.replace(/^\(|\)$/g, '');
 
-const getTemplateDocByJsonSchema = (schema) => {
+const getTemplateDocByJsonSchema = schema => {
 	if (!schema) {
 		return;
 	}
@@ -80,7 +85,7 @@ const getTemplateDocByJsonSchema = (schema) => {
 	if (schema.type === 'array') {
 		return [];
 	}
-	
+
 	if (!schema.properties) {
 		return '';
 	}

@@ -5,22 +5,27 @@ let connectionData = null;
 
 const fetchRequestHelper = require('./helpers/fetchRequestHelper');
 const tableDDlHelper = require('./helpers/tableDDLHelper');
-const viewDDLHelper = require('./helpers/viewDDLHelper')
+const viewDDLHelper = require('./helpers/viewDDLHelper');
 const databricksHelper = require('./helpers/databricksHelper');
-const { getErrorMessage, cleanEntityName, isViewDdl, isTableDdl, getTemplateDocByJsonSchema } = require('./helpers/utils')
+const {
+	getErrorMessage,
+	cleanEntityName,
+	isViewDdl,
+	isTableDdl,
+	getTemplateDocByJsonSchema,
+} = require('./helpers/utils');
 const { setDependencies, dependencies } = require('./appDependencies');
 const fs = require('fs');
 const { getCleanedUrl } = require('../forward_engineering/utils/general');
 const { parseViewStatement } = require('./parseViewStatement');
 const { parseDDLStatements } = require('./parseDDLStatements');
-const { isSupportUnityCatalog } = require("./helpers/databricksHelper");
-const unityTagsHelper = require("./helpers/unityTagsHelper");
-const { adaptJsonSchema } = require('./adaptJsonSchema')
+const { isSupportUnityCatalog } = require('./helpers/databricksHelper');
+const unityTagsHelper = require('./helpers/unityTagsHelper');
+const { adaptJsonSchema } = require('./adaptJsonSchema');
 
 const DEFAULT_DATABRICKS_CATALOG_NAME = 'hive_metastore';
 
 module.exports = {
-
 	disconnect: function (connectionInfo, cb) {
 		fetchRequestHelper.destroyActiveContext();
 		cb();
@@ -37,7 +42,7 @@ module.exports = {
 				queryRequestTimeout: connectionInfo.queryRequestTimeout,
 				sparkConfig: getSparkConfigurations(connectionInfo),
 				logger,
-			}
+			};
 
 			logInfo('Test connection RE', connectionInfo, logger);
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
@@ -45,15 +50,11 @@ module.exports = {
 			await databricksHelper.getFirstDatabaseCollectionName(connectionData, clusterState.spark_version, logger);
 
 			if (!clusterState.isRunning) {
-				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`, type: 'simpleError' })
+				cb({ message: `Cluster is unavailable. Cluster status: ${clusterState.state}`, type: 'simpleError' });
 			}
-			cb()
+			cb();
 		} catch (err) {
-			logger.log(
-				'error',
-				{ message: err.message, stack: err.stack, error: err },
-				'Test connection RE'
-			);
+			logger.log('error', { message: err.message, stack: err.stack, error: err }, 'Test connection RE');
 			cb({ message: getErrorMessage(err), stack: err.stack });
 		}
 	},
@@ -80,8 +81,12 @@ module.exports = {
 				// In that case 'default' it's not a real container,
 				// is used only for bypass error when cluster doesn't contain any of catalogs
 				catalogNames = ['default'];
-				logger.log('info', catalogNames, 'Databricks runtime doesn\'t support Unity catalog. Use \'default\' container for schemas.');
-			}else if (connectionInfo.catalogName) {
+				logger.log(
+					'info',
+					catalogNames,
+					"Databricks runtime doesn't support Unity catalog. Use 'default' container for schemas.",
+				);
+			} else if (connectionInfo.catalogName) {
 				catalogNames = [connectionInfo.catalogName];
 			} else {
 				catalogNames = await fetchRequestHelper.fetchClusterCatalogNames(connectionData);
@@ -91,11 +96,7 @@ module.exports = {
 
 			cb(null, catalogNames);
 		} catch (err) {
-			logger.log(
-				'error',
-				{ message: err.message, stack: err.stack, error: err },
-				'Retrieving catalogs names'
-			);
+			logger.log('error', { message: err.message, stack: err.stack, error: err }, 'Retrieving catalogs names');
 			cb({ message: getErrorMessage(err), stack: err.stack });
 		}
 	},
@@ -124,7 +125,11 @@ module.exports = {
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
 
 			logger.log('info', clusterState, 'Cluster state info');
-			const dbCollectionsNames = await databricksHelper.getDatabaseCollectionNames(connectionData, clusterState.spark_version, logger);
+			const dbCollectionsNames = await databricksHelper.getDatabaseCollectionNames(
+				connectionData,
+				clusterState.spark_version,
+				logger,
+			);
 
 			cb(null, dbCollectionsNames);
 		} catch (err) {
@@ -134,17 +139,16 @@ module.exports = {
 					logger.log(
 						'error',
 						{ message: err.message, stack: err.stack, error: err },
-						`Cluster is unavailable. Cluster state: ${clusterState.state}`
+						`Cluster is unavailable. Cluster state: ${clusterState.state}`,
 					);
-					cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
+					cb({
+						message: `Cluster is unavailable. Cluster state: ${clusterState.state}`,
+						type: 'simpleError',
+					});
 					return;
 				}
 			} catch (err) {
-				logger.log(
-					'error',
-					{ message: err.message, stack: err.stack, error: err },
-					`Cluster is unavailable.`
-				);
+				logger.log('error', { message: err.message, stack: err.stack, error: err }, `Cluster is unavailable.`);
 				cb({ message: getErrorMessage(err), stack: err.stack });
 				return;
 			}
@@ -152,7 +156,7 @@ module.exports = {
 			logger.log(
 				'error',
 				{ message: err.message, stack: err.stack, error: err },
-				'Retrieving databases and tables names'
+				'Retrieving databases and tables names',
 			);
 			cb({ message: getErrorMessage(err), stack: err.stack });
 		}
@@ -161,14 +165,13 @@ module.exports = {
 	getDbCollectionsData: async (data, logger, cb, app) => {
 		logger.log('info', data, 'Retrieving schema', data.hiddenKeys);
 
-		const progress = (message) => {
+		const progress = message => {
 			logger.log('info', message, 'Retrieving schema', data.hiddenKeys);
 			logger.progress(message);
 		};
 		let modelData;
 
 		try {
-
 			setDependencies(app);
 
 			const async = dependencies.async;
@@ -182,18 +185,39 @@ module.exports = {
 			const isUnityCatalogSupports = isSupportUnityCatalog(modelData.spark_version);
 			const unityTags = await unityTagsHelper.getNormalizedUnityTags(connectionData, logger);
 
-			progress({ message: 'Start getting data from entities', containerName: 'databases', entityName: 'entities' });
-			const isManagedLocationSupports = isUnityCatalogSupports && data.database !== DEFAULT_DATABRICKS_CATALOG_NAME;
-			const clusterData = await databricksHelper.getClusterData(connectionData, dataBaseNames, collections, isManagedLocationSupports, logger);
+			progress({
+				message: 'Start getting data from entities',
+				containerName: 'databases',
+				entityName: 'entities',
+			});
+			const isManagedLocationSupports =
+				isUnityCatalogSupports && data.database !== DEFAULT_DATABRICKS_CATALOG_NAME;
+			const clusterData = await databricksHelper.getClusterData(
+				connectionData,
+				dataBaseNames,
+				collections,
+				isManagedLocationSupports,
+				logger,
+			);
 
 			progress({ message: 'Start getting entities ddl', containerName: 'databases', entityName: 'entities' });
-			const entitiesDdl = await databricksHelper.getEntitiesDDL(connectionData, dataBaseNames, collections, modelData.spark_version, logger);
+			const entitiesDdl = await databricksHelper.getEntitiesDDL(
+				connectionData,
+				dataBaseNames,
+				collections,
+				modelData.spark_version,
+				logger,
+			);
 			const ddlByEntity = entitiesDdl.reduce((ddlByEntity, ddlObject) => {
-				const entityName = Object.keys(ddlObject)[0]
-				return { ...ddlByEntity, [entityName]: ddlObject[entityName] }
-			}, {})
+				const entityName = Object.keys(ddlObject)[0];
+				return { ...ddlByEntity, [entityName]: ddlObject[entityName] };
+			}, {});
 
-			progress({ message: 'Entities ddl retrieved successfully', containerName: 'databases', entityName: 'entities' });
+			progress({
+				message: 'Entities ddl retrieved successfully',
+				containerName: 'databases',
+				entityName: 'entities',
+			});
 
 			let warnings = [];
 			let relationships = [];
@@ -204,28 +228,41 @@ module.exports = {
 				const tablesPackages = await async.mapLimit(
 					dbData.dbTables.filter(table => isTableDdl(ddlByEntity[`${dbName}.${table.name}`])),
 					40,
-					async (table) => {
-						const ddl = ddlByEntity[`${dbName}.${table.name}`]
+					async table => {
+						const ddl = ddlByEntity[`${dbName}.${table.name}`];
 
-						progress({ message: 'Start processing data from table', containerName: dbName, entityName: table.name });
+						progress({
+							message: 'Start processing data from table',
+							containerName: dbName,
+							entityName: table.name,
+						});
 						const { tableTags, columnTags } = unityTags;
 						const dbInfoForTags = {
 							schemaName: dbName,
 							tableName: table.name,
-							catalogName: dbData.dbProperties.catalogName
+							catalogName: dbData.dbProperties.catalogName,
 						};
-						const filteredUnityTagsByTable = unityTagsHelper.filterUnityTagsByTable(dbInfoForTags, { tableTags, columnTags });
+						const filteredUnityTagsByTable = unityTagsHelper.filterUnityTagsByTable(dbInfoForTags, {
+							tableTags,
+							columnTags,
+						});
 						let tableData = await tableDDlHelper.getTableData(
 							{ ...table, ddl },
 							{ ...data, unityTags: filteredUnityTagsByTable },
-							logger
+							logger,
 						);
 
-						const columnsOfTypeString = (tableData.properties || []).filter(property => property.mode === 'string');
-						const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString)
+						const columnsOfTypeString = (tableData.properties || []).filter(
+							property => property.mode === 'string',
+						);
+						const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString);
 						let documents = [];
 						if (hasColumnsOfTypeString) {
-							progress({ message: 'Start getting documents from table', containerName: 'databases', entityName: table.name });
+							progress({
+								message: 'Start getting documents from table',
+								containerName: 'databases',
+								entityName: table.name,
+							});
 							documents = await fetchRequestHelper.fetchDocuments({
 								connectionInfo: connectionData,
 								dbName,
@@ -234,14 +271,22 @@ module.exports = {
 								recordSamplingSettings: data.recordSamplingSettings,
 								logger,
 							});
-							progress({ message: 'Documents retrieved successfully', containerName: 'databases', entityName: table.name });
+							progress({
+								message: 'Documents retrieved successfully',
+								containerName: 'databases',
+								entityName: table.name,
+							});
 						}
 
 						relationships = relationships.concat(
-							tableData.fkConstraints.map(constr => ({ ...constr, childCollection: table.name }))
+							tableData.fkConstraints.map(constr => ({ ...constr, childCollection: table.name })),
 						);
 
-						progress({ message: 'Table data processed successfully', containerName: dbName, entityName: table.name });
+						progress({
+							message: 'Table data processed successfully',
+							containerName: dbName,
+							entityName: table.name,
+						});
 						const doc = {
 							dbName,
 							collectionName: table.name,
@@ -250,9 +295,9 @@ module.exports = {
 							views: [],
 							emptyBucket: false,
 							validation: {
-								jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns }
+								jsonSchema: { properties: tableData.schema, required: tableData.requiredColumns },
 							},
-							bucketInfo: unityTagsHelper.applyUnityTagsToSchema(dbName, dbData.dbProperties, unityTags)
+							bucketInfo: unityTagsHelper.applyUnityTagsToSchema(dbName, dbData.dbProperties, unityTags),
 						};
 
 						if (fieldInference.active === 'field') {
@@ -260,7 +305,8 @@ module.exports = {
 						}
 
 						return doc;
-					})
+					},
+				);
 
 				const viewsNames = dataBaseNames.reduce((viewsNames, dbName) => {
 					const views = (collections[dbName] || [])
@@ -279,66 +325,75 @@ module.exports = {
 						entityLevel: {},
 						emptyBucket: isEmptyBucket,
 						bucketInfo: dbData.dbProperties,
-					}
+					};
 					return [...packages, emptyBucket];
 				} else if (!hasViews) {
 					return [...packages, ...tablesPackages];
 				}
 
-				const views = await async.mapLimit(
-					viewsNames[dbName],
-					40,
-					async (name) => {
-						progress({ message: 'Start processing data from view', containerName: dbName, entityName: name });
-						const ddl = ddlByEntity[`${dbName}.${name}`];
-						const viewTags = unityTagsHelper.filterUnityTagsByView({
+				const views = await async.mapLimit(viewsNames[dbName], 40, async name => {
+					progress({ message: 'Start processing data from view', containerName: dbName, entityName: name });
+					const ddl = ddlByEntity[`${dbName}.${name}`];
+					const viewTags = unityTagsHelper.filterUnityTagsByView(
+						{
 							schemaName: dbName,
 							viewName: name,
-							catalogName: dbData.dbProperties.catalogName
-						}, unityTags);
-						let viewData = {};
-						let jsonSchema;
-						let documentTemplate;
+							catalogName: dbData.dbProperties.catalogName,
+						},
+						unityTags,
+					);
+					let viewData = {};
+					let jsonSchema;
+					let documentTemplate;
+
+					try {
+						let viewSchema = [];
+						let viewSample = [];
 
 						try {
-							let viewSchema = [];
-							let viewSample = [];
-
-							try {
-								viewSchema = await fetchRequestHelper.fetchEntitySchema({ connectionInfo: connectionData, dbName, entityName: name, logger });
-								viewSample = await fetchRequestHelper.fetchSample({ connectionInfo: connectionData, dbName, entityName: name, logger });
-							} catch (e) {
-								if (e.type === 'warning') {
-									warnings.push(e);
-								} else {
-									throw e;
-								}
-							}
-
-							viewData = {
-								...viewDDLHelper.getViewDataFromDDl(ddl),
-								...unityTagsHelper.getUnityTagsForView(viewTags)
-							};
-							jsonSchema = viewDDLHelper.getJsonSchema(viewSchema, viewSample);
-
-							if (fieldInference.active === 'field') {
-								documentTemplate = getTemplateDocByJsonSchema(jsonSchema);
-							}
+							viewSchema = await fetchRequestHelper.fetchEntitySchema({
+								connectionInfo: connectionData,
+								dbName,
+								entityName: name,
+								logger,
+							});
+							viewSample = await fetchRequestHelper.fetchSample({
+								connectionInfo: connectionData,
+								dbName,
+								entityName: name,
+								logger,
+							});
 						} catch (e) {
-							logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
-							return createViewPackage({ name });
+							if (e.type === 'warning') {
+								warnings.push(e);
+							} else {
+								throw e;
+							}
 						}
 
-						progress({ message: 'View data processed successfully', containerName: dbName, entityName: name });
+						viewData = {
+							...viewDDLHelper.getViewDataFromDDl(ddl),
+							...unityTagsHelper.getUnityTagsForView(viewTags),
+						};
+						jsonSchema = viewDDLHelper.getJsonSchema(viewSchema, viewSample);
 
-						return createViewPackage({
-							name,
-							viewData,
-							jsonSchema,
-							documentTemplate,
-						});
-					},
-				);
+						if (fieldInference.active === 'field') {
+							documentTemplate = getTemplateDocByJsonSchema(jsonSchema);
+						}
+					} catch (e) {
+						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
+						return createViewPackage({ name });
+					}
+
+					progress({ message: 'View data processed successfully', containerName: dbName, entityName: name });
+
+					return createViewPackage({
+						name,
+						viewData,
+						jsonSchema,
+						documentTemplate,
+					});
+				});
 
 				const viewPackage = Promise.resolve({
 					dbName: dbName,
@@ -349,7 +404,7 @@ module.exports = {
 				});
 
 				return [...packages, ...tablesPackages, viewPackage];
-			}, Promise.resolve([]))
+			}, Promise.resolve([]));
 			const packages = await Promise.all(entitiesPromises);
 			fetchRequestHelper.destroyActiveContext();
 
@@ -362,14 +417,14 @@ module.exports = {
 
 			cb(null, packages, modelData, relationships);
 		} catch (err) {
-			const clusterState = modelData || await databricksHelper.getClusterStateInfo(connectionData, logger);
+			const clusterState = modelData || (await databricksHelper.getClusterStateInfo(connectionData, logger));
 			if (!clusterState.isRunning) {
 				logger.log(
 					'error',
 					{ message: err.message, stack: err.stack, error: err },
-					`Cluster is unavailable. Cluster state: ${clusterState.state}`
+					`Cluster is unavailable. Cluster state: ${clusterState.state}`,
 				);
-				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' })
+				cb({ message: `Cluster is unavailable. Cluster state: ${clusterState.state}`, type: 'simpleError' });
 				return;
 			}
 			handleError(logger, err, cb);
@@ -393,7 +448,6 @@ module.exports = {
 
 const handleFileData = filePath => {
 	return new Promise((resolve, reject) => {
-
 		fs.readFile(filePath, 'utf-8', (err, content) => {
 			if (err) {
 				reject(err);
@@ -430,15 +484,19 @@ const createViewPackage = ({ name, viewData = {}, jsonSchema, documentTemplate }
 		},
 		ddl: {
 			script: `CREATE VIEW ${viewName} AS ${selectStatement};`.replace(/`/g, '"'),
-			type: 'postgres'
+			type: 'postgres',
 		},
 		mergeSchemas: true,
 	};
 };
 
-const createWarning = (warnings) => {
+const createWarning = warnings => {
 	const viewsWarnings = warnings.filter(warning => warning.code === 'VIEW_SCHEMA_ERROR');
-	const viewNames = viewsWarnings.slice(0, 3).map(warning => `\`${warning.dbName}\`.\`${warning.entityName}\``).join('\n') + (warnings.length > 3 ? '\n...' : '');
+	const viewNames =
+		viewsWarnings
+			.slice(0, 3)
+			.map(warning => `\`${warning.dbName}\`.\`${warning.entityName}\``)
+			.join('\n') + (warnings.length > 3 ? '\n...' : '');
 
 	const viewWarningMessage = `The schema of the following view(s) cannot be retrieved:\n${viewNames}\n because there's an inconsistency with their underlying tables.\n You must refresh the view(s) in the schema, then try this process again.\n See the log file for more details.`;
 
@@ -446,11 +504,11 @@ const createWarning = (warnings) => {
 		title: 'Reverse-Engineering',
 		message: viewWarningMessage,
 		openLog: true,
-		size: 'middle'
+		size: 'middle',
 	};
 };
 
-const getSparkConfigurations = (connectionInfo) => {
+const getSparkConfigurations = connectionInfo => {
 	const { azureStorageAccountName, azureStorageAccountKey } = connectionInfo;
 	const config = {};
 

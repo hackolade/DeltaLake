@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 const { getName, prepareName } = require('../utils/general');
 
@@ -12,7 +12,10 @@ const getPathById = (schema, id, path) => {
 			if (newPath) {
 				return newPath;
 			} else {
-				return getPathById(schema.properties[propertyName], id, [...path, schema.properties[propertyName].GUID]);
+				return getPathById(schema.properties[propertyName], id, [
+					...path,
+					schema.properties[propertyName].GUID,
+				]);
 			}
 		}, undefined);
 	} else if (schema.items) {
@@ -31,7 +34,7 @@ const getPathById = (schema, id, path) => {
 };
 
 const getRootItemNameById = (id, properties) => {
-	const propertyName = Object.keys(properties).find(propertyName => (properties[propertyName].GUID === id));
+	const propertyName = Object.keys(properties).find(propertyName => properties[propertyName].GUID === id);
 
 	if (properties[propertyName] && properties[propertyName].code) {
 		return prepareName(properties[propertyName].code);
@@ -46,7 +49,7 @@ const findFieldNameById = (id, source) => {
 	if (path) {
 		return getRootItemNameById(path[0], source.properties);
 	} else {
-		return "";
+		return '';
 	}
 };
 
@@ -65,15 +68,17 @@ const getNamesByIds = (ids, sources) => {
 };
 
 const getPathsByIds = (ids, sources) => {
-	return ids.map(id => {
-		for (let i = 0; i < sources.length; i++) {
-			const path = getPathById(sources[i], id, []);
+	return ids
+		.map(id => {
+			for (let i = 0; i < sources.length; i++) {
+				const path = getPathById(sources[i], id, []);
 
-			if (path) {
-				return path;
+				if (path) {
+					return path;
+				}
 			}
-		}
-	}).filter(path => path);
+		})
+		.filter(path => path);
 };
 
 const eachProperty = (schema, path, callback) => {
@@ -98,7 +103,7 @@ const eachProperty = (schema, path, callback) => {
 	}
 };
 
-const getIdToNameHashTable = (jsonSchemas) => {
+const getIdToNameHashTable = jsonSchemas => {
 	return jsonSchemas.reduce((nameHashTable, jsonSchema) => {
 		eachProperty(jsonSchema, [], (name, item, path) => {
 			nameHashTable[item.GUID] = getName(item) || name;
@@ -109,13 +114,15 @@ const getIdToNameHashTable = (jsonSchemas) => {
 };
 
 const getNameByPath = (idToNameHashTable, path) => {
-	const name = path.map(id => {
-		return idToNameHashTable[id] instanceof Number ? '$elem$' : idToNameHashTable[id];
-	}).join('.');
+	const name = path
+		.map(id => {
+			return idToNameHashTable[id] instanceof Number ? '$elem$' : idToNameHashTable[id];
+		})
+		.join('.');
 	return prepareName(name);
 };
 
-const getPrimaryKeys = (jsonSchema) => {
+const getPrimaryKeys = jsonSchema => {
 	const primaryKeys = [];
 
 	eachProperty(jsonSchema, [], (name, item, path) => {
@@ -148,7 +155,7 @@ const getItemByPath = (path, jsonSchema) => {
 		return getItemByPath(path.slice(1), item);
 	}
 	return null;
-}
+};
 
 module.exports = {
 	getPathById,
@@ -157,5 +164,5 @@ module.exports = {
 	getIdToNameHashTable,
 	getNameByPath,
 	getPathsByIds,
-	getItemByPath
+	getItemByPath,
 };
