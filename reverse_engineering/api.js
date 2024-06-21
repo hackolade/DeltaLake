@@ -279,7 +279,7 @@ module.exports = {
 						}
 
 						relationships = relationships.concat(
-							tableData.fkConstraints.map(constr => ({ ...constr, childCollection: table.name })),
+							(tableData.fkConstraints || []).map(constr => ({ ...constr, childCollection: table.name })),
 						);
 
 						progress({

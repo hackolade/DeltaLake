@@ -1413,6 +1413,7 @@ nonReserved
     | INTO
     | IS
     | ITEMS
+    | KEY
     | KEYS
     | KW_DEFAULT
     | LAST

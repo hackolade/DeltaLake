@@ -439,7 +439,7 @@ const serializedATN = [
 	'\u0084\u0096\u0096\u009c\u009c\u00c4\u00c4\u00ce\u00ce\u00d4\u00d4\u00f9',
 	'\u00f9\u0101\u0101\u0013\u0002\u000e\u0013\u001579RTfhtvxz}\u007f\u0083',
 	'\u0085\u0095\u0097\u009b\u009d\u00c3\u00c5\u00cd\u00cf\u00d3\u00d5\u00f8',
-	'\u00fa\u0100\u0102\u0109\u0114\u0114\u0002\u0ea4\u0002\u0140\u0003\u0002',
+	'\u00fa\u0100\u0102\u010a\u0114\u0114\u0002\u0ea4\u0002\u0140\u0003\u0002',
 	'\u0002\u0002\u0004\u0149\u0003\u0002\u0002\u0002\u0006\u014c\u0003\u0002',
 	'\u0002\u0002\b\u014f\u0003\u0002\u0002\u0002\n\u0152\u0003\u0002\u0002',
 	'\u0002\f\u0155\u0003\u0002\u0002\u0002\u000e\u0158\u0003\u0002\u0002',
@@ -15135,6 +15135,7 @@ class SqlBaseParser extends antlr4.Parser {
 								(1 << (SqlBaseParser.WINDOW - 256)) |
 								(1 << (SqlBaseParser.WITH - 256)) |
 								(1 << (SqlBaseParser.ZONE - 256)) |
+								(1 << (SqlBaseParser.KEY - 256)) |
 								(1 << (SqlBaseParser.KW_DEFAULT - 256)))) !==
 							0)
 				)
@@ -29105,6 +29106,10 @@ class NonReservedContext extends antlr4.ParserRuleContext {
 
 	ITEMS() {
 		return this.getToken(SqlBaseParser.ITEMS, 0);
+	}
+
+	KEY() {
+		return this.getToken(SqlBaseParser.KEY, 0);
 	}
 
 	KEYS() {
