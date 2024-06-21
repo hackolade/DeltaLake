@@ -19,7 +19,8 @@
 				"interval",
 				"array",
 				"map",
-				"struct"
+				"struct",
+				"object"
 			]
 		}
 	}
