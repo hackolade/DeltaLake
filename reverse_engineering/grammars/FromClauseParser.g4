@@ -122,10 +122,7 @@ uniqueJoinTableSource
     : tableName tableSample? (KW_AS? identifier)?
     ;
 
-tableName
-    : identifier DOT identifier
-    | identifier
-    ;
+tableName: identifier (DOT identifier)*;
 
 viewName
     : (identifier DOT)? identifier
