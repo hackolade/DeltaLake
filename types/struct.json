@@ -13,5 +13,21 @@
 		"maxProperties": "",
 		"additionalProperties": false
 	},
-	"hiddenOnEntity": "view"
+	"hiddenOnEntity": "view",
+	"subtypes": {
+		"object": {
+			"childValueType": [
+				"text",
+				"numeric",
+				"bool",
+				"binary",
+				"timestamp",
+				"date",
+				"interval",
+				"array",
+				"map",
+				"struct"
+			]
+		}
+	}
 }
