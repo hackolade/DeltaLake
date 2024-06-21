@@ -3,9 +3,7 @@
 		"type": "file",
 		"menu_label": "HQL File...",
 		"name": "hql",
-		"extensions": [
-			"hql"
-		],
+		"extensions": ["hql"],
 		"useMultipleFileReverse": true
 	},
 	{
@@ -13,16 +11,10 @@
 			"NO_DATABASES": "There is no databases in the Delta Lake instance",
 			"WRONG_CONNECTION": "Can not connect to the Delta Lake instance"
 		},
-		"excludeDocKind": [
-			"id"
-		],
+		"excludeDocKind": ["id"],
 		"type": "database",
 		"scenario": "getDatabases",
-		"connectionList": [
-			"name",
-			"host",
-			"provider"
-		],
+		"connectionList": ["name", "host", "provider"],
 		"widestColumn": "host",
 		"helpUrl": "https://hackolade.com/help/ConnecttoaDeltaLakeinstance.html"
 	}

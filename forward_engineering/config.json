@@ -39,9 +39,7 @@
 		}
 	],
 	"splitView": {
-		"byAdditionalOptions": [
-			"INCLUDE_SAMPLES"
-		]
+		"byAdditionalOptions": ["INCLUDE_SAMPLES"]
 	},
 	"numberOfDocumentsOptions": {
 		"id": "numberOfDocuments",

@@ -124,9 +124,7 @@ making sure that you maintain a proper JSON format.
 				"shouldValidate": false,
 				"propertyTooltip": "DB vendor",
 				"propertyType": "select",
-				"options": [
-					"Delta Lake"
-				],
+				"options": ["Delta Lake"],
 				"disabledOption": true
 			},
 			{
@@ -144,8 +142,7 @@ making sure that you maintain a proper JSON format.
 					"Runtime 11",
 					"Runtime 12",
 					"Runtime 13",
-					"Runtime 14",
-					"Runtime 15"
+					"Runtime 14"
 				]
 			},
 			{
@@ -153,11 +150,7 @@ making sure that you maintain a proper JSON format.
 				"propertyKeyword": "modelingMethodology",
 				"propertyTooltip": "Select from list of options",
 				"propertyType": "select",
-				"options": [
-					"Relational",
-					"Dimensional",
-					"Vault"
-				]
+				"options": ["Relational", "Dimensional", "Vault"]
 			},
 			{
 				"propertyName": "Host",
@@ -196,10 +189,12 @@ making sure that you maintain a proper JSON format.
 				"step": 1,
 				"dependency": {
 					"type": "or",
-					"values": [{
-						"key": "autoscale",
-						"value": true
-					}]
+					"values": [
+						{
+							"key": "autoscale",
+							"value": true
+						}
+					]
 				}
 			},
 			{
@@ -212,12 +207,15 @@ making sure that you maintain a proper JSON format.
 				"step": 1,
 				"dependency": {
 					"type": "or",
-					"values": [{
-						"key": "autoscale",
-						"value": true
-					}]
+					"values": [
+						{
+							"key": "autoscale",
+							"value": true
+						}
+					]
 				}
-			},			{
+			},
+			{
 				"propertyName": "Spark version",
 				"propertyKeyword": "spark_version",
 				"propertyTooltip": "The runtime version of the cluster. This field is required.",
@@ -306,11 +304,7 @@ making sure that you maintain a proper JSON format.
 						"propertyKeyword": "availability",
 						"propertyTooltip": "Availability type used for all subsequent nodes past the first_on_demand ones. Note: If first_on_demand is zero, this availability type will be used for the entire cluster.",
 						"propertyType": "select",
-						"options": [
-							"ON_DEMAND",
-							"SPOT",
-							"SPOT_WITH_FALLBACK"
-						]
+						"options": ["ON_DEMAND", "SPOT", "SPOT_WITH_FALLBACK"]
 					},
 					{
 						"propertyName": "Spot bid price percent",
@@ -322,13 +316,16 @@ making sure that you maintain a proper JSON format.
 						"step": 1,
 						"dependency": {
 							"type": "or",
-							"values": [{
-								"key": "availability",
-								"value": "SPOT"
-							},{
-								"key": "availability",
-								"value": "SPOT_WITH_FALLBACK"
-							}]
+							"values": [
+								{
+									"key": "availability",
+									"value": "SPOT"
+								},
+								{
+									"key": "availability",
+									"value": "SPOT_WITH_FALLBACK"
+								}
+							]
 						}
 					},
 					{
@@ -348,10 +345,7 @@ making sure that you maintain a proper JSON format.
 						"propertyKeyword": "EbsVolumeType",
 						"propertyTooltip": "The type of EBS volumes that will be launched with this cluster.",
 						"propertyType": "select",
-						"options": [
-							"GENERAL_PURPOSE_SSD",
-							"THROUGHPUT_OPTIMIZED_HDD"
-						]
+						"options": ["GENERAL_PURPOSE_SSD", "THROUGHPUT_OPTIMIZED_HDD"]
 					},
 					{
 						"propertyName": "EBS volume count",
