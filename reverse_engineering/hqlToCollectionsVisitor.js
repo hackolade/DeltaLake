@@ -114,7 +114,7 @@ class Visitor extends HiveParserVisitor {
 		const externalTable = Boolean(ctx.KW_EXTERNAL());
 		let storedAsTable = this.visitWhenExists(ctx, 'tableFileFormat', {});
 		storedAsTable = Array.isArray(storedAsTable) ? storedAsTable?.[0] || {} : storedAsTable;
-		const { database, table } = tableName;
+		const { catalog, database, table } = tableName;
 		const { properties, foreignKeys } = this.visitWhenExists(ctx, 'columnNameTypeOrConstraintList', {
 			properties: {},
 			foreignKeys: [],
@@ -124,6 +124,18 @@ class Visitor extends HiveParserVisitor {
 			childDbName: database,
 			childCollection: table,
 		}));
+
+		const bucketData = catalog
+			? [
+					{
+						type: UPDATE_BUCKET_LEVEL_DATA_COMMAND,
+						bucketName: database,
+						data: {
+							catalogName: catalog,
+						},
+					},
+				]
+			: [];
 
 		return [
 			{
@@ -167,6 +179,7 @@ class Visitor extends HiveParserVisitor {
 				...fkData,
 				type: ADD_RELATIONSHIP_COMMAND,
 			})),
+			...bucketData,
 		];
 	}
 
@@ -1064,18 +1077,28 @@ class Visitor extends HiveParserVisitor {
 	}
 
 	visitTableName(ctx) {
-		let names = this.visit(ctx.identifier());
-		if (names.length === 1) {
-			return {
-				database: '',
-				table: names[0],
-			};
-		}
+		const names = this.visit(ctx.identifier());
 
-		return {
-			database: names[0],
-			table: names[1],
-		};
+		switch (names.length) {
+			case 3:
+				return {
+					catalog: names[0],
+					database: names[1],
+					table: names[2],
+				};
+			case 2:
+				return {
+					catalog: '',
+					database: names[0],
+					table: names[1],
+				};
+			default:
+				return {
+					catalog: '',
+					database: '',
+					table: names[0],
+				};
+		}
 	}
 
 	visitViewName(ctx) {

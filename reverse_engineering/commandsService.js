@@ -853,11 +853,7 @@ const updateEntityLevelData = (entitiesData, bucket, statementData) => {
 
 const updateBucketLevelData = (entitiesData, bucket, statementData) => {
 	const { buckets } = entitiesData;
-	const bucketData = buckets[bucket];
-
-	if (!bucketData) {
-		return entitiesData;
-	}
+	const bucketData = buckets[bucket] || {};
 
 	return {
 		...entitiesData,
