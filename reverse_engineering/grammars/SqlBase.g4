@@ -720,11 +720,11 @@ multipartIdentifier
     ;
 
 tableIdentifier
-    : (db=errorCapturingIdentifier '.')? table=errorCapturingIdentifier
+    : (catalog=errorCapturingIdentifier '.')? (db=errorCapturingIdentifier '.')? table=errorCapturingIdentifier
     ;
 
 functionIdentifier
-    : (db=errorCapturingIdentifier '.')? func=errorCapturingIdentifier
+    : (catalog=errorCapturingIdentifier '.')? (db=errorCapturingIdentifier '.')? func=errorCapturingIdentifier
     ;
 
 namedExpression
