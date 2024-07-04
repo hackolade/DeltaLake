@@ -60,22 +60,23 @@ const mapJsonSchema = _ => (jsonSchema, parentJsonSchema, callback, key) => {
 			const schema = mapper(jsonSchema[propertyName], propertyName);
 
 			if (_.isEmpty(schema)) {
-				const copySchema = Object.assign({}, jsonSchema);
+				const copySchema = {...jsonSchema};
 
 				delete copySchema[propertyName];
 
 				return copySchema;
 			}
 
-			return Object.assign({}, jsonSchema, {
+			return {
+				...jsonSchema,
 				[propertyName]: schema,
-			});
+			};
 		}, jsonSchema);
 	};
 	if (!_.isPlainObject(jsonSchema)) {
 		return jsonSchema;
 	}
-	const copyJsonSchema = Object.assign({}, jsonSchema);
+	const copyJsonSchema = {...jsonSchema};
 	const mapper = _.partial(mapJsonSchema(_), _, copyJsonSchema, callback);
 	const propertiesLike = ['properties', 'definitions', 'patternProperties'];
 	const itemsLike = ['items', 'not'];

@@ -74,8 +74,6 @@ class Visitor extends HiveParserVisitor {
 		if (execStatement) {
 			return this.visit(execStatement);
 		}
-
-		return;
 	}
 
 	visitExecStatement(ctx) {
@@ -83,15 +81,12 @@ class Visitor extends HiveParserVisitor {
 		if (ddlStatement) {
 			return this.visit(ddlStatement);
 		}
-
-		return;
 	}
 
 	visitDdlStatement(ctx) {
 		if (ALLOWED_COMMANDS.includes(ctx.children[0].ruleIndex)) {
 			return super.visitDdlStatement(ctx)[0];
 		}
-		return;
 	}
 
 	visitCreateTableStatement(ctx) {
@@ -147,7 +142,7 @@ class Visitor extends HiveParserVisitor {
 					type: 'object',
 					properties: { ...convertKeysToProperties(compositePartitionKey, properties), ...properties },
 				}),
-				tableLikeName: (tableLikeName || {}).table,
+				tableLikeName: tableLikeName?.table,
 				entityLevelData: _.pickBy(
 					{
 						temporaryTable,
@@ -459,8 +454,6 @@ class Visitor extends HiveParserVisitor {
 				...this.visit(ctx.alterViewStatementSuffix()),
 			};
 		}
-
-		return;
 	}
 
 	visitAlterTableStatementSuffix(ctx) {
@@ -480,7 +473,7 @@ class Visitor extends HiveParserVisitor {
 	}
 
 	visitAlterStatementSuffixRename(ctx) {
-		const { database, table } = this.visit(ctx.tableName());
+		const { table } = this.visit(ctx.tableName());
 
 		return {
 			type: RENAME_COLLECTION_COMMAND,
@@ -497,8 +490,8 @@ class Visitor extends HiveParserVisitor {
 			type: UPDATE_ENTITY_LEVEL_DATA_COMMAND,
 			data: {
 				...this.visitWhenExists(ctx, 'tableSkewed', {}),
-				...(Boolean(ctx.KW_NOT() && ctx.KW_SKEWED()) ? { skewedby: [], skewedOn: '' } : {}),
-				...(Boolean(ctx.storedAsDirs()) ? { skewStoredAsDir: false } : {}),
+				...(ctx.KW_NOT() && ctx.KW_SKEWED() ? { skewedby: [], skewedOn: '' } : {}),
+				...(ctx.storedAsDirs() ? { skewStoredAsDir: false } : {}),
 			},
 		};
 	}
@@ -562,8 +555,8 @@ class Visitor extends HiveParserVisitor {
 		return {
 			type: UPDATE_ENTITY_LEVEL_DATA_COMMAND,
 			data: {
-				...(Boolean(ctx.KW_CLUSTERED()) ? { compositeClusteringKey: [] } : {}),
-				...(Boolean(ctx.KW_SORTED()) ? { sortedByKey: [] } : {}),
+				...(ctx.KW_CLUSTERED() ? { compositeClusteringKey: [] } : {}),
+				...(ctx.KW_SORTED() ? { sortedByKey: [] } : {}),
 				...this.visitWhenExists(ctx, 'tableBuckets', {}),
 			},
 		};
@@ -578,7 +571,7 @@ class Visitor extends HiveParserVisitor {
 			nameTo: this.visit(ctx.identifier()[1]),
 			data: {
 				...this.visit(ctx.colType()),
-				...(Boolean(ctx.KW_COMMENT()) ? { description: getTextFromStringLiteral(ctx) } : {}),
+				...(ctx.KW_COMMENT() ? { description: getTextFromStringLiteral(ctx) } : {}),
 				...columnConstraint,
 			},
 		};
@@ -647,10 +640,6 @@ class Visitor extends HiveParserVisitor {
 				newViewName: this.visit(ctx.alterStatementSuffixRename()),
 			};
 		}
-	}
-
-	visitAlterStatementSuffixRename(ctx) {
-		return this.visit(ctx.tableName()).table;
 	}
 
 	visitAlterStatementSuffixAddConstraint(ctx) {
@@ -746,8 +735,6 @@ class Visitor extends HiveParserVisitor {
 		if (ctx.generatedAsIdentity()) {
 			return this.visit(ctx.generatedAsIdentity());
 		}
-
-		return;
 	}
 
 	visitGeneratedAsIdentity(ctx) {
@@ -973,7 +960,7 @@ class Visitor extends HiveParserVisitor {
 		const varchar = ctx.KW_VARCHAR();
 		const char = ctx.KW_CHAR();
 		if (timestampLocal) {
-			return { type: 'timestamp', mode: Boolean(ctx.KW_TIMESTAMP_NTZ()) ? 'timestamp_ntz' : '' };
+			return { type: 'timestamp', mode: ctx.KW_TIMESTAMP_NTZ() ? 'timestamp_ntz' : '' };
 		}
 		if (decimal) {
 			const decimalType = { type: 'numeric', mode: 'decimal' };
@@ -1054,12 +1041,12 @@ class Visitor extends HiveParserVisitor {
 
 	visitColumnConstraintType(ctx) {
 		return {
-			...(Boolean(ctx.KW_NOT() && ctx.KW_NULL()) ? { required: true } : {}),
-			...(Boolean((ctx.tableConstraintType() || {}).KW_UNIQUE) ? { unique: true } : {}),
-			...(Boolean((ctx.tableConstraintType() || {}).KW_PRIMARY) ? { primaryKey: true } : {}),
-			...(Boolean(ctx.KW_DEFAULT()) ? { default: this.visit(ctx.defaultVal()) } : {}),
-			...(Boolean(ctx.checkConstraint()) ? { check: this.visitWhenExists(ctx, 'checkConstraint', '') } : {}),
-			...(Boolean(ctx.columnGeneratedAs()) ? { generatedDefaultValue: this.visit(ctx.columnGeneratedAs()) } : {}),
+			...(ctx.KW_NOT() && ctx.KW_NULL() ? { required: true } : {}),
+			...(ctx.tableConstraintType?.KW_UNIQUE ? { unique: true } : {}),
+			...((ctx.tableConstraintType())?.KW_PRIMARY ? { primaryKey: true } : {}),
+			...(ctx.KW_DEFAULT() ? { default: this.visit(ctx.defaultVal()) } : {}),
+			...(ctx.checkConstraint() ? { check: this.visitWhenExists(ctx, 'checkConstraint', '') } : {}),
+			...(ctx.columnGeneratedAs() ? { generatedDefaultValue: this.visit(ctx.columnGeneratedAs()) } : {}),
 		};
 	}
 
@@ -1125,17 +1112,17 @@ class Visitor extends HiveParserVisitor {
 	}
 
 	visitTableFileFormat(ctx) {
-		if (Boolean(ctx.tableInputOutputFileFormat())) {
+		if (ctx.tableInputOutputFileFormat()) {
 			return {
 				storedAsTable: 'input/output format',
 				...this.visit(ctx.tableInputOutputFileFormat()),
 			};
-		} else if (Boolean(ctx.tableFileFormatStoredBy())) {
+		} else if (ctx.tableFileFormatStoredBy()) {
 			return {
 				storedAsTable: 'by',
 				...this.visit(ctx.tableFileFormatStoredBy()),
 			};
-		} else if (Boolean(ctx.tableFileFormatStoredAs())) {
+		} else if (ctx.tableFileFormatStoredAs()) {
 			return {
 				storedAsTable: this.visit(ctx.tableFileFormatStoredAs()),
 			};
@@ -1185,7 +1172,7 @@ class Visitor extends HiveParserVisitor {
 	visitCreateDatabaseStatement(ctx) {
 		const name = this.visit(ctx.identifier());
 		const description = this.visitWhenExists(ctx, 'databaseComment');
-		const locationPropertyName = Boolean(ctx?.dbLocation()?.KW_MANAGED()) ? 'managedLocation' : 'location';
+		const locationPropertyName = ctx?.dbLocation()?.KW_MANAGED() ? 'managedLocation' : 'location';
 		const locationValue = removeSingleDoubleQuotes(ctx?.dbLocation()?.StringLiteral()?.getText() || '');
 		const dbProperties = removeParentheses(ctx?.dbProperties()?.getText() || '');
 
@@ -1254,10 +1241,6 @@ class Visitor extends HiveParserVisitor {
 		};
 	}
 
-	visitColumnParenthesesList(ctx) {
-		return this.visit(ctx.columnNameList());
-	}
-
 	visitDropIndexStatement(ctx) {
 		const { database, table } = this.visit(ctx.tableName());
 		return {
@@ -1321,6 +1304,7 @@ class Visitor extends HiveParserVisitor {
 		};
 	}
 
+	// Check that this function is identical to the visitCreateBloomfilterIndexMainStatement
 	visitDropBloomfilterIndexMainStatement(ctx) {
 		const { database, table } = this.visit(ctx.tableName());
 		return {
@@ -1359,7 +1343,7 @@ class Visitor extends HiveParserVisitor {
 		return {
 			type: CREATE_RESOURCE_PLAN,
 			name: this.visit(ctx.identifier()),
-			parallelism: (this.visitWhenExists(ctx, 'rpAssignList', {}) || {}).parallelism,
+			parallelism: this.visitWhenExists(ctx, 'rpAssignList', {})?.parallelism,
 		};
 	}
 
@@ -1445,17 +1429,6 @@ class Visitor extends HiveParserVisitor {
 		};
 	}
 
-	visitDropIndexStatement(ctx) {
-		const { database, table } = this.visit(ctx.tableName());
-
-		return {
-			type: REMOVE_COLLECTION_LEVEL_INDEX_COMMAND,
-			indexName: this.visit(ctx.identifier()),
-			bucketName: database,
-			collectionName: table,
-		};
-	}
-
 	visitDropViewStatement(ctx) {
 		const { database, view } = this.visit(ctx.viewName());
 
@@ -1466,6 +1439,7 @@ class Visitor extends HiveParserVisitor {
 		};
 	}
 
+	// Check that this function is identical to the one above
 	visitDropMaterializedViewStatement(ctx) {
 		const { database, view } = this.visit(ctx.viewName());
 
