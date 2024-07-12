@@ -472,15 +472,6 @@ class Visitor extends HiveParserVisitor {
 			.filter(Boolean)[0];
 	}
 
-	visitAlterStatementSuffixRename(ctx) {
-		const { table } = this.visit(ctx.tableName());
-
-		return {
-			type: RENAME_COLLECTION_COMMAND,
-			newCollectionName: table,
-		};
-	}
-
 	visitAlterStatementSuffixProperties(ctx) {
 		return {};
 	}
@@ -640,6 +631,10 @@ class Visitor extends HiveParserVisitor {
 				newViewName: this.visit(ctx.alterStatementSuffixRename()),
 			};
 		}
+	}
+
+	visitAlterStatementSuffixRename(ctx) {
+		return this.visit(ctx.tableName()).table;
 	}
 
 	visitAlterStatementSuffixAddConstraint(ctx) {
