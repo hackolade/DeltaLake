@@ -26,7 +26,7 @@ const { adaptJsonSchema } = require('./adaptJsonSchema');
 const DEFAULT_DATABRICKS_CATALOG_NAME = 'hive_metastore';
 
 module.exports = {
-	disconnect: function (connectionInfo, cb) {
+	disconnect: function (connectionInfo, logger, cb) {
 		fetchRequestHelper.destroyActiveContext();
 		cb();
 	},
