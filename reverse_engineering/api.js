@@ -183,7 +183,15 @@ module.exports = {
 			const dataBaseNames = data.collectionData.dataBaseNames;
 			const fieldInference = data.fieldInference;
 			const isUnityCatalogSupports = isSupportUnityCatalog(modelData.spark_version);
-			const unityTags = await unityTagsHelper.getNormalizedUnityTags(connectionData, logger);
+			const isUnityCatalogEnabled =
+				isUnityCatalogSupports && databricksHelper.isEnabledUnityCatalog(modelData.data_security_mode);
+
+			if (!isUnityCatalogEnabled) {
+				logger.log('info', '', 'Unity Catalog is disabled');
+			}
+			const unityTags = isUnityCatalogEnabled
+				? await unityTagsHelper.getNormalizedUnityTags(connectionData, logger)
+				: {};
 
 			progress({
 				message: 'Start getting data from entities',

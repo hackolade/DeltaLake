@@ -113,6 +113,7 @@ const getClusterStateInfo = async (connectionInfo, logger) => {
 		aws_attributes: clusterProperties.aws_attributes,
 		isRunning: clusterProperties.state === 'RUNNING',
 		state: clusterProperties.state,
+		data_security_mode: clusterProperties.data_security_mode,
 	};
 };
 
@@ -125,6 +126,8 @@ const isSupportUnityCatalog = sparkVersion => {
 	const MINIMUM_UNITY_CATALOG_SUPPORT_VERSION = 11;
 	return Number(runtimeVersion) >= MINIMUM_UNITY_CATALOG_SUPPORT_VERSION;
 };
+
+const isEnabledUnityCatalog = data_security_mode => ['SINGLE_USER', 'USER_ISOLATION'].includes(data_security_mode);
 
 const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkVersion, logger) => {
 	const async = dependencies.async;
@@ -163,4 +166,5 @@ module.exports = {
 	getClusterData,
 	getEntitiesDDL,
 	isSupportUnityCatalog,
+	isEnabledUnityCatalog,
 };
