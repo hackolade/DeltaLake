@@ -34,7 +34,12 @@ const getNormalizedUnityTags = async (connectionInfo, logger) => {
 	const levels = Object.keys(rawUnityTags);
 
 	if (!levels?.length) {
-		return {};
+		return {
+			catalogTags: [],
+			schemaTags: [],
+			tableTags: [],
+			columnTags: [],
+		};
 	}
 
 	return levels.reduce((builtTags, currentLevel) => {
