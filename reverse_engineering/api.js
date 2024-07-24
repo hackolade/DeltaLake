@@ -191,7 +191,12 @@ module.exports = {
 			}
 			const unityTags = isUnityCatalogEnabled
 				? await unityTagsHelper.getNormalizedUnityTags(connectionData, logger)
-				: {};
+				: {
+						catalogTags: [],
+						schemaTags: [],
+						tableTags: [],
+						columnTags: [],
+					};
 
 			progress({
 				message: 'Start getting data from entities',
