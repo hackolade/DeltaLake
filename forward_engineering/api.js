@@ -51,19 +51,21 @@ const { getDataForSampleGeneration } = require('./sampleGeneration/sampleGenerat
  */
 
 const parseEntities = (entities, serializedItems) => {
-	return entities.reduce((result, entityId) => {
-		try {
-			return Object.assign({}, result, {
-				[entityId]: JSON.parse(serializedItems[entityId]),
-			});
-		} catch (e) {
-			return result;
-		}
-	}, {});
+	return (
+		entities?.reduce((result, entityId) => {
+			try {
+				return Object.assign({}, result, {
+					[entityId]: JSON.parse(serializedItems[entityId]),
+				});
+			} catch (e) {
+				return result;
+			}
+		}, {}) ?? {}
+	);
 };
 
 /**
- * @param data {CoreData}
+ * @param {CoreData} data
  * @return {{
  *      jsonSchema: unknown,
  *      modelDefinitions: ModelDefinitions | unknown,
@@ -97,7 +99,7 @@ const parseDataForEntityLevelScript = data => {
 };
 
 /**
- * @param data {CoreData}
+ * @param {CoreData} data
  * @return {{
  *      modelDefinitions: ModelDefinitions | unknown,
  *      internalDefinitions: InternalDefinitions | unknown,
@@ -115,6 +117,7 @@ const parseDataForContainerLevelScript = data => {
 	const externalDefinitions = JSON.parse(data.externalDefinitions);
 	const entitiesJsonSchema = parseEntities(data.entities, data.jsonSchema);
 	const internalDefinitions = parseEntities(data.entities, data.internalDefinitions);
+	const relatedSchemas = parseEntities(data.relatedEntities, data.relatedSchemas);
 	const { jsonData, entitiesData } = getDataForSampleGeneration(data, entitiesJsonSchema);
 
 	return {
@@ -126,12 +129,13 @@ const parseDataForContainerLevelScript = data => {
 		entitiesJsonSchema,
 		jsonData,
 		entitiesData,
+		relatedSchemas,
 	};
 };
 
 /**
- * @param script {string}
- * @param sample {string}
+ * @param {string} script
+ * @param {string} sample
  * @return {Array<{ title: string, script: string, mode: string }>}
  * */
 const getScriptAndSampleResponse = (script, sample) => {
@@ -151,8 +155,8 @@ const getScriptAndSampleResponse = (script, sample) => {
 };
 
 /**
- * @param data {CoreData}
- * @param app {App}
+ * @param {CoreData} data
+ * @param {App} app
  * @return {Promise<{
  *      container: string,
  *      entities: Array<{ name: string, script: string }>,
@@ -181,8 +185,8 @@ const getContainerScriptWithSeparateBuckets = async (app, data) => {
 };
 
 /**
- * @param data {CoreData}
- * @param app {App}
+ * @param {CoreData} data
+ * @param {App} app
  * @return {Promise<string | Array<{ title: string, script: string, mode: string }>>}
  * */
 const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
@@ -220,10 +224,10 @@ const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
 
 module.exports = {
 	/**
-	 * @param data {CoreData}
-	 * @param logger {Logger}
-	 * @param callback {PluginCallback}
-	 * @param app {App}
+	 * @param {CoreData} data
+	 * @param {Logger} logger
+	 * @param {PluginCallback} callback
+	 * @param {App} app
 	 * */
 	generateScript(data, logger, callback, app) {
 		try {
@@ -248,10 +252,10 @@ module.exports = {
 	},
 
 	/**
-	 * @param data {CoreData}
-	 * @param logger {Logger}
-	 * @param callback {PluginCallback}
-	 * @param app {App}
+	 * @param {CoreData} data
+	 * @param {Logger} logger
+	 * @param {PluginCallback} callback
+	 * @param {App} app
 	 * */
 	generateViewScript(data, logger, callback, app) {
 		try {
@@ -281,10 +285,10 @@ module.exports = {
 	},
 
 	/**
-	 * @param data {CoreData}
-	 * @param logger {Logger}
-	 * @param callback {PluginCallback}
-	 * @param app {App}
+	 * @param {CoreData} data
+	 * @param {Logger} logger
+	 * @param {PluginCallback} callback
+	 * @param {App} app
 	 * */
 	async generateContainerScript(data, logger, callback, app) {
 		try {
@@ -308,10 +312,10 @@ module.exports = {
 	},
 
 	/**
-	 * @param data {CoreData}
-	 * @param logger {Logger}
-	 * @param cb {PluginCallback}
-	 * @param app {App}
+	 * @param {CoreData} data
+	 * @param {Logger} logger
+	 * @param {PluginCallback} cb
+	 * @param {App} app
 	 * */
 	async applyToInstance(data, logger, cb, app) {
 		const connectionData = {
@@ -334,9 +338,9 @@ module.exports = {
 	},
 
 	/**
-	 * @param connectionInfo {CoreData}
-	 * @param logger {Logger}
-	 * @param cb {PluginCallback}
+	 * @param {CoreData} connectionInfo
+	 * @param {Logger} logger
+	 * @param {PluginCallback} cb
 	 * */
 	async testConnection(connectionInfo, logger, cb) {
 		try {
@@ -362,10 +366,10 @@ module.exports = {
 	},
 
 	/**
-	 * @param data {CoreData}
-	 * @param logger {Logger}
-	 * @param callback {PluginCallback}
-	 * @param app {App}
+	 * @param {CoreData} data
+	 * @param {Logger} logger
+	 * @param {PluginCallback} callback
+	 * @param {App} app
 	 * */
 	isDropInStatements(data, logger, callback, app) {
 		try {

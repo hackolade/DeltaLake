@@ -111,7 +111,10 @@ const buildEntityLevelFEScript =
 			const relationshipsWithThisTableAsChild = modelData[1]?.relationships.filter(
 				relationship => relationship.childCollection === entityId,
 			);
-			relationshipScripts = getCreateRelationshipScripts(app)(relationshipsWithThisTableAsChild, jsonSchema);
+			relationshipScripts = getCreateRelationshipScripts(app)({
+				relationships: relationshipsWithThisTableAsChild,
+				jsonSchemas: jsonSchema,
+			});
 		}
 
 		return buildScript([
@@ -198,6 +201,7 @@ const getContainerLevelEntitiesScriptDtos =
 		areNotNullConstraintsAvailable,
 		includeRelationshipsInEntityScripts,
 		includeSamplesInEntityScripts,
+		relatedSchemas,
 	}) => {
 		const _ = app.require('lodash');
 		const scriptDtos = [];
@@ -226,10 +230,11 @@ const getContainerLevelEntitiesScriptDtos =
 				const relationshipsWithThisTableAsChild = data.relationships.filter(
 					relationship => relationship.childCollection === entityId,
 				);
-				relationshipScripts = getCreateRelationshipScripts(app)(
-					relationshipsWithThisTableAsChild,
-					entitiesJsonSchema,
-				);
+				relationshipScripts = getCreateRelationshipScripts(app)({
+					relationships: relationshipsWithThisTableAsChild,
+					jsonSchemas: entitiesJsonSchema,
+					relatedSchemas,
+				});
 			}
 
 			const sampleScript = await getSampleScriptForContainerLevelScript(_)({
@@ -283,6 +288,7 @@ const buildContainerLevelFEScriptDto =
 		containerData,
 		includeRelationshipsInEntityScripts,
 		includeSamplesInEntityScripts,
+		relatedSchemas,
 	}) => {
 		const _ = app.require('lodash');
 		const dbVersion = data.modelData[0].dbVersion;
@@ -305,11 +311,16 @@ const buildContainerLevelFEScriptDto =
 			areNotNullConstraintsAvailable,
 			includeRelationshipsInEntityScripts,
 			includeSamplesInEntityScripts,
+			relatedSchemas,
 		});
 
 		let relationshipScrips = [];
 		if (!includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
-			relationshipScrips = getCreateRelationshipScripts(app)(data.relationships, entitiesJsonSchema);
+			relationshipScrips = getCreateRelationshipScripts(app)({
+				relationships: data.relationships,
+				jsonSchemas: entitiesJsonSchema,
+				relatedSchemas,
+			});
 		}
 
 		return {
