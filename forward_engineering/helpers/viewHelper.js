@@ -137,7 +137,7 @@ module.exports = {
 			const columnsNames = getColumnNames(_)(collectionRefsDefinitionsMap, columns);
 
 			if (fromStatement && columnsNames?.length) {
-				script.push(`AS SELECT ${columnsNames.join(',\n')}`);
+				script.push(`AS SELECT ${joinColumnNames(columnsNames)}`);
 				script.push(fromStatement);
 			} else {
 				return;
