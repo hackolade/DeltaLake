@@ -1,6 +1,6 @@
 'use strict';
 
-const { prepareName, encodeStringLiteral } = require('../utils/general');
+const { prepareName, encodeStringLiteral, commentDeactivatedStatement } = require('../utils/general');
 const { getTablePropertiesClause } = require('./tableHelper');
 const { getViewTagsStatement } = require('./unityTagsHelper');
 
@@ -22,8 +22,9 @@ const getColumnNames = _ => (collectionRefsDefinitionsMap, columns) => {
 			const collectionName = collection.code || collection.collectionName;
 			const db = _.first(itemData.bucket) || {};
 			const dbName = db.code || db.name;
+			const finalName = `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
 
-			return `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
+			return commentDeactivatedStatement(finalName, itemData.definition.isActivated);
 		}),
 	).filter(_.identity);
 };
@@ -120,7 +121,7 @@ module.exports = {
 			const columnsNames = getColumnNames(_)(collectionRefsDefinitionsMap, columns);
 
 			if (fromStatement && columnsNames?.length) {
-				script.push(`AS SELECT ${columnsNames.join(', ')}`);
+				script.push(`AS SELECT ${columnsNames.join(',\n')}`);
 				script.push(fromStatement);
 			} else {
 				return;
