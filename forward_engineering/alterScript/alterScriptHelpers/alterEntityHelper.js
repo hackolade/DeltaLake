@@ -165,7 +165,7 @@ const getDeleteColumnsScripts = (app, definitions, provider, dbVersion) => entit
 
 	const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
 	const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
-	const deleteColumnScriptDto = AlterScriptDto.getInstance([deleteColumnScript], true, false);
+	const deleteColumnScriptDto = AlterScriptDto.getInstance([deleteColumnScript], true, true);
 
 	if (modifyScript.type === 'new') {
 		return [dropIndexScriptDto, ...(modifyScript.script || []), addIndexScriptDto].filter(Boolean);
