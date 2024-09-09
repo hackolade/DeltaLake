@@ -22,9 +22,9 @@ const getColumnNames = _ => (collectionRefsDefinitionsMap, columns) => {
 			const collectionName = collection.code || collection.collectionName;
 			const db = _.first(itemData.bucket) || {};
 			const dbName = db.code || db.name;
-			const finalName = `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
+			const fullColumnName = `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
 
-			return commentDeactivatedStatement(finalName, itemData.definition.isActivated);
+			return commentDeactivatedStatement(fullColumnName, itemData.definition.isActivated);
 		}),
 	).filter(_.identity);
 };
@@ -55,15 +55,31 @@ const getFromStatement = _ => (collectionRefsDefinitionsMap, columns) => {
 	return 'FROM ' + sourceCollections.join(' INNER JOIN ');
 };
 
-const retrivePropertyFromConfig = (config, tab, propertyName, defaultValue = '') =>
+const retrievePropertyFromConfig = (config, tab, propertyName, defaultValue = '') =>
 	((config || [])[tab] || {})[propertyName] || defaultValue;
 
 const retrieveContainerName = containerConfig =>
-	retrivePropertyFromConfig(containerConfig, 0, 'code', retrivePropertyFromConfig(containerConfig, 0, 'name', ''));
+	retrievePropertyFromConfig(containerConfig, 0, 'code', retrievePropertyFromConfig(containerConfig, 0, 'name', ''));
 
 const replaceSpaceWithUnderscore = (name = '') => {
 	return name.replace(/\s/g, '_');
 };
+
+function joinColumnNames(statement) {
+	const lastNonCommentIndex = statement.findLastIndex(statement => !statement.startsWith('--'));
+
+	if (lastNonCommentIndex === -1) {
+		return statement.join('\n');
+	}
+
+	return statement
+		.map((st, index) => {
+			const shouldHaveTrailingComa = index < lastNonCommentIndex && !st.startsWith('--');
+
+			return `${st}${shouldHaveTrailingComa ? ',' : ''}`;
+		})
+		.join('\n');
+}
 
 module.exports = {
 	getViewScript({ _, schema, viewData, containerData, collectionRefsDefinitionsMap }) {
