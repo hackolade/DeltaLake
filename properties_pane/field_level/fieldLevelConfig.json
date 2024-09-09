@@ -2930,6 +2930,294 @@ making sure that you maintain a proper JSON format.
 					]
 				}
 			}
+		],
+		"variant": [
+			"name",
+			"code",
+			"sampleName",
+			"schemaId",
+			"refPath",
+			{
+				"propertyName": "Comments",
+				"propertyKeyword": "description",
+				"propertyTooltip": "comments",
+				"addTimestampButton": false,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			"type",
+			{
+				"propertyName": "Variant type",
+				"propertyKeyword": "variantType",
+				"shouldValidate": false,
+				"propertyTooltip": "Select from list of options",
+				"propertyType": "select",
+				"options": ["JSON"],
+				"dependency": {
+					"key": "childType",
+					"value": "variant"
+				}
+			},
+			{
+				"propertyName": "Subtype",
+				"propertyKeyword": "subtype",
+				"propertyType": "select",
+				"options": [
+					{ "name": "object", "value": "object" },
+					{ "name": "array", "value": "array" },
+					{ "name": "string", "value": "string" },
+					{ "name": "number", "value": "number" },
+					{ "name": "boolean", "value": "boolean" },
+					{ "name": "null", "value": "null" }
+				],
+				"dependency": {
+					"key": "childType",
+					"value": "variant"
+				}
+			},
+			{
+				"propertyName": "Not null",
+				"propertyKeyword": "required",
+				"enableForReference": true,
+				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "compositePrimaryKey",
+				"propertyType": "checkbox",
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "This column is part of the table composite primary key definition. Please refer to this definition if you want more information or to update the Primary Key definition",
+							"dependency": {
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"tooltip": "Remove the existing composite primary key definition prior to unlock the possibility to mark this single column as the new primary key for this table",
+							"dependency": {
+								"level": "siblings",
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						},
+						{
+							"tooltip": "Another column has already been selected as primary key.  You must unselect it prior to either selecting this column, or creating a compound primary key.",
+							"dependency": {
+								"level": "siblings",
+								"key": "primaryKey",
+								"value": true
+							}
+						}
+					]
+				},
+				"dependency": {
+					"type": "or",
+					"values": [
+						{
+							"key": "compositePrimaryKey",
+							"value": true
+						},
+						{
+							"level": "siblings",
+							"key": "primaryKey",
+							"value": true
+						}
+					]
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Primary key",
+				"propertyKeyword": "primaryKey",
+				"preserveOnCleanDependencies": true,
+				"enableForReference": true,
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "not",
+							"values": {
+								"level": "siblings",
+								"key": "primaryKey",
+								"value": true
+							}
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "compositeUniqueKey",
+				"propertyType": "checkbox",
+				"dependency": {
+					"key": "compositeUniqueKey",
+					"value": true
+				},
+				"disabled": true
+			},
+			{
+				"propertyName": "Unique",
+				"propertyKeyword": "unique",
+				"enableForReference": true,
+				"propertyType": "checkbox",
+				"dependency": {
+					"type": "and",
+					"values": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositePrimaryKey",
+									"value": false
+								},
+								{
+									"key": "compositePrimaryKey",
+									"exist": false
+								}
+							]
+						},
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "compositeUniqueKey",
+									"value": false
+								},
+								{
+									"key": "compositeUniqueKey",
+									"exist": false
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Check constraint",
+				"propertyKeyword": "check",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false
+			},
+			{
+				"propertyName": "Check constraint name",
+				"propertyKeyword": "checkConstraintName",
+				"propertyType": "text"
+			},
+			{
+				"propertyName": "Generated as",
+				"propertyTooltip": "",
+				"propertyKeyword": "generatedDefaultValue",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "generatedType",
+						"propertyType": "select",
+						"options": ["always", "by default"],
+						"defaultValue": "always"
+					},
+					{
+						"propertyName": "Expression",
+						"propertyKeyword": "expression",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				]
+			},
+			"additionalProperties",
+			{
+				"propertyName": "Remarks",
+				"propertyKeyword": "comments",
+				"shouldValidate": false,
+				"propertyTooltip": "remarks",
+				"addTimestampButton": true,
+				"propertyType": "details",
+				"template": "textarea"
+			},
+			{
+				"propertyName": "Column Tags",
+				"propertyKeyword": "unityColumnTags",
+				"propertyTooltip": "Contains all the tags that have been applied to the column. Available only in Unity Catalog",
+				"propertyType": "group",
+				"groupItemLimit": 20,
+				"structure": [
+					{
+						"propertyName": "Key",
+						"propertyKeyword": "unityTagKey",
+						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
+						"propertyType": "text",
+						"validation": {
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+						}
+					},
+					{
+						"propertyName": "Value",
+						"propertyKeyword": "unityTagValue",
+						"propertyTooltip": "The value of the tag.",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					}
+				],
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 6"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 7"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 8"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 9"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 10"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 11"
+						},
+						{
+							"level": "model",
+							"key": "dbVersion",
+							"value": "Runtime 12"
+						}
+					]
+				}
+			}
 		]
 	}
 }

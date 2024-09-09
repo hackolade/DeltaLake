@@ -1,0 +1,53 @@
+{
+	"name": "variant",
+	"erdAbbreviation": "<var>",
+	"dtdAbbreviation": "{...}",
+	"default": true,
+	"parentType": "document",
+	"hiddenOnEntity": "view",
+	"jsonType": {
+		"order": 1,
+		"name": "variant",
+		"jsonRoot": true
+	},
+	"defaultValues": {
+		"primaryKey": false,
+		"mode": "var",
+		"relationshipType": "",
+		"parentRelationship": "",
+		"childRelationships": [],
+		"foreignCollection": "",
+		"foreignField": [],
+		"enabled": true,
+		"variantType": "JSON",
+		"properties": [],
+		"subtype": "object",
+		"dependencies": [],
+		"minProperties": "",
+		"maxProperties": "",
+		"additionalProperties": false,
+		"enum": []
+	},
+	"subtypes": {
+		"object": {
+			"parentType": "jsonObject",
+			"childValueType": ["jsonString", "jsonNumber", "jsonObject", "jsonArray", "jsonBoolean", "jsonNull"]
+		},
+		"array": {
+			"parentType": "jsonArray",
+			"childValueType": ["jsonString", "jsonNumber", "jsonObject", "jsonArray", "jsonBoolean", "jsonNull"]
+		},
+		"string": {
+			"parentType": "jsonString"
+		},
+		"number": {
+			"parentType": "jsonNumber"
+		},
+		"boolean": {
+			"parentType": "jsonBoolean"
+		},
+		"null": {
+			"parentType": "jsonNull"
+		}
+	}
+}
