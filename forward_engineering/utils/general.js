@@ -133,11 +133,13 @@ const commentDeactivatedStatements = (statement, isActivated = true) => {
 		return statement;
 	}
 
-	return (statement, insertValue) =>
+	const insertBeforeEachLine = (statement, insertValue) =>
 		statement
 			.split('\n')
-			.map(line => commentDeactivatedStatement(line, isActivated))
+			.map(line => `${insertValue}${line}`)
 			.join('\n');
+
+	return insertBeforeEachLine(statement, '-- ');
 };
 
 const commentDeactivatedInlineKeys = _ => (keys, deactivatedKeyNames) => {
