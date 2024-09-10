@@ -65,18 +65,22 @@ const replaceSpaceWithUnderscore = (name = '') => {
 	return name.replace(/\s/g, '_');
 };
 
-function joinColumnNames(statement) {
-	const lastNonCommentIndex = statement.findLastIndex(statement => !statement.startsWith('--'));
+function joinColumnNames(statements) {
+	const lastNonCommentIndex = statements.findLastIndex(statement => !statement.startsWith('--'));
 
 	if (lastNonCommentIndex === -1) {
-		return statement.join('\n');
+		return statements.join('\n');
 	}
 
-	return statement
+	return statements
 		.map((st, index) => {
-			const shouldHaveTrailingComa = index < lastNonCommentIndex && !st.startsWith('--');
+			const isNotLast = index !== statements.length - 1;
 
-			return `${st}${shouldHaveTrailingComa ? ',' : ''}`;
+			if (lastNonCommentIndex === index && isNotLast) {
+				return `${st} -- ,`;
+			}
+
+			return `${st}${isNotLast ? ',' : ''}`;
 		})
 		.join('\n');
 }
