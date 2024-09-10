@@ -14,6 +14,9 @@
 		"uniqueItems": false
 	},
 	"subtypes": {
+		"json": {
+			"childValueType": ["variant"]
+		},
 		"array<txt>": {
 			"childValueType": "text"
 		},

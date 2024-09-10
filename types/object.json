@@ -8,6 +8,9 @@
 		"properties": []
 	},
 	"subtypes": {
+		"json": {
+			"childValueType": ["variant"]
+		},
 		"object": {
 			"childValueType": [
 				"text",
