@@ -2938,6 +2938,13 @@ making sure that you maintain a proper JSON format.
 			"schemaId",
 			"refPath",
 			{
+				"propertyName": "Synonym",
+				"propertyKeyword": "mode",
+				"propertyType": "select",
+				"options": ["var"],
+				"hidden": true
+			},
+			{
 				"propertyName": "Comments",
 				"propertyKeyword": "description",
 				"propertyTooltip": "comments",
