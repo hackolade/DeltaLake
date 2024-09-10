@@ -6,7 +6,7 @@ const { getViewTagsStatement } = require('./unityTagsHelper');
 
 const getColumnNames = _ => (collectionRefsDefinitionsMap, columns) => {
 	return _.uniq(
-		Object.keys(columns).map(name => {
+		Object.entries(columns).map(([name, definition]) => {
 			const id = _.get(columns, [name, 'GUID']);
 
 			const itemDataId = Object.keys(collectionRefsDefinitionsMap).find(viewFieldId => {
@@ -24,7 +24,7 @@ const getColumnNames = _ => (collectionRefsDefinitionsMap, columns) => {
 			const dbName = db.code || db.name;
 			const fullColumnName = `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
 
-			return commentDeactivatedStatement(fullColumnName, itemData.definition.isActivated);
+			return commentDeactivatedStatement(fullColumnName, definition.isActivated);
 		}),
 	).filter(_.identity);
 };
