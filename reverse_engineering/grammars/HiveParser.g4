@@ -1330,6 +1330,7 @@ primitiveType
     | KW_DECIMAL (LPAREN Number (COMMA Number)? RPAREN)?
     | KW_VARCHAR LPAREN Number RPAREN
     | KW_CHAR LPAREN Number RPAREN
+    | KW_VARIANT
     ;
 
 listType
