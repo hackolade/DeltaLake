@@ -71,7 +71,7 @@ const getAddColumnsScriptsForModifyModifyCollectionScript =
 		const columnsWithoutNotNull = getColumnsWithoutNotNullConstraint(_)(columns);
 
 		const properties = getEntityProperties(entity);
-		const columnStatement = getColumnsStatement(columnsWithoutNotNull);
+		const columnStatement = getColumnsStatement(columnsWithoutNotNull, entity.role?.isActivated ?? true);
 		const fullCollectionName = generateFullEntityName({ entity, dbVersion });
 		const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(_)({ entity, properties, definitions, dbVersion });
 		const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
