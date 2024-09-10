@@ -1,6 +1,6 @@
 'use strict';
 
-const { prepareName, encodeStringLiteral } = require('../utils/general');
+const { prepareName, encodeStringLiteral, commentDeactivatedStatement } = require('../utils/general');
 const { getTablePropertiesClause } = require('./tableHelper');
 const { getViewTagsStatement } = require('./unityTagsHelper');
 
@@ -22,8 +22,9 @@ const getColumnNames = _ => (collectionRefsDefinitionsMap, columns) => {
 			const collectionName = collection.code || collection.collectionName;
 			const db = _.first(itemData.bucket) || {};
 			const dbName = db.code || db.name;
+			const fullColumnName = `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
 
-			return `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
+			return commentDeactivatedStatement(fullColumnName, itemData.definition.isActivated);
 		}),
 	).filter(_.identity);
 };
@@ -54,15 +55,35 @@ const getFromStatement = _ => (collectionRefsDefinitionsMap, columns) => {
 	return 'FROM ' + sourceCollections.join(' INNER JOIN ');
 };
 
-const retrivePropertyFromConfig = (config, tab, propertyName, defaultValue = '') =>
+const retrievePropertyFromConfig = (config, tab, propertyName, defaultValue = '') =>
 	((config || [])[tab] || {})[propertyName] || defaultValue;
 
 const retrieveContainerName = containerConfig =>
-	retrivePropertyFromConfig(containerConfig, 0, 'code', retrivePropertyFromConfig(containerConfig, 0, 'name', ''));
+	retrievePropertyFromConfig(containerConfig, 0, 'code', retrievePropertyFromConfig(containerConfig, 0, 'name', ''));
 
 const replaceSpaceWithUnderscore = (name = '') => {
 	return name.replace(/\s/g, '_');
 };
+
+function joinColumnNames(statements) {
+	const lastNonCommentIndex = statements.findLastIndex(statement => !statement.startsWith('--'));
+
+	if (lastNonCommentIndex === -1) {
+		return statements.join('\n');
+	}
+
+	return statements
+		.map((st, index) => {
+			const isNotLast = index !== statements.length - 1;
+
+			if (lastNonCommentIndex === index && isNotLast) {
+				return `${st} -- ,`;
+			}
+
+			return `${st}${isNotLast ? ',' : ''}`;
+		})
+		.join('\n');
+}
 
 module.exports = {
 	getViewScript({ _, schema, viewData, containerData, collectionRefsDefinitionsMap }) {
@@ -120,7 +141,7 @@ module.exports = {
 			const columnsNames = getColumnNames(_)(collectionRefsDefinitionsMap, columns);
 
 			if (fromStatement && columnsNames?.length) {
-				script.push(`AS SELECT ${columnsNames.join(', ')}`);
+				script.push(`AS SELECT ${joinColumnNames(columnsNames)}`);
 				script.push(fromStatement);
 			} else {
 				return;

@@ -120,10 +120,19 @@ const getTypeDescriptor = typeName => {
  * @param isActivated {boolean}
  * @return {string}
  * */
+const commentDeactivatedStatement = (statement, isActivated = true) =>
+	isActivated === false ? `-- ${statement}` : statement;
+
+/**
+ * @param statement {string}
+ * @param isActivated {boolean}
+ * @return {string}
+ * */
 const commentDeactivatedStatements = (statement, isActivated = true) => {
 	if (isActivated) {
 		return statement;
 	}
+
 	const insertBeforeEachLine = (statement, insertValue) =>
 		statement
 			.split('\n')
@@ -308,6 +317,7 @@ module.exports = {
 	getRelationshipName,
 	prepareName,
 	replaceSpaceWithUnderscore,
+	commentDeactivatedStatement,
 	commentDeactivatedStatements,
 	commentDeactivatedInlineKeys,
 	getCleanedUrl,
