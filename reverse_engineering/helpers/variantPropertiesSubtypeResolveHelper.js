@@ -12,7 +12,7 @@ const { getMostFrequentValueInList } = require('./utils');
  * }} param
  * @returns {object}
  */
-const getVariantColumnsWithResolvedSubType = ({ propertiesSchema, documents = [] }) => {
+const getVariantColumnsWithResolvedSubtype = ({ propertiesSchema, documents = [] }) => {
 	const propertiesEntriesWithUpdatedSubtypes = Object.entries(propertiesSchema).map(([propertyName, propertyData]) =>
 		getVariantColumnWithResolvedSubType({ propertyName, propertyData, documents }),
 	);
@@ -79,5 +79,5 @@ const getDocumentRecordType = parsedRecord => {
 };
 
 module.exports = {
-	getVariantColumnsWithResolvedSubType,
+	getVariantColumnsWithResolvedSubtype,
 };

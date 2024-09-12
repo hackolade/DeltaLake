@@ -126,6 +126,15 @@ const reverseTableColumn = column => {
 	};
 };
 
-const handleVariantType = typeContainer => {};
+/**
+ *
+ * @param {object[]} properties
+ * @returns {string[]}
+ */
+const getPropertiesPotentiallyContainingJSON = (properties = []) =>
+	properties.filter(property => property.mode === 'string' || property.mode === 'var');
 
-module.exports = { reverseTableColumn };
+module.exports = {
+	reverseTableColumn,
+	getPropertiesPotentiallyContainingJSON,
+};
