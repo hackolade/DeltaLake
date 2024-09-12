@@ -73,6 +73,14 @@ const handleType = typeContainer => {
 			...handleSubtype(typeContainer.val, 'map'),
 		};
 	}
+	if (typeContainer.type === 'variant') {
+		return {
+			type: 'document',
+			childType: 'variant',
+			variantType: 'JSON',
+			mode: 'var',
+		};
+	}
 	switch (typeContainer.type) {
 		case 'tinyint':
 		case 'smallint':
@@ -117,5 +125,7 @@ const reverseTableColumn = column => {
 		...(column.primaryKey && { primaryKey: true, primaryKeyOptions: column.primaryKeyOptions }),
 	};
 };
+
+const handleVariantType = typeContainer => {};
 
 module.exports = { reverseTableColumn };

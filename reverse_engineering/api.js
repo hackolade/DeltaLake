@@ -22,6 +22,7 @@ const { parseDDLStatements } = require('./parseDDLStatements');
 const { isSupportUnityCatalog } = require('./helpers/databricksHelper');
 const unityTagsHelper = require('./helpers/unityTagsHelper');
 const { adaptJsonSchema } = require('./adaptJsonSchema');
+const { getVariantColumnsWithResolvedSubType } = require('./helpers/variantPropertiesSubTypeResolveHelper');
 
 const DEFAULT_DATABRICKS_CATALOG_NAME = 'hive_metastore';
 
@@ -265,12 +266,14 @@ module.exports = {
 							logger,
 						);
 
-						const columnsOfTypeString = (tableData.properties || []).filter(
-							property => property.mode === 'string',
+						const columnsPotentiallyContainingJSON = (tableData.properties || []).filter(
+							property => property.mode === 'string' || property.mode === 'var',
 						);
-						const hasColumnsOfTypeString = !dependencies.lodash.isEmpty(columnsOfTypeString);
+						const hasPotentiallyContainingJSONColumns = !dependencies.lodash.isEmpty(
+							columnsPotentiallyContainingJSON,
+						);
 						let documents = [];
-						if (hasColumnsOfTypeString) {
+						if (hasPotentiallyContainingJSONColumns) {
 							progress({
 								message: 'Start getting documents from table',
 								containerName: 'databases',
@@ -280,9 +283,13 @@ module.exports = {
 								connectionInfo: connectionData,
 								dbName,
 								tableName: table.name,
-								fields: columnsOfTypeString,
+								fields: columnsPotentiallyContainingJSON,
 								recordSamplingSettings: data.recordSamplingSettings,
 								logger,
+							});
+							tableData.schema = getVariantColumnsWithResolvedSubType({
+								propertiesSchema: tableData.schema,
+								documents,
 							});
 							progress({
 								message: 'Documents retrieved successfully',
