@@ -116,8 +116,8 @@ const getMostFrequentItemInList = list => {
 	});
 
 	const itemToFrequencyMapEntries = Object.entries(itemToFrequencyMap);
-	const [defaultMostFrequentEntry] = itemToFrequencyMapEntries;
-	let [mostFrequentItem, maxFrequency] = defaultMostFrequentEntry;
+	let mostFrequentItem;
+	let maxFrequency = 0;
 
 	for (let [item, frequency] of itemToFrequencyMapEntries) {
 		if (frequency > maxFrequency) {
