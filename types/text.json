@@ -5,7 +5,7 @@
 	"parentType": "string",
 	"useSample": true,
 	"jsonType": {
-		"order": 1,
+		"order": 2,
 		"jsonRoot": true,
 		"source": {
 			"key": "mode",

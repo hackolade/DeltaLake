@@ -6,7 +6,7 @@
 	"parentType": "document",
 	"hiddenOnEntity": "view",
 	"jsonType": {
-		"order": 2,
+		"order": 1,
 		"name": "variant",
 		"jsonRoot": true
 	},
