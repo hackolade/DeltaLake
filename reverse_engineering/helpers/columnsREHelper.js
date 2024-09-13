@@ -73,6 +73,14 @@ const handleType = typeContainer => {
 			...handleSubtype(typeContainer.val, 'map'),
 		};
 	}
+	if (typeContainer.type === 'variant') {
+		return {
+			type: 'document',
+			childType: 'variant',
+			variantType: 'JSON',
+			mode: 'var',
+		};
+	}
 	switch (typeContainer.type) {
 		case 'tinyint':
 		case 'smallint':
@@ -118,4 +126,15 @@ const reverseTableColumn = column => {
 	};
 };
 
-module.exports = { reverseTableColumn };
+/**
+ *
+ * @param {object[]} properties
+ * @returns {string[]}
+ */
+const getPropertiesPotentiallyContainingJSON = (properties = []) =>
+	properties.filter(property => property.mode === 'string' || property.mode === 'var');
+
+module.exports = {
+	reverseTableColumn,
+	getPropertiesPotentiallyContainingJSON,
+};

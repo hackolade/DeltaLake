@@ -98,6 +98,37 @@ const getTemplateDocByJsonSchema = schema => {
 	}, {});
 };
 
+/**
+ *
+ * @param {Array<number | string | boolean>} list
+ * @returns {number | string | boolean}
+ */
+const getMostFrequentItemInList = list => {
+	const itemToFrequencyMap = {};
+
+	list.forEach(item => {
+		if (itemToFrequencyMap[item]) {
+			itemToFrequencyMap[item] += 1;
+			return;
+		}
+
+		itemToFrequencyMap[item] = 1;
+	});
+
+	const itemToFrequencyMapEntries = Object.entries(itemToFrequencyMap);
+	let mostFrequentItem;
+	let maxFrequency = 0;
+
+	for (let [item, frequency] of itemToFrequencyMapEntries) {
+		if (frequency > maxFrequency) {
+			mostFrequentItem = item;
+			maxFrequency = frequency;
+		}
+	}
+
+	return mostFrequentItem;
+};
+
 module.exports = {
 	prepareNamesForInsertionIntoScalaCode,
 	splitTableAndViewNames,
@@ -110,4 +141,5 @@ module.exports = {
 	isSupportGettingListOfViews,
 	removeParentheses,
 	getTemplateDocByJsonSchema,
+	getMostFrequentValueInList: getMostFrequentItemInList,
 };
