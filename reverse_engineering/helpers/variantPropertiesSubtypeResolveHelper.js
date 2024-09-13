@@ -8,13 +8,14 @@ const { getMostFrequentValueInList } = require('./utils');
  *
  * @param {{
  *  propertiesSchema: object,
- *  documents: object[]
+ *  documents: object[],
+ * 	logger: object
  * }} param
  * @returns {object}
  */
-const getVariantColumnsWithResolvedSubtype = ({ propertiesSchema, documents = [] }) => {
+const getVariantColumnsWithResolvedSubtype = ({ propertiesSchema, logger, documents = [] }) => {
 	const propertiesEntriesWithUpdatedSubtypes = Object.entries(propertiesSchema).map(([propertyName, propertyData]) =>
-		getVariantColumnWithResolvedSubType({ propertyName, propertyData, documents }),
+		getVariantColumnWithResolvedSubType({ propertyName, propertyData, documents, logger }),
 	);
 
 	return Object.fromEntries(propertiesEntriesWithUpdatedSubtypes);
@@ -25,19 +26,23 @@ const getVariantColumnsWithResolvedSubtype = ({ propertiesSchema, documents = []
  * @param {{
  *  propertyName: string,
  *  propertyValue: object,
- *  documents: object[]
+ *  documents: object[],
+ * 	logger: object
  * }} param
  * @returns {[string, object]}
  */
-const getVariantColumnWithResolvedSubType = ({ propertyName, propertyData, documents }) => {
+const getVariantColumnWithResolvedSubType = ({ propertyName, propertyData, documents, logger }) => {
 	if (propertyData?.mode !== 'var') {
 		return [propertyName, propertyData];
 	}
 
 	const propertyDocumentsRecords = documents.map(document => document[propertyName]);
-	const parsedDocumentsRecords = propertyDocumentsRecords.map(getParsedVariantRecord);
-	const parsedDocumentsRecordsTypes = parsedDocumentsRecords.map(getDocumentRecordType);
-	const mostFrequentType = getMostFrequentValueInList(parsedDocumentsRecordsTypes);
+	const propertyDocumentsRecordsTypes = getPropertyDocumentsRecordsTypes({
+		propertyName,
+		propertyDocumentsRecords,
+		logger,
+	});
+	const mostFrequentType = getMostFrequentValueInList(propertyDocumentsRecordsTypes);
 
 	const updatedPropertyValue = {
 		...propertyData,
@@ -49,34 +54,53 @@ const getVariantColumnWithResolvedSubType = ({ propertyName, propertyData, docum
 
 /**
  *
- * @param {string} record
- * @returns {Primitive | object | Array<Primitive>}
+ * @param {{
+ * 	propertyName: string,
+ * 	propertyDocumentsRecords: string[],
+ * 	logger: object
+ * }} param
+ * @returns
  */
-const getParsedVariantRecord = record => {
-	try {
-		const parsedRecord = JSON.parse(record);
-		return parsedRecord;
-	} catch {
-		return {};
-	}
-};
+const getPropertyDocumentsRecordsTypes = ({ propertyName, propertyDocumentsRecords, logger }) =>
+	propertyDocumentsRecords
+		.map(record => {
+			try {
+				return getDocumentRecordType(record);
+			} catch (error) {
+				logger.log(
+					'error',
+					{ message: error.message, stack: error.stack, error },
+					`Error on ${record} record related to ${propertyName} column type extraction`,
+				);
+			}
+		})
+		.filter(Boolean);
 
 /**
  *
- * @param {Primitive | object | Array<Primitive | object>} parsedRecord
- * @returns {string}
+ * @param {Primitive | object | Array<Primitive | object>} record
+ * @returns {string | undefined}
  */
-const getDocumentRecordType = parsedRecord => {
+const getDocumentRecordType = record => {
+	const parsedRecord = getParsedVariantRecord(record);
+
 	if (Array.isArray(parsedRecord)) {
 		return 'array';
 	}
 
 	if (typeof parsedRecord === 'object') {
-		return parsedRecord ? 'object' : null;
+		return parsedRecord ? 'object' : 'null';
 	}
 
 	return typeof parsedRecord;
 };
+
+/**
+ *
+ * @param {string} record
+ * @returns {Primitive | object | Array<Primitive>}
+ */
+const getParsedVariantRecord = record => JSON.parse(record);
 
 module.exports = {
 	getVariantColumnsWithResolvedSubtype,

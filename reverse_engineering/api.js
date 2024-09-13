@@ -289,6 +289,7 @@ module.exports = {
 							tableData.schema = getVariantColumnsWithResolvedSubtype({
 								propertiesSchema: tableData.schema,
 								documents,
+								logger,
 							});
 							progress({
 								message: 'Documents retrieved successfully',

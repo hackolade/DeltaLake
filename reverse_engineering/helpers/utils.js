@@ -103,35 +103,30 @@ const getTemplateDocByJsonSchema = schema => {
  * @param {Array<number | string | boolean>} list
  * @returns {number | string | boolean}
  */
-const getMostFrequentValueInList = list => {
-	const itemsToFrequencyMap = {};
+const getMostFrequentItemInList = list => {
+	const itemToFrequencyMap = {};
 
 	list.forEach(item => {
-		if (itemsToFrequencyMap[item]) {
-			itemsToFrequencyMap[item] += 1;
+		if (itemToFrequencyMap[item]) {
+			itemToFrequencyMap[item] += 1;
 			return;
 		}
 
-		itemsToFrequencyMap[item] = 1;
+		itemToFrequencyMap[item] = 1;
 	});
 
-	const frequencyMapEntries = Object.entries(itemsToFrequencyMap);
-	const defaultMostFrequentEntry = frequencyMapEntries[0];
+	const itemToFrequencyMapEntries = Object.entries(itemToFrequencyMap);
+	const [defaultMostFrequentEntry] = itemToFrequencyMapEntries;
+	let [mostFrequentItem, maxFrequency] = defaultMostFrequentEntry;
 
-	const mostFrequentItemEntry = frequencyMapEntries.reduce(
-		([mostFrequentItemValue, mostFrequentItemFrequency], [item, frequency]) => {
-			if (frequency > mostFrequentItemFrequency) {
-				return [item, frequency];
-			}
+	for (let [item, frequency] of itemToFrequencyMapEntries) {
+		if (frequency > maxFrequency) {
+			mostFrequentItem = item;
+			maxFrequency = frequency;
+		}
+	}
 
-			return [mostFrequentItemValue, mostFrequentItemFrequency];
-		},
-		defaultMostFrequentEntry,
-	);
-
-	const [mostFrequentItemValue] = mostFrequentItemEntry;
-
-	return mostFrequentItemValue;
+	return mostFrequentItem;
 };
 
 module.exports = {
@@ -146,5 +141,5 @@ module.exports = {
 	isSupportGettingListOfViews,
 	removeParentheses,
 	getTemplateDocByJsonSchema,
-	getMostFrequentValueInList,
+	getMostFrequentValueInList: getMostFrequentItemInList,
 };
