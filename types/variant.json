@@ -2,7 +2,6 @@
 	"name": "variant",
 	"erdAbbreviation": "<var>",
 	"dtdAbbreviation": "{...}",
-	"default": true,
 	"parentType": "document",
 	"hiddenOnEntity": "view",
 	"jsonType": {
