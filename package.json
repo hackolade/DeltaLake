@@ -1,6 +1,6 @@
 {
     "name": "DeltaLake",
-    "version": "0.2.4",
+    "version": "0.2.5",
     "author": "hackolade",
     "engines": {
         "hackolade": "6.5.3",
@@ -19,7 +19,8 @@
                 "Runtime 11",
                 "Runtime 12",
                 "Runtime 13",
-                "Runtime 14"
+                "Runtime 14",
+                "Runtime 15"
             ]
         },
         "features": {

@@ -20,7 +20,8 @@
 				"array",
 				"map",
 				"struct",
-				"object"
+				"object",
+				"variant"
 			]
 		}
 	}
