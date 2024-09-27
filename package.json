@@ -1,9 +1,9 @@
 {
     "name": "DeltaLake",
-    "version": "0.2.6",
+    "version": "0.2.7",
     "author": "hackolade",
     "engines": {
-        "hackolade": "6.5.3",
+        "hackolade": "7.7.10",
         "hackoladePlugin": "1.2.0"
     },
     "contributes": {
@@ -38,7 +38,14 @@
             "disableChoices": true,
             "enableJsonType": true,
             "relationships": {
-                "compositeRelationships": true
+                "compositeRelationships": {
+                    "allowRelationshipsByProperties": [
+                        "primaryKey",
+                        "unique",
+                        "compositeUniqueKey",
+                        "compositePrimaryKey"
+                    ]
+                }
             },
             "FEScriptCommentsSupported": [
                 "2.x",
