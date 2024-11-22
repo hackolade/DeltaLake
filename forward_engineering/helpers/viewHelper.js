@@ -85,6 +85,26 @@ function joinColumnNames(statements) {
 		.join('\n');
 }
 
+function getDefaultColumnList(properties) {
+	return Object.entries(properties)
+		.reduce((columnList, [name, property]) => {
+			columnList.push({
+				name: `${prepareName(name)}`,
+				comment: property.description,
+				isActivated: property.isActivated,
+			});
+
+			return columnList;
+		}, [])
+		.map(({ name, comment, isActivated }) => {
+			return commentDeactivatedStatement(
+				`${name} ${comment ? `COMMENT '${encodeStringLiteral(comment)}'` : ''}`,
+				isActivated,
+			);
+		})
+		.join(',\n');
+}
+
 module.exports = {
 	getViewScript({ _, schema, viewData, containerData, collectionRefsDefinitionsMap }) {
 		let script = [];
@@ -116,12 +136,14 @@ module.exports = {
 			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`;
 		}
 		script.push(createStatement);
+		const columnList = view.columnList ? ` (${view.columnList})` : ` (${getDefaultColumnList(columns)})`;
 		if (schema.selectStatement) {
-			const columnList = view.columnList ? ` (${view.columnList})` : ' ';
 			return (
 				createStatement +
-				`${columnList} ${comment ? " COMMENT '" + encodeStringLiteral(comment) + "'" : ''} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n${viewUnityTagsStatements}`
+				`${columnList} ${comment ? `COMMENT '${encodeStringLiteral(comment)}'` : ''} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n${viewUnityTagsStatements}`
 			);
+		} else {
+			script.push(columnList);
 		}
 
 		if (_.isEmpty(columns)) {
