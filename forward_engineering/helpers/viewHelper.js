@@ -85,6 +85,10 @@ function joinColumnNames(statements) {
 		.join('\n');
 }
 
+function getCommentStatement(comment) {
+	return comment ? `COMMENT '${encodeStringLiteral(comment)}'` : '';
+}
+
 function getDefaultColumnList(properties) {
 	return Object.entries(properties)
 		.reduce((columnList, [name, property]) => {
@@ -97,10 +101,7 @@ function getDefaultColumnList(properties) {
 			return columnList;
 		}, [])
 		.map(({ name, comment, isActivated }) => {
-			return commentDeactivatedStatement(
-				`${name} ${comment ? `COMMENT '${encodeStringLiteral(comment)}'` : ''}`,
-				isActivated,
-			);
+			return commentDeactivatedStatement(`${name} ${getCommentStatement(comment)}`, isActivated);
 		})
 		.join(',\n');
 }
@@ -140,7 +141,7 @@ module.exports = {
 		if (schema.selectStatement) {
 			return (
 				createStatement +
-				`${columnList} ${comment ? `COMMENT '${encodeStringLiteral(comment)}'` : ''} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n${viewUnityTagsStatements}`
+				`${columnList} ${getCommentStatement(comment)} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n${viewUnityTagsStatements}`
 			);
 		} else {
 			script.push(columnList);
@@ -151,7 +152,7 @@ module.exports = {
 		}
 
 		if (comment) {
-			script.push(`COMMENT '${encodeStringLiteral(comment)}'`);
+			script.push(getCommentStatement(comment));
 		}
 
 		if (tablePropertyStatements) {
