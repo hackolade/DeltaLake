@@ -1,4 +1,6 @@
 module.exports = {
+	createView:
+		'CREATE${orReplace}${global}${temporary} VIEW${ifNotExists} ${name}${columnList}${schemaBinding}${comment}${tablePropertyStatements}${query};${viewUnityTagsStatements}',
 	dropView: 'DROP VIEW IF EXISTS ${name};',
 
 	alterViewName: 'ALTER VIEW ${oldName} RENAME TO ${newName};',
