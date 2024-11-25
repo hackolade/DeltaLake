@@ -145,7 +145,7 @@ module.exports = {
 			schema.unityViewTags && getViewTagsStatement({ viewSchema: schema, viewName: name });
 
 		return assignTemplates(ddlTemplates.createView, {
-			orReplace: orReplace && !ifNotExists ? ' OR REPLACE ' : '',
+			orReplace: orReplace && !ifNotExists ? 'OR REPLACE ' : '',
 			global: isGlobal ? 'GLOBAL ' : '',
 			temporary: isTemporary ? 'TEMPORARY ' : '',
 			ifNotExists: ifNotExists ? ' IF NOT EXISTS' : '',
