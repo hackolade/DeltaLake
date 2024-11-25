@@ -107,7 +107,7 @@ function getDefaultColumnList(properties) {
 		})
 		.join(',\n');
 
-	return list ? `\n(${list})` : '';
+	return list ? `\n(${list}\n)` : '';
 }
 
 function getTableSelectStatement({ _, collectionRefsDefinitionsMap, columns }) {
