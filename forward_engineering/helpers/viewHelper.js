@@ -3,6 +3,8 @@
 const { prepareName, encodeStringLiteral, commentDeactivatedStatement } = require('../utils/general');
 const { getTablePropertiesClause } = require('./tableHelper');
 const { getViewTagsStatement } = require('./unityTagsHelper');
+const ddlTemplates = require('../ddlProvider/ddlTemplates');
+const assignTemplates = require('../utils/assignTemplates');
 
 const getColumnNames = _ => (collectionRefsDefinitionsMap, columns) => {
 	return _.uniq(
@@ -85,9 +87,42 @@ function joinColumnNames(statements) {
 		.join('\n');
 }
 
+function getCommentStatement(comment) {
+	return comment ? `COMMENT '${encodeStringLiteral(comment)}'` : '';
+}
+
+function getDefaultColumnList(properties) {
+	const list = Object.entries(properties)
+		.reduce((columnList, [name, property]) => {
+			columnList.push({
+				name: `${prepareName(name)}`,
+				comment: property.description,
+				isActivated: property.isActivated,
+			});
+
+			return columnList;
+		}, [])
+		.map(({ name, comment, isActivated }) => {
+			return commentDeactivatedStatement(`${name} ${getCommentStatement(comment)}`, isActivated);
+		})
+		.join(',\n');
+
+	return list ? `\n(${list}\n)` : '';
+}
+
+function getTableSelectStatement({ _, collectionRefsDefinitionsMap, columns }) {
+	const fromStatement = getFromStatement(_)(collectionRefsDefinitionsMap, columns);
+	const columnsNames = getColumnNames(_)(collectionRefsDefinitionsMap, columns);
+
+	if (fromStatement && columnsNames?.length) {
+		return `\nAS SELECT ${joinColumnNames(columnsNames)}\n${fromStatement}`;
+	}
+
+	return '';
+}
+
 module.exports = {
 	getViewScript({ _, schema, viewData, containerData, collectionRefsDefinitionsMap }) {
-		let script = [];
 		const columns = schema.properties || {};
 		const view = _.first(viewData) || {};
 
@@ -102,9 +137,6 @@ module.exports = {
 		const orReplace = schema.viewOrReplace;
 		const ifNotExists = view.viewIfNotExist;
 		const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
-		const createStatement = `CREATE ${orReplace && !ifNotExists ? 'OR REPLACE ' : ''}${isGlobal ? 'GLOBAL ' : ''}${isTemporary ? 'TEMPORARY ' : ''}VIEW${ifNotExists ? ' IF NOT EXISTS' : ''} ${name}`;
-		const comment = schema.description;
-		let tablePropertyStatements = '';
 		const tableProperties =
 			schema.tableProperties && Array.isArray(schema.tableProperties)
 				? filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime'])
@@ -112,50 +144,27 @@ module.exports = {
 		const viewUnityTagsStatements =
 			schema.unityViewTags && getViewTagsStatement({ viewSchema: schema, viewName: name });
 
-		if (tableProperties.length) {
-			tablePropertyStatements = ` TBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`;
-		}
-		script.push(createStatement);
-		if (schema.selectStatement) {
-			const columnList = view.columnList ? ` (${view.columnList})` : ' ';
-			return (
-				createStatement +
-				`${columnList} ${comment ? " COMMENT '" + encodeStringLiteral(comment) + "'" : ''} ${tablePropertyStatements} AS ${schema.selectStatement};\n\n${viewUnityTagsStatements}`
-			);
-		}
-
-		if (_.isEmpty(columns)) {
-			return;
-		}
-
-		if (comment) {
-			script.push(`COMMENT '${encodeStringLiteral(comment)}'`);
-		}
-
-		if (tablePropertyStatements) {
-			script.push(tablePropertyStatements);
-		}
-
-		if (!_.isEmpty(columns)) {
-			const fromStatement = getFromStatement(_)(collectionRefsDefinitionsMap, columns);
-			const columnsNames = getColumnNames(_)(collectionRefsDefinitionsMap, columns);
-
-			if (fromStatement && columnsNames?.length) {
-				script.push(`AS SELECT ${joinColumnNames(columnsNames)}`);
-				script.push(fromStatement);
-			} else {
-				return;
-			}
-		}
-
-		if (viewUnityTagsStatements) {
-			script.push(';\n');
-			script.push(viewUnityTagsStatements);
-
-			return script.join('\n  ');
-		}
-
-		return script.join('\n  ') + ';\n\n\n\n\n';
+		return assignTemplates(ddlTemplates.createView, {
+			orReplace: orReplace && !ifNotExists ? 'OR REPLACE ' : '',
+			global: isGlobal ? 'GLOBAL ' : '',
+			temporary: isTemporary ? 'TEMPORARY ' : '',
+			ifNotExists: ifNotExists ? ' IF NOT EXISTS' : '',
+			name,
+			columnList: view.columnList ? `\n(${view.columnList})` : getDefaultColumnList(columns),
+			schemaBinding: '',
+			comment: getCommentStatement(schema.description),
+			tablePropertyStatements: tableProperties.length
+				? `\nTBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`
+				: '',
+			query: schema.selectStatement
+				? `\nAS ${schema.selectStatement}`
+				: getTableSelectStatement({
+						_,
+						collectionRefsDefinitionsMap,
+						columns,
+					}),
+			viewUnityTagsStatements: viewUnityTagsStatements ? `\n${viewUnityTagsStatements};` : '',
+		});
 	},
 };
 
