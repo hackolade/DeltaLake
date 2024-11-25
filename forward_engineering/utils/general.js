@@ -189,7 +189,9 @@ const wrapInBrackets = (str = '') => {
 const buildScript = statements => {
 	const nonEmptyScripts = statements.filter(statement => statement);
 	const formattedScripts = nonEmptyScripts.map(script =>
-		sqlFormatter.format(script, { indent: '    ', linesBetweenQueries: 2 }).replace(/\{ \{ (.+?) } }/g, '{{$1}}'),
+		sqlFormatter
+			.format(script, { indent: '    ', linesBetweenQueries: 2, reservedWordCase: 'upper' })
+			.replace(/\{ \{ (.+?) } }/g, '{{$1}}'),
 	);
 
 	return formattedScripts.join('\n\n') + '\n\n';

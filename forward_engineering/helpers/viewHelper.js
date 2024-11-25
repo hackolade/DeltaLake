@@ -88,7 +88,7 @@ function joinColumnNames(statements) {
 }
 
 function getCommentStatement(comment) {
-	return comment ? `\nCOMMENT '${encodeStringLiteral(comment)}'` : '';
+	return comment ? `COMMENT '${encodeStringLiteral(comment)}'` : '';
 }
 
 function getDefaultColumnList(properties) {
