@@ -137,7 +137,6 @@ const getContainerLevelViewScriptDtos = (data, provider, _) => {
 			const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
 			const viewData = data.viewData[viewId];
 			const viewScript = provider.createView({
-				_,
 				schema: viewSchema,
 				viewData: viewData,
 				containerData: data.containerData,

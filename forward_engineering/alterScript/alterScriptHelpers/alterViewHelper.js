@@ -88,7 +88,7 @@ const hydrateAlterView = _ => view => {
  * */
 const getAddViewsScripts = (provider, _) => view => {
 	const hydratedView = hydrateView(_)(view);
-	const script = provider.createView({ _, ...hydratedView });
+	const script = provider.createView(hydratedView);
 
 	return {
 		isActivated: true,
@@ -137,7 +137,7 @@ const getModifyViewsScripts = (provider, _, dbVersion) => view => {
 	}
 	const dropViewScript = provider.dropView(viewName);
 	const hydratedView = hydrateView(_)(view);
-	const addViewScript = provider.createView({ _, ...hydratedView });
+	const addViewScript = provider.createView(hydratedView);
 	const dropViewScriptDto = AlterScriptDto.getInstance([dropViewScript], true, true);
 	const addViewScriptDto = AlterScriptDto.getInstance([addViewScript], true, false);
 

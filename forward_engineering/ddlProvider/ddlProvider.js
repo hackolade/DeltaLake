@@ -7,6 +7,7 @@ const {
 	getContainerName,
 	getEntityData,
 	getEntityProperties,
+	wrapInBrackets,
 } = require('../utils/general');
 const { getViewTagsStatement } = require('../helpers/unityTagsHelper');
 const { getTablePropertiesClause } = require('../helpers/tableHelper');
@@ -22,7 +23,7 @@ module.exports = app => {
 		},
 
 		createView(data) {
-			const { _, schema, viewData, containerData, collectionRefsDefinitionsMap } = data;
+			const { schema, viewData, containerData, collectionRefsDefinitionsMap } = data;
 
 			const columns = schema.properties || {};
 			const view = _.first(viewData) || {};
@@ -51,20 +52,22 @@ module.exports = app => {
 				temporary: isTemporary ? ' TEMPORARY' : '',
 				ifNotExists: ifNotExists ? ' IF NOT EXISTS' : '',
 				name,
-				columnList: view.columnList ? `\n(${view.columnList})` : viewHelper.getDefaultColumnList(columns),
+				columnList: view.columnList
+					? `${wrapInBrackets(view.columnList)}`
+					: viewHelper.getDefaultColumnList(columns),
 				schemaBinding: '',
 				comment: viewHelper.getCommentStatement(schema.description),
 				tablePropertyStatements: tableProperties.length
-					? `\nTBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`
+					? `TBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`
 					: '',
 				query: schema.selectStatement
-					? `\nAS ${schema.selectStatement}`
+					? `AS ${schema.selectStatement}`
 					: viewHelper.getTableSelectStatement({
 							_,
 							collectionRefsDefinitionsMap,
 							columns,
 						}),
-				viewUnityTagsStatements: viewUnityTagsStatements ? `\n${viewUnityTagsStatements};` : '',
+				viewUnityTagsStatements: viewUnityTagsStatements ? `${viewUnityTagsStatements};` : '',
 			});
 		},
 

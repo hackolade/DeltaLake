@@ -103,7 +103,7 @@ function getDefaultColumnList(properties) {
 		})
 		.join(',\n');
 
-	return list ? `\n(${list}\n)` : '';
+	return list ? `(${list})` : '';
 }
 
 function getTableSelectStatement({ _, collectionRefsDefinitionsMap, columns }) {
@@ -111,7 +111,7 @@ function getTableSelectStatement({ _, collectionRefsDefinitionsMap, columns }) {
 	const columnsNames = getColumnNames(_)(collectionRefsDefinitionsMap, columns);
 
 	if (fromStatement && columnsNames?.length) {
-		return `\nAS SELECT ${joinColumnNames(columnsNames)}\n${fromStatement}`;
+		return `AS SELECT ${joinColumnNames(columnsNames)}\n${fromStatement}`;
 	}
 
 	return '';

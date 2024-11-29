@@ -258,7 +258,6 @@ module.exports = {
 	 * */
 	generateViewScript(data, logger, callback, app) {
 		try {
-			const _ = app.require('lodash');
 			const provider = require('./ddlProvider/ddlProvider')(app);
 			const viewSchema = JSON.parse(data.jsonSchema || '{}');
 			const dbVersion = data.modelData[0].dbVersion;
@@ -268,7 +267,6 @@ module.exports = {
 			const databaseStatement = getDatabaseStatement(data.containerData, isUnityCatalogSupports, dbVersion);
 
 			const script = provider.createView({
-				_,
 				schema: viewSchema,
 				viewData: data.viewData,
 				containerData: data.containerData,
