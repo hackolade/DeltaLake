@@ -180,7 +180,7 @@ const wrapInTicks = (str = '') => {
 };
 
 const wrapInBrackets = (str = '') => {
-	return /^\(\S+\)$/.test(str) ? str : `(${str})`;
+	return /^\(.*\)$/.test(str) ? str : `(${str})`;
 };
 
 /**
