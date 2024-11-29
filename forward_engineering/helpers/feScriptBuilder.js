@@ -131,12 +131,12 @@ const buildEntityLevelFEScript =
  * @param _ {any}
  * @return {Array<ContainerLevelEntityDto>}
  * */
-const getContainerLevelViewScriptDtos = (data, _) => {
+const getContainerLevelViewScriptDtos = (data, provider, _) => {
 	return data.views
 		.map(viewId => {
 			const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
 			const viewData = data.viewData[viewId];
-			const viewScript = getViewScript({
+			const viewScript = provider.createView({
 				_,
 				schema: viewSchema,
 				viewData: viewData,
@@ -295,8 +295,9 @@ const buildContainerLevelFEScriptDto =
 		const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
 		const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
 
+		const provider = require('../ddlProvider/ddlProvider')(app);
 		const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
-		const viewsScriptDtos = getContainerLevelViewScriptDtos(data, _);
+		const viewsScriptDtos = getContainerLevelViewScriptDtos(data, provider, _);
 		const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, dbVersion);
 		const entityScriptDtos = await getContainerLevelEntitiesScriptDtos(
 			app,

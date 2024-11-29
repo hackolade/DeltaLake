@@ -1,7 +1,6 @@
 'use strict';
 
 const { getDatabaseStatement, getUseCatalogStatement } = require('./helpers/databaseHelper');
-const { getViewScript } = require('./helpers/viewHelper');
 const { getCleanedUrl, buildScript, isSupportUnityCatalog, getDBVersionNumber } = require('./utils/general');
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
@@ -260,6 +259,7 @@ module.exports = {
 	generateViewScript(data, logger, callback, app) {
 		try {
 			const _ = app.require('lodash');
+			const provider = require('./ddlProvider/ddlProvider')(app);
 			const viewSchema = JSON.parse(data.jsonSchema || '{}');
 			const dbVersion = data.modelData[0].dbVersion;
 			const isUnityCatalogSupports = isSupportUnityCatalog(dbVersion);
@@ -267,7 +267,7 @@ module.exports = {
 			const useCatalogStatement = isUnityCatalogSupports ? getUseCatalogStatement(data.containerData) : '';
 			const databaseStatement = getDatabaseStatement(data.containerData, isUnityCatalogSupports, dbVersion);
 
-			const script = getViewScript({
+			const script = provider.createView({
 				_,
 				schema: viewSchema,
 				viewData: data.viewData,

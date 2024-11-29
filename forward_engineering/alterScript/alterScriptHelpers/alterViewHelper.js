@@ -1,4 +1,3 @@
-const { getViewScript } = require('../../helpers/viewHelper');
 const { hydrateTableProperties } = require('../../helpers/tableHelper');
 const {
 	getEntityData,
@@ -87,9 +86,10 @@ const hydrateAlterView = _ => view => {
 /**
  * @return {(view: Object) => AlterScriptDto}
  * */
-const getAddViewsScripts = _ => view => {
+const getAddViewsScripts = (provider, _) => view => {
 	const hydratedView = hydrateView(_)(view);
-	const script = getViewScript({ _, ...hydratedView });
+	const script = provider.createView({ _, ...hydratedView });
+
 	return {
 		isActivated: true,
 		scripts: [
@@ -137,7 +137,7 @@ const getModifyViewsScripts = (provider, _, dbVersion) => view => {
 	}
 	const dropViewScript = provider.dropView(viewName);
 	const hydratedView = hydrateView(_)(view);
-	const addViewScript = getViewScript({ _, ...hydratedView });
+	const addViewScript = provider.createView({ _, ...hydratedView });
 	const dropViewScriptDto = AlterScriptDto.getInstance([dropViewScript], true, true);
 	const addViewScriptDto = AlterScriptDto.getInstance([addViewScript], true, false);
 
