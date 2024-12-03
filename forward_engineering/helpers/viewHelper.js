@@ -1,10 +1,6 @@
 'use strict';
 
 const { prepareName, encodeStringLiteral, commentDeactivatedStatement } = require('../utils/general');
-const { getTablePropertiesClause } = require('./tableHelper');
-const { getViewTagsStatement } = require('./unityTagsHelper');
-const ddlTemplates = require('../ddlProvider/ddlTemplates');
-const assignTemplates = require('../utils/assignTemplates');
 
 const getColumnNames = _ => (collectionRefsDefinitionsMap, columns) => {
 	return _.uniq(
@@ -121,57 +117,18 @@ function getTableSelectStatement({ _, collectionRefsDefinitionsMap, columns }) {
 	return '';
 }
 
-module.exports = {
-	getViewScript({ _, schema, viewData, containerData, collectionRefsDefinitionsMap }) {
-		const columns = schema.properties || {};
-		const view = _.first(viewData) || {};
-
-		if (!view.isActivated) {
-			return;
-		}
-
-		const bucketName = replaceSpaceWithUnderscore(prepareName(retrieveContainerName(containerData)));
-		const viewName = replaceSpaceWithUnderscore(prepareName(view.code || view.name));
-		const isGlobal = schema.viewGlobal && schema.viewTemporary;
-		const isTemporary = schema.viewTemporary;
-		const orReplace = schema.viewOrReplace;
-		const ifNotExists = view.viewIfNotExist;
-		const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
-		const tableProperties =
-			schema.tableProperties && Array.isArray(schema.tableProperties)
-				? filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime'])
-				: [];
-		const viewUnityTagsStatements =
-			schema.unityViewTags && getViewTagsStatement({ viewSchema: schema, viewName: name });
-
-		return assignTemplates(ddlTemplates.createView, {
-			orReplace: orReplace && !ifNotExists ? 'OR REPLACE ' : '',
-			global: isGlobal ? 'GLOBAL ' : '',
-			temporary: isTemporary ? 'TEMPORARY ' : '',
-			ifNotExists: ifNotExists ? ' IF NOT EXISTS' : '',
-			name,
-			columnList: view.columnList ? `\n(${view.columnList})` : getDefaultColumnList(columns),
-			schemaBinding: '',
-			comment: getCommentStatement(schema.description),
-			tablePropertyStatements: tableProperties.length
-				? `\nTBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`
-				: '',
-			query: schema.selectStatement
-				? `\nAS ${schema.selectStatement}`
-				: getTableSelectStatement({
-						_,
-						collectionRefsDefinitionsMap,
-						columns,
-					}),
-			viewUnityTagsStatements: viewUnityTagsStatements ? `\n${viewUnityTagsStatements};` : '',
-		});
-	},
-};
-
 const filterRedundantProperties = (tableProperties, propertiesList) => {
 	if (!Array.isArray(tableProperties)) {
 		return tableProperties;
 	}
 
 	return tableProperties.filter(prop => !propertiesList.includes(prop.propertyKey));
+};
+
+module.exports = {
+	getTableSelectStatement,
+	retrieveContainerName,
+	filterRedundantProperties,
+	getDefaultColumnList,
+	getCommentStatement,
 };

@@ -228,8 +228,11 @@ const getAlterViewsScriptDtos = (schema, provider, _, dbVersion) => {
 			.map(view => ({ ...view, ...(view.role || {}) }))
 			.filter(view => !view.compMod?.created && !view.compMod?.deleted)
 			.flatMap(getScript);
-
-	const addedViewScriptDtos = getViewScripts(getItems(schema, 'views', 'added'), 'created', getAddViewsScripts(_));
+	const addedViewScriptDtos = getViewScripts(
+		getItems(schema, 'views', 'added'),
+		'created',
+		getAddViewsScripts(provider, _),
+	);
 	const deletedViewScriptDtos = getViewScripts(
 		getItems(schema, 'views', 'deleted'),
 		'deleted',
