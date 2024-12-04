@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {
 	getFullEntityName,
 	replaceSpaceWithUnderscore,
@@ -85,7 +86,6 @@ const createSingleRelationship =
 const getCreateRelationshipScripts =
 	app =>
 	({ relationships, jsonSchemas, relatedSchemas }) => {
-		const _ = app.require('lodash');
 		const ddlProvider = require('../ddlProvider/ddlProvider')(app);
 		return relationships
 			.map(relationship =>

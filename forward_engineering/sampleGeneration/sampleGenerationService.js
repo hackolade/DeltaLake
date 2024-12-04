@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { prepareName, generateFullEntityNameFromBucketAndTableNames } = require('../utils/general');
 const { mapInsertSampleToDml } = require('./mapInsertSampleToDml');
 const { CoreData, App } = require('../types/coreApplicationTypes');
@@ -19,7 +20,6 @@ const { batchProcessFile } = require('../../reverse_engineering/helpers/fileHelp
  * }}
  */
 const getSampleGenerationOptions = (app, data) => {
-	const _ = app.require('lodash');
 	const insertSamplesOption =
 		_.get(data, 'options.additionalOptions', []).find(option => option.id === 'INCLUDE_SAMPLES') || {};
 	const isSampleGenerationRequired = Boolean(insertSamplesOption?.value);
@@ -159,8 +159,6 @@ const generateSampleForDemonstrationOnEntityLevel = _ => parsedData => {
  * @return {string}
  * */
 const generateSampleForDemonstration = (app, parsedData, level) => {
-	const _ = app.require('lodash');
-
 	if (level === 'entity') {
 		return generateSampleForDemonstrationOnEntityLevel(_)(parsedData);
 	}

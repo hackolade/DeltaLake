@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {
 	getDeleteContainerScriptDto,
 	getModifyContainerScriptDtos,
@@ -300,7 +301,6 @@ const getAlterStatementsWithCommentedUnwantedDDL = (scriptDtos, data) => {
  * */
 const getAlterScriptDtos = (schema, definitions, data, app) => {
 	const provider = require('../ddlProvider/ddlProvider')(app);
-	const _ = app.require('lodash');
 	const dbVersion = data.modelData[0].dbVersion;
 	const isUnityCatalogSupports = isSupportUnityCatalog(dbVersion);
 	const containersScriptDtos = getAlterContainersScriptDtos({ schema, isUnityCatalogSupports, provider, _, data });

@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const {
 	buildStatement,
 	getName,
@@ -422,7 +423,6 @@ const getTableStatement =
 		dbVersion,
 		isCalledFromAlterScript = false,
 	) => {
-		const _ = app.require('lodash');
 		const ddlProvider = require('../ddlProvider/ddlProvider')(app);
 		const { getEntityTagsStatement } = require('../helpers/unityTagsHelper');
 

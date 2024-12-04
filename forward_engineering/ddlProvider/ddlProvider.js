@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const templates = require('./ddlTemplates');
 const {
 	getFullEntityName,
@@ -15,7 +16,6 @@ const viewHelper = require('../helpers/viewHelper');
 
 module.exports = app => {
 	const { assignTemplates } = app.require('@hackolade/ddl-fe-utils');
-	const _ = app.require('lodash');
 
 	return {
 		dropView(name) {

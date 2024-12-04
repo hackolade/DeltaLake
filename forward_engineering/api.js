@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const { getDatabaseStatement, getUseCatalogStatement } = require('./helpers/databaseHelper');
 const { getCleanedUrl, buildScript, isSupportUnityCatalog, getDBVersionNumber } = require('./utils/general');
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
@@ -189,7 +190,6 @@ const getContainerScriptWithSeparateBuckets = async (app, data) => {
  * @return {Promise<string | Array<{ title: string, script: string, mode: string }>>}
  * */
 const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
-	const _ = app.require('lodash');
 	const parsedData = parseDataForContainerLevelScript(data);
 	const sampleGenerationOptions = getSampleGenerationOptions(app, data);
 	const scriptData = await buildContainerLevelFEScriptDto(
@@ -325,7 +325,6 @@ module.exports = {
 			entitiesData: data.entitiesData,
 		};
 
-		const _ = app.require('lodash');
 		try {
 			await fetchRequestHelper.fetchApplyToInstance(_)(connectionData, logger);
 			cb();

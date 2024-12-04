@@ -1,10 +1,10 @@
+const _ = require('lodash');
 const { setDependencies } = require('./appDependencies');
 const mapJsonSchema = require('./thriftService/mapJsonSchema');
 
 const adaptJsonSchema = (data, logger, callback, app) => {
 	try {
 		setDependencies(app);
-		const _ = app.require('lodash');
 		const jsonSchema = JSON.parse(data.jsonSchema);
 		const result = mapJsonSchema(_)(jsonSchema, {}, (schema, parentJsonSchema, key) => {
 			if (schema.type === 'array' && !schema.subtype) {

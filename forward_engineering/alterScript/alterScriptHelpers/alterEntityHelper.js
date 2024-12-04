@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { getColumns, getColumnsString } = require('../../helpers/columnHelper');
 const { getIndexes } = require('../../helpers/indexHelper');
 const { getTableStatement } = require('../../helpers/tableHelper');
@@ -71,7 +72,6 @@ const hydrateCollection = _ => (entity, definitions) => {
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
 const getAddCollectionsScripts = (app, definitions, dbVersion) => entity => {
-	const _ = app.require('lodash');
 	const properties = getEntityProperties(entity);
 	const indexes = _.get(entity, 'role.BloomIndxs', []);
 	const hydratedCollection = hydrateCollection(_)(entity, definitions);
@@ -102,7 +102,6 @@ const getAddCollectionsScripts = (app, definitions, dbVersion) => entity => {
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
 const getDeleteCollectionsScripts = (app, provider, dbVersion) => entity => {
-	const _ = app.require('lodash');
 	const entityData = { ...entity, ..._.get(entity, 'role', {}) };
 	const fullCollectionName = generateFullEntityName({ entity, dbVersion });
 	const collectionScript = provider.dropTable(fullCollectionName);
@@ -123,7 +122,6 @@ const getDeleteCollectionsScripts = (app, provider, dbVersion) => entity => {
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
 const getModifyCollectionsScripts = (app, definitions, ddlProvider, dbVersion) => collection => {
-	const _ = app.require('lodash');
 	const properties = getEntityProperties(collection);
 	const { script: modifyTableScriptDtos } = generateModifyCollectionScript(app)(
 		collection,
@@ -147,7 +145,6 @@ const getModifyCollectionsScripts = (app, definitions, ddlProvider, dbVersion) =
 };
 
 const getDeleteColumnsScripts = (app, definitions, provider, dbVersion) => entity => {
-	const _ = app.require('lodash');
 	const entityData = {
 		...entity,
 		..._.omit(entity.role, ['properties']),
@@ -180,7 +177,6 @@ const getDeleteColumnsScripts = (app, definitions, provider, dbVersion) => entit
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
 const getDeleteColumnScripsForOlderRuntime = (app, definitions, provider, dbVersion) => entity => {
-	const _ = app.require('lodash');
 	const deleteColumnsName = _.filter(Object.keys(entity.properties || {}), name => !entity.properties[name].compMod);
 	const properties = _.omit(_.get(entity, 'role.properties', {}), deleteColumnsName);
 	const entityData = { role: { ..._.omit(entity.role, ['properties']), properties } };
@@ -213,7 +209,6 @@ const getDeleteColumnScripsForOlderRuntime = (app, definitions, provider, dbVers
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
 const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => collection => {
-	const _ = app.require('lodash');
 	const properties = _.get(collection, 'properties', {});
 	const unionProperties = _.unionWith(
 		Object.entries(properties),
@@ -287,7 +282,6 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
 const getModifyColumnsScriptsForOlderRuntime = (app, definitions, ddlProvider, dbVersion) => collection => {
-	const _ = app.require('lodash');
 	const properties = _.get(collection, 'properties', {});
 	const unionProperties = _.unionWith(
 		Object.entries(properties),

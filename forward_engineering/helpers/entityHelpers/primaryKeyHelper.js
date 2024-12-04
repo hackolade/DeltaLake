@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { prepareName, getName, getFullEntityName } = require('../../utils/general');
 
 /**
@@ -33,7 +34,6 @@ const getCreatePKConstraintsScript = app => (entityJsonSchema, dbName) => {
 		return '';
 	}
 
-	const _ = app.require('lodash');
 	const ddlProvider = require('../../ddlProvider/ddlProvider')(app);
 
 	return getCreatePKConstraintScript(_, ddlProvider)(entityJsonSchema, dbName);

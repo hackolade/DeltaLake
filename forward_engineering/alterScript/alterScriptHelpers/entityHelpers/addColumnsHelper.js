@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { getColumns, getColumnsStatement } = require('../../../helpers/columnHelper');
 const {
 	getEntityProperties,
@@ -119,8 +120,6 @@ const getAddColumnsScriptsForNewModifyCollectionScript =
  * @return {(entity: Object) => Array<AlterScriptDto>}
  * */
 const getAddColumnsScripts = (app, definitions, provider, dbVersion) => entity => {
-	const _ = app.require('lodash');
-
 	const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider, dbVersion);
 	if (modifyScript.type === 'new') {
 		return getAddColumnsScriptsForNewModifyCollectionScript(_, provider)(

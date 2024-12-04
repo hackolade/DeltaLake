@@ -27,6 +27,7 @@
  * }} ContainerLevelEntityDto
  * */
 
+const _ = require('lodash');
 const { getDatabaseStatement, getUseCatalogStatement } = require('./databaseHelper');
 const { getCreateRelationshipScripts } = require('./relationshipHelper');
 const { getTableStatement } = require('./tableHelper');
@@ -86,7 +87,6 @@ const buildEntityLevelFEScript =
 		entityData,
 		modelData,
 	}) => {
-		const _ = app.require('lodash');
 		const dbVersion = data.modelData[0].dbVersion;
 		const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
 		const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
@@ -202,7 +202,6 @@ const getContainerLevelEntitiesScriptDtos =
 		includeSamplesInEntityScripts,
 		relatedSchemas,
 	}) => {
-		const _ = app.require('lodash');
 		const scriptDtos = [];
 
 		for (const entityId of data.entities) {
@@ -289,7 +288,6 @@ const buildContainerLevelFEScriptDto =
 		includeSamplesInEntityScripts,
 		relatedSchemas,
 	}) => {
-		const _ = app.require('lodash');
 		const dbVersion = data.modelData[0].dbVersion;
 		const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
 		const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);

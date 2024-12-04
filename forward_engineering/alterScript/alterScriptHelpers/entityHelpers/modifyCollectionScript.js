@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {
 	getIsChangeProperties,
 	generateFullEntityName,
@@ -84,8 +85,6 @@ const hydrateCollection = _ => (entity, definitions) => {
  * }}
  * */
 const getDropAndRecreateCollectionScriptDtos = (app, ddlProvider) => (collection, definitions, dbVersion) => {
-	const _ = app.require('lodash');
-
 	const compMod = _.get(collection, 'role.compMod', {});
 	const fullCollectionName = generateFullEntityName({ entity: collection, dbVersion });
 	const roleData = getEntityData(compMod, tableProperties.concat(otherTableProperties));
@@ -122,8 +121,6 @@ const getDropAndRecreateCollectionScriptDtos = (app, ddlProvider) => (collection
 const getModifyLocationScriptDto =
 	(app, ddlProvider) =>
 	({ collection, dbVersion }) => {
-		const _ = app.require('lodash');
-
 		const compMod = _.get(collection, 'role.compMod', {});
 		const location = _.get(compMod, 'location', {});
 		const oldLocation = location.old;
@@ -150,8 +147,6 @@ const getModifyLocationScriptDto =
 const getModifyCollectionScriptDtos =
 	(app, ddlProvider) =>
 	({ collection, dbVersion }) => {
-		const _ = app.require('lodash');
-
 		const compMod = _.get(collection, 'role.compMod', {});
 		const fullCollectionName = generateFullEntityName({ entity: collection, dbVersion });
 
@@ -189,7 +184,6 @@ const getModifyCollectionScriptDtos =
  * }}
  * */
 const generateModifyCollectionScript = app => (collection, definitions, ddlProvider, dbVersion) => {
-	const _ = app.require('lodash');
 	const compMod = _.get(collection, 'role.compMod', {});
 	const shouldDropAndRecreate = getIsChangeProperties(_)(compMod, tableProperties);
 
