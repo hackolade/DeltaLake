@@ -6,7 +6,7 @@ const hydrateDropIndexes = (entity, dbVersion) => {
 	return bloomIndex.length ? generateFullEntityName({ entity, dbVersion }) : '';
 };
 
-const hydrateAddIndexes = _ => (entity, BloomIndxs, properties, definitions) => {
+const hydrateAddIndexes = (entity, BloomIndxs, properties, definitions) => {
 	const compMod = _.get(entity, 'role.compMod', {});
 	const entityData = _.get(entity, 'role', {});
 	const containerData = { name: getContainerName(compMod) };

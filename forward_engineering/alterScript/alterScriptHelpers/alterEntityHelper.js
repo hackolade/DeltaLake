@@ -56,7 +56,7 @@ const hydrateAlterColumnType = (properties = {}) => {
 	return { columnsToDelete, columnsToAdd };
 };
 
-const hydrateCollection = _ => (entity, definitions) => {
+const hydrateCollection = (entity, definitions) => {
 	const compMod = _.get(entity, 'role.compMod', {});
 	const entityData = _.get(entity, 'role', {});
 	const properties = getEntityProperties(entity);
