@@ -12,7 +12,7 @@ const {
 /**
  * @return {(collection: Object, propertiesIds: Array<string>) => Array<string>}
  * */
-const getCollectionPropertyNamesByIds = _ => (collection, propertiesIds) => {
+const getCollectionPropertyNamesByIds = (collection, propertiesIds) => {
 	return _.toPairs(collection.properties)
 		.filter(([name, jsonSchema]) => propertiesIds.includes(jsonSchema.GUID))
 		.map(([name]) => name);
@@ -42,7 +42,7 @@ const getParentFieldIds = relationship => {
  * @returns {({ relationship: Object, jsonSchemas: Record<string, Object>, relatedSchemas?: Record<string, Object> }) => string}
  */
 const createSingleRelationship =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ relationship, jsonSchemas, relatedSchemas }) => {
 		const parentTable =
 			jsonSchemas[relationship.parentCollection] ?? relatedSchemas?.[relationship.parentCollection];
@@ -56,8 +56,8 @@ const createSingleRelationship =
 		const childFieldIds = getChildFieldIds(relationship);
 		const parentFieldIds = getParentFieldIds(relationship);
 
-		const parentColumnNames = getCollectionPropertyNamesByIds(_)(parentTable, parentFieldIds);
-		const childColumnNames = getCollectionPropertyNamesByIds(_)(childTable, childFieldIds);
+		const parentColumnNames = getCollectionPropertyNamesByIds(parentTable, parentFieldIds);
+		const childColumnNames = getCollectionPropertyNamesByIds(childTable, childFieldIds);
 		if (!parentColumnNames?.length || !childColumnNames?.length) {
 			return '';
 		}
@@ -89,10 +89,7 @@ const getCreateRelationshipScripts =
 		const ddlProvider = require('../ddlProvider/ddlProvider')(app);
 		return relationships
 			.map(relationship =>
-				createSingleRelationship(
-					_,
-					ddlProvider,
-				)({
+				createSingleRelationship(ddlProvider)({
 					relationship,
 					jsonSchemas,
 					relatedSchemas,

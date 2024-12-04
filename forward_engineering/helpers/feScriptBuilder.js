@@ -161,27 +161,30 @@ const getContainerLevelViewScriptDtos = (data, provider, _) => {
  *      entityId: string,
  * }) => Promise<string>}
  */
-const getSampleScriptForContainerLevelScript =
-	_ =>
-	async ({ data, includeSamplesInEntityScripts, entitiesJsonSchema, entityId }) => {
-		const sampleScripts = [];
-		if (includeSamplesInEntityScripts) {
-			const { jsonData, entitiesData } = getDataForSampleGeneration(data, entitiesJsonSchema);
-			const entityJsonSchema = entitiesJsonSchema[entityId] || {};
-			if (jsonData) {
-				const demoSampleJsonData = jsonData[entityId] || {};
-				const demoSample = generateSamplesScript(_)(entityJsonSchema, [demoSampleJsonData]);
-				sampleScripts.push(demoSample);
-			}
-			if (entitiesData) {
-				const entityData = entitiesData[entityId];
-				const samples = await generateSamplesForEntity(_)(entityData);
-				sampleScripts.push(...samples);
-			}
+const getSampleScriptForContainerLevelScript = async ({
+	data,
+	includeSamplesInEntityScripts,
+	entitiesJsonSchema,
+	entityId,
+}) => {
+	const sampleScripts = [];
+	if (includeSamplesInEntityScripts) {
+		const { jsonData, entitiesData } = getDataForSampleGeneration(data, entitiesJsonSchema);
+		const entityJsonSchema = entitiesJsonSchema[entityId] || {};
+		if (jsonData) {
+			const demoSampleJsonData = jsonData[entityId] || {};
+			const demoSample = generateSamplesScript(entityJsonSchema, [demoSampleJsonData]);
+			sampleScripts.push(demoSample);
 		}
+		if (entitiesData) {
+			const entityData = entitiesData[entityId];
+			const samples = await generateSamplesForEntity(entityData);
+			sampleScripts.push(...samples);
+		}
+	}
 
-		return sampleScripts.join('\n\n');
-	};
+	return sampleScripts.join('\n\n');
+};
 
 /**
  * @param data {CoreData}
@@ -235,7 +238,7 @@ const getContainerLevelEntitiesScriptDtos =
 				});
 			}
 
-			const sampleScript = await getSampleScriptForContainerLevelScript(_)({
+			const sampleScript = await getSampleScriptForContainerLevelScript({
 				data,
 				entitiesJsonSchema,
 				entityId,

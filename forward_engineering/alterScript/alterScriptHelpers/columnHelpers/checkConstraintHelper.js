@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { generateFullEntityName, wrapInTicks } = require('../../../utils/general');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 
@@ -26,7 +27,7 @@ const getCheckConstraintNameForDdlProvider = (constraintName = '', columnName) =
  * @param _ {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getAddCheckConstraintsScriptsDtos = (ddlProvider, _) => (fullTableName, collection) => {
+const getAddCheckConstraintsScriptsDtos = ddlProvider => (fullTableName, collection) => {
 	return _.toPairs(collection.properties)
 		.filter(([name, jsonSchema]) => {
 			const oldName = jsonSchema.compMod.oldField.name;
@@ -46,7 +47,7 @@ const getAddCheckConstraintsScriptsDtos = (ddlProvider, _) => (fullTableName, co
  * @param _ {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getRemoveCheckConstraintsScriptsDtos = (ddlProvider, _) => (fullTableName, collection) => {
+const getRemoveCheckConstraintsScriptsDtos = ddlProvider => (fullTableName, collection) => {
 	return _.toPairs(collection.properties)
 		.filter(([name, jsonSchema]) => {
 			const oldName = jsonSchema.compMod.oldField.name;
@@ -67,7 +68,7 @@ const getRemoveCheckConstraintsScriptsDtos = (ddlProvider, _) => (fullTableName,
  * @param _ {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
-const getModifyCheckConstraintsScriptDtos = (ddlProvider, _) => (fullTableName, collection) => {
+const getModifyCheckConstraintsScriptDtos = ddlProvider => (fullTableName, collection) => {
 	return _.toPairs(collection.properties)
 		.filter(([name, jsonSchema]) => {
 			const oldName = jsonSchema.compMod.oldField.name;
@@ -103,18 +104,15 @@ const getModifyCheckConstraintsScriptDtos = (ddlProvider, _) => (fullTableName, 
  * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getCheckConstraintsScriptDtos =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
 		const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
-		const addCheckConstraintsScriptDtos = getAddCheckConstraintsScriptsDtos(ddlProvider, _)(
+		const addCheckConstraintsScriptDtos = getAddCheckConstraintsScriptsDtos(ddlProvider)(fullTableName, collection);
+		const modifyCheckConstraintsScripts = getModifyCheckConstraintsScriptDtos(ddlProvider)(
 			fullTableName,
 			collection,
 		);
-		const modifyCheckConstraintsScripts = getModifyCheckConstraintsScriptDtos(ddlProvider, _)(
-			fullTableName,
-			collection,
-		);
-		const removeCheckConstraintScripts = getRemoveCheckConstraintsScriptsDtos(ddlProvider, _)(
+		const removeCheckConstraintScripts = getRemoveCheckConstraintsScriptsDtos(ddlProvider)(
 			fullTableName,
 			collection,
 		);

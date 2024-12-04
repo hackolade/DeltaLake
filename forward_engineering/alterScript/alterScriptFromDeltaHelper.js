@@ -232,7 +232,7 @@ const getAlterViewsScriptDtos = (schema, provider, dbVersion) => {
 	const addedViewScriptDtos = getViewScripts(
 		getItems(schema, 'views', 'added'),
 		'created',
-		getAddViewsScripts(provider, _),
+		getAddViewsScripts(provider),
 	);
 	const deletedViewScriptDtos = getViewScripts(
 		getItems(schema, 'views', 'deleted'),
@@ -241,7 +241,7 @@ const getAlterViewsScriptDtos = (schema, provider, dbVersion) => {
 	);
 	const modifiedViewScriptDtos = getColumnScripts(
 		getItems(schema, 'views', 'modified'),
-		getModifyViewsScripts(provider, _, dbVersion),
+		getModifyViewsScripts(provider, dbVersion),
 	);
 
 	return [...deletedViewScriptDtos, ...addedViewScriptDtos, ...modifiedViewScriptDtos];

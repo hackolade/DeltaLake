@@ -58,7 +58,7 @@ module.exports = app => {
 				schemaBinding: '',
 				comment: viewHelper.getCommentStatement(schema.description),
 				tablePropertyStatements: tableProperties.length
-					? `TBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`
+					? `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`
 					: '',
 				query: schema.selectStatement
 					? `AS ${schema.selectStatement}`

@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { DiffMap } = require('../../types/DiffMap');
 const { getTablePropertiesClause } = require('../../../helpers/tableHelper');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
@@ -48,7 +49,7 @@ const getAddTablePropertyScriptDto = ddlProvider => (properties, fullCollectionN
 	return AlterScriptDto.getInstance([script], true, false);
 };
 
-const getDeleteTablePropertyScriptDto = (_, ddlProvider) => (properties, fullCollectionName) => {
+const getDeleteTablePropertyScriptDto = ddlProvider => (properties, fullCollectionName) => {
 	const propertiesWithNoValues = properties.map(prop => ({
 		...prop,
 		propertyValue: undefined,
@@ -63,7 +64,7 @@ const getDeleteTablePropertyScriptDto = (_, ddlProvider) => (properties, fullCol
 };
 
 const getModifiedTablePropertiesScriptDtos =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
 		const compMod = _.get(collection, 'role.compMod', {});
 		const tableProperties = compMod.tableProperties || {};
@@ -74,7 +75,7 @@ const getModifiedTablePropertiesScriptDtos =
 			propertiesDiffMap.added,
 			fullCollectionName,
 		);
-		const deletedPropertiesScriptDto = getDeleteTablePropertyScriptDto(_, ddlProvider)(
+		const deletedPropertiesScriptDto = getDeleteTablePropertyScriptDto(ddlProvider)(
 			propertiesDiffMap.deleted,
 			fullCollectionName,
 		);

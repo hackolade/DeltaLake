@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 const { checkFieldPropertiesChanged, generateFullEntityName, prepareName } = require('../../../utils/general');
 const { getColumns, getColumnStatement } = require('../../../helpers/columnHelper');
@@ -32,7 +33,7 @@ const hasPrecisionOrScaleChanged = (collection, oldFieldName, currentJsonSchema)
  *     role: Object,
  * }}
  * */
-const getEntityData = _ => collection => {
+const getEntityData = collection => {
 	const properties = _.get(collection, 'properties', {});
 	const unionProperties = _.unionWith(
 		Object.entries(properties),
@@ -55,9 +56,9 @@ const getEntityData = _ => collection => {
 /**
  * @return {(collection: Object, definitions: any, dbVersion: string) => AlterScriptDto[]}
  * */
-const getUpdateTypesScriptDtos = (_, ddlProvider) => (collection, definitions, dbVersion) => {
+const getUpdateTypesScriptDtos = ddlProvider => (collection, definitions, dbVersion) => {
 	const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
-	const entityData = getEntityData(_)(collection);
+	const entityData = getEntityData(collection);
 	const { columns: columnsInfo } = getColumns(entityData.role, definitions, dbVersion);
 
 	return _.toPairs(collection.properties)

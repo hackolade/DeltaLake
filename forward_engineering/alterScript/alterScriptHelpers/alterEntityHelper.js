@@ -33,30 +33,28 @@ const hydrateAlterColumnName = ({ entity, properties = {}, dbVersion }) => {
 	return { collectionName, columns: columns.filter(Boolean) };
 };
 
-const hydrateAlterColumnType =
-	_ =>
-	(properties = {}) => {
-		const isChangedType = (newField, oldField) =>
-			newField.type && oldField.type && (newField.type !== oldField.type || newField.mode !== oldField.mode);
-		const columns = Object.values(properties).map(property => {
-			const compMod = _.get(property, 'compMod', {});
-			const { newField = {}, oldField = {} } = compMod;
-			return isChangedType(oldField, newField) ||
-				(newField.items &&
-					oldField.items &&
-					newField.items.some((field, index) => isChangedType(field, oldField.items[index]))) ||
-				(newField.properties &&
-					oldField.properties &&
-					Object.keys(newField.properties).some(key =>
-						isChangedType(newField.properties[key], oldField.properties[key]),
-					))
-				? { oldName: oldField.name, newName: newField.name }
-				: '';
-		});
-		const columnsToDelete = columns.map(column => column.oldName).filter(name => Boolean(name));
-		const columnsToAdd = columns.map(column => column.newName).filter(name => Boolean(name));
-		return { columnsToDelete, columnsToAdd };
-	};
+const hydrateAlterColumnType = (properties = {}) => {
+	const isChangedType = (newField, oldField) =>
+		newField.type && oldField.type && (newField.type !== oldField.type || newField.mode !== oldField.mode);
+	const columns = Object.values(properties).map(property => {
+		const compMod = _.get(property, 'compMod', {});
+		const { newField = {}, oldField = {} } = compMod;
+		return isChangedType(oldField, newField) ||
+			(newField.items &&
+				oldField.items &&
+				newField.items.some((field, index) => isChangedType(field, oldField.items[index]))) ||
+			(newField.properties &&
+				oldField.properties &&
+				Object.keys(newField.properties).some(key =>
+					isChangedType(newField.properties[key], oldField.properties[key]),
+				))
+			? { oldName: oldField.name, newName: newField.name }
+			: '';
+	});
+	const columnsToDelete = columns.map(column => column.oldName).filter(name => Boolean(name));
+	const columnsToAdd = columns.map(column => column.newName).filter(name => Boolean(name));
+	return { columnsToDelete, columnsToAdd };
+};
 
 const hydrateCollection = _ => (entity, definitions) => {
 	const compMod = _.get(entity, 'role.compMod', {});
@@ -232,19 +230,19 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
 	const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 
-	const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(
-		_,
-		ddlProvider,
-	)({ collection, dbVersion });
-	const modifyNotNullConstraintsScriptDtos = getModifyNonNullColumnsScriptDtos(
-		_,
-		ddlProvider,
-	)({ collection, dbVersion });
-	const modifyCheckConstraintsScriptDtos = getCheckConstraintsScriptDtos(_, ddlProvider)({ collection, dbVersion });
-	const modifiedDefaultColumnValueScriptDtos = getModifiedDefaultColumnValueScriptDtos(
-		_,
-		ddlProvider,
-	)({ collection, dbVersion });
+	const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(ddlProvider)({
+		collection,
+		dbVersion,
+	});
+	const modifyNotNullConstraintsScriptDtos = getModifyNonNullColumnsScriptDtos(ddlProvider)({
+		collection,
+		dbVersion,
+	});
+	const modifyCheckConstraintsScriptDtos = getCheckConstraintsScriptDtos(ddlProvider)({ collection, dbVersion });
+	const modifiedDefaultColumnValueScriptDtos = getModifiedDefaultColumnValueScriptDtos(ddlProvider)({
+		collection,
+		dbVersion,
+	});
 
 	const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
 	const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
@@ -260,7 +258,7 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
 		return [dropIndexScriptDto, ...(modifiedScript.script || []), addIndexScriptDto].filter(Boolean);
 	}
 
-	const updateTypeScriptDtos = getUpdateTypesScriptDtos(_, ddlProvider)(collection, definitions, dbVersion);
+	const updateTypeScriptDtos = getUpdateTypesScriptDtos(ddlProvider)(collection, definitions, dbVersion);
 
 	return [
 		dropIndexScriptDto,
@@ -305,16 +303,16 @@ const getModifyColumnsScriptsForOlderRuntime = (app, definitions, ddlProvider, d
 	const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
 
-	const { columnsToDelete } = hydrateAlterColumnType(_)(properties);
-	const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(
-		_,
-		ddlProvider,
-	)({ collection, dbVersion });
-	const modifyNotNullConstraintsScriptDtos = getModifyNonNullColumnsScriptDtos(
-		_,
-		ddlProvider,
-	)({ collection, dbVersion });
-	const modifyCheckConstraintsScriptDtos = getCheckConstraintsScriptDtos(_, ddlProvider)({ collection, dbVersion });
+	const { columnsToDelete } = hydrateAlterColumnType(properties);
+	const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(ddlProvider)({
+		collection,
+		dbVersion,
+	});
+	const modifyNotNullConstraintsScriptDtos = getModifyNonNullColumnsScriptDtos(ddlProvider)({
+		collection,
+		dbVersion,
+	});
+	const modifyCheckConstraintsScriptDtos = getCheckConstraintsScriptDtos(ddlProvider)({ collection, dbVersion });
 
 	let tableModificationScriptDtos = [];
 	if (!_.isEmpty(columnsToDelete)) {

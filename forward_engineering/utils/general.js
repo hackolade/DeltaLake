@@ -268,27 +268,23 @@ const getDBVersionNumber = dbVersionString =>
 	// eslint-disable-next-line no-bitwise
 	typeof dbVersionString === 'number' ? dbVersionString : ~~dbVersionString.split(' ')[1];
 
-const getDifferentItems =
-	_ =>
-	(newItems = [], oldItems = []) => {
-		const intersection = _.intersectionWith(newItems, oldItems, _.isEqual);
-		return {
-			add: _.xorWith(newItems, intersection, _.isEqual),
-			drop: _.xorWith(oldItems, intersection, _.isEqual),
-		};
+const getDifferentItems = (newItems = [], oldItems = []) => {
+	const intersection = _.intersectionWith(newItems, oldItems, _.isEqual);
+	return {
+		add: _.xorWith(newItems, intersection, _.isEqual),
+		drop: _.xorWith(oldItems, intersection, _.isEqual),
 	};
+};
 
-const compareProperties =
-	_ =>
-	({ new: newProperty, old: oldProperty }) => {
-		if (!newProperty && !oldProperty) {
-			return;
-		}
-		return !_.isEqual(newProperty, oldProperty);
-	};
+const compareProperties = ({ new: newProperty, old: oldProperty }) => {
+	if (!newProperty && !oldProperty) {
+		return;
+	}
+	return !_.isEqual(newProperty, oldProperty);
+};
 
-const getIsChangeProperties = _ => (compMod, properties) =>
-	properties.some(property => compareProperties(_)(compMod[property] || {}));
+const getIsChangeProperties = (compMod, properties) =>
+	properties.some(property => compareProperties(compMod[property] || {}));
 
 const isSupportUnityCatalog = (dbVersion = '') => {
 	const runtimeVersion = getDBVersionNumber(dbVersion);

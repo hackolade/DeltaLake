@@ -174,7 +174,7 @@ const generateSampleForDemonstration = (parsedData, level) => {
  *      ) => string
  * }
  * */
-const generateSamplesScript = _ => (entityJsonSchema, samples) => {
+const generateSamplesScript = (entityJsonSchema, samples) => {
 	if (!samples?.length) {
 		return '';
 	}
@@ -216,10 +216,10 @@ const getDataForSampleGeneration = (data, entitiesJsonSchema) => {
  * @param {EntityData} entityData
  * @return {Promise<Array<string>>}
  */
-const generateSamplesForEntity = _ => async entityData => {
+const generateSamplesForEntity = async entityData => {
 	const { filePath, jsonSchema, jsonData } = entityData;
 
-	const demoSample = generateSamplesScript(_)(jsonSchema, [jsonData]);
+	const demoSample = generateSamplesScript(jsonSchema, [jsonData]);
 
 	const samples = [demoSample];
 
@@ -228,7 +228,7 @@ const generateSamplesForEntity = _ => async entityData => {
 		batchSize: 1,
 		parseLine: line => JSON.parse(line),
 		batchHandler: async batch => {
-			const sample = generateSamplesScript(_)(jsonSchema, batch);
+			const sample = generateSamplesScript(jsonSchema, batch);
 			samples.push(sample);
 		},
 	});

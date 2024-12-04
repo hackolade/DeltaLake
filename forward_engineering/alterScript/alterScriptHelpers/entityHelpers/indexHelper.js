@@ -15,7 +15,7 @@ const hydrateAddIndexes = _ => (entity, BloomIndxs, properties, definitions) => 
 
 const hydrateIndex = ({ entity, properties, definitions, dbVersion }) => {
 	const bloomIndex = _.get(entity, 'role.compMod.BloomIndxs', {});
-	const { drop, add } = getDifferentItems(_)(bloomIndex.new, bloomIndex.old);
+	const { drop, add } = getDifferentItems(bloomIndex.new, bloomIndex.old);
 	return {
 		hydratedDropIndex: hydrateDropIndexes({ ...entity, BloomIndxs: drop }, dbVersion),
 		hydratedAddIndex: hydrateAddIndexes(entity, add, properties, definitions),

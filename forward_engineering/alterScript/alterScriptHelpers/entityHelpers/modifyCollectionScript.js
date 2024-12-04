@@ -153,10 +153,7 @@ const getModifyCollectionScriptDtos =
 		const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
 		const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
 		const checkConstraintsDtos = getModifyCheckConstraintsScriptDtos(ddlProvider)(fullCollectionName, collection);
-		const tablePropertiesScriptDtos = getModifiedTablePropertiesScriptDtos(
-			_,
-			ddlProvider,
-		)({ collection, dbVersion });
+		const tablePropertiesScriptDtos = getModifiedTablePropertiesScriptDtos(ddlProvider)({ collection, dbVersion });
 		const serDeProperties = ddlProvider.alterSerDeProperties(hydratedSerDeProperties);
 		const modifyLocationScriptDto = getModifyLocationScriptDto(app, ddlProvider)({ collection, dbVersion });
 		const unityEntityTagsDtos = getModifyUnityEntityTagsScriptDtos({ ddlProvider })({
@@ -185,7 +182,7 @@ const getModifyCollectionScriptDtos =
  * */
 const generateModifyCollectionScript = app => (collection, definitions, ddlProvider, dbVersion) => {
 	const compMod = _.get(collection, 'role.compMod', {});
-	const shouldDropAndRecreate = getIsChangeProperties(_)(compMod, tableProperties);
+	const shouldDropAndRecreate = getIsChangeProperties(compMod, tableProperties);
 
 	if (shouldDropAndRecreate) {
 		return getDropAndRecreateCollectionScriptDtos(app, ddlProvider)(collection, definitions, dbVersion);

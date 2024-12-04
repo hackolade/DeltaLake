@@ -92,8 +92,8 @@ const destroyActiveContext = () => {
  *     entityJsonSchema: Object,
  * ) => Promise<any>}
  * */
-const sendSampleBatch = _ => (connectionInfo, samples, entityJsonSchema) => {
-	const script = generateSamplesScript(_)(entityJsonSchema, samples);
+const sendSampleBatch = (connectionInfo, samples, entityJsonSchema) => {
+	const script = generateSamplesScript(entityJsonSchema, samples);
 	return executeCommand(connectionInfo, script, 'sql');
 };
 
@@ -121,7 +121,7 @@ const logProgressOfSendingSampleBatches = logger => (lineIndex, amountOfLines) =
 	logger.progress({ message });
 };
 
-const sendSampleBatches = (_, logger) => async connectionInfo => {
+const sendSampleBatches = logger => async connectionInfo => {
 	const { entitiesData } = connectionInfo;
 
 	for (const entityData of Object.values(entitiesData)) {
@@ -133,7 +133,7 @@ const sendSampleBatches = (_, logger) => async connectionInfo => {
 			batchSize: BATCH_SIZE,
 			parseLine: line => JSON.parse(line),
 			batchHandler: batch => {
-				return sendSampleBatch(_)(connectionInfo, batch, jsonSchema);
+				return sendSampleBatch(connectionInfo, batch, jsonSchema);
 			},
 			logProgress: logProgressOfSendingSampleBatches(logger),
 		});
@@ -150,7 +150,7 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 
 	await Promise.race([
 		executeCommand(connectionInfo, connectionInfo.script, 'sql').then(() => {
-			return sendSampleBatches(_, logger)(connectionInfo);
+			return sendSampleBatches(logger)(connectionInfo);
 		}),
 		new Promise((_r, rej) =>
 			setTimeout(() => {
