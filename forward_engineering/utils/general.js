@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const sqlFormatter = require('@sqltools/formatter');
 const { RESERVED_WORDS_AS_ARRAY } = require('../enums/reservedWords');
 const { Runtime } = require('../enums/runtime');
@@ -142,7 +143,7 @@ const commentDeactivatedStatements = (statement, isActivated = true) => {
 	return insertBeforeEachLine(statement, '-- ');
 };
 
-const commentDeactivatedInlineKeys = _ => (keys, deactivatedKeyNames) => {
+const commentDeactivatedInlineKeys = (keys, deactivatedKeyNames) => {
 	const [activatedKeys, deactivatedKeys] = _.partition(
 		keys,
 		key => !(deactivatedKeyNames.has(key) || deactivatedKeyNames.has(key.slice(1, -1))),

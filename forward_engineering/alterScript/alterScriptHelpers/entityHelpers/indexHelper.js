@@ -1,6 +1,7 @@
+const _ = require('lodash');
 const { generateFullEntityName, getContainerName, getDifferentItems } = require('../../../utils/general');
 
-const hydrateDropIndexes = _ => (entity, dbVersion) => {
+const hydrateDropIndexes = (entity, dbVersion) => {
 	const bloomIndex = _.get(entity, 'BloomIndxs', []);
 	return bloomIndex.length ? generateFullEntityName({ entity, dbVersion }) : '';
 };
@@ -12,16 +13,14 @@ const hydrateAddIndexes = _ => (entity, BloomIndxs, properties, definitions) => 
 	return [[containerData], [entityData, {}, { BloomIndxs }], { ...entityData, properties }, definitions];
 };
 
-const hydrateIndex =
-	_ =>
-	({ entity, properties, definitions, dbVersion }) => {
-		const bloomIndex = _.get(entity, 'role.compMod.BloomIndxs', {});
-		const { drop, add } = getDifferentItems(_)(bloomIndex.new, bloomIndex.old);
-		return {
-			hydratedDropIndex: hydrateDropIndexes(_)({ ...entity, BloomIndxs: drop }, dbVersion),
-			hydratedAddIndex: hydrateAddIndexes(_)(entity, add, properties, definitions),
-		};
+const hydrateIndex = ({ entity, properties, definitions, dbVersion }) => {
+	const bloomIndex = _.get(entity, 'role.compMod.BloomIndxs', {});
+	const { drop, add } = getDifferentItems(_)(bloomIndex.new, bloomIndex.old);
+	return {
+		hydratedDropIndex: hydrateDropIndexes({ ...entity, BloomIndxs: drop }, dbVersion),
+		hydratedAddIndex: hydrateAddIndexes(entity, add, properties, definitions),
 	};
+};
 
 module.exports = {
 	hydrateDropIndexes,

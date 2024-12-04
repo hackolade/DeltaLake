@@ -61,7 +61,7 @@ const assertNoEmptyStatements = scripts => {
 /**
  * @return {Array<AlterScriptDto>}
  * */
-const getAlterContainersScriptDtos = ({ schema, isUnityCatalogSupports, provider, _, data }) => {
+const getAlterContainersScriptDtos = ({ schema, isUnityCatalogSupports, provider, data }) => {
 	const dbVersion = data.modelData[0].dbVersion;
 	const addedScriptDtos = getItems(schema, 'containers', 'added')
 		.map(getAddContainerScriptDto(isUnityCatalogSupports, dbVersion))
@@ -70,7 +70,7 @@ const getAlterContainersScriptDtos = ({ schema, isUnityCatalogSupports, provider
 		.map(getDeleteContainerScriptDto(provider, dbVersion))
 		.filter(Boolean);
 	const modifiedScriptDtos = getItems(schema, 'containers', 'modified')
-		.flatMap(getModifyContainerScriptDtos(provider, _, isUnityCatalogSupports, dbVersion))
+		.flatMap(getModifyContainerScriptDtos(provider, isUnityCatalogSupports, dbVersion))
 		.filter(Boolean);
 
 	return [...deletedScriptDtos, ...addedScriptDtos, ...modifiedScriptDtos];
@@ -109,7 +109,7 @@ const filterOutExistingStatements = ({ alterScriptDtos, existingAlterStatements 
 /**
  * @return Array<AlterScriptDto>
  * */
-const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, _, app }) => {
+const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, app }) => {
 	const existingAlterStatements = new Set();
 	const getCollectionScripts = (items, compMode, getScript) =>
 		items.filter(item => item.compMod?.[compMode]).flatMap(getScript);
@@ -157,7 +157,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, _,
 	let modifiedCollectionPrimaryKeysScriptDtos = [];
 	if (getDBVersionNumber(dbVersion) >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
 		modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified').flatMap(item =>
-			getModifyPkConstraintsScripts(_, provider)({ collection: item, dbVersion }),
+			getModifyPkConstraintsScripts(provider)({ collection: item, dbVersion }),
 		);
 	}
 
@@ -211,7 +211,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, _,
 /**
  * @return Array<AlterScriptDto>
  * */
-const getAlterViewsScriptDtos = (schema, provider, _, dbVersion) => {
+const getAlterViewsScriptDtos = (schema, provider, dbVersion) => {
 	/**
 	 * @return Array<AlterScriptDto>
 	 * */
@@ -250,7 +250,7 @@ const getAlterViewsScriptDtos = (schema, provider, _, dbVersion) => {
 /**
  * @return Array<AlterScriptDto>
  * */
-const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider, _ }) => {
+const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider }) => {
 	const deletedRelationships = getItems(schema, 'relationships', 'deleted').filter(
 		relationship => relationship.role?.compMod?.deleted,
 	);
@@ -259,9 +259,9 @@ const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider, _ }) => {
 	);
 	const modifiedRelationships = getItems(schema, 'relationships', 'modified');
 
-	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider, _)(deletedRelationships);
-	const addFkScripts = getAddForeignKeyScripts(ddlProvider, _)(addedRelationships);
-	const modifiedFkScripts = getModifyForeignKeyScripts(ddlProvider, _)(modifiedRelationships);
+	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider)(deletedRelationships);
+	const addFkScripts = getAddForeignKeyScripts(ddlProvider)(addedRelationships);
+	const modifiedFkScripts = getModifyForeignKeyScripts(ddlProvider)(modifiedRelationships);
 
 	return [...deleteFkScripts, ...addFkScripts, ...modifiedFkScripts];
 };
@@ -303,12 +303,12 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
 	const provider = require('../ddlProvider/ddlProvider')(app);
 	const dbVersion = data.modelData[0].dbVersion;
 	const isUnityCatalogSupports = isSupportUnityCatalog(dbVersion);
-	const containersScriptDtos = getAlterContainersScriptDtos({ schema, isUnityCatalogSupports, provider, _, data });
-	const collectionsScriptDtos = getAlterCollectionsScriptDtos({ schema, definitions, provider, data, _, app });
-	const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, _, dbVersion);
+	const containersScriptDtos = getAlterContainersScriptDtos({ schema, isUnityCatalogSupports, provider, data });
+	const collectionsScriptDtos = getAlterCollectionsScriptDtos({ schema, definitions, provider, data, app });
+	const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, dbVersion);
 	let relationshipsScriptDtos = [];
 	if (isUnityCatalogSupports) {
-		relationshipsScriptDtos = getAlterRelationshipsScriptDtos({ schema, ddlProvider: provider, _ });
+		relationshipsScriptDtos = getAlterRelationshipsScriptDtos({ schema, ddlProvider: provider });
 	}
 
 	return [...containersScriptDtos, ...collectionsScriptDtos, ...viewsScriptDtos, ...relationshipsScriptDtos];

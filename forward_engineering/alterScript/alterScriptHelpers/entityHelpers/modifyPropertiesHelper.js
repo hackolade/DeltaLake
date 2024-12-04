@@ -38,8 +38,8 @@ const buildTablePropertiesDiffMap = tableProperties => {
 	return diffMap;
 };
 
-const getAddTablePropertyScriptDto = (_, ddlProvider) => (properties, fullCollectionName) => {
-	const addPropertiesDdlString = getTablePropertiesClause(_)(properties);
+const getAddTablePropertyScriptDto = ddlProvider => (properties, fullCollectionName) => {
+	const addPropertiesDdlString = getTablePropertiesClause(properties);
 	const ddlConfig = {
 		name: fullCollectionName,
 		properties: addPropertiesDdlString,
@@ -53,7 +53,7 @@ const getDeleteTablePropertyScriptDto = (_, ddlProvider) => (properties, fullCol
 		...prop,
 		propertyValue: undefined,
 	}));
-	const dropPropertiesDdlString = getTablePropertiesClause(_)(propertiesWithNoValues);
+	const dropPropertiesDdlString = getTablePropertiesClause(propertiesWithNoValues);
 	const ddlConfig = {
 		name: fullCollectionName,
 		properties: dropPropertiesDdlString,
@@ -70,7 +70,7 @@ const getModifiedTablePropertiesScriptDtos =
 		const fullCollectionName = generateFullEntityName({ entity: collection, dbVersion });
 		const propertiesDiffMap = buildTablePropertiesDiffMap(tableProperties);
 
-		const addedPropertiesScriptDto = getAddTablePropertyScriptDto(_, ddlProvider)(
+		const addedPropertiesScriptDto = getAddTablePropertyScriptDto(ddlProvider)(
 			propertiesDiffMap.added,
 			fullCollectionName,
 		);
@@ -80,7 +80,7 @@ const getModifiedTablePropertiesScriptDtos =
 		);
 
 		const modifiedPropertiesScriptDtos = propertiesDiffMap.modified.map(({ newItem }) => {
-			return getAddTablePropertyScriptDto(_, ddlProvider)([newItem], fullCollectionName);
+			return getAddTablePropertyScriptDto(ddlProvider)([newItem], fullCollectionName);
 		});
 
 		return [addedPropertiesScriptDto, deletedPropertiesScriptDto, ...modifiedPropertiesScriptDtos].filter(Boolean);

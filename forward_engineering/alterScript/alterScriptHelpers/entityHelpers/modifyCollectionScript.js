@@ -50,7 +50,7 @@ const otherTableProperties = [
 	'location',
 ];
 
-const hydrateSerDeProperties = _ => (compMod, name) => {
+const hydrateSerDeProperties = (compMod, name) => {
 	const { serDeProperties, serDeLibrary } = compMod;
 	return {
 		properties: !_.isEqual(serDeProperties?.new, serDeProperties?.old) && serDeProperties?.new,
@@ -70,7 +70,7 @@ const hydrateAlterTableName = compMod => {
 	};
 };
 
-const hydrateCollection = _ => (entity, definitions) => {
+const hydrateCollection = (entity, definitions) => {
 	const compMod = _.get(entity, 'role.compMod', {});
 	const entityData = _.get(entity, 'role', {});
 	const properties = getEntityProperties(entity);
@@ -88,7 +88,7 @@ const getDropAndRecreateCollectionScriptDtos = (app, ddlProvider) => (collection
 	const compMod = _.get(collection, 'role.compMod', {});
 	const fullCollectionName = generateFullEntityName({ entity: collection, dbVersion });
 	const roleData = getEntityData(compMod, tableProperties.concat(otherTableProperties));
-	const hydratedCollection = hydrateCollection(_)(
+	const hydratedCollection = hydrateCollection(
 		{
 			...collection,
 			role: { ...collection.role, ...roleData },
@@ -151,7 +151,7 @@ const getModifyCollectionScriptDtos =
 		const fullCollectionName = generateFullEntityName({ entity: collection, dbVersion });
 
 		const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
-		const hydratedSerDeProperties = hydrateSerDeProperties(_)(compMod, fullCollectionName);
+		const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
 		const checkConstraintsDtos = getModifyCheckConstraintsScriptDtos(ddlProvider)(fullCollectionName, collection);
 		const tablePropertiesScriptDtos = getModifiedTablePropertiesScriptDtos(
 			_,

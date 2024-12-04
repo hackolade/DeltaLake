@@ -63,7 +63,6 @@ module.exports = app => {
 				query: schema.selectStatement
 					? `AS ${schema.selectStatement}`
 					: viewHelper.getTableSelectStatement({
-							_,
 							collectionRefsDefinitionsMap,
 							columns,
 						}),

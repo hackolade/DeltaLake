@@ -13,7 +13,7 @@ const doesTableHaveAnyPK = entityJsonSchema => {
 /**
  * @return {(entitiesJsonSchema: Object, dbName: string) => string}
  * */
-const getCreatePKConstraintScript = (_, ddlProvider) => (entityJsonSchema, dbName) => {
+const getCreatePKConstraintScript = ddlProvider => (entityJsonSchema, dbName) => {
 	const pkColumnNames = _.toPairs(entityJsonSchema.properties)
 		.filter(([name, jsonSchema]) => Boolean(jsonSchema.primaryKey))
 		.map(([name]) => name)
@@ -36,7 +36,7 @@ const getCreatePKConstraintsScript = app => (entityJsonSchema, dbName) => {
 
 	const ddlProvider = require('../../ddlProvider/ddlProvider')(app);
 
-	return getCreatePKConstraintScript(_, ddlProvider)(entityJsonSchema, dbName);
+	return getCreatePKConstraintScript(ddlProvider)(entityJsonSchema, dbName);
 };
 
 module.exports = {

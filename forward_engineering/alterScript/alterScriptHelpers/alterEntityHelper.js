@@ -21,19 +21,17 @@ const { getModifiedDefaultColumnValueScriptDtos } = require('./columnHelpers/def
 const { getUpdateTypesScriptDtos } = require('./columnHelpers/alterTypeHelper');
 const { getModifyUnityColumnTagsScriptDtos } = require('./columnHelpers/alterUnityTagsHelper');
 
-const hydrateAlterColumnName =
-	_ =>
-	({ entity, properties = {}, dbVersion }) => {
-		const collectionName = generateFullEntityName({ entity, dbVersion });
-		const columns = Object.values(properties).map(property => {
-			const compMod = _.get(property, 'compMod', {});
-			const { newField = {}, oldField = {} } = compMod;
-			return newField.name && oldField.name && newField.name !== oldField.name
-				? { oldName: oldField.name, newName: newField.name }
-				: '';
-		});
-		return { collectionName, columns: columns.filter(Boolean) };
-	};
+const hydrateAlterColumnName = ({ entity, properties = {}, dbVersion }) => {
+	const collectionName = generateFullEntityName({ entity, dbVersion });
+	const columns = Object.values(properties).map(property => {
+		const compMod = _.get(property, 'compMod', {});
+		const { newField = {}, oldField = {} } = compMod;
+		return newField.name && oldField.name && newField.name !== oldField.name
+			? { oldName: oldField.name, newName: newField.name }
+			: '';
+	});
+	return { collectionName, columns: columns.filter(Boolean) };
+};
 
 const hydrateAlterColumnType =
 	_ =>
@@ -74,7 +72,7 @@ const hydrateCollection = _ => (entity, definitions) => {
 const getAddCollectionsScripts = (app, definitions, dbVersion) => entity => {
 	const properties = getEntityProperties(entity);
 	const indexes = _.get(entity, 'role.BloomIndxs', []);
-	const hydratedCollection = hydrateCollection(_)(entity, definitions);
+	const hydratedCollection = hydrateCollection(entity, definitions);
 	const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
 	const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
 	const collectionScript = getTableStatement(app)(
@@ -85,7 +83,7 @@ const getAddCollectionsScripts = (app, definitions, dbVersion) => entity => {
 		dbVersion,
 		true,
 	);
-	const indexScript = getIndexes(_)(...hydrateAddIndexes(_)(entity, indexes, properties, definitions));
+	const indexScript = getIndexes(...hydrateAddIndexes(entity, indexes, properties, definitions));
 
 	return [collectionScript, indexScript].filter(Boolean).map(script => ({
 		isActivated: true,
@@ -105,7 +103,7 @@ const getDeleteCollectionsScripts = (app, provider, dbVersion) => entity => {
 	const entityData = { ...entity, ..._.get(entity, 'role', {}) };
 	const fullCollectionName = generateFullEntityName({ entity, dbVersion });
 	const collectionScript = provider.dropTable(fullCollectionName);
-	const indexScript = provider.dropTableIndex(hydrateDropIndexes(_)(entityData));
+	const indexScript = provider.dropTableIndex(hydrateDropIndexes(entityData));
 
 	return [indexScript, collectionScript].filter(Boolean).map(script => ({
 		isActivated: true,
@@ -129,14 +127,14 @@ const getModifyCollectionsScripts = (app, definitions, ddlProvider, dbVersion) =
 		ddlProvider,
 		dbVersion,
 	);
-	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(_)({
+	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex({
 		entity: collection,
 		properties,
 		definitions,
 		dbVersion,
 	});
 	const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
-	const addIndexScript = getIndexes(_)(...hydratedAddIndex);
+	const addIndexScript = getIndexes(...hydratedAddIndex);
 
 	const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
 	const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
@@ -154,10 +152,10 @@ const getDeleteColumnsScripts = (app, definitions, provider, dbVersion) => entit
 	const properties = getEntityProperties(entity);
 	const columnStatement = getColumnsString(Object.keys(columns));
 	const fullCollectionName = generateFullEntityName({ entity, dbVersion });
-	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(_)({ entity, properties, definitions, dbVersion });
+	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex({ entity, properties, definitions, dbVersion });
 	const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider, dbVersion);
 	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
-	const addIndexScript = getIndexes(_)(...hydratedAddIndex);
+	const addIndexScript = getIndexes(...hydratedAddIndex);
 	const deleteColumnScript = provider.dropTableColumns({ name: fullCollectionName, columns: columnStatement });
 
 	const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
@@ -180,12 +178,12 @@ const getDeleteColumnScripsForOlderRuntime = (app, definitions, provider, dbVers
 	const deleteColumnsName = _.filter(Object.keys(entity.properties || {}), name => !entity.properties[name].compMod);
 	const properties = _.omit(_.get(entity, 'role.properties', {}), deleteColumnsName);
 	const entityData = { role: { ..._.omit(entity.role, ['properties']), properties } };
-	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(_)({ entity, properties, definitions, dbVersion });
+	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex({ entity, properties, definitions, dbVersion });
 	const fullCollectionName = generateFullEntityName({ entity, dbVersion });
 	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
-	const addIndexScript = getIndexes(_)(...hydratedAddIndex);
+	const addIndexScript = getIndexes(...hydratedAddIndex);
 	const deleteCollectionScript = provider.dropTable(fullCollectionName);
-	const hydratedCollection = hydrateCollection(_)(entityData, definitions);
+	const hydratedCollection = hydrateCollection(entityData, definitions);
 	const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
 	const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
 	const addCollectionScript = getTableStatement(app)(
@@ -222,17 +220,17 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
 			properties: Object.fromEntries(unionProperties),
 		},
 	};
-	const hydratedAlterColumnName = hydrateAlterColumnName(_)({ entity: collection, properties, dbVersion });
+	const hydratedAlterColumnName = hydrateAlterColumnName({ entity: collection, properties, dbVersion });
 	const alterColumnScripts = ddlProvider.alterTableColumnName(hydratedAlterColumnName);
 	const modifiedScript = generateModifyCollectionScript(app)(entityData, definitions, ddlProvider, dbVersion);
-	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(_)({
+	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex({
 		entity: collection,
 		properties,
 		definitions,
 		dbVersion,
 	});
 	const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
-	const addIndexScript = getIndexes(_)(...hydratedAddIndex);
+	const addIndexScript = getIndexes(...hydratedAddIndex);
 
 	const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(
 		_,
@@ -295,17 +293,17 @@ const getModifyColumnsScriptsForOlderRuntime = (app, definitions, ddlProvider, d
 			properties: Object.fromEntries(unionProperties),
 		},
 	};
-	const hydratedAlterColumnName = hydrateAlterColumnName(_)({ entity: collection, properties, dbVersion });
+	const hydratedAlterColumnName = hydrateAlterColumnName({ entity: collection, properties, dbVersion });
 	const alterColumnScripts = ddlProvider.alterTableColumnName(hydratedAlterColumnName);
 	const modifiedScript = generateModifyCollectionScript(app)(entityData, definitions, ddlProvider, dbVersion);
-	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex(_)({
+	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex({
 		entity: collection,
 		properties,
 		definitions,
 		dbVersion,
 	});
 	const dropIndexScript = ddlProvider.dropTableIndex(hydratedDropIndex);
-	const addIndexScript = getIndexes(_)(...hydratedAddIndex);
+	const addIndexScript = getIndexes(...hydratedAddIndex);
 
 	const { columnsToDelete } = hydrateAlterColumnType(_)(properties);
 	const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(
@@ -322,7 +320,7 @@ const getModifyColumnsScriptsForOlderRuntime = (app, definitions, ddlProvider, d
 	if (!_.isEmpty(columnsToDelete)) {
 		const fullCollectionName = generateFullEntityName({ entity: collection, dbVersion });
 		const deleteCollectionScript = ddlProvider.dropTable(fullCollectionName);
-		const hydratedCollection = hydrateCollection(_)(entityData, definitions);
+		const hydratedCollection = hydrateCollection(entityData, definitions);
 		const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
 		const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
 		const addCollectionScript = getTableStatement(app)(

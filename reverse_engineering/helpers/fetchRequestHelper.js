@@ -1,4 +1,5 @@
 'use strict';
+const _ = require('lodash');
 const nodeFetch = require('node-fetch');
 const AbortController = require('abort-controller');
 const { dependencies } = require('../appDependencies');
@@ -139,7 +140,7 @@ const sendSampleBatches = (_, logger) => async connectionInfo => {
 	}
 };
 
-const fetchApplyToInstance = _ => async (connectionInfo, logger) => {
+const fetchApplyToInstance = async (connectionInfo, logger) => {
 	const progress = message => {
 		logger.log('info', message, 'Applying to instance');
 		logger.progress({ message });

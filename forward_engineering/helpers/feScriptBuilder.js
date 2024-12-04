@@ -103,7 +103,7 @@ const buildEntityLevelFEScript =
 			null,
 			dbVersion,
 		);
-		const indexScript = getIndexes(_)(containerData, entityData, jsonSchema, definitions);
+		const indexScript = getIndexes(containerData, entityData, jsonSchema, definitions);
 
 		let relationshipScripts = [];
 		if (arePkFkConstraintsAvailable) {
@@ -221,7 +221,7 @@ const getContainerLevelEntitiesScriptDtos =
 				dbVersion,
 			);
 
-			const indexScript = getIndexes(_)(...createTableStatementArgs);
+			const indexScript = getIndexes(...createTableStatementArgs);
 
 			let relationshipScripts = [];
 			if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {

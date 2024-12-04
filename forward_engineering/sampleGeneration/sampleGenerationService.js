@@ -12,14 +12,13 @@ const { batchProcessFile } = require('../../reverse_engineering/helpers/fileHelp
  */
 
 /**
- * @param {App} app
  * @param {CoreData} data
  * @return {{
  * isSampleGenerationRequired: boolean,
  * shouldAppendSamplesToTheResultScript: boolean
  * }}
  */
-const getSampleGenerationOptions = (app, data) => {
+const getSampleGenerationOptions = data => {
 	const insertSamplesOption =
 		_.get(data, 'options.additionalOptions', []).find(option => option.id === 'INCLUDE_SAMPLES') || {};
 	const isSampleGenerationRequired = Boolean(insertSamplesOption?.value);
@@ -72,7 +71,7 @@ const getValuesClauseColumnDelimiter = (columnIndex, maxColumnsInLineOfValuesCla
  *     ) => string
  * }
  * */
-const generateSamples = _ => (entityJsonSchema, samples) => {
+const generateSamples = (entityJsonSchema, samples) => {
 	if (!samples.length) {
 		return '';
 	}
@@ -117,7 +116,7 @@ const generateSamples = _ => (entityJsonSchema, samples) => {
 /**
  * @return {(parsedData: Object) => string}
  * */
-const generateSampleForDemonstrationOnContainerLevel = _ => parsedData => {
+const generateSampleForDemonstrationOnContainerLevel = parsedData => {
 	/**
 	 * @type {ContainerLevelParsedJsonData}
 	 * */
@@ -128,7 +127,7 @@ const generateSampleForDemonstrationOnContainerLevel = _ => parsedData => {
 		.map(collectionId => {
 			const entityJsonSchema = (parsedData.entitiesJsonSchema || {})[collectionId] || {};
 			const collectionSampleData = sampleData[collectionId] || {};
-			return generateSamples(_)(entityJsonSchema, [collectionSampleData]);
+			return generateSamples(entityJsonSchema, [collectionSampleData]);
 		})
 		.concat([''])
 		.join('\n\n');
@@ -137,7 +136,7 @@ const generateSampleForDemonstrationOnContainerLevel = _ => parsedData => {
 /**
  * @return {(parsedData: Object) => string}
  * */
-const generateSampleForDemonstrationOnEntityLevel = _ => parsedData => {
+const generateSampleForDemonstrationOnEntityLevel = parsedData => {
 	/**
 	 * @type {ContainerLevelParsedJsonData}
 	 * */
@@ -149,21 +148,20 @@ const generateSampleForDemonstrationOnEntityLevel = _ => parsedData => {
 		bucketName: containerData.name,
 		...(parsedData.jsonSchema || {}),
 	};
-	return generateSamples(_)(entityJsonSchema, [sampleData]);
+	return generateSamples(entityJsonSchema, [sampleData]);
 };
 
 /**
- * @param app {App}
  * @param parsedData {Object}
  * @param level {'entity' | 'container'}
  * @return {string}
  * */
-const generateSampleForDemonstration = (app, parsedData, level) => {
+const generateSampleForDemonstration = (parsedData, level) => {
 	if (level === 'entity') {
-		return generateSampleForDemonstrationOnEntityLevel(_)(parsedData);
+		return generateSampleForDemonstrationOnEntityLevel(parsedData);
 	}
 	if (level === 'container') {
-		return generateSampleForDemonstrationOnContainerLevel(_)(parsedData);
+		return generateSampleForDemonstrationOnContainerLevel(parsedData);
 	}
 	return '';
 };
@@ -183,7 +181,7 @@ const generateSamplesScript = _ => (entityJsonSchema, samples) => {
 	if (!(entityJsonSchema.bucketName && entityJsonSchema.collectionName)) {
 		return '';
 	}
-	return generateSamples(_)(entityJsonSchema, samples);
+	return generateSamples(entityJsonSchema, samples);
 };
 
 /**
