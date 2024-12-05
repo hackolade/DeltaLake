@@ -88,7 +88,7 @@ const getCreateStatement = ({
 	}
 
 	if (using) {
-		return getCreateUsingStatement(_)({
+		return getCreateUsingStatement({
 			tempExtStatement,
 			fullTableName,
 			using,
@@ -131,45 +131,43 @@ const getCreateStatement = ({
 	});
 };
 
-const getCreateUsingStatement =
-	_ =>
-	({
-		tempExtStatement,
-		fullTableName,
-		using,
+const getCreateUsingStatement = ({
+	tempExtStatement,
+	fullTableName,
+	using,
+	columnStatement,
+	primaryKeyStatement,
+	comment,
+	partitionedByKeys,
+	clusteredKeys,
+	sortedKeys,
+	numBuckets,
+	location,
+	tableProperties,
+	selectStatement,
+	isActivated,
+	tableOptions,
+	isNotExistsStatement,
+	rowFormatStatement,
+	storedAsStatement,
+}) => {
+	return buildStatement(`CREATE${tempExtStatement}TABLE${isNotExistsStatement} ${fullTableName} (`, isActivated)(
 		columnStatement,
-		primaryKeyStatement,
-		comment,
-		partitionedByKeys,
-		clusteredKeys,
-		sortedKeys,
-		numBuckets,
-		location,
-		tableProperties,
-		selectStatement,
-		isActivated,
-		tableOptions,
-		isNotExistsStatement,
+		columnStatement + (primaryKeyStatement ? ',' : ''),
+	)(primaryKeyStatement, primaryKeyStatement)(true, ')')(using, `${getUsing(using)}`)(
 		rowFormatStatement,
-		storedAsStatement,
-	}) => {
-		return buildStatement(`CREATE${tempExtStatement}TABLE${isNotExistsStatement} ${fullTableName} (`, isActivated)(
-			columnStatement,
-			columnStatement + (primaryKeyStatement ? ',' : ''),
-		)(primaryKeyStatement, primaryKeyStatement)(true, ')')(using, `${getUsing(using)}`)(
-			rowFormatStatement,
-			`ROW FORMAT ${rowFormatStatement}`,
-		)(storedAsStatement, storedAsStatement)(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)(
-			clusteredKeys,
-			`CLUSTERED BY (${clusteredKeys})`,
-		)(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)(
-			numBuckets && clusteredKeys,
-			`INTO ${numBuckets} BUCKETS`,
-		)(location, `LOCATION '${location}'`)(comment, `COMMENT '${encodeStringLiteral(comment)}'`)(
-			tableProperties,
-			`TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`,
-		)(tableOptions, `OPTIONS ${tableOptions}`)(selectStatement, `AS ${selectStatement}`)(true, ';')();
-	};
+		`ROW FORMAT ${rowFormatStatement}`,
+	)(storedAsStatement, storedAsStatement)(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)(
+		clusteredKeys,
+		`CLUSTERED BY (${clusteredKeys})`,
+	)(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)(
+		numBuckets && clusteredKeys,
+		`INTO ${numBuckets} BUCKETS`,
+	)(location, `LOCATION '${location}'`)(comment, `COMMENT '${encodeStringLiteral(comment)}'`)(
+		tableProperties,
+		`TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`,
+	)(tableOptions, `OPTIONS ${tableOptions}`)(selectStatement, `AS ${selectStatement}`)(true, ';')();
+};
 
 const getCreateHiveStatement = ({
 	tempExtStatement,

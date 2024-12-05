@@ -1,5 +1,5 @@
+const _ = require('lodash');
 const { SqlBaseVisitor } = require('./parser/SQLBase/SqlBaseVisitor');
-const { dependencies } = require('./appDependencies');
 const { getFilteredTableProperties, getCheckConstraintsFromTableProperties } = require('./helpers/visitorsHelper');
 
 global.SQL_standard_keyword_behavior = false;
@@ -449,7 +449,7 @@ const getCommentValue = (context, label) => {
 };
 
 const getName = context => {
-	if (!context || dependencies.lodash.isEmpty(context)) {
+	if (!context || _.isEmpty(context)) {
 		return '';
 	}
 	return removeQuotes(context.getText());

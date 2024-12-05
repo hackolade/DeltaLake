@@ -24,7 +24,6 @@ const getCheckConstraintNameForDdlProvider = (constraintName = '', columnName) =
 
 /**
  * @param ddlProvider {Object}
- * @param _ {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
 const getAddCheckConstraintsScriptsDtos = ddlProvider => (fullTableName, collection) => {
@@ -44,7 +43,6 @@ const getAddCheckConstraintsScriptsDtos = ddlProvider => (fullTableName, collect
 
 /**
  * @param ddlProvider {Object}
- * @param _ {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
 const getRemoveCheckConstraintsScriptsDtos = ddlProvider => (fullTableName, collection) => {
@@ -65,7 +63,6 @@ const getRemoveCheckConstraintsScriptsDtos = ddlProvider => (fullTableName, coll
 
 /**
  * @param ddlProvider {Object}
- * @param _ {Object}
  * @returns {GetAlterScriptDtoFunction}
  */
 const getModifyCheckConstraintsScriptDtos = ddlProvider => (fullTableName, collection) => {

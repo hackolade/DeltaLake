@@ -1,4 +1,6 @@
 'use strict';
+
+const _ = require('lodash');
 const { dependencies } = require('../appDependencies');
 const fetchRequestHelper = require('./fetchRequestHelper');
 const { convertCustomTags, cleanEntityName, isSupportGettingListOfViews } = require('./utils');
@@ -8,7 +10,6 @@ const getEntityCreateStatement = (connectionInfo, dbName, entityName, logger) =>
 };
 
 const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logger) => {
-	const _ = dependencies.lodash;
 	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
 	logger.log('info', databasesNames, `Schema list`);
 	if (_.isEmpty(databasesNames)) {
@@ -87,7 +88,7 @@ const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) 
 		return {
 			dbName,
 			dbCollections,
-			isEmpty: dependencies.lodash.isEmpty(dbCollections),
+			isEmpty: _.isEmpty(dbCollections),
 		};
 	});
 };
@@ -131,7 +132,7 @@ const isEnabledUnityCatalog = data_security_mode => ['SINGLE_USER', 'USER_ISOLAT
 
 const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkVersion, logger) => {
 	const async = dependencies.async;
-	const entitiesNames = dependencies.lodash.flatMap(databasesNames, dbName => {
+	const entitiesNames = _.flatMap(databasesNames, dbName => {
 		return (collectionsNames[dbName] || []).map(entityName => ({ dbName, name: entityName }));
 	});
 

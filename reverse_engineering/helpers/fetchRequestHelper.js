@@ -1,4 +1,5 @@
 'use strict';
+
 const _ = require('lodash');
 const nodeFetch = require('node-fetch');
 const AbortController = require('abort-controller');
@@ -170,7 +171,7 @@ const getSampleDocSize = async ({ connectionInfo, dbName, tableName, recordSampl
 		`SELECT COUNT(*) FROM \`${dbName}\`.\`${tableName}\``,
 		'sql',
 	);
-	const count = dependencies.lodash.get(countResult, '[0][0]', 0);
+	const count = _.get(countResult, '[0][0]', 0);
 	const limit = Math.ceil((count * recordSamplingSettings.relative.value) / 100);
 
 	logger.log('info', { message: `Found ${count} records`, dbName, tableName }, 'Getting documents');
@@ -281,12 +282,12 @@ const useCatalog = async connectionInfo => {
 
 const fetchClusterCatalogNames = async connectionInfo => {
 	const result = await executeCommand(connectionInfo, 'SHOW CATALOGS', 'sql');
-	return dependencies.lodash.flattenDeep(result);
+	return _.flattenDeep(result);
 };
 
 const fetchClusterDatabasesNames = async connectionInfo => {
 	const result = await executeCommand(connectionInfo, 'SHOW DATABASES', 'sql');
-	return dependencies.lodash.flattenDeep(result);
+	return _.flattenDeep(result);
 };
 
 const fetchDatabaseViewsNames = (dbName, connectionInfo) =>
@@ -338,8 +339,8 @@ const fetchClusterData = async (
 		(clusterData, dbName) => ({
 			...clusterData,
 			[dbName]: {
-				dbTables: dependencies.lodash.get(databasesTablesInfo, dbName, {}),
-				dbProperties: dependencies.lodash.get(databasesProperties, dbName, {}),
+				dbTables: _.get(databasesTablesInfo, dbName, {}),
+				dbProperties: _.get(databasesProperties, dbName, {}),
 			},
 		}),
 		{},
@@ -445,7 +446,7 @@ const getFilteredEntities = (tableNames, parsedData) => {
 };
 
 const mergeChunksOfData = (leftObj, rightObj) => {
-	return dependencies.lodash.mergeWith(leftObj, rightObj, (objValue, srcValue) => {
+	return _.mergeWith(leftObj, rightObj, (objValue, srcValue) => {
 		if (Array.isArray(objValue) && Array.isArray(srcValue)) {
 			return objValue.concat(srcValue);
 		}
@@ -455,7 +456,7 @@ const mergeChunksOfData = (leftObj, rightObj) => {
 const fetchCreateStatementRequest = async (entityName, connectionInfo, logger) => {
 	try {
 		const result = await executeCommand(connectionInfo, `SHOW CREATE TABLE ${entityName};`, 'sql');
-		return dependencies.lodash.get(result, '[0][0]', '');
+		return _.get(result, '[0][0]', '');
 	} catch (error) {
 		logger.log('error', error, `Error during retrieve create table DDL statement. Table name: ${entityName}`);
 		return '';
@@ -663,7 +664,6 @@ const getCommandExecutionResult = (query, options, commandOptions) => {
 };
 
 const convertDbPropertyValue = value => {
-	const _ = dependencies.lodash;
 	const isNumber = value => !_.isNaN(_.toNumber(value));
 	const isBoolean = value => _.toLower(value) === 'false' || _.toLower(value) === 'true';
 	const convertToBoolean = value => {
@@ -685,7 +685,6 @@ const convertDbPropertyValue = value => {
 };
 
 const splitStatementsByBrackets = statements => {
-	const _ = dependencies.lodash;
 	let result = [];
 	let startIndex = 0;
 	let skippedBrackets = 0;

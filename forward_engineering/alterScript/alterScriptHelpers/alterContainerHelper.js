@@ -87,7 +87,7 @@ const getModifyContainerScriptDtos = (provider, isUnityCatalogSupports, dbVersio
 	const compMod = _.get(container, 'role.compMod', {});
 	const names = extractNamesFromCompMod(compMod);
 
-	const didPropertiesChange = getIsChangeProperties(_)({ ...compMod, name: names }, otherContainerProperties);
+	const didPropertiesChange = getIsChangeProperties({ ...compMod, name: names }, otherContainerProperties);
 	const containerData = { ...getContainerData(compMod), name: names.new };
 	const catalogName = isSupportUnityCatalog(dbVersion) ? prepareName(compMod?.catalogName?.new) : undefined;
 	const databaseName = getDatabaseName({ role: { ...containerData, name: names.old } });

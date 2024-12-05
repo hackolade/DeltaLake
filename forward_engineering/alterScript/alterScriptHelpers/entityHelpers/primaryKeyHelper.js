@@ -35,8 +35,8 @@ const didCompositePkChange = collection => {
 	if (newPrimaryKeys.length === 0 && oldPrimaryKeys.length === 0) {
 		return false;
 	}
-	const areKeyArraysEqual = _(oldPrimaryKeys).differenceWith(newPrimaryKeys, _.isEqual).isEmpty();
-	return !areKeyArraysEqual;
+
+	return !_.isEmpty(_.differenceWith(oldPrimaryKeys, newPrimaryKeys, _.isEqual));
 };
 
 /**
