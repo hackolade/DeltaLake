@@ -1,11 +1,74 @@
 const templates = require('./ddlTemplates');
-const { getFullEntityName } = require('../utils/general');
+const {
+	getFullEntityName,
+	getName,
+	replaceSpaceWithUnderscore,
+	prepareName,
+	getContainerName,
+	getEntityData,
+	getEntityProperties,
+	wrapInBrackets,
+} = require('../utils/general');
+const { getViewTagsStatement } = require('../helpers/unityTagsHelper');
+const { getTablePropertiesClause } = require('../helpers/tableHelper');
+const viewHelper = require('../helpers/viewHelper');
 
 module.exports = app => {
 	const { assignTemplates } = app.require('@hackolade/ddl-fe-utils');
+	const _ = app.require('lodash');
+
 	return {
 		dropView(name) {
 			return assignTemplates(templates.dropView, { name });
+		},
+
+		createView(data) {
+			const { schema, viewData, containerData, collectionRefsDefinitionsMap } = data;
+
+			const columns = schema.properties || {};
+			const view = _.first(viewData) || {};
+
+			if (!view.isActivated) {
+				return;
+			}
+
+			const bucketName = replaceSpaceWithUnderscore(prepareName(viewHelper.retrieveContainerName(containerData)));
+			const viewName = replaceSpaceWithUnderscore(prepareName(view.code || view.name));
+			const isGlobal = schema.viewGlobal && schema.viewTemporary;
+			const isTemporary = schema.viewTemporary;
+			const orReplace = schema.viewOrReplace;
+			const ifNotExists = view.viewIfNotExist;
+			const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
+			const tableProperties =
+				schema.tableProperties && Array.isArray(schema.tableProperties)
+					? viewHelper.filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime'])
+					: [];
+			const viewUnityTagsStatements =
+				schema.unityViewTags && getViewTagsStatement({ viewSchema: schema, viewName: name });
+
+			return assignTemplates(templates.createView, {
+				orReplace: orReplace && !ifNotExists ? ' OR REPLACE' : '',
+				global: isGlobal ? ' GLOBAL' : '',
+				temporary: isTemporary ? ' TEMPORARY' : '',
+				ifNotExists: ifNotExists ? ' IF NOT EXISTS' : '',
+				name,
+				columnList: view.columnList
+					? `${wrapInBrackets(view.columnList)}`
+					: viewHelper.getDefaultColumnList(columns),
+				schemaBinding: '',
+				comment: viewHelper.getCommentStatement(schema.description),
+				tablePropertyStatements: tableProperties.length
+					? `TBLPROPERTIES (${getTablePropertiesClause(_)(tableProperties)})`
+					: '',
+				query: schema.selectStatement
+					? `AS ${schema.selectStatement}`
+					: viewHelper.getTableSelectStatement({
+							_,
+							collectionRefsDefinitionsMap,
+							columns,
+						}),
+				viewUnityTagsStatements: viewUnityTagsStatements ? `${viewUnityTagsStatements};` : '',
+			});
 		},
 
 		dropTableIndex(name) {
