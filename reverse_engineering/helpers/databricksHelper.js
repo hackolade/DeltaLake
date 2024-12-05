@@ -1,7 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
-const { dependencies } = require('../appDependencies');
+const async = require('async');
 const fetchRequestHelper = require('./fetchRequestHelper');
 const { convertCustomTags, cleanEntityName, isSupportGettingListOfViews } = require('./utils');
 
@@ -63,8 +63,6 @@ const getDatabaseViewNames = async (dbName, connectionInfo, sparkVersion, logger
 };
 
 const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) => {
-	const async = dependencies.async;
-
 	if (isSupportUnityCatalog(sparkVersion)) {
 		await fetchRequestHelper.useCatalog(connectionInfo);
 	}
@@ -131,7 +129,6 @@ const isSupportUnityCatalog = sparkVersion => {
 const isEnabledUnityCatalog = data_security_mode => ['SINGLE_USER', 'USER_ISOLATION'].includes(data_security_mode);
 
 const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkVersion, logger) => {
-	const async = dependencies.async;
 	const entitiesNames = _.flatMap(databasesNames, dbName => {
 		return (collectionsNames[dbName] || []).map(entityName => ({ dbName, name: entityName }));
 	});

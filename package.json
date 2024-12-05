@@ -60,6 +60,7 @@
         "@sqltools/formatter": "1.2.5",
         "abort-controller": "3.0.0",
         "antlr4": "4.9.2",
+        "async": "3.2.6",
         "lodash": "4.17.21",
         "node-fetch": "2.6.7"
     },

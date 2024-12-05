@@ -1,9 +1,9 @@
 'use strict';
 
+const async = require('async');
 const _ = require('lodash');
 const nodeFetch = require('node-fetch');
 const AbortController = require('abort-controller');
-const { dependencies } = require('../appDependencies');
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 const { generateSamplesScript } = require('../../forward_engineering/sampleGeneration/sampleGenerationService');
@@ -306,7 +306,6 @@ const fetchClusterData = async (
 	isManagedLocationSupports,
 	logger,
 ) => {
-	const async = dependencies.async;
 	const databasesPropertiesResult = await async.mapLimit(databasesNames, 40, async dbName => {
 		logger.log('info', '', `Start describe schema: ${dbName} `);
 		const dbInfoResult = await executeCommand(connectionInfo, `DESCRIBE DATABASE EXTENDED \`${dbName}\``, 'sql');
