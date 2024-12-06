@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const { getTab, buildStatement, prepareName, getName, replaceSpaceWithUnderscore } = require('../utils/general');
 const schemaHelper = require('./jsonSchemaHelper');
 const { getItemByPath } = require('./jsonSchemaHelper');
@@ -11,7 +12,7 @@ const getIndexStatement = ({ tableName, dbName, columns, options, isActivated })
 	)(options, `OPTIONS (${options})`)(true, ';')();
 };
 
-const getIndexKeys = _ => (keys, jsonSchema, definitions) => {
+const getIndexKeys = (keys, jsonSchema, definitions) => {
 	if (!Array.isArray(keys)) {
 		return '';
 	}
@@ -45,7 +46,7 @@ const getIndexKeys = _ => (keys, jsonSchema, definitions) => {
 /**
  * @return {(containerData: any, entityData: any, jsonSchema: any, definitions: any) => string}
  * */
-const getIndexes = _ => (containerData, entityData, jsonSchema, definitions) => {
+const getIndexes = (containerData, entityData, jsonSchema, definitions) => {
 	const dbData = getTab(0, containerData);
 	const dbName = replaceSpaceWithUnderscore(prepareName(getName(dbData)));
 	const tableData = getTab(0, entityData);
@@ -54,7 +55,7 @@ const getIndexes = _ => (containerData, entityData, jsonSchema, definitions) => 
 	return indexesData
 		.filter(indexData => !_.isEmpty(indexData.forColumns))
 		.map(indexData => {
-			const { columns, isIndexActivated = true } = getIndexKeys(_)(indexData.forColumns, jsonSchema, definitions);
+			const { columns, isIndexActivated = true } = getIndexKeys(indexData.forColumns, jsonSchema, definitions);
 			return getIndexStatement({
 				dbName: dbName || 'default',
 				tableName: tableName,

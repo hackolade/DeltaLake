@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {
 	getIsChangeProperties,
 	generateFullEntityName,
@@ -49,7 +50,7 @@ const otherTableProperties = [
 	'location',
 ];
 
-const hydrateSerDeProperties = _ => (compMod, name) => {
+const hydrateSerDeProperties = (compMod, name) => {
 	const { serDeProperties, serDeLibrary } = compMod;
 	return {
 		properties: !_.isEqual(serDeProperties?.new, serDeProperties?.old) && serDeProperties?.new,
@@ -69,7 +70,7 @@ const hydrateAlterTableName = compMod => {
 	};
 };
 
-const hydrateCollection = _ => (entity, definitions) => {
+const hydrateCollection = (entity, definitions) => {
 	const compMod = _.get(entity, 'role.compMod', {});
 	const entityData = _.get(entity, 'role', {});
 	const properties = getEntityProperties(entity);
@@ -84,12 +85,10 @@ const hydrateCollection = _ => (entity, definitions) => {
  * }}
  * */
 const getDropAndRecreateCollectionScriptDtos = (app, ddlProvider) => (collection, definitions, dbVersion) => {
-	const _ = app.require('lodash');
-
 	const compMod = _.get(collection, 'role.compMod', {});
 	const fullCollectionName = generateFullEntityName({ entity: collection, dbVersion });
 	const roleData = getEntityData(compMod, tableProperties.concat(otherTableProperties));
-	const hydratedCollection = hydrateCollection(_)(
+	const hydratedCollection = hydrateCollection(
 		{
 			...collection,
 			role: { ...collection.role, ...roleData },
@@ -122,8 +121,6 @@ const getDropAndRecreateCollectionScriptDtos = (app, ddlProvider) => (collection
 const getModifyLocationScriptDto =
 	(app, ddlProvider) =>
 	({ collection, dbVersion }) => {
-		const _ = app.require('lodash');
-
 		const compMod = _.get(collection, 'role.compMod', {});
 		const location = _.get(compMod, 'location', {});
 		const oldLocation = location.old;
@@ -150,18 +147,13 @@ const getModifyLocationScriptDto =
 const getModifyCollectionScriptDtos =
 	(app, ddlProvider) =>
 	({ collection, dbVersion }) => {
-		const _ = app.require('lodash');
-
 		const compMod = _.get(collection, 'role.compMod', {});
 		const fullCollectionName = generateFullEntityName({ entity: collection, dbVersion });
 
 		const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
-		const hydratedSerDeProperties = hydrateSerDeProperties(_)(compMod, fullCollectionName);
+		const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
 		const checkConstraintsDtos = getModifyCheckConstraintsScriptDtos(ddlProvider)(fullCollectionName, collection);
-		const tablePropertiesScriptDtos = getModifiedTablePropertiesScriptDtos(
-			_,
-			ddlProvider,
-		)({ collection, dbVersion });
+		const tablePropertiesScriptDtos = getModifiedTablePropertiesScriptDtos(ddlProvider)({ collection, dbVersion });
 		const serDeProperties = ddlProvider.alterSerDeProperties(hydratedSerDeProperties);
 		const modifyLocationScriptDto = getModifyLocationScriptDto(app, ddlProvider)({ collection, dbVersion });
 		const unityEntityTagsDtos = getModifyUnityEntityTagsScriptDtos({ ddlProvider })({
@@ -189,9 +181,8 @@ const getModifyCollectionScriptDtos =
  * }}
  * */
 const generateModifyCollectionScript = app => (collection, definitions, ddlProvider, dbVersion) => {
-	const _ = app.require('lodash');
 	const compMod = _.get(collection, 'role.compMod', {});
-	const shouldDropAndRecreate = getIsChangeProperties(_)(compMod, tableProperties);
+	const shouldDropAndRecreate = getIsChangeProperties(compMod, tableProperties);
 
 	if (shouldDropAndRecreate) {
 		return getDropAndRecreateCollectionScriptDtos(app, ddlProvider)(collection, definitions, dbVersion);

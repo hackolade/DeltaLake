@@ -2,7 +2,6 @@ const { wrapInTicks } = require('../../utils/general');
 
 /**
  * @typedef GetStatementsFunction
- * @param _ {Object}
  * @param tableName {string}
  * @returns Array<string>
  */

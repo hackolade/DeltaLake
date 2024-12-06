@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { DiffMap } = require('../../types/DiffMap');
 const { getTablePropertiesClause } = require('../../../helpers/tableHelper');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
@@ -38,8 +39,8 @@ const buildTablePropertiesDiffMap = tableProperties => {
 	return diffMap;
 };
 
-const getAddTablePropertyScriptDto = (_, ddlProvider) => (properties, fullCollectionName) => {
-	const addPropertiesDdlString = getTablePropertiesClause(_)(properties);
+const getAddTablePropertyScriptDto = ddlProvider => (properties, fullCollectionName) => {
+	const addPropertiesDdlString = getTablePropertiesClause(properties);
 	const ddlConfig = {
 		name: fullCollectionName,
 		properties: addPropertiesDdlString,
@@ -48,12 +49,12 @@ const getAddTablePropertyScriptDto = (_, ddlProvider) => (properties, fullCollec
 	return AlterScriptDto.getInstance([script], true, false);
 };
 
-const getDeleteTablePropertyScriptDto = (_, ddlProvider) => (properties, fullCollectionName) => {
+const getDeleteTablePropertyScriptDto = ddlProvider => (properties, fullCollectionName) => {
 	const propertiesWithNoValues = properties.map(prop => ({
 		...prop,
 		propertyValue: undefined,
 	}));
-	const dropPropertiesDdlString = getTablePropertiesClause(_)(propertiesWithNoValues);
+	const dropPropertiesDdlString = getTablePropertiesClause(propertiesWithNoValues);
 	const ddlConfig = {
 		name: fullCollectionName,
 		properties: dropPropertiesDdlString,
@@ -63,24 +64,24 @@ const getDeleteTablePropertyScriptDto = (_, ddlProvider) => (properties, fullCol
 };
 
 const getModifiedTablePropertiesScriptDtos =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
 		const compMod = _.get(collection, 'role.compMod', {});
 		const tableProperties = compMod.tableProperties || {};
 		const fullCollectionName = generateFullEntityName({ entity: collection, dbVersion });
 		const propertiesDiffMap = buildTablePropertiesDiffMap(tableProperties);
 
-		const addedPropertiesScriptDto = getAddTablePropertyScriptDto(_, ddlProvider)(
+		const addedPropertiesScriptDto = getAddTablePropertyScriptDto(ddlProvider)(
 			propertiesDiffMap.added,
 			fullCollectionName,
 		);
-		const deletedPropertiesScriptDto = getDeleteTablePropertyScriptDto(_, ddlProvider)(
+		const deletedPropertiesScriptDto = getDeleteTablePropertyScriptDto(ddlProvider)(
 			propertiesDiffMap.deleted,
 			fullCollectionName,
 		);
 
 		const modifiedPropertiesScriptDtos = propertiesDiffMap.modified.map(({ newItem }) => {
-			return getAddTablePropertyScriptDto(_, ddlProvider)([newItem], fullCollectionName);
+			return getAddTablePropertyScriptDto(ddlProvider)([newItem], fullCollectionName);
 		});
 
 		return [addedPropertiesScriptDto, deletedPropertiesScriptDto, ...modifiedPropertiesScriptDtos].filter(Boolean);

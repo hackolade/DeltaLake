@@ -1,10 +1,10 @@
+const antlr4 = require('antlr4');
+const _ = require('lodash');
 const SqlBaseLexer = require('../parser/SQLBase/SqlBaseLexer');
 const SqlBaseParser = require('../parser/SQLBase/SqlBaseParser');
 const SqlBaseToCollectionVisitor = require('../sqlBaseToCollectionsVisitor');
 const ExprErrorListener = require('../antlrErrorListener');
 const columnREHelper = require('./columnsREHelper');
-const antlr4 = require('antlr4');
-const { dependencies } = require('../appDependencies');
 const { applyUnityTagsToTable, applyUnityTagsToTableProperties } = require('./unityTagsHelper');
 
 const getTableData = async (table, data, logger) => {
@@ -42,7 +42,7 @@ const getTableData = async (table, data, logger) => {
 		schema: tableSchema,
 		requiredColumns,
 	};
-	if (!dependencies.lodash.isEmpty(BloomIndxs)) {
+	if (!_.isEmpty(BloomIndxs)) {
 		return Object.assign(tableData, { 'propertiesPane': { ...tableData.propertiesPane, BloomIndxs } });
 	}
 	return tableData;
@@ -60,7 +60,7 @@ const getTableDataFromDDl = statement => {
 	const tree = parser.singleStatement();
 	const sqlBaseToCollectionVisitor = new SqlBaseToCollectionVisitor(statement);
 	let parsedTableData = tree.accept(sqlBaseToCollectionVisitor);
-	if (!dependencies.lodash.isEmpty(parsedTableData.query)) {
+	if (!_.isEmpty(parsedTableData.query)) {
 		parsedTableData.query = statement.substring(
 			parsedTableData.query.select.start,
 			parsedTableData.query.select.stop,
@@ -135,7 +135,7 @@ const isValidIndex = indexObject =>
 
 const convertIndexes = indexes => {
 	const indexMap = Object.keys(indexes)
-		.filter(columnName => !dependencies.lodash.isEmpty(indexes[columnName]) && isValidIndex(indexes[columnName]))
+		.filter(columnName => !_.isEmpty(indexes[columnName]) && isValidIndex(indexes[columnName]))
 		.reduce((indexMap, columnName) => {
 			const indexObject = indexes[columnName];
 			const indexString = `fpp = ${indexObject['delta.bloomFilter.fpp']}, numItems = ${indexObject['delta.bloomFilter.numItems']}, maxExpectedFpp = ${indexObject['delta.bloomFilter.maxExpectedFpp']}, enabled = ${indexObject['delta.bloomFilter.enabled']}`;

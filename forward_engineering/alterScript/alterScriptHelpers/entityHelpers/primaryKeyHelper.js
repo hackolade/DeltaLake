@@ -1,10 +1,11 @@
+const _ = require('lodash');
 const { generateFullEntityName, getEntityNameFromCollection, prepareName } = require('../../../utils/general');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 
 /**
  * @return {(collection: Object, guid: string) => Object | undefined}
  * */
-const getPropertyNameByGuid = _ => (collection, guid) => {
+const getPropertyNameByGuid = (collection, guid) => {
 	const propertyInArray = _.toPairs(collection?.role?.properties)
 		.filter(([name, jsonSchema]) => jsonSchema.GUID === guid)
 		.map(([name]) => name);
@@ -17,14 +18,14 @@ const getPropertyNameByGuid = _ => (collection, guid) => {
 /**
  * @return {(collection: Object, guids: string[]) => Array<Object>}
  * */
-const getPropertiesNamesByGuids = _ => (collection, guids) => {
-	return guids.map(guid => getPropertyNameByGuid(_)(collection, guid)).filter(Boolean);
+const getPropertiesNamesByGuids = (collection, guids) => {
+	return guids.map(guid => getPropertyNameByGuid(collection, guid)).filter(Boolean);
 };
 
 /**
  * @return {(collection: Object) => boolean}
  * */
-const didCompositePkChange = _ => collection => {
+const didCompositePkChange = collection => {
 	const pkDto = collection?.role?.compMod?.primaryKey || {};
 	const newPrimaryKeys = pkDto.new || [];
 	const oldPrimaryKeys = pkDto.old || [];
@@ -34,17 +35,17 @@ const didCompositePkChange = _ => collection => {
 	if (newPrimaryKeys.length === 0 && oldPrimaryKeys.length === 0) {
 		return false;
 	}
-	const areKeyArraysEqual = _(oldPrimaryKeys).differenceWith(newPrimaryKeys, _.isEqual).isEmpty();
-	return !areKeyArraysEqual;
+
+	return !_.isEmpty(_.differenceWith(oldPrimaryKeys, newPrimaryKeys, _.isEqual));
 };
 
 /**
  * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getAddCompositePkScripts =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
-		const didPkChange = didCompositePkChange(_)(collection);
+		const didPkChange = didCompositePkChange(collection);
 		if (!didPkChange) {
 			return [];
 		}
@@ -57,7 +58,7 @@ const getAddCompositePkScripts =
 			.map(newPk => {
 				const compositePrimaryKey = newPk.compositePrimaryKey || [];
 				const guidsOfColumnsInPk = compositePrimaryKey.map(compositePkEntry => compositePkEntry.keyId);
-				const columnNamesForDDL = getPropertiesNamesByGuids(_)(collection, guidsOfColumnsInPk);
+				const columnNamesForDDL = getPropertiesNamesByGuids(collection, guidsOfColumnsInPk);
 				if (!columnNamesForDDL.length) {
 					return undefined;
 				}
@@ -78,9 +79,9 @@ const getAddCompositePkScripts =
  * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getDropCompositePkScripts =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
-		const didPkChange = didCompositePkChange(_)(collection);
+		const didPkChange = didCompositePkChange(collection);
 		if (!didPkChange) {
 			return [];
 		}
@@ -103,10 +104,10 @@ const getDropCompositePkScripts =
  * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getModifyCompositePkScripts =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
-		const dropCompositePkScripts = getDropCompositePkScripts(_, ddlProvider)({ collection, dbVersion });
-		const addCompositePkScripts = getAddCompositePkScripts(_, ddlProvider)({ collection, dbVersion });
+		const dropCompositePkScripts = getDropCompositePkScripts(ddlProvider)({ collection, dbVersion });
+		const addCompositePkScripts = getAddCompositePkScripts(ddlProvider)({ collection, dbVersion });
 
 		return [...dropCompositePkScripts, ...addCompositePkScripts];
 	};
@@ -115,7 +116,7 @@ const getModifyCompositePkScripts =
  * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getAddPkScripts =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
 		const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
 		const constraintName = getEntityNameFromCollection(collection) + '_pk';
@@ -146,7 +147,7 @@ const getAddPkScripts =
  * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getDropPkScripts =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
 		const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
 
@@ -176,10 +177,10 @@ const getDropPkScripts =
  * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getModifyPkScripts =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
-		const dropPkScripts = getDropPkScripts(_, ddlProvider)({ collection, dbVersion });
-		const addPkScripts = getAddPkScripts(_, ddlProvider)({ collection, dbVersion });
+		const dropPkScripts = getDropPkScripts(ddlProvider)({ collection, dbVersion });
+		const addPkScripts = getAddPkScripts(ddlProvider)({ collection, dbVersion });
 
 		return [...dropPkScripts, ...addPkScripts];
 	};
@@ -188,10 +189,10 @@ const getModifyPkScripts =
  * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getModifyPkConstraintsScripts =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
-		const modifyCompositePkScripts = getModifyCompositePkScripts(_, ddlProvider)({ collection, dbVersion });
-		const modifyPkScripts = getModifyPkScripts(_, ddlProvider)({ collection, dbVersion });
+		const modifyCompositePkScripts = getModifyCompositePkScripts(ddlProvider)({ collection, dbVersion });
+		const modifyPkScripts = getModifyPkScripts(ddlProvider)({ collection, dbVersion });
 
 		return [...modifyCompositePkScripts, ...modifyPkScripts];
 	};

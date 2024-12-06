@@ -1,5 +1,6 @@
 'use strict';
 
+const async = require('async');
 const logHelper = require('./logHelper');
 let connectionData = null;
 
@@ -14,7 +15,6 @@ const {
 	isTableDdl,
 	getTemplateDocByJsonSchema,
 } = require('./helpers/utils');
-const { setDependencies, dependencies } = require('./appDependencies');
 const fs = require('fs');
 const { getCleanedUrl } = require('../forward_engineering/utils/general');
 const { parseViewStatement } = require('./parseViewStatement');
@@ -35,8 +35,6 @@ module.exports = {
 
 	testConnection: async (connectionInfo, logger, cb, app) => {
 		try {
-			setDependencies(app);
-
 			connectionData = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
@@ -65,8 +63,6 @@ module.exports = {
 		logInfo('Retrieving databases information', connectionInfo, logger);
 
 		try {
-			setDependencies(app);
-
 			const connectionData = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
@@ -111,8 +107,6 @@ module.exports = {
 		logger.log('info', connectionInfo, 'Retrieving tables and views information', connectionInfo.hiddenKeys);
 
 		try {
-			setDependencies(app);
-
 			connectionData = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
@@ -174,10 +168,6 @@ module.exports = {
 		let modelData;
 
 		try {
-			setDependencies(app);
-
-			const async = dependencies.async;
-
 			modelData = await databricksHelper.getClusterStateInfo(connectionData, logger);
 			logger.log('info', modelData, 'Cluster state info');
 
@@ -452,7 +442,6 @@ module.exports = {
 	},
 	reFromFile: async (data, logger, callback, app) => {
 		try {
-			setDependencies(app);
 			const input = await handleFileData(data.filePath);
 			const { result, info, relationships } = parseDDLStatements(input);
 			callback(null, result, info, relationships, 'multipleSchema');

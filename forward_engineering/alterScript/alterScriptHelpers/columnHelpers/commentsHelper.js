@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { generateFullEntityName, prepareName, wrapInSingleQuotes } = require('../../../utils/general');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 
@@ -5,7 +6,7 @@ const { AlterScriptDto } = require('../../types/AlterScriptDto');
  * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getUpdatedCommentOnColumnScriptDtos =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
 		return _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
@@ -31,7 +32,7 @@ const getUpdatedCommentOnColumnScriptDtos =
  * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getDeletedCommentOnColumnScripts =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
 		return _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
@@ -55,10 +56,10 @@ const getDeletedCommentOnColumnScripts =
  * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getModifiedCommentOnColumnScriptDtos =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
-		const updatedCommentScripts = getUpdatedCommentOnColumnScriptDtos(_, ddlProvider)({ collection, dbVersion });
-		const deletedCommentScripts = getDeletedCommentOnColumnScripts(_, ddlProvider)({ collection, dbVersion });
+		const updatedCommentScripts = getUpdatedCommentOnColumnScriptDtos(ddlProvider)({ collection, dbVersion });
+		const deletedCommentScripts = getDeletedCommentOnColumnScripts(ddlProvider)({ collection, dbVersion });
 		return [...updatedCommentScripts, ...deletedCommentScripts];
 	};
 

@@ -1,8 +1,9 @@
 'use strict';
 
+const _ = require('lodash');
 const { prepareName, encodeStringLiteral, commentDeactivatedStatement } = require('../utils/general');
 
-const getColumnNames = _ => (collectionRefsDefinitionsMap, columns) => {
+const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
 	return _.uniq(
 		Object.entries(columns).map(([name, definition]) => {
 			const id = _.get(columns, [name, 'GUID']);
@@ -27,7 +28,7 @@ const getColumnNames = _ => (collectionRefsDefinitionsMap, columns) => {
 	).filter(_.identity);
 };
 
-const getFromStatement = _ => (collectionRefsDefinitionsMap, columns) => {
+const getFromStatement = (collectionRefsDefinitionsMap, columns) => {
 	const sourceCollections = _.uniq(
 		Object.keys(columns)
 			.map(name => {
@@ -106,9 +107,9 @@ function getDefaultColumnList(properties) {
 	return list ? `\n(${list}\n)` : '';
 }
 
-function getTableSelectStatement({ _, collectionRefsDefinitionsMap, columns }) {
-	const fromStatement = getFromStatement(_)(collectionRefsDefinitionsMap, columns);
-	const columnsNames = getColumnNames(_)(collectionRefsDefinitionsMap, columns);
+function getTableSelectStatement({ collectionRefsDefinitionsMap, columns }) {
+	const fromStatement = getFromStatement(collectionRefsDefinitionsMap, columns);
+	const columnsNames = getColumnNames(collectionRefsDefinitionsMap, columns);
 
 	if (fromStatement && columnsNames?.length) {
 		return `\nAS SELECT ${joinColumnNames(columnsNames)}\n${fromStatement}`;

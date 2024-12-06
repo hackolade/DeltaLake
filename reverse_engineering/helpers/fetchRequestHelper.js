@@ -1,7 +1,9 @@
 'use strict';
+
+const async = require('async');
+const _ = require('lodash');
 const nodeFetch = require('node-fetch');
 const AbortController = require('abort-controller');
-const { dependencies } = require('../appDependencies');
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 const { generateSamplesScript } = require('../../forward_engineering/sampleGeneration/sampleGenerationService');
@@ -91,8 +93,8 @@ const destroyActiveContext = () => {
  *     entityJsonSchema: Object,
  * ) => Promise<any>}
  * */
-const sendSampleBatch = _ => (connectionInfo, samples, entityJsonSchema) => {
-	const script = generateSamplesScript(_)(entityJsonSchema, samples);
+const sendSampleBatch = (connectionInfo, samples, entityJsonSchema) => {
+	const script = generateSamplesScript(entityJsonSchema, samples);
 	return executeCommand(connectionInfo, script, 'sql');
 };
 
@@ -120,7 +122,7 @@ const logProgressOfSendingSampleBatches = logger => (lineIndex, amountOfLines) =
 	logger.progress({ message });
 };
 
-const sendSampleBatches = (_, logger) => async connectionInfo => {
+const sendSampleBatches = logger => async connectionInfo => {
 	const { entitiesData } = connectionInfo;
 
 	for (const entityData of Object.values(entitiesData)) {
@@ -132,14 +134,14 @@ const sendSampleBatches = (_, logger) => async connectionInfo => {
 			batchSize: BATCH_SIZE,
 			parseLine: line => JSON.parse(line),
 			batchHandler: batch => {
-				return sendSampleBatch(_)(connectionInfo, batch, jsonSchema);
+				return sendSampleBatch(connectionInfo, batch, jsonSchema);
 			},
 			logProgress: logProgressOfSendingSampleBatches(logger),
 		});
 	}
 };
 
-const fetchApplyToInstance = _ => async (connectionInfo, logger) => {
+const fetchApplyToInstance = async (connectionInfo, logger) => {
 	const progress = message => {
 		logger.log('info', message, 'Applying to instance');
 		logger.progress({ message });
@@ -149,7 +151,7 @@ const fetchApplyToInstance = _ => async (connectionInfo, logger) => {
 
 	await Promise.race([
 		executeCommand(connectionInfo, connectionInfo.script, 'sql').then(() => {
-			return sendSampleBatches(_, logger)(connectionInfo);
+			return sendSampleBatches(logger)(connectionInfo);
 		}),
 		new Promise((_r, rej) =>
 			setTimeout(() => {
@@ -169,7 +171,7 @@ const getSampleDocSize = async ({ connectionInfo, dbName, tableName, recordSampl
 		`SELECT COUNT(*) FROM \`${dbName}\`.\`${tableName}\``,
 		'sql',
 	);
-	const count = dependencies.lodash.get(countResult, '[0][0]', 0);
+	const count = _.get(countResult, '[0][0]', 0);
 	const limit = Math.ceil((count * recordSamplingSettings.relative.value) / 100);
 
 	logger.log('info', { message: `Found ${count} records`, dbName, tableName }, 'Getting documents');
@@ -280,12 +282,12 @@ const useCatalog = async connectionInfo => {
 
 const fetchClusterCatalogNames = async connectionInfo => {
 	const result = await executeCommand(connectionInfo, 'SHOW CATALOGS', 'sql');
-	return dependencies.lodash.flattenDeep(result);
+	return _.flattenDeep(result);
 };
 
 const fetchClusterDatabasesNames = async connectionInfo => {
 	const result = await executeCommand(connectionInfo, 'SHOW DATABASES', 'sql');
-	return dependencies.lodash.flattenDeep(result);
+	return _.flattenDeep(result);
 };
 
 const fetchDatabaseViewsNames = (dbName, connectionInfo) =>
@@ -304,7 +306,6 @@ const fetchClusterData = async (
 	isManagedLocationSupports,
 	logger,
 ) => {
-	const async = dependencies.async;
 	const databasesPropertiesResult = await async.mapLimit(databasesNames, 40, async dbName => {
 		logger.log('info', '', `Start describe schema: ${dbName} `);
 		const dbInfoResult = await executeCommand(connectionInfo, `DESCRIBE DATABASE EXTENDED \`${dbName}\``, 'sql');
@@ -337,8 +338,8 @@ const fetchClusterData = async (
 		(clusterData, dbName) => ({
 			...clusterData,
 			[dbName]: {
-				dbTables: dependencies.lodash.get(databasesTablesInfo, dbName, {}),
-				dbProperties: dependencies.lodash.get(databasesProperties, dbName, {}),
+				dbTables: _.get(databasesTablesInfo, dbName, {}),
+				dbProperties: _.get(databasesProperties, dbName, {}),
 			},
 		}),
 		{},
@@ -444,7 +445,7 @@ const getFilteredEntities = (tableNames, parsedData) => {
 };
 
 const mergeChunksOfData = (leftObj, rightObj) => {
-	return dependencies.lodash.mergeWith(leftObj, rightObj, (objValue, srcValue) => {
+	return _.mergeWith(leftObj, rightObj, (objValue, srcValue) => {
 		if (Array.isArray(objValue) && Array.isArray(srcValue)) {
 			return objValue.concat(srcValue);
 		}
@@ -454,7 +455,7 @@ const mergeChunksOfData = (leftObj, rightObj) => {
 const fetchCreateStatementRequest = async (entityName, connectionInfo, logger) => {
 	try {
 		const result = await executeCommand(connectionInfo, `SHOW CREATE TABLE ${entityName};`, 'sql');
-		return dependencies.lodash.get(result, '[0][0]', '');
+		return _.get(result, '[0][0]', '');
 	} catch (error) {
 		logger.log('error', error, `Error during retrieve create table DDL statement. Table name: ${entityName}`);
 		return '';
@@ -662,7 +663,6 @@ const getCommandExecutionResult = (query, options, commandOptions) => {
 };
 
 const convertDbPropertyValue = value => {
-	const _ = dependencies.lodash;
 	const isNumber = value => !_.isNaN(_.toNumber(value));
 	const isBoolean = value => _.toLower(value) === 'false' || _.toLower(value) === 'true';
 	const convertToBoolean = value => {
@@ -684,7 +684,6 @@ const convertDbPropertyValue = value => {
 };
 
 const splitStatementsByBrackets = statements => {
-	const _ = dependencies.lodash;
 	let result = [];
 	let startIndex = 0;
 	let skippedBrackets = 0;

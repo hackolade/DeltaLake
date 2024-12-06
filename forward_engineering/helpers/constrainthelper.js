@@ -9,7 +9,7 @@ const getPrimaryKeyOptions = (entityJsonSchema, keysNames) => {
 	return entityJsonSchema.properties?.[primaryKeyFieldName]?.primaryKeyOptions;
 };
 
-const getPrimaryKeyStatement = _ => (entityJsonSchema, keysNames, deactivatedColumnNames, isParentItemActivated) => {
+const getPrimaryKeyStatement = (entityJsonSchema, keysNames, deactivatedColumnNames, isParentItemActivated) => {
 	const getStatement = ({ keys, constraintName, notEnforced, deferrable, initiallyDeferrable, noRely }) => {
 		let statement = '';
 		statement += constraintName ? `CONSTRAINT ${constraintName} ` : '';
@@ -36,7 +36,7 @@ const getPrimaryKeyStatement = _ => (entityJsonSchema, keysNames, deactivatedCol
 		return getStatement({ ...options, keys: keysNames.join(', ') });
 	}
 
-	const { isAllKeysDeactivated, keysString } = commentDeactivatedInlineKeys(_)(keysNames, deactivatedColumnNames);
+	const { isAllKeysDeactivated, keysString } = commentDeactivatedInlineKeys(keysNames, deactivatedColumnNames);
 	if (isAllKeysDeactivated) {
 		return '-- ' + getStatement({ ...options, keys: keysString });
 	}

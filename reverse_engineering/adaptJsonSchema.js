@@ -1,16 +1,14 @@
-const { setDependencies } = require('./appDependencies');
+const _ = require('lodash');
 const mapJsonSchema = require('./thriftService/mapJsonSchema');
 
 const adaptJsonSchema = (data, logger, callback, app) => {
 	try {
-		setDependencies(app);
-		const _ = app.require('lodash');
 		const jsonSchema = JSON.parse(data.jsonSchema);
-		const result = mapJsonSchema(_)(jsonSchema, {}, (schema, parentJsonSchema, key) => {
+		const result = mapJsonSchema(jsonSchema, {}, (schema, parentJsonSchema, key) => {
 			if (schema.type === 'array' && !schema.subtype) {
 				return {
 					...schema,
-					subtype: getArraySubtypeByChildren(_, schema),
+					subtype: getArraySubtypeByChildren(schema),
 				};
 			} else {
 				return schema;
@@ -31,7 +29,7 @@ const adaptJsonSchema = (data, logger, callback, app) => {
 	}
 };
 
-const getArraySubtypeByChildren = (_, arraySchema) => {
+const getArraySubtypeByChildren = arraySchema => {
 	const subtype = type => `array<${type}>`;
 
 	if (!arraySchema.items) {

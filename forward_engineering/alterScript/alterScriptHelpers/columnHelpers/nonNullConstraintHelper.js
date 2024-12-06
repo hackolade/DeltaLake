@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { generateFullEntityName, prepareName } = require('../../../utils/general');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 
@@ -5,7 +6,7 @@ const { AlterScriptDto } = require('../../types/AlterScriptDto');
  * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getModifyNonNullColumnsScriptDtos =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
 		const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
 

@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { getAlterScriptDtos, joinAlterScriptDtosIntoAlterScript } = require('./alterScriptFromDeltaHelper');
 const { AlterScriptDto } = require('./types/AlterScriptDto');
 const { CoreData, App } = require('../types/coreApplicationTypes');
@@ -64,7 +65,6 @@ const doesEntityLevelAlterScriptContainDropStatements = (data, app) => entityLev
 const getContainerLevelAlterScriptDtos =
 	(data, app) =>
 	({ internalDefinitions, externalDefinitions, modelDefinitions, entitiesJsonSchema }) => {
-		const _ = app.require('lodash');
 		const deltaModelSchema = _.first(Object.values(entitiesJsonSchema)) || {};
 		const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
 		return getAlterScriptDtos(deltaModelSchema, definitions, data, app);
