@@ -1276,6 +1276,7 @@ defaultVal
     : constant
     | functionStatement
     | castExpression
+    | identifier
     ;
 
 tableConstraintType
