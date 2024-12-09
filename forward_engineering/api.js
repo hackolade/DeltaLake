@@ -214,7 +214,7 @@ const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
 	const sampleScripts = [];
 
 	for (const entityData of Object.values(parsedData.entitiesData || {})) {
-		const samples = await generateSamplesForEntity()(entityData);
+		const samples = await generateSamplesForEntity(entityData);
 		sampleScripts.push(...samples);
 	}
 

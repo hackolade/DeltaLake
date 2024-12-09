@@ -14,7 +14,7 @@ const getIndexStatement = ({ tableName, dbName, columns, options, isActivated })
 
 const getIndexKeys = (keys, jsonSchema, definitions) => {
 	if (!Array.isArray(keys)) {
-		return '';
+		return { isIndexActivated: false, columns: '' };
 	}
 	const paths = schemaHelper.getPathsByIds(
 		keys.map(key => key.keyId),
