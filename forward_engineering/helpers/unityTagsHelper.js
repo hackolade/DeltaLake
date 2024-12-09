@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 /**
  * @typedef {Object} UnityTag
  * @property {string} id
@@ -70,7 +72,7 @@ const getEntityTagsStatement = (entity, fullTableName) => {
 	return `ALTER TABLE ${fullTableName} SET TAGS (${tags});`;
 };
 
-const getColumnTagsStatement = (_, columns, fullTableName) => {
+const getColumnTagsStatement = (columns, fullTableName) => {
 	return _.toPairs(columns)
 		.map(([colName, schema]) => {
 			if (!schema.unityColumnTags?.length) {

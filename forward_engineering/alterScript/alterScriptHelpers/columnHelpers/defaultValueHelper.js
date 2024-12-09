@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 const { generateFullEntityName, prepareName } = require('../../../utils/general');
 
@@ -5,7 +6,7 @@ const { generateFullEntityName, prepareName } = require('../../../utils/general'
  * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getUpdatedDefaultColumnValueScriptDtos =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
 		return _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
@@ -31,7 +32,7 @@ const getUpdatedDefaultColumnValueScriptDtos =
  * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getDeletedDefaultColumnValueScriptDtos =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
 		return _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
@@ -55,16 +56,16 @@ const getDeletedDefaultColumnValueScriptDtos =
  * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getModifiedDefaultColumnValueScriptDtos =
-	(_, ddlProvider) =>
+	ddlProvider =>
 	({ collection, dbVersion }) => {
-		const updatedDefaultValuesScriptDtos = getUpdatedDefaultColumnValueScriptDtos(
-			_,
-			ddlProvider,
-		)({ collection, dbVersion });
-		const dropDefaultValuesScriptDtos = getDeletedDefaultColumnValueScriptDtos(
-			_,
-			ddlProvider,
-		)({ collection, dbVersion });
+		const updatedDefaultValuesScriptDtos = getUpdatedDefaultColumnValueScriptDtos(ddlProvider)({
+			collection,
+			dbVersion,
+		});
+		const dropDefaultValuesScriptDtos = getDeletedDefaultColumnValueScriptDtos(ddlProvider)({
+			collection,
+			dbVersion,
+		});
 		return [...updatedDefaultValuesScriptDtos, ...dropDefaultValuesScriptDtos];
 	};
 

@@ -1,4 +1,4 @@
-const { dependencies } = require('../appDependencies');
+const _ = require('lodash');
 
 const cleanContent = str => {
 	const start = str.indexOf('<');
@@ -178,7 +178,7 @@ const parseArray = ([content], sample = []) => {
 const parsePrimitive = ([type]) => {
 	const preparedType = type.trim();
 	const hiveType = preparedType.replace(/\(.*?\)$/, '');
-	const modifiers = dependencies.lodash.get(preparedType.match(/\((.*?)\)$/), '[1]', '').split(',');
+	const modifiers = _.get(preparedType.match(/\((.*?)\)$/), '[1]', '').split(',');
 
 	switch (hiveType) {
 		case 'string':
@@ -242,7 +242,7 @@ const parseUnion = (types, sample) => {
 
 	if (!complexTypes) {
 		return {
-			type: dependencies.lodash.uniq(jsonSchemas.map(schema => schema.type)),
+			type: _.uniq(jsonSchemas.map(schema => schema.type)),
 		};
 	}
 

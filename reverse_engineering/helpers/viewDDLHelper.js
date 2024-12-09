@@ -1,13 +1,12 @@
+const _ = require('lodash');
+const antlr4 = require('antlr4');
 const SqlBaseLexer = require('../parser/SQLBase/SqlBaseLexer');
 const SqlBaseParser = require('../parser/SQLBase/SqlBaseParser');
 const SqlBaseToCollectionVisitor = require('../sqlBaseToCollectionsVisitor');
 const ExprErrorListener = require('../antlrErrorListener');
-const antlr4 = require('antlr4');
-const { dependencies } = require('../appDependencies');
 const schemaHelper = require('./schemaHelper');
 
 const getViewDataFromDDl = statement => {
-	const _ = dependencies.lodash;
 	const chars = new antlr4.InputStream(statement);
 	const lexer = new SqlBaseLexer.SqlBaseLexer(chars);
 	lexer.removeErrorListeners();

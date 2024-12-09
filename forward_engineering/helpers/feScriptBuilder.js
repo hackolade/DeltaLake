@@ -27,6 +27,7 @@
  * }} ContainerLevelEntityDto
  * */
 
+const _ = require('lodash');
 const { getDatabaseStatement, getUseCatalogStatement } = require('./databaseHelper');
 const { getCreateRelationshipScripts } = require('./relationshipHelper');
 const { getTableStatement } = require('./tableHelper');
@@ -86,7 +87,6 @@ const buildEntityLevelFEScript =
 		entityData,
 		modelData,
 	}) => {
-		const _ = app.require('lodash');
 		const dbVersion = data.modelData[0].dbVersion;
 		const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
 		const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
@@ -103,7 +103,7 @@ const buildEntityLevelFEScript =
 			null,
 			dbVersion,
 		);
-		const indexScript = getIndexes(_)(containerData, entityData, jsonSchema, definitions);
+		const indexScript = getIndexes(containerData, entityData, jsonSchema, definitions);
 
 		let relationshipScripts = [];
 		if (arePkFkConstraintsAvailable) {
@@ -128,10 +128,9 @@ const buildEntityLevelFEScript =
 
 /**
  * @param data {CoreData}
- * @param _ {any}
  * @return {Array<ContainerLevelEntityDto>}
  * */
-const getContainerLevelViewScriptDtos = (data, provider, _) => {
+const getContainerLevelViewScriptDtos = (data, provider) => {
 	return data.views
 		.map(viewId => {
 			const viewSchema = JSON.parse(data.jsonSchema[viewId] || '{}');
@@ -161,27 +160,30 @@ const getContainerLevelViewScriptDtos = (data, provider, _) => {
  *      entityId: string,
  * }) => Promise<string>}
  */
-const getSampleScriptForContainerLevelScript =
-	_ =>
-	async ({ data, includeSamplesInEntityScripts, entitiesJsonSchema, entityId }) => {
-		const sampleScripts = [];
-		if (includeSamplesInEntityScripts) {
-			const { jsonData, entitiesData } = getDataForSampleGeneration(data, entitiesJsonSchema);
-			const entityJsonSchema = entitiesJsonSchema[entityId] || {};
-			if (jsonData) {
-				const demoSampleJsonData = jsonData[entityId] || {};
-				const demoSample = generateSamplesScript(_)(entityJsonSchema, [demoSampleJsonData]);
-				sampleScripts.push(demoSample);
-			}
-			if (entitiesData) {
-				const entityData = entitiesData[entityId];
-				const samples = await generateSamplesForEntity(_)(entityData);
-				sampleScripts.push(...samples);
-			}
+const getSampleScriptForContainerLevelScript = async ({
+	data,
+	includeSamplesInEntityScripts,
+	entitiesJsonSchema,
+	entityId,
+}) => {
+	const sampleScripts = [];
+	if (includeSamplesInEntityScripts) {
+		const { jsonData, entitiesData } = getDataForSampleGeneration(data, entitiesJsonSchema);
+		const entityJsonSchema = entitiesJsonSchema[entityId] || {};
+		if (jsonData) {
+			const demoSampleJsonData = jsonData[entityId] || {};
+			const demoSample = generateSamplesScript(entityJsonSchema, [demoSampleJsonData]);
+			sampleScripts.push(demoSample);
 		}
+		if (entitiesData) {
+			const entityData = entitiesData[entityId];
+			const samples = await generateSamplesForEntity(entityData);
+			sampleScripts.push(...samples);
+		}
+	}
 
-		return sampleScripts.join('\n\n');
-	};
+	return sampleScripts.join('\n\n');
+};
 
 /**
  * @param data {CoreData}
@@ -202,7 +204,6 @@ const getContainerLevelEntitiesScriptDtos =
 		includeSamplesInEntityScripts,
 		relatedSchemas,
 	}) => {
-		const _ = app.require('lodash');
 		const scriptDtos = [];
 
 		for (const entityId of data.entities) {
@@ -222,7 +223,7 @@ const getContainerLevelEntitiesScriptDtos =
 				dbVersion,
 			);
 
-			const indexScript = getIndexes(_)(...createTableStatementArgs);
+			const indexScript = getIndexes(...createTableStatementArgs);
 
 			let relationshipScripts = [];
 			if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
@@ -236,7 +237,7 @@ const getContainerLevelEntitiesScriptDtos =
 				});
 			}
 
-			const sampleScript = await getSampleScriptForContainerLevelScript(_)({
+			const sampleScript = await getSampleScriptForContainerLevelScript({
 				data,
 				entitiesJsonSchema,
 				entityId,
@@ -289,14 +290,13 @@ const buildContainerLevelFEScriptDto =
 		includeSamplesInEntityScripts,
 		relatedSchemas,
 	}) => {
-		const _ = app.require('lodash');
 		const dbVersion = data.modelData[0].dbVersion;
 		const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
 		const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
 
 		const provider = require('../ddlProvider/ddlProvider')(app);
 		const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
-		const viewsScriptDtos = getContainerLevelViewScriptDtos(data, provider, _);
+		const viewsScriptDtos = getContainerLevelViewScriptDtos(data, provider);
 		const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, dbVersion);
 		const entityScriptDtos = await getContainerLevelEntitiesScriptDtos(
 			app,
