@@ -1,7 +1,7 @@
-const { dependencies } = require('../appDependencies');
+const _ = require('lodash');
 
 const splitTableAndViewNames = names => {
-	const namesByCategory = dependencies.lodash.partition(names, isView);
+	const namesByCategory = _.partition(names, isView);
 
 	return { views: namesByCategory[0].map(name => name.slice(0, -4)), tables: namesByCategory[1] };
 };

@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const { getDatabaseStatement, getDatabaseAlterStatement, getBucketKeyword } = require('../../helpers/databaseHelper');
 const {
 	getEntityData,
@@ -82,11 +83,11 @@ const extractNamesFromCompMod = compMod => {
 /**
  * @return {(container: Object) => Array<AlterScriptDto>}
  * */
-const getModifyContainerScriptDtos = (provider, _, isUnityCatalogSupports, dbVersion) => container => {
+const getModifyContainerScriptDtos = (provider, isUnityCatalogSupports, dbVersion) => container => {
 	const compMod = _.get(container, 'role.compMod', {});
 	const names = extractNamesFromCompMod(compMod);
 
-	const didPropertiesChange = getIsChangeProperties(_)({ ...compMod, name: names }, otherContainerProperties);
+	const didPropertiesChange = getIsChangeProperties({ ...compMod, name: names }, otherContainerProperties);
 	const containerData = { ...getContainerData(compMod), name: names.new };
 	const catalogName = isSupportUnityCatalog(dbVersion) ? prepareName(compMod?.catalogName?.new) : undefined;
 	const databaseName = getDatabaseName({ role: { ...containerData, name: names.old } });

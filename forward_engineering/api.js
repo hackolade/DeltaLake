@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const { getDatabaseStatement, getUseCatalogStatement } = require('./helpers/databaseHelper');
 const { getCleanedUrl, buildScript, isSupportUnityCatalog, getDBVersionNumber } = require('./utils/general');
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
@@ -164,7 +165,7 @@ const getScriptAndSampleResponse = (script, sample) => {
  * */
 const getContainerScriptWithSeparateBuckets = async (app, data) => {
 	const parsedData = parseDataForContainerLevelScript(data);
-	const sampleGenerationOptions = getSampleGenerationOptions(app, data);
+	const sampleGenerationOptions = getSampleGenerationOptions(data);
 
 	const scriptData = await buildContainerLevelFEScriptDto(
 		data,
@@ -189,9 +190,8 @@ const getContainerScriptWithSeparateBuckets = async (app, data) => {
  * @return {Promise<string | Array<{ title: string, script: string, mode: string }>>}
  * */
 const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
-	const _ = app.require('lodash');
 	const parsedData = parseDataForContainerLevelScript(data);
-	const sampleGenerationOptions = getSampleGenerationOptions(app, data);
+	const sampleGenerationOptions = getSampleGenerationOptions(data);
 	const scriptData = await buildContainerLevelFEScriptDto(
 		data,
 		app,
@@ -206,7 +206,7 @@ const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
 	}
 
 	if (parsedData.jsonData) {
-		const demoSample = generateSampleForDemonstration(app, parsedData, 'container');
+		const demoSample = generateSampleForDemonstration(parsedData, 'container');
 
 		return getScriptAndSampleResponse(scripts, demoSample);
 	}
@@ -214,7 +214,7 @@ const getContainerScriptWithNotSeparateBuckets = async (app, data) => {
 	const sampleScripts = [];
 
 	for (const entityData of Object.values(parsedData.entitiesData || {})) {
-		const samples = await generateSamplesForEntity(_)(entityData);
+		const samples = await generateSamplesForEntity(entityData);
 		sampleScripts.push(...samples);
 	}
 
@@ -237,11 +237,11 @@ module.exports = {
 				callback(null, scripts);
 			} else {
 				const scripts = buildEntityLevelFEScript(data, app)(parsedData);
-				const sampleGenerationOptions = getSampleGenerationOptions(app, data);
+				const sampleGenerationOptions = getSampleGenerationOptions(data);
 				if (!sampleGenerationOptions.isSampleGenerationRequired) {
 					return callback(null, scripts);
 				}
-				const demoSample = generateSampleForDemonstration(app, parsedData, 'entity');
+				const demoSample = generateSampleForDemonstration(parsedData, 'entity');
 				return callback(null, getScriptAndSampleResponse(scripts, demoSample));
 			}
 		} catch (e) {
@@ -325,9 +325,8 @@ module.exports = {
 			entitiesData: data.entitiesData,
 		};
 
-		const _ = app.require('lodash');
 		try {
-			await fetchRequestHelper.fetchApplyToInstance(_)(connectionData, logger);
+			await fetchRequestHelper.fetchApplyToInstance(connectionData, logger);
 			cb();
 		} catch (err) {
 			logger.log('error', { message: err.message, stack: err.stack, error: err }, 'Apply to instance');
