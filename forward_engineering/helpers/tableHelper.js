@@ -551,7 +551,7 @@ const getTablePropertiesClause = tableProperties => {
 };
 
 const checkTablePropertiesDefined = tableProperties => {
-	return Boolean(tableProperties.length && tableProperties.some(property => property.propertyKey));
+	return Boolean(tableProperties?.length && tableProperties?.some(property => property.propertyKey));
 };
 
 const hydrateTableProperties = ({ new: newItems, old: oldItems }, name) => {
