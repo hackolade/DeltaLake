@@ -164,7 +164,7 @@ const getCreateUsingStatement = ({
 		numBuckets && clusteredKeys,
 		`INTO ${numBuckets} BUCKETS`,
 	)(location, `LOCATION '${location}'`)(comment, `COMMENT '${encodeStringLiteral(comment)}'`)(
-		tableProperties,
+		checkTablePropertiesDefined(tableProperties),
 		`TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`,
 	)(tableOptions, `OPTIONS ${tableOptions}`)(selectStatement, `AS ${selectStatement}`)(true, ';')();
 };
@@ -199,7 +199,7 @@ const getCreateHiveStatement = ({
 	)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(storedAsStatement, storedAsStatement)(
 		location,
 		`LOCATION '${location}'`,
-	)(tableProperties, `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
+	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
 		tableOptions,
 		`OPTIONS ${tableOptions}`,
 	)(selectStatement, `AS ${selectStatement}`)(true, ';')();
@@ -230,7 +230,7 @@ const getCreateLikeStatement = ({
 	)(true, ')')(using, `${getUsing(using)}`)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(
 		storedAsStatement,
 		storedAsStatement,
-	)(tableProperties, `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
+	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
 		tableOptions,
 		`OPTIONS ${tableOptions}`,
 	)(location, `LOCATION '${location}'`)(true, ';')();
@@ -550,6 +550,10 @@ const getTablePropertiesClause = tableProperties => {
 	return tablePropertyStatements.join(', ');
 };
 
+const checkTablePropertiesDefined = tableProperties => {
+	return Boolean(tableProperties.length && tableProperties.some(property => property.propertyKey));
+};
+
 const hydrateTableProperties = ({ new: newItems, old: oldItems }, name) => {
 	const preparePropertiesName = properties => _.map(properties, ({ propertyKey }) => propertyKey).join(', ');
 	const { add, drop } = getDifferentItems(newItems, oldItems);
@@ -580,4 +584,5 @@ module.exports = {
 	getTableStatement,
 	getTablePropertiesClause,
 	hydrateTableProperties,
+	checkTablePropertiesDefined,
 };
