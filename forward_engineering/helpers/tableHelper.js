@@ -537,16 +537,18 @@ const getCorrectUsing = using => {
  * */
 const getTablePropertiesClause = tableProperties => {
 	const isText = _.overEvery([value => _.isNaN(_.toNumber(value)), value => value !== 'true' && value !== 'false']);
-	const tablePropertyStatements = (tableProperties || []).map(({ propertyKey, propertyValue = undefined }) => {
-		let value = propertyValue;
-		if (value === undefined) {
-			return propertyKey;
-		}
-		if (isText(value)) {
-			value = `'${adjustPropertyValue(value)}'`;
-		}
-		return `${adjustPropertyKey(propertyKey)} = ${value}`;
-	});
+	const tablePropertyStatements = (tableProperties || [])
+		.filter(({ propertyKey }) => Boolean(adjustPropertyKey(propertyKey)))
+		.map(({ propertyKey, propertyValue = undefined }) => {
+			let value = propertyValue;
+			if (value === undefined) {
+				return propertyKey;
+			}
+			if (isText(value)) {
+				value = `'${adjustPropertyValue(value)}'`;
+			}
+			return `${adjustPropertyKey(propertyKey)} = ${value}`;
+		});
 	return tablePropertyStatements.join(', ');
 };
 
