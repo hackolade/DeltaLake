@@ -11,7 +11,7 @@ const {
 	wrapInBrackets,
 } = require('../utils/general');
 const { getViewTagsStatement } = require('../helpers/unityTagsHelper');
-const { getTablePropertiesClause } = require('../helpers/tableHelper');
+const { getTablePropertiesClause, checkTablePropertiesDefined } = require('../helpers/tableHelper');
 const viewHelper = require('../helpers/viewHelper');
 
 module.exports = app => {
@@ -57,7 +57,7 @@ module.exports = app => {
 					: viewHelper.getDefaultColumnList(columns),
 				schemaBinding: '',
 				comment: viewHelper.getCommentStatement(schema.description),
-				tablePropertyStatements: tableProperties.length
+				tablePropertyStatements: checkTablePropertiesDefined(tableProperties)
 					? `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`
 					: '',
 				query: schema.selectStatement
