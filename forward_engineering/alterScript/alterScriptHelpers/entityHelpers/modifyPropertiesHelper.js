@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const { DiffMap } = require('../../types/DiffMap');
-const { getTablePropertiesClause } = require('../../../helpers/tableHelper');
+const { getTablePropertiesClause, getDeleteTablePropertiesClause } = require('../../../helpers/tableHelper');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 const { generateFullEntityName } = require('../../../utils/general');
 
@@ -54,7 +54,7 @@ const getDeleteTablePropertyScriptDto = ddlProvider => (properties, fullCollecti
 		...prop,
 		propertyValue: undefined,
 	}));
-	const dropPropertiesDdlString = getTablePropertiesClause(propertiesWithNoValues);
+	const dropPropertiesDdlString = getDeleteTablePropertiesClause(propertiesWithNoValues);
 	const ddlConfig = {
 		name: fullCollectionName,
 		properties: dropPropertiesDdlString,

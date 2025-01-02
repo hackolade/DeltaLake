@@ -549,6 +549,14 @@ const getTablePropertiesClause = tableProperties => {
 	return tablePropertyStatements.join(', ');
 };
 
+const getDeleteTablePropertiesClause = tableProperties => {
+	const tablePropertyStatements = (tableProperties || [])
+		.filter(({ propertyKey }) => propertyKey?.trim?.())
+		.map(({ propertyKey }) => adjustPropertyKey(propertyKey));
+
+	return tablePropertyStatements.join(', ');
+};
+
 const checkTablePropertiesDefined = tableProperties => {
 	return Boolean(
 		tableProperties?.length &&
@@ -587,4 +595,5 @@ module.exports = {
 	getTablePropertiesClause,
 	hydrateTableProperties,
 	checkTablePropertiesDefined,
+	getDeleteTablePropertiesClause,
 };
