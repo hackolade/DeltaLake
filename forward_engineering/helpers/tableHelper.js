@@ -538,9 +538,12 @@ const getCorrectUsing = using => {
 const getTablePropertiesClause = tableProperties => {
 	const isText = _.overEvery([value => _.isNaN(_.toNumber(value)), value => value !== 'true' && value !== 'false']);
 	const tablePropertyStatements = (tableProperties || [])
-		.filter(({ propertyKey, propertyValue }) => propertyKey?.trim?.() && propertyValue?.trim?.())
-		.map(({ propertyKey, propertyValue }) => {
+		.filter(({ propertyKey }) => Boolean(adjustPropertyKey(propertyKey)))
+		.map(({ propertyKey, propertyValue = undefined }) => {
 			let value = propertyValue;
+			if (value === undefined) {
+				return propertyKey;
+			}
 			if (isText(value)) {
 				value = `'${adjustPropertyValue(value)}'`;
 			}
@@ -550,10 +553,7 @@ const getTablePropertiesClause = tableProperties => {
 };
 
 const checkTablePropertiesDefined = tableProperties => {
-	return Boolean(
-		tableProperties?.length &&
-			tableProperties?.some(property => property.propertyKey?.trim?.() && property.propertyValue?.trim?.()),
-	);
+	return Boolean(tableProperties?.length && tableProperties?.some(property => property.propertyKey));
 };
 
 const hydrateTableProperties = ({ new: newItems, old: oldItems }, name) => {
