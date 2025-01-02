@@ -538,12 +538,9 @@ const getCorrectUsing = using => {
 const getTablePropertiesClause = tableProperties => {
 	const isText = _.overEvery([value => _.isNaN(_.toNumber(value)), value => value !== 'true' && value !== 'false']);
 	const tablePropertyStatements = (tableProperties || [])
-		.filter(({ propertyKey }) => Boolean(adjustPropertyKey(propertyKey)))
-		.map(({ propertyKey, propertyValue = undefined }) => {
+		.filter(({ propertyKey, propertyValue }) => propertyKey?.trim?.() && propertyValue?.trim?.())
+		.map(({ propertyKey, propertyValue }) => {
 			let value = propertyValue;
-			if (value === undefined) {
-				return propertyKey;
-			}
 			if (isText(value)) {
 				value = `'${adjustPropertyValue(value)}'`;
 			}
@@ -552,8 +549,19 @@ const getTablePropertiesClause = tableProperties => {
 	return tablePropertyStatements.join(', ');
 };
 
+const getDeleteTablePropertiesClause = tableProperties => {
+	const tablePropertyStatements = (tableProperties || [])
+		.filter(({ propertyKey }) => propertyKey?.trim?.())
+		.map(({ propertyKey }) => adjustPropertyKey(propertyKey));
+
+	return tablePropertyStatements.join(', ');
+};
+
 const checkTablePropertiesDefined = tableProperties => {
-	return Boolean(tableProperties?.length && tableProperties?.some(property => property.propertyKey));
+	return Boolean(
+		tableProperties?.length &&
+			tableProperties?.some(property => property.propertyKey?.trim?.() && property.propertyValue?.trim?.()),
+	);
 };
 
 const hydrateTableProperties = ({ new: newItems, old: oldItems }, name) => {
@@ -587,4 +595,5 @@ module.exports = {
 	getTablePropertiesClause,
 	hydrateTableProperties,
 	checkTablePropertiesDefined,
+	getDeleteTablePropertiesClause,
 };
