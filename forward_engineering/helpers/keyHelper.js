@@ -25,9 +25,7 @@ const getKeyNames = (tableData, jsonSchema, definitions) => {
 	);
 
 	const keysPaths = jsonSchemaHelper.getPathsByIds(ids, [jsonSchema, ...definitions]);
-	const primaryKeysPath = jsonSchemaHelper
-		.getPrimaryKeys(jsonSchema)
-		.filter(pkPath => !keysPaths.find(path => path[path.length - 1] === pkPath[pkPath.length - 1]));
+	const primaryKeysPath = jsonSchemaHelper.getPrimaryKeys(jsonSchema);
 	const idToNameHashTable = jsonSchemaHelper.getIdToNameHashTable([jsonSchema, ...definitions]);
 	const getNameByPath = jsonSchemaHelper.getNameByPath.bind(null, idToNameHashTable);
 
