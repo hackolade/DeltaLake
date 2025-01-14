@@ -120,6 +120,9 @@ const getCreateStatement = ({
 		foreignKeyStatement,
 		comment,
 		partitionedByKeys,
+		clusteredKeys,
+		sortedKeys,
+		numBuckets,
 		rowFormatStatement,
 		storedAsStatement,
 		location,
@@ -158,15 +161,18 @@ const getCreateUsingStatement = ({
 		rowFormatStatement,
 		`ROW FORMAT ${rowFormatStatement}`,
 	)(storedAsStatement, storedAsStatement)(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)(
-		clusteredKeys,
-		`CLUSTERED BY (${clusteredKeys})`,
-	)(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)(
-		numBuckets && clusteredKeys,
-		`INTO ${numBuckets} BUCKETS`,
-	)(location, `LOCATION '${location}'`)(comment, `COMMENT '${encodeStringLiteral(comment)}'`)(
-		checkTablePropertiesDefined(tableProperties),
-		`TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`,
-	)(tableOptions, `OPTIONS ${tableOptions}`)(selectStatement, `AS ${selectStatement}`)(true, ';')();
+		!numBuckets && clusteredKeys,
+		`CLUSTER BY (${clusteredKeys})`,
+	)(numBuckets && clusteredKeys, `CLUSTERED BY (${clusteredKeys})`)(
+		sortedKeys && clusteredKeys,
+		`SORTED BY (${sortedKeys})`,
+	)(numBuckets && clusteredKeys, `INTO ${numBuckets} BUCKETS`)(location, `LOCATION '${location}'`)(
+		comment,
+		`COMMENT '${encodeStringLiteral(comment)}'`,
+	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
+		tableOptions,
+		`OPTIONS ${tableOptions}`,
+	)(selectStatement, `AS ${selectStatement}`)(true, ';')();
 };
 
 const getCreateHiveStatement = ({
@@ -177,6 +183,9 @@ const getCreateHiveStatement = ({
 	foreignKeyStatement,
 	comment,
 	partitionedByKeys,
+	clusteredKeys,
+	sortedKeys,
+	numBuckets,
 	rowFormatStatement,
 	storedAsStatement,
 	location,
@@ -196,13 +205,19 @@ const getCreateHiveStatement = ({
 	)(isAddBrackets, ')')(comment, `COMMENT '${encodeStringLiteral(comment)}'`)(
 		partitionedByKeys,
 		`PARTITIONED BY (${partitionedByKeys})`,
-	)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(storedAsStatement, storedAsStatement)(
-		location,
-		`LOCATION '${location}'`,
-	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
-		tableOptions,
-		`OPTIONS ${tableOptions}`,
-	)(selectStatement, `AS ${selectStatement}`)(true, ';')();
+	)(!numBuckets && clusteredKeys, `CLUSTER BY (${clusteredKeys})`)(
+		numBuckets && clusteredKeys,
+		`CLUSTERED BY (${clusteredKeys})`,
+	)(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)(
+		numBuckets && clusteredKeys,
+		`INTO ${numBuckets} BUCKETS`,
+	)(location, `LOCATION '${location}'`)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(
+		storedAsStatement,
+		storedAsStatement,
+	)(location, `LOCATION '${location}'`)(
+		checkTablePropertiesDefined(tableProperties),
+		`TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`,
+	)(tableOptions, `OPTIONS ${tableOptions}`)(selectStatement, `AS ${selectStatement}`)(true, ';')();
 };
 
 const getCreateLikeStatement = ({
