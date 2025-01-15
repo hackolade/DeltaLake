@@ -164,7 +164,7 @@ const getCreateUsingStatement = ({
 		!numBuckets && clusteredKeys,
 		`CLUSTER BY (${clusteredKeys})`,
 	)(numBuckets && clusteredKeys, `CLUSTERED BY (${clusteredKeys})`)(
-		sortedKeys && clusteredKeys,
+		numBuckets && sortedKeys && clusteredKeys,
 		`SORTED BY (${sortedKeys})`,
 	)(numBuckets && clusteredKeys, `INTO ${numBuckets} BUCKETS`)(location, `LOCATION '${location}'`)(
 		comment,
@@ -208,7 +208,7 @@ const getCreateHiveStatement = ({
 	)(!numBuckets && clusteredKeys, `CLUSTER BY (${clusteredKeys})`)(
 		numBuckets && clusteredKeys,
 		`CLUSTERED BY (${clusteredKeys})`,
-	)(sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)(
+	)(numBuckets && sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)(
 		numBuckets && clusteredKeys,
 		`INTO ${numBuckets} BUCKETS`,
 	)(location, `LOCATION '${location}'`)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(
