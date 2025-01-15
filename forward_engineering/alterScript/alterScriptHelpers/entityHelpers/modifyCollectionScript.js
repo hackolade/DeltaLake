@@ -10,12 +10,14 @@ const {
 	wrapInSingleQuotes,
 	isSupportUnityCatalog,
 	isSupportNotNullConstraints,
+	checkLiquidClusteringPropertyChanged,
 } = require('../../../utils/general');
 const { getTableStatement } = require('../../../helpers/tableHelper');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 const { getModifiedTablePropertiesScriptDtos } = require('./modifyPropertiesHelper');
 const { getModifyCheckConstraintsScriptDtos } = require('./checkConstraintsHelper');
 const { getModifyUnityEntityTagsScriptDtos } = require('./alterUnityTagsHelper');
+const { getPropertiesNamesByGUIDs } = require('./primaryKeyHelper');
 
 const tableProperties = [
 	'compositeClusteringKey',
@@ -138,6 +140,30 @@ const getModifyLocationScriptDto =
 		return undefined;
 	};
 
+const getModifyClusteringScriptDto =
+	({ ddlProvider }) =>
+	({ collection, dbVersion }) => {
+		const compMod = _.get(collection, 'role.compMod', {});
+		const compositeClusteringKeys = _.get(compMod, 'compositeClusteringKey', {});
+		const oldCompositeClusteringKeys = compositeClusteringKeys.old;
+		const newCompositeClusteringKeys = compositeClusteringKeys.new;
+
+		if (
+			!Array.isArray(newCompositeClusteringKeys) ||
+			_.isEqual(oldCompositeClusteringKeys, newCompositeClusteringKeys)
+		) {
+			return;
+		}
+
+		const keyIds = newCompositeClusteringKeys.map(({ keyId }) => keyId);
+		const keyNames = getPropertiesNamesByGUIDs(collection, keyIds);
+		const clustering = keyNames.length ? `(${keyNames.join(', ')})` : 'NONE';
+		const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
+		const script = ddlProvider.setTableClustering({ clustering, fullTableName });
+
+		return AlterScriptDto.getInstance([script], true, false);
+	};
+
 /**
  * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => {
  *         type: 'modify' | 'new',
@@ -160,6 +186,10 @@ const getModifyCollectionScriptDtos =
 			entityData: collection,
 			name: fullCollectionName,
 		});
+		const checkLiquidClusteringScriptDtos = getModifyClusteringScriptDto({ ddlProvider })({
+			collection,
+			dbVersion,
+		});
 
 		return {
 			type: 'modify',
@@ -170,6 +200,7 @@ const getModifyCollectionScriptDtos =
 				AlterScriptDto.getInstance([serDeProperties], true, false),
 				modifyLocationScriptDto,
 				...unityEntityTagsDtos,
+				checkLiquidClusteringScriptDtos,
 			].filter(Boolean),
 		};
 	};
@@ -182,7 +213,8 @@ const getModifyCollectionScriptDtos =
  * */
 const generateModifyCollectionScript = app => (collection, definitions, ddlProvider, dbVersion) => {
 	const compMod = _.get(collection, 'role.compMod', {});
-	const shouldDropAndRecreate = getIsChangeProperties(compMod, tableProperties);
+	const shouldDropAndRecreate =
+		!checkLiquidClusteringPropertyChanged(compMod) && getIsChangeProperties(compMod, tableProperties);
 
 	if (shouldDropAndRecreate) {
 		return getDropAndRecreateCollectionScriptDtos(app, ddlProvider)(collection, definitions, dbVersion);

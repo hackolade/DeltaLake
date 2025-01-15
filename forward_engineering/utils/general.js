@@ -305,6 +305,10 @@ const checkFieldPropertiesChanged = (compMod, propertiesToCheck) => {
 	return propertiesToCheck.some(prop => compMod?.oldField[prop] !== compMod?.newField[prop]);
 };
 
+const checkLiquidClusteringPropertyChanged = compMod => {
+	return !compMod?.numBucket?.new && compareProperties(compMod.compositeClusteringKey || {});
+};
+
 module.exports = {
 	buildStatement,
 	getName,
@@ -337,5 +341,6 @@ module.exports = {
 	isSupportUnityCatalog,
 	isSupportNotNullConstraints,
 	checkFieldPropertiesChanged,
+	checkLiquidClusteringPropertyChanged,
 	generateFullEntityNameFromBucketAndTableNames,
 };

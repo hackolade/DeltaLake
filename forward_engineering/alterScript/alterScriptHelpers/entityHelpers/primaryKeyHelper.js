@@ -18,7 +18,7 @@ const getPropertyNameByGuid = (collection, guid) => {
 /**
  * @return {(collection: Object, guids: string[]) => Array<Object>}
  * */
-const getPropertiesNamesByGuids = (collection, guids) => {
+const getPropertiesNamesByGUIDs = (collection, guids) => {
 	return guids.map(guid => getPropertyNameByGuid(collection, guid)).filter(Boolean);
 };
 
@@ -58,7 +58,7 @@ const getAddCompositePkScripts =
 			.map(newPk => {
 				const compositePrimaryKey = newPk.compositePrimaryKey || [];
 				const guidsOfColumnsInPk = compositePrimaryKey.map(compositePkEntry => compositePkEntry.keyId);
-				const columnNamesForDDL = getPropertiesNamesByGuids(collection, guidsOfColumnsInPk);
+				const columnNamesForDDL = getPropertiesNamesByGUIDs(collection, guidsOfColumnsInPk);
 				if (!columnNamesForDDL.length) {
 					return undefined;
 				}
@@ -199,4 +199,5 @@ const getModifyPkConstraintsScripts =
 
 module.exports = {
 	getModifyPkConstraintsScripts,
+	getPropertiesNamesByGUIDs,
 };
