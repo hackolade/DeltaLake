@@ -306,7 +306,7 @@ const checkFieldPropertiesChanged = (compMod, propertiesToCheck) => {
 };
 
 const checkLiquidClusteringPropertyChanged = compMod => {
-	return !compMod?.numBucket?.new && compareProperties(compMod.compositeClusteringKey || {});
+	return !compMod?.numBuckets?.new && compareProperties(compMod.compositeClusteringKey || {});
 };
 
 module.exports = {
