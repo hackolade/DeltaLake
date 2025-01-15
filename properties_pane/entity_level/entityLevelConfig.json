@@ -403,7 +403,10 @@ making sure that you maintain a proper JSON format.
 				"isCompositeKey": true,
 				"setPrimaryKey": false,
 				"template": "collectiontree",
-				"abbr": "ck"
+				"abbr": "ck",
+				"templateOptions": {
+					"maxFields": 4
+				}
 			},
 			{
 				"propertyName": "Sorted by",
