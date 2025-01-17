@@ -95,6 +95,8 @@ class Visitor extends HiveParserVisitor {
 		const compositePartitionKey = this.visitWhenExists(ctx, 'tablePartition', [])?.[0] || [];
 		const { compositeClusteringKey, numBuckets, sortedByKey } =
 			this.visitWhenExists(ctx, 'tableBuckets', [])?.[0] || {};
+		const { compositeClusteringKey: compositeLiquidClusteringKey } =
+			this.visitWhenExists(ctx, 'clusterByClause', [])?.[0] || {};
 		const { skewedby, skewedOn, skewStoredAsDir } = this.visitWhenExists(ctx, 'tableSkewed', [])?.[0] || {};
 		const tableRowFormat = this.visitWhenExists(ctx, 'tableRowFormat', {})?.[0] || {};
 		const description = this.visitWhenExists(ctx, 'tableComment');
@@ -148,7 +150,7 @@ class Visitor extends HiveParserVisitor {
 						externalTable,
 						description: Array.isArray(description) ? description[0] || '' : String(description),
 						compositePartitionKey: compositePartitionKey.map(([name]) => ({ name })),
-						compositeClusteringKey,
+						compositeClusteringKey: compositeClusteringKey || compositeLiquidClusteringKey,
 						numBuckets,
 						sortedByKey,
 						skewedby,
@@ -494,6 +496,7 @@ class Visitor extends HiveParserVisitor {
 			'alterStatementSuffixClusterbySortby',
 			'alterStatementSuffixRenameCol',
 			'alterStatementSuffixAddCol',
+			'alterStatementSuffixClusterBy',
 		]
 			.map(statement => this.visitWhenExists(ctx, statement))
 			.filter(Boolean)[0];
@@ -548,6 +551,19 @@ class Visitor extends HiveParserVisitor {
 				...(ctx.KW_CLUSTERED() ? { compositeClusteringKey: [] } : {}),
 				...(ctx.KW_SORTED() ? { sortedByKey: [] } : {}),
 				...this.visitWhenExists(ctx, 'tableBuckets', {}),
+			},
+		};
+	}
+
+	visitAlterStatementSuffixClusterBy(ctx) {
+		const compositeClusteringKey = ctx.KW_NONE()
+			? []
+			: this.visitWhenExists(ctx, 'clusterByClause', {}).compositeClusteringKey;
+
+		return {
+			type: UPDATE_ENTITY_LEVEL_DATA_COMMAND,
+			data: {
+				compositeClusteringKey,
 			},
 		};
 	}
@@ -1631,6 +1647,18 @@ class Visitor extends HiveParserVisitor {
 
 	getText(expression) {
 		return this.originalText.slice(expression.start.start, expression.stop.stop + 1);
+	}
+
+	visitClusterByClause(ctx) {
+		const compositeClusteringKey = ctx
+			.columnNameList()
+			.getText()
+			.split(',')
+			.map(name => ({ name }));
+
+		return {
+			compositeClusteringKey,
+		};
 	}
 }
 

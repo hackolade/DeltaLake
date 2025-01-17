@@ -472,5 +472,18 @@ module.exports = app => {
 		unsetColumnTags({ tableName, columnName, tags }) {
 			return assignTemplates(templates.unsetColumnTags, { tableName, columnName, tags });
 		},
+
+		/**
+		 * @param {string} fullTableName
+		 * @param {string} location
+		 * @return {string}
+		 * */
+		setTableClustering({ fullTableName, clustering }) {
+			const templatesConfig = {
+				name: fullTableName,
+				clustering,
+			};
+			return assignTemplates(templates.setTableClustering, templatesConfig);
+		},
 	};
 };

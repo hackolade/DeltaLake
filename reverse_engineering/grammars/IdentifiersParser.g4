@@ -105,7 +105,7 @@ orderByClause
     ;
 
 clusterByClause
-    : KW_CLUSTER KW_BY expressions
+    : KW_CLUSTER KW_BY LPAREN columnNameList RPAREN
     ;
 
 partitionByClause

@@ -277,6 +277,7 @@ createTableStatement
          | tablePropertiesPrefixed
          | tableOptions
          | tableComment
+         | clusterByClause
         )*
          (KW_AS selectStatementWithCTE)?
       )
@@ -342,6 +343,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
   | alterStatementSuffixUpdateColumns
+  | alterStatementSuffixClusterBy
   ;
 
 alterStatementPartitionKeyType
@@ -479,6 +481,11 @@ alterStatementSuffixClusterbySortby
   : KW_NOT KW_CLUSTERED
   | KW_NOT KW_SORTED
   | tableBuckets
+  ;
+
+alterStatementSuffixClusterBy
+  : clusterByClause
+  | KW_CLUSTER KW_BY KW_NONE
   ;
 
 alterTblPartitionStatementSuffixSkewedLocation
