@@ -211,13 +211,13 @@ const getCreateHiveStatement = ({
 	)(numBuckets && sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)(
 		numBuckets && clusteredKeys,
 		`INTO ${numBuckets} BUCKETS`,
-	)(location, `LOCATION '${location}'`)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(
-		storedAsStatement,
-		storedAsStatement,
-	)(location, `LOCATION '${location}'`)(
-		checkTablePropertiesDefined(tableProperties),
-		`TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`,
-	)(tableOptions, `OPTIONS ${tableOptions}`)(selectStatement, `AS ${selectStatement}`)(true, ';')();
+	)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(storedAsStatement, storedAsStatement)(
+		location,
+		`LOCATION '${location}'`,
+	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
+		tableOptions,
+		`OPTIONS ${tableOptions}`,
+	)(selectStatement, `AS ${selectStatement}`)(true, ';')();
 };
 
 const getCreateLikeStatement = ({
