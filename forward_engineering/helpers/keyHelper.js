@@ -1,5 +1,6 @@
 'use strict';
 
+const { uniq } = require('lodash');
 const jsonSchemaHelper = require('./jsonSchemaHelper');
 
 const filterPaths = (keys, paths) => paths.filter(path => keys.find(key => path[path.length - 1] === key.keyId));
@@ -20,8 +21,8 @@ const getKeyNames = (tableData, jsonSchema, definitions) => {
 	const skewedby = tableData.skewedby || [];
 	const sortedByKey = tableData.sortedByKey || [];
 
-	const ids = [...compositeClusteringKey, ...compositePartitionKey, ...skewedby, ...sortedByKey].map(
-		key => key.keyId,
+	const ids = uniq(
+		[...compositeClusteringKey, ...compositePartitionKey, ...skewedby, ...sortedByKey].map(key => key.keyId),
 	);
 
 	const keysPaths = jsonSchemaHelper.getPathsByIds(ids, [jsonSchema, ...definitions]);
