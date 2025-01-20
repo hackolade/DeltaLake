@@ -1,5 +1,3 @@
-'use strict';
-
 const _ = require('lodash');
 const {
 	buildStatement,
@@ -308,7 +306,7 @@ const getPartitionKeyStatement = (keys, isParentActivated, using) => {
 const getPartitionsKeys = (columns, partitions) => {
 	return partitions
 		.map(keyName => {
-			return Object.assign({}, columns[keyName] || { type: 'string' }, { name: keyName });
+			return { ...(columns[keyName] || { type: 'string' }), name: keyName };
 		})
 		.filter(key => key);
 };
@@ -320,7 +318,7 @@ const removePartitions = (columns, partitions) => {
 
 			return columns;
 		},
-		Object.assign({}, columns),
+		{ ...columns },
 	);
 };
 
@@ -426,7 +424,6 @@ const getTableStatement =
 		dbVersion,
 		isCalledFromAlterScript = false,
 	) => {
-		const ddlProvider = require('../ddlProvider/ddlProvider')(app);
 		const { getEntityTagsStatement } = require('../helpers/unityTagsHelper');
 
 		const dbName = replaceSpaceWithUnderscore(prepareName(getName(getTab(0, containerData))));
@@ -484,18 +481,16 @@ const getTableStatement =
 			tableOptions: tableData.tableOptions,
 		});
 
-		const statementsDelimiter = ';\n';
-
 		if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
 			const entityUnityTags = getEntityTagsStatement(entityJsonSchema, fullTableName);
 			tableStatement = tableStatement + entityUnityTags;
 		}
 
-		const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(ddlProvider)(
+		const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(app)(
 			columns,
 			fullTableName,
 		).join('\n');
-		const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(ddlProvider)(
+		const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(app)(
 			entityJsonSchema,
 			fullTableName,
 		).join('\n');

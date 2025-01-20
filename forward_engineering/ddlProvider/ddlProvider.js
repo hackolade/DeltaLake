@@ -1,15 +1,6 @@
 const _ = require('lodash');
 const templates = require('./ddlTemplates');
-const {
-	getFullEntityName,
-	getName,
-	replaceSpaceWithUnderscore,
-	prepareName,
-	getContainerName,
-	getEntityData,
-	getEntityProperties,
-	wrapInBrackets,
-} = require('../utils/general');
+const { getFullEntityName, replaceSpaceWithUnderscore, prepareName, wrapInBrackets } = require('../utils/general');
 const { getViewTagsStatement } = require('../helpers/unityTagsHelper');
 const { getTablePropertiesClause, checkTablePropertiesDefined } = require('../helpers/tableHelper');
 const viewHelper = require('../helpers/viewHelper');
