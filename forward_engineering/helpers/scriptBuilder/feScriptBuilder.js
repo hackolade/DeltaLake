@@ -1,53 +1,25 @@
 /**
- * @typedef {import('../types/coreApplicationTypes').CoreData} CoreData
- * @typedef {import('../types/coreApplicationTypes').App} App
- * @typedef {import('../types/coreApplicationDataTypes').ContainerJsonSchema} ContainerJsonSchema
- * @typedef {import('../types/coreApplicationDataTypes').ContainerStyles} ContainerStyles
- * @typedef {import('../types/coreApplicationDataTypes').EntityData} EntityData
- * @typedef {import('../types/coreApplicationDataTypes').EntityJsonSchema} EntityJsonSchema
- * @typedef {import('../types/coreApplicationDataTypes').ExternalDefinitions} ExternalDefinitions
- * @typedef {import('../types/coreApplicationDataTypes').InternalDefinitions} InternalDefinitions
- * @typedef {import('../types/coreApplicationDataTypes').ModelDefinitions} ModelDefinitions
- * */
-
-/**
+ * @typedef {import('../../types/coreApplicationTypes').CoreData} CoreData
+ * @typedef {import('../../types/coreApplicationTypes').App} App
+ * @typedef {import('../../types/coreApplicationDataTypes').ContainerJsonSchema} ContainerJsonSchema
+ * @typedef {import('../../types/coreApplicationDataTypes').ContainerStyles} ContainerStyles
+ * @typedef {import('../../types/coreApplicationDataTypes').EntityData} EntityData
+ * @typedef {import('../../types/coreApplicationDataTypes').EntityJsonSchema} EntityJsonSchema
+ * @typedef {import('../../types/coreApplicationDataTypes').ExternalDefinitions} ExternalDefinitions
+ * @typedef {import('../../types/coreApplicationDataTypes').InternalDefinitions} InternalDefinitions
+ * @typedef {import('../../types/coreApplicationDataTypes').ModelDefinitions} ModelDefinitions
+ *
  * @typedef {[ContainerJsonSchema, ContainerStyles]} ContainerData
- * */
-
-/**
+ *
  * @typedef {{
  *     [id: string]: EntityJsonSchema
  * }} EntitiesJsonSchema
- */
-
-/**
+ *
  * @typedef {{
  *     name: string,
  *     script: string,
  * }} ContainerLevelEntityDto
- * */
-
-const _ = require('lodash');
-const { getDatabaseStatement, getUseCatalogStatement } = require('./databaseHelper');
-const { getCreateRelationshipScripts } = require('./relationshipHelper');
-const { getTableStatement } = require('./tableHelper');
-const { getIndexes } = require('./indexHelper');
-const {
-	buildScript,
-	getName,
-	getTab,
-	isSupportUnityCatalog,
-	isSupportNotNullConstraints,
-	getDBVersionNumber,
-} = require('../utils/general');
-const { getViewScript } = require('./viewHelper');
-const {
-	generateSamplesScript,
-	getDataForSampleGeneration,
-	generateSamplesForEntity,
-} = require('../sampleGeneration/sampleGenerationService');
-
-/**
+ *
  * @typedef {{
  *     externalDefinitions: ExternalDefinitions,
  *          modelDefinitions: ModelDefinitions,
@@ -57,9 +29,7 @@ const {
  *          entityData: EntityData[]
  *
  * }} EntityLevelFEScriptData
- * */
-
-/**
+ *
  * @typedef {{
  *     externalDefinitions: ExternalDefinitions,
  *     modelDefinitions: ModelDefinitions,
@@ -71,60 +41,20 @@ const {
  * }} ContainerLevelFEScriptData
  * */
 
-/**
- * @param data {CoreData}
- * @param app {App}
- * @return {(dto: EntityLevelFEScriptData) => string}
- * */
-const buildEntityLevelFEScript =
-	(data, app) =>
-	({
-		externalDefinitions,
-		modelDefinitions,
-		jsonSchema,
-		internalDefinitions,
-		containerData,
-		entityData,
-		modelData,
-	}) => {
-		const dbVersion = data.modelData[0].dbVersion;
-		const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
-		const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
-		const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
-		const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, dbVersion);
-		const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
-		const tableStatements = getTableStatement(app)(
-			containerData,
-			entityData,
-			jsonSchema,
-			definitions,
-			arePkFkConstraintsAvailable,
-			areNotNullConstraintsAvailable,
-			null,
-			dbVersion,
-		);
-		const indexScript = getIndexes(containerData, entityData, jsonSchema, definitions);
-
-		let relationshipScripts = [];
-		if (arePkFkConstraintsAvailable) {
-			const entityId = jsonSchema.GUID;
-			const relationshipsWithThisTableAsChild = modelData[1]?.relationships.filter(
-				relationship => relationship.childCollection === entityId,
-			);
-			relationshipScripts = getCreateRelationshipScripts(app)({
-				relationships: relationshipsWithThisTableAsChild,
-				jsonSchemas: jsonSchema,
-			});
-		}
-
-		return buildScript([
-			useCatalogStatement,
-			databaseStatement,
-			tableStatements,
-			...relationshipScripts,
-			indexScript,
-		]);
-	};
+const _ = require('lodash');
+const { getDatabaseStatement, getUseCatalogStatement } = require('../databaseHelper');
+const { getCreateRelationshipScripts } = require('../relationshipHelper');
+const { getTableStatement } = require('../tableHelper');
+const { getIndexes } = require('../indexHelper');
+const {
+	buildScript,
+	getName,
+	getTab,
+	isSupportUnityCatalog,
+	isSupportNotNullConstraints,
+} = require('../../utils/general');
+const { generateSamplesScript, generateSamplesForEntity } = require('../../sampleGeneration/sampleGenerationService');
+const { getDataForSampleGeneration } = require('../../sampleGeneration/getDataForSampleGeneration');
 
 /**
  * @param data {CoreData}
@@ -294,7 +224,7 @@ const buildContainerLevelFEScriptDto =
 		const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
 		const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
 
-		const provider = require('../ddlProvider/ddlProvider')(app);
+		const provider = require('../../ddlProvider/ddlProvider')(app);
 		const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
 		const viewsScriptDtos = getContainerLevelViewScriptDtos(data, provider);
 		const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, dbVersion);
@@ -343,7 +273,6 @@ const buildContainerLevelFEScript = containerLevelFEScriptDto => {
 };
 
 module.exports = {
-	buildEntityLevelFEScript,
 	buildContainerLevelFEScriptDto,
 	buildContainerLevelFEScript,
 };

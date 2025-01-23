@@ -27,10 +27,12 @@ const getCheckConstraintName = (constraintName, tableName, index) => {
 };
 
 /**
- * @param ddlProvider {Object}
+ * @param app {Object}
  * @returns GetStatementsFunction
  * */
-const getCheckConstraintsScriptsOnColumnLevel = ddlProvider => (columns, tableName) => {
+const getCheckConstraintsScriptsOnColumnLevel = app => (columns, tableName) => {
+	const ddlProvider = require('../../ddlProvider/ddlProvider')(app);
+
 	return Object.keys(columns)
 		.map(colName => ({ colName: colName.replaceAll('`', ''), ...columns[colName] }))
 		.filter(column => column.constraints?.check)
@@ -42,11 +44,13 @@ const getCheckConstraintsScriptsOnColumnLevel = ddlProvider => (columns, tableNa
 };
 
 /**
- * @param ddlProvider {Object}
+ * @param app {Object}
  * @returns GetStatementsFunction
  * */
-const getCheckConstraintsScriptsOnTableLevel = ddlProvider => (entityJsonSchema, tableName) => {
+const getCheckConstraintsScriptsOnTableLevel = app => (entityJsonSchema, tableName) => {
 	if (entityJsonSchema.chkConstr?.length) {
+		const ddlProvider = require('../../ddlProvider/ddlProvider')(app);
+
 		return entityJsonSchema.chkConstr.map((checkConstr, index) => {
 			const constraintName = getCheckConstraintName(
 				checkConstr.chkConstrName,
