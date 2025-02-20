@@ -10,23 +10,10 @@ const keyHelper = require('./helpers/keyHelper');
 
 class DbtProvider {
 	/**
-	 * @type {AppInstance}
-	 */
-	#appInstance;
-
-	/**
-	 * @param {{ appInstance: AppInstance }}
-	 */
-	constructor({ appInstance }) {
-		this.#appInstance = appInstance;
-	}
-
-	/**
-	 * @param {{ appInstance }}
 	 * @returns {DbtProvider}
 	 */
-	static createDbtProvider({ appInstance }) {
-		return new DbtProvider({ appInstance });
+	static createDbtProvider() {
+		return new DbtProvider();
 	}
 
 	/**
