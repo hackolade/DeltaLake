@@ -31,7 +31,7 @@ class DbtProvider {
 
 	/**
 	 * @param {{ columnDefinition: ColumnDefinition }}
-	 * @returns {{ type: string }}
+	 * @returns {string}
 	 */
 	decorateType({ columnDefinition }) {
 		return getTypeByProperty([], '')(columnDefinition);
