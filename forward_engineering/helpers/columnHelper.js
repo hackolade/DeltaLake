@@ -461,4 +461,5 @@ module.exports = {
 	getColumnsStatement,
 	getColumnStatement,
 	getColumnsString,
+	getTypeByProperty,
 };
