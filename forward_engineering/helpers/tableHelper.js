@@ -606,4 +606,7 @@ module.exports = {
 	hydrateTableProperties,
 	checkTablePropertiesDefined,
 	getDeleteTablePropertiesClause,
+	getPartitionKeyStatement,
+	getClusteringKeys,
+	getPartitionsKeys,
 };

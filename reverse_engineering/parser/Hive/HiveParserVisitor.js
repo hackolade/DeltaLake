@@ -755,6 +755,16 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by HiveParser#materializedViewClause.
+	visitMaterializedViewClause(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by HiveParser#scheduleClause.
+	visitScheduleClause(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by HiveParser#viewPartition.
 	visitViewPartition(ctx) {
 		return this.visitChildren(ctx);

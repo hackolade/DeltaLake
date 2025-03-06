@@ -884,9 +884,27 @@ createViewStatement
     ;
 
 createMaterializedViewStatement
-    : KW_CREATE KW_MATERIALIZED KW_VIEW ifNotExists? tableName
-        rewriteDisabled? tableComment? tableRowFormat? tableFileFormat? tableLocation?
-        tablePropertiesPrefixed? KW_AS selectStatementWithCTE
+    : KW_CREATE orReplace? KW_MATERIALIZED KW_VIEW ifNotExists? tableName
+        (LPAREN columnNameCommentList RPAREN)?
+        materializedViewClause* KW_AS selectStatementWithCTE
+    ;
+
+materializedViewClause
+    : tableComment
+    | tableRowFormat
+    | tableFileFormat
+    | tableLocation
+    | tablePropertiesPrefixed
+    | tablePartition
+    | tableComment
+    | clusterByClause
+    | rewriteDisabled
+    | scheduleClause
+    ;
+
+scheduleClause
+    : KW_SCHEDULE KW_REFRESH? KW_EVERY Number (KW_HOUR | KW_DAY | KW_WEEK)
+    | KW_SCHEDULE KW_REFRESH? KW_CRON Identifier (KW_AT KW_TIME KW_ZONE Identifier)?
     ;
 
 viewPartition
