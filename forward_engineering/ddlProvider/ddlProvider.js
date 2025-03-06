@@ -4,6 +4,7 @@ const { getFullEntityName, replaceSpaceWithUnderscore, prepareName, wrapInBracke
 const { getViewTagsStatement } = require('../helpers/unityTagsHelper');
 const { getTablePropertiesClause, checkTablePropertiesDefined } = require('../helpers/tableHelper');
 const viewHelper = require('../helpers/viewHelper');
+const keyHelper = require('../helpers/keyHelper');
 
 module.exports = app => {
 	const { assignTemplates } = app.require('@hackolade/ddl-fe-utils');
@@ -25,10 +26,11 @@ module.exports = app => {
 
 			const bucketName = replaceSpaceWithUnderscore(prepareName(viewHelper.retrieveContainerName(containerData)));
 			const viewName = replaceSpaceWithUnderscore(prepareName(view.code || view.name));
-			const isGlobal = schema.viewGlobal && schema.viewTemporary;
-			const isTemporary = schema.viewTemporary;
-			const orReplace = schema.viewOrReplace;
+			const isMaterialized = view.materialized;
 			const ifNotExists = view.viewIfNotExist;
+			const isTemporary = !isMaterialized && schema.viewTemporary;
+			const isGlobal = isTemporary && schema.viewGlobal;
+			const orReplace = !ifNotExists && schema.viewOrReplace;
 			const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
 			const tableProperties =
 				schema.tableProperties && Array.isArray(schema.tableProperties)
@@ -36,12 +38,18 @@ module.exports = app => {
 					: [];
 			const viewUnityTagsStatements =
 				schema.unityViewTags && getViewTagsStatement({ viewSchema: schema, viewName: name });
+			const keyClauses = viewHelper.getCompositeKeyClauses({
+				viewData: view,
+				jsonSchema: schema,
+				collectionRefsDefinitionsMap,
+			});
 
 			return assignTemplates(templates.createView, {
-				orReplace: orReplace && !ifNotExists ? ' OR REPLACE' : '',
+				orReplace: orReplace ? ' OR REPLACE' : '',
 				global: isGlobal ? ' GLOBAL' : '',
 				temporary: isTemporary ? ' TEMPORARY' : '',
 				ifNotExists: ifNotExists ? ' IF NOT EXISTS' : '',
+				materialized: isMaterialized ? ' MATERIALIZED' : '',
 				name,
 				columnList: view.columnList
 					? `${wrapInBrackets(view.columnList)}`
@@ -58,6 +66,9 @@ module.exports = app => {
 							columns,
 						}),
 				viewUnityTagsStatements: viewUnityTagsStatements ? `${viewUnityTagsStatements};` : '',
+				scheduleClause: isMaterialized ? view.scheduleClause : '',
+				partitioningKeyClause: keyClauses.partitioningKeyClause,
+				clusteringKeyClause: keyClauses.clusteringKeyClause,
 			});
 		},
 

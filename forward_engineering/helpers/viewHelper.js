@@ -1,6 +1,13 @@
 'use strict';
-
+/**
+ * @typedef {Record<string, unknown>} ViewData
+ * @typedef {Record<string, unknown>} JsonSchema
+ * @typedef {Record<string, { definitionId: string }>} CollectionRefsDefinitionsMap
+ */
 const _ = require('lodash');
+const { getKeyNames } = require('./keyHelper');
+const { getColumns } = require('./columnHelper');
+const { getPartitionKeyStatement, getPartitionsKeys, getClusteringKeys } = require('./tableHelper');
 const { prepareName, encodeStringLiteral, commentDeactivatedStatement } = require('../utils/general');
 
 const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
@@ -126,10 +133,57 @@ const filterRedundantProperties = (tableProperties, propertiesList) => {
 	return tableProperties.filter(prop => !propertiesList.includes(prop.propertyKey));
 };
 
+/**
+ * @param {{ viewData: ViewData; collectionRefsDefinitionsMap: CollectionRefsDefinitionsMap }}
+ * @returns {ViewData}
+ */
+const replaceReferenceKeyIds = ({ viewData, collectionRefsDefinitionsMap }) => {
+	const replaceKeyId = (keys = []) =>
+		keys.map(key => ({
+			...key,
+			keyId: collectionRefsDefinitionsMap[key.keyId]?.definitionId || key.keyId,
+		}));
+
+	return {
+		...viewData,
+		compositeClusteringKey: replaceKeyId(viewData.compositeClusteringKey),
+		compositePartitionKey: replaceKeyId(viewData.compositePartitionKey),
+	};
+};
+
+/**
+ * @param {{ viewData: ViewData; jsonSchema: JsonSchema; collectionRefsDefinitionsMap: CollectionRefsDefinitionsMap }}
+ * @returns {{ partitioningKeyClause: string; clusteringKeyClause: string }}
+ */
+const getCompositeKeyClauses = ({ viewData, jsonSchema, collectionRefsDefinitionsMap }) => {
+	if (!viewData.materialized) {
+		return {
+			partitioningKeyClause: '',
+			clusteringKeyClause: '',
+		};
+	}
+
+	const getKeyClause = (clause, keys) => (keys ? `\n${clause} (${keys})` : '');
+	const view = replaceReferenceKeyIds({ viewData, collectionRefsDefinitionsMap });
+	const { compositeClusteringKey, compositePartitionKey } = getKeyNames(view, jsonSchema, []);
+	const { columns, deactivatedColumnNames } = getColumns(jsonSchema, [], '');
+	const partitioningKeys = getPartitionKeyStatement(
+		getPartitionsKeys(columns, compositePartitionKey),
+		viewData.isActivated,
+	);
+	const clusteringKeys = getClusteringKeys(compositeClusteringKey, deactivatedColumnNames, viewData.isActivated);
+
+	return {
+		partitioningKeyClause: getKeyClause('PARTITIONED BY', partitioningKeys),
+		clusteringKeyClause: getKeyClause('CLUSTER BY', clusteringKeys),
+	};
+};
+
 module.exports = {
 	getTableSelectStatement,
 	retrieveContainerName,
 	filterRedundantProperties,
 	getDefaultColumnList,
 	getCommentStatement,
+	getCompositeKeyClauses,
 };
