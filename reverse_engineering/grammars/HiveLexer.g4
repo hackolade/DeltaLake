@@ -373,7 +373,11 @@ KW_GENERATED: G E N E R A T E D;
 KW_ALWAYS: A L W A Y S;
 KW_IDENTITY: I D E N T I T Y;
 KW_INCREMENT: I N C R E M E N T;
-
+KW_SCHEDULE: S C H E D U L E;
+KW_REFRESH: R E F R E S H;
+KW_EVERY: E V E R Y;
+KW_CRON: C R O N;
+KW_AT: A T;
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
 

@@ -412,25 +412,64 @@ class Visitor extends HiveParserVisitor {
 
 	visitCreateMaterializedViewStatement(ctx) {
 		const { database, table: name } = this.visit(ctx.tableName());
-		const description = this.visitWhenExists(ctx, 'tableComment');
+		const viewIfNotExist = !!ctx.ifNotExists();
+		const viewOrReplace = !!ctx.orReplace();
+
 		const select = {
 			start: ctx.selectStatementWithCTE().start.start,
 			stop: ctx.selectStatementWithCTE().stop.stop,
 		};
 		const { table } = this.visitWhenExists(ctx, 'selectStatementWithCTE', {});
-
+		const columns = this.visitWhenExists(ctx, 'columnNameCommentList', []);
+		const jsonSchema = convertColumnsToJsonSchema(columns);
+		const columnList = columns
+			.map(column => column.name + (column.comment ? ` COMMENT '${column.comment}'` : ''))
+			.join(', ');
+		const columnNames = columns.map(column => column.name).join(', ');
+		const options = this.visitWhenExists(ctx, 'materializedViewClause', []).reduce(
+			(options, option) => ({ ...options, ...option }),
+			{},
+		);
 		return {
 			type: CREATE_VIEW_COMMAND,
 			name,
 			bucketName: database,
 			collectionName: table,
-			jsonSchema: { properties: {} },
 			select,
+			jsonSchema,
+			columnNames,
 			data: {
-				description,
+				viewIfNotExist,
+				viewOrReplace,
+				columnList,
 				materialized: true,
+				...options,
 			},
 		};
+	}
+
+	visitMaterializedViewClause(ctx) {
+		const description = this.visitWhenExists(ctx, 'tableComment');
+		const scheduleClause = this.visitWhenExists(ctx, 'scheduleClause');
+		const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
+		const compositePartitionKeys = this.visitWhenExists(ctx, 'tablePartition', []);
+		const { compositeClusteringKey } = this.visitWhenExists(ctx, 'clusterByClause', {});
+		const compositePartitionKey = compositePartitionKeys.map(([name]) => ({ name }));
+
+		return _.omitBy(
+			{
+				description,
+				tableProperties,
+				compositePartitionKey,
+				compositeClusteringKey,
+				scheduleClause,
+			},
+			_.isEmpty,
+		);
+	}
+
+	visitScheduleClause(ctx) {
+		return this.getText(ctx);
 	}
 
 	visitAlterStatement(ctx) {
