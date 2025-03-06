@@ -66,7 +66,7 @@ module.exports = app => {
 							columns,
 						}),
 				viewUnityTagsStatements: viewUnityTagsStatements ? `${viewUnityTagsStatements};` : '',
-				scheduleClause: isMaterialized ? view.scheduleClause : '',
+				scheduleClause: isMaterialized && view.scheduleClause ? `${view.scheduleClause}\n` : '',
 				partitioningKeyClause: keyClauses.partitioningKeyClause,
 				clusteringKeyClause: keyClauses.clusteringKeyClause,
 			});
