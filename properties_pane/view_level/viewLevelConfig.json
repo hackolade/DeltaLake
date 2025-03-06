@@ -161,7 +161,16 @@ making sure that you maintain a proper JSON format.
 				"propertyName": "Temporary",
 				"propertyKeyword": "viewTemporary",
 				"propertyType": "checkbox",
-				"propertyTooltip": "Indicates the scope of view being created. When TEMPORARY is specified, the created view is valid and visible in the current session. No persistent entry is made in the catalog for these kind of functions."
+				"propertyTooltip": "Indicates the scope of view being created. When TEMPORARY is specified, the created view is valid and visible in the current session. No persistent entry is made in the catalog for these kind of functions.",
+				"dependency": {
+					"type": "not",
+					"values": [
+						{
+							"key": "materialized",
+							"value": true
+						}
+					]
+				}
 			},
 			{
 				"propertyName": "Global",
@@ -174,6 +183,12 @@ making sure that you maintain a proper JSON format.
 				}
 			},
 			{
+				"propertyName": "Materialized",
+				"propertyKeyword": "materialized",
+				"propertyTooltip": "Specify whether to create materialized view.",
+				"propertyType": "checkbox"
+			},
+			{
 				"propertyName": "If not exist",
 				"propertyKeyword": "viewIfNotExist",
 				"propertyTooltip": "If specified, creates the view only when it does not exist. The creation of view succeeds (no error is thrown) if the specified view already exists in the system. This parameter is mutually exclusive to OR REPLACE and cannot be specified together.",
@@ -181,6 +196,49 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "checkbox",
 				"disabledOnCondition": {
 					"key": "viewOrReplace",
+					"value": true
+				}
+			},
+			{
+				"propertyName": "Partition key",
+				"propertyKeyword": "compositePartitionKey",
+				"propertyType": "fieldList",
+				"disabledItemStrategy": "default",
+				"isCompositeKey": true,
+				"setPrimaryKey": false,
+				"template": "orderedList",
+				"abbr": "PK",
+				"dependency": {
+					"key": "materialized",
+					"value": true
+				}
+			},
+			{
+				"propertyName": "Clustering key",
+				"propertyKeyword": "compositeClusteringKey",
+				"propertyType": "fieldList",
+				"disabledItemStrategy": "default",
+				"isCompositeKey": true,
+				"setPrimaryKey": false,
+				"template": "orderedList",
+				"abbr": "ck",
+				"templateOptions": {
+					"maxFields": 4
+				},
+				"dependency": {
+					"key": "materialized",
+					"value": true
+				}
+			},
+			{
+				"propertyName": "Schedule clause",
+				"propertyKeyword": "scheduleClause",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false,
+				"valueType": "string",
+				"dependency": {
+					"key": "materialized",
 					"value": true
 				}
 			},
