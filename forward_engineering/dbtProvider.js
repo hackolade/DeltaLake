@@ -21,7 +21,10 @@ class DbtProvider {
 	 * @returns {string}
 	 */
 	decorateType({ columnDefinition }) {
-		return getTypeByProperty([], '')(columnDefinition);
+		const type = getTypeByProperty([], '')(columnDefinition);
+		const isComplexType = /^(array|struct)/i.test(type);
+
+		return isComplexType ? type.replace(/<[\s\S]+>$/, '<>') : type;
 	}
 
 	/**
