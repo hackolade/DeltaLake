@@ -421,11 +421,16 @@ class Visitor extends HiveParserVisitor {
 		};
 		const { table } = this.visitWhenExists(ctx, 'selectStatementWithCTE', {});
 		const columns = this.visitWhenExists(ctx, 'columnNameCommentList', []);
+		const { properties } = this.visitWhenExists(ctx, 'columnNameTypeOrConstraintList', { properties: {} });
 		const jsonSchema = convertColumnsToJsonSchema(columns);
-		const columnList = columns
-			.map(column => column.name + (column.comment ? ` COMMENT '${column.comment}'` : ''))
-			.join(', ');
-		const columnNames = columns.map(column => column.name).join(', ');
+		const columnsWithComments = columns.map(
+			column => column.name + (column.comment ? ` COMMENT '${column.comment}'` : ''),
+		);
+		const columnsWithTypes = Object.entries(properties).reduce((result, [name, type]) => {
+			return [...result, `${name} ${type}`];
+		}, []);
+		const columnList = [...columnsWithComments, ...columnsWithTypes];
+		const columnNames = [...columns.map(column => column.name), ...Object.keys(properties)].join(', ');
 		const options = this.visitWhenExists(ctx, 'materializedViewClause', []).reduce(
 			(options, option) => ({ ...options, ...option }),
 			{},

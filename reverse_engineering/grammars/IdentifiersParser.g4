@@ -525,6 +525,7 @@ identifier
 
 functionIdentifier
     : identifier DOT identifier
+    | identifier DOT identifier (DOT identifier)*
     | identifier
     ;
 
