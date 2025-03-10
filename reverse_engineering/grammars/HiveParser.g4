@@ -27,7 +27,7 @@ options
 
 // starting rule
 statements
-   : (statement statementSeparator | empty)* EOF
+   : (statement statementSeparator? | empty)* EOF
    ;
 
 statementSeparator
