@@ -417,7 +417,7 @@ class Visitor extends HiveParserVisitor {
 
 		const select = {
 			start: ctx.selectStatementWithCTE().start.start,
-			stop: ctx.selectStatementWithCTE().stop.stop,
+			stop: ctx.selectStatementWithCTE().stop.stop + 1,
 		};
 		const { table } = this.visitWhenExists(ctx, 'selectStatementWithCTE', {});
 		const columns = this.visitWhenExists(ctx, 'columnNameCommentList', []);
