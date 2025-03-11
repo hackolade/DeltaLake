@@ -48,6 +48,7 @@ fromClause
 fromSource
     : uniqueJoinToken uniqueJoinSource (COMMA uniqueJoinSource)+
     | joinSource
+    | rangeTableValuedFunction
     ;
 
 
@@ -193,6 +194,10 @@ TABLE(VALUES(1,2),(2,3)) as VirtTable(col1,col2)
 */
 virtualTableSource
     : KW_TABLE LPAREN valuesClause RPAREN KW_AS? tableAlias (LPAREN identifier (COMMA identifier)*)? RPAREN
+    ;
+
+rangeTableValuedFunction
+    : KW_RANGE LPAREN Number (COMMA Number)* RPAREN
     ;
 
 //-----------------------------------------------------------------------------------

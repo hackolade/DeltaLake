@@ -27,7 +27,7 @@ options
 
 // starting rule
 statements
-   : (statement statementSeparator | empty)* EOF
+   : (statement statementSeparator? | empty)* EOF
    ;
 
 statementSeparator
@@ -885,7 +885,7 @@ createViewStatement
 
 createMaterializedViewStatement
     : KW_CREATE orReplace? KW_MATERIALIZED KW_VIEW ifNotExists? tableName
-        (LPAREN columnNameCommentList RPAREN)?
+        (LPAREN (columnNameCommentList | columnNameTypeOrConstraintList) RPAREN)?
         materializedViewClause* KW_AS selectStatementWithCTE
     ;
 
@@ -900,11 +900,16 @@ materializedViewClause
     | clusterByClause
     | rewriteDisabled
     | scheduleClause
+    | rowClause
     ;
 
 scheduleClause
     : KW_SCHEDULE KW_REFRESH? KW_EVERY Number (KW_HOUR | KW_DAY | KW_WEEK)
     | KW_SCHEDULE KW_REFRESH? KW_CRON Identifier (KW_AT KW_TIME KW_ZONE Identifier)?
+    ;
+
+rowClause
+    : KW_WITH? KW_ROW KW_FILTER functionIdentifier KW_ON (LPAREN identifier (COMMA identifier)* RPAREN)?
     ;
 
 viewPartition
@@ -1232,7 +1237,7 @@ tableConstraint
     ;
 
 columnNameTypeConstraint
-    : identifier colType columnConstraint? (KW_COMMENT StringLiteral)?
+    : identifier colType columnConstraint? (KW_COMMENT StringLiteral)? (KW_MASK functionIdentifier)?
     ;
 
 columnGeneratedAs

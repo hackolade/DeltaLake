@@ -765,6 +765,11 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by HiveParser#rowClause.
+	visitRowClause(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by HiveParser#viewPartition.
 	visitViewPartition(ctx) {
 		return this.visitChildren(ctx);
@@ -1687,6 +1692,11 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 
 	// Visit a parse tree produced by HiveParser#virtualTableSource.
 	visitVirtualTableSource(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by HiveParser#rangeTableValuedFunction.
+	visitRangeTableValuedFunction(ctx) {
 		return this.visitChildren(ctx);
 	}
 

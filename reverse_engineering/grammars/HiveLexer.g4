@@ -121,6 +121,7 @@ KW_VARCHAR: V A R C H A R;
 KW_ARRAY: A R R A Y;
 KW_STRUCT: S T R U C T;
 KW_MAP: M A P;
+KW_MASK: M A S K;
 KW_VARIANT: V A R I A N T;
 KW_UNIONTYPE: U N I O N T Y P E;
 KW_REDUCE: R E D U C E;
@@ -378,6 +379,7 @@ KW_REFRESH: R E F R E S H;
 KW_EVERY: E V E R Y;
 KW_CRON: C R O N;
 KW_AT: A T;
+KW_FILTER: F I L T E R;
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
 
