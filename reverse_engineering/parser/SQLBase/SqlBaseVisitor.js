@@ -200,6 +200,11 @@ class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by SqlBaseParser#createMaterializedView.
+	visitCreateMaterializedView(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by SqlBaseParser#alterViewQuery.
 	visitAlterViewQuery(ctx) {
 		return this.visitChildren(ctx);
@@ -427,6 +432,16 @@ class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 
 	// Visit a parse tree produced by SqlBaseParser#schemaBindingSpec.
 	visitSchemaBindingSpec(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by SqlBaseParser#scheduleClause.
+	visitScheduleClause(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by SqlBaseParser#rowClause.
+	visitRowClause(ctx) {
 		return this.visitChildren(ctx);
 	}
 

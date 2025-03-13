@@ -171,6 +171,10 @@ statement
     | CREATE (OR REPLACE)? GLOBAL? TEMPORARY VIEW
         tableIdentifier ('(' colTypeList ')')? tableProvider
         (OPTIONS tablePropertyList)?                                   #createTempViewUsing
+    | CREATE (OR REPLACE)? MATERIALIZED VIEW (IF NOT EXISTS)?
+        multipartIdentifier identifierCommentList?
+        ('(' colTypeList ')')? createTableClauses
+        AS selectStmt=query                                            #createMaterializedView
     | ALTER VIEW multipartIdentifier AS? query                         #alterViewQuery
     | CREATE (OR REPLACE)? TEMPORARY? FUNCTION (IF NOT EXISTS)?
         multipartIdentifier AS className=STRING
@@ -319,6 +323,15 @@ schemaBindingSpec
     : WITH SCHEMA  (BINDING | COMPENSATION | TYPE? EVOLUTION)
     ;
 
+scheduleClause
+    : SCHEDULE REFRESH? EVERY number (HOUR | HOURS | DAY | DAYS | WEEK | WEEKS)
+    | SCHEDULE REFRESH? CRON identifier (AT TIME ZONE identifier)?
+    ;
+
+rowClause
+    : WITH? ROW FILTER functionIdentifier ON ('(' identifier (',' identifier)* ')')?
+    ;
+
 insertInto
     : INSERT OVERWRITE TABLE? multipartIdentifier (partitionSpec (IF NOT EXISTS)?)?  identifierList?        #insertOverwriteTable
     | INSERT INTO TABLE? multipartIdentifier partitionSpec? (IF NOT EXISTS)? identifierList?                #insertIntoTable
@@ -369,15 +382,19 @@ tableProvider
     ;
 
 createTableClauses
-    :(tableOptions |
-     (PARTITIONED BY partitioning=partitionFieldList) |
-     skewSpec |
-     bucketSpec |
-     rowFormat |
-     createFileFormat |
-     locationSpec |
-     commentSpec |
-     tableProperties)*
+    : (
+        tableOptions
+        | (PARTITIONED BY partitioning = partitionFieldList)
+        | skewSpec
+        | bucketSpec
+        | rowFormat
+        | createFileFormat
+        | locationSpec
+        | commentSpec
+        | tableProperties
+        | scheduleClause
+        | rowClause
+    )*
     ;
 
 tableProperties
@@ -1605,6 +1622,7 @@ CONCATENATE: C O N C A T E N A T E;
 CONSTRAINT: C O N S T R A I N T;
 COST: C O S T;
 CREATE: C R E A T E;
+CRON: C R O N;
 CROSS: C R O S S;
 CUBE: C U B E;
 CURRENT: C U R R E N T;
@@ -1615,6 +1633,8 @@ CURRENT_USER: C U R R E N T '_' U S E R;
 DATA: D A T A;
 DATABASE: D A T A B A S E;
 DATABASES: D A T A B A S E S | S C H E M A S;
+DAY: D A Y;
+DAYS: D A Y S;
 DBPROPERTIES: D B P R O P E R T I E S;
 DEFINED: D E F I N E D;
 DELETE: D E L E T E;
@@ -1632,6 +1652,7 @@ ELSE: E L S E;
 END: E N D;
 ESCAPE: E S C A P E;
 ESCAPED: E S C A P E D;
+EVERY: E V E R Y;
 EVOLUTION: E V O L U T I O N;
 EXCEPT: E X C E P T;
 EXCHANGE: E X C H A N G E;
@@ -1661,6 +1682,8 @@ GRANT: G R A N T;
 GROUP: G R O U P;
 GROUPING: G R O U P I N G;
 HAVING: H A V I N G;
+HOUR: H O U R;
+HOURS: H O U R S;
 IF: I F;
 IGNORE: I G N O R E;
 IMPORT: I M P O R T;
@@ -1696,6 +1719,7 @@ LOGICAL: L O G I C A L;
 MACRO: M A C R O;
 MAP: M A P;
 MATCHED: M A T C H E D;
+MATERIALIZED: M A T E R I A L I Z E D;
 MERGE: M E R G E;
 MSCK: M S C K;
 NAMESPACE: N A M E S P A C E;
@@ -1754,6 +1778,7 @@ ROLLBACK: R O L L B A C K;
 ROLLUP: R O L L U P;
 ROW: R O W;
 ROWS: R O W S;
+SCHEDULE: S C H E D U L E;
 SCHEMA: S C H E M A;
 SELECT: S E L E C T;
 SEMI: S E M I;
@@ -1811,6 +1836,8 @@ USING: U S I N G;
 VALUES: V A L U E S;
 VIEW: V I E W;
 VIEWS: V I E W S;
+WEEK: W E E K;
+WEEKS: W E E K S;
 WHEN: W H E N;
 WHERE: W H E R E;
 WINDOW: W I N D O W;
