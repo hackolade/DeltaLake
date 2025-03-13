@@ -83,6 +83,35 @@ class Visitor extends SqlBaseVisitor {
 		};
 	}
 
+	visitCreateMaterializedView(ctx) {
+		const identifier = getName(ctx.multipartIdentifier());
+		const tableClauses = this.visitIfExists(ctx, 'createTableClauses', {});
+		const identifierCommentListCtx = ctx.identifierCommentList();
+		const colTypeCtx = ctx.colTypeList();
+		const colList = identifierCommentListCtx
+			? this.visit(identifierCommentListCtx)
+			: colTypeCtx && this.getText(colTypeCtx);
+
+		return {
+			materialized: true,
+			orReplace: this.visitFlagValue(ctx, 'REPLACE'),
+			ifNotExists: this.visitFlagValue(ctx, 'EXISTS'),
+			identifier: identifier.split('.')[1],
+			dbName: identifier.split('.')[0] || '',
+			colList: colList,
+			tableProperties: tableClauses.tableProperties,
+			selectStatement: this.visitIfExists(ctx, 'query'),
+			clusteredBy: tableClauses.bucketSpec?.clusteredBy,
+			comment: tableClauses.commentSpec,
+			partitionBy: tableClauses.partitionBy,
+			scheduleClause: tableClauses.scheduleClause,
+		};
+	}
+
+	visitScheduleClause(ctx) {
+		return this.getText(ctx);
+	}
+
 	visitIdentifierCommentList(ctx) {
 		return this.visit(ctx.identifierComment());
 	}
@@ -290,6 +319,7 @@ class Visitor extends SqlBaseVisitor {
 			commentSpec: this.visitIfExists(ctx, 'commentSpec', [])[0],
 			tableProperties: this.visitIfExists(ctx, 'tableProperties', [])?.[0]?.[1],
 			tableOptions: this.visitIfExists(ctx, 'tableOptions', '')?.[0] || '',
+			scheduleClause: this.visitIfExists(ctx, 'scheduleClause')?.[0],
 		};
 	}
 
