@@ -42,7 +42,7 @@ const convertCustomTags = (custom_tags, logger) => {
 
 const isView = name => name.slice(-4) === ' (v)';
 const isViewDdl = (statement = '') =>
-	/^create (or replace |global |temporary ){0,1}view/.test(statement.toLocaleLowerCase());
+	/^create (or replace |global |temporary |materialized )*view/.test(statement.toLocaleLowerCase());
 const isTableDdl = (statement = '') => /^create (or replace ){0,1}table/.test(statement.toLocaleLowerCase());
 
 const cleanEntityName = (sparkVersion, name = '') => {

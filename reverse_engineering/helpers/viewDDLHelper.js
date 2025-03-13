@@ -17,7 +17,7 @@ const getViewDataFromDDl = statement => {
 	parser.addErrorListener(new ExprErrorListener());
 	const tree = parser.singleStatement();
 
-	const sqlBaseToCOllectionVisitor = new SqlBaseToCollectionVisitor();
+	const sqlBaseToCOllectionVisitor = new SqlBaseToCollectionVisitor(statement);
 	let parsedViewData = tree.accept(sqlBaseToCOllectionVisitor);
 	if (!_.isEmpty(parsedViewData.selectStatement)) {
 		parsedViewData.selectStatement = statement.substring(
@@ -39,7 +39,11 @@ const getViewDataFromDDl = statement => {
 		description: parsedViewData.comment,
 		selectStatement: parsedViewData.selectStatement,
 		tableProperties: filterRedundantProperties(parsedViewData.tableProperties, ['transient_lastDdlTime']),
-		columnList: parsedViewData.columnList,
+		columnList: parsedViewData.columnList || parsedViewData.colList,
+		materialized: parsedViewData.materialized,
+		scheduleClause: parsedViewData.scheduleClause,
+		compositePartitionKey: parsedViewData.partitionBy?.map(key => ({ name: key })),
+		compositeClusteringKey: parsedViewData.clusteredBy?.map(key => ({ name: key })),
 	};
 };
 
