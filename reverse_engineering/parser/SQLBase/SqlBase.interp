@@ -649,7 +649,7 @@ skewSpec
 locationSpec
 commentSpec
 query
-withSchemaSpec
+schemaBindingSpec
 insertInto
 partitionSpecLocation
 partitionSpec

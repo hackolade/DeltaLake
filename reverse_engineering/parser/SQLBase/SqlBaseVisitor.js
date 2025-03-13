@@ -425,8 +425,8 @@ class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
-	// Visit a parse tree produced by SqlBaseParser#withSchemaSpec.
-	visitWithSchemaSpec(ctx) {
+	// Visit a parse tree produced by SqlBaseParser#schemaBindingSpec.
+	visitSchemaBindingSpec(ctx) {
 		return this.visitChildren(ctx);
 	}
 

@@ -164,7 +164,7 @@ statement
     | CREATE (OR REPLACE)? (GLOBAL? TEMPORARY)?
         VIEW (IF NOT EXISTS)? multipartIdentifier
         identifierCommentList?
-        (commentSpec | withSchemaSpec |
+        (commentSpec | schemaBindingSpec |
          (PARTITIONED ON identifierList) |
          (TBLPROPERTIES tablePropertyList))*
         AS selectStmt=query                                            #createView
@@ -315,7 +315,7 @@ query
     : ctes? queryTerm queryOrganization
     ;
 
-withSchemaSpec
+schemaBindingSpec
     : WITH SCHEMA  (BINDING | COMPENSATION | TYPE? EVOLUTION)
     ;
 

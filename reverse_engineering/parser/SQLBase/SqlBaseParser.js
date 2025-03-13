@@ -2982,7 +2982,7 @@ class SqlBaseParser extends antlr4.Parser {
 		'locationSpec',
 		'commentSpec',
 		'query',
-		'withSchemaSpec',
+		'schemaBindingSpec',
 		'insertInto',
 		'partitionSpecLocation',
 		'partitionSpec',
@@ -4578,7 +4578,7 @@ class SqlBaseParser extends antlr4.Parser {
 								break;
 							case SqlBaseParser.WITH:
 								this.state = 730;
-								this.withSchemaSpec();
+								this.schemaBindingSpec();
 								break;
 							case SqlBaseParser.PARTITIONED:
 								this.state = 731;
@@ -6577,9 +6577,9 @@ class SqlBaseParser extends antlr4.Parser {
 		return localctx;
 	}
 
-	withSchemaSpec() {
-		let localctx = new WithSchemaSpecContext(this, this._ctx, this.state);
-		this.enterRule(localctx, 36, SqlBaseParser.RULE_withSchemaSpec);
+	schemaBindingSpec() {
+		let localctx = new SchemaBindingSpecContext(this, this._ctx, this.state);
+		this.enterRule(localctx, 36, SqlBaseParser.RULE_schemaBindingSpec);
 		var _la = 0; // Token type
 		try {
 			this.enterOuterAlt(localctx, 1);
@@ -15569,7 +15569,7 @@ SqlBaseParser.RULE_skewSpec = 14;
 SqlBaseParser.RULE_locationSpec = 15;
 SqlBaseParser.RULE_commentSpec = 16;
 SqlBaseParser.RULE_query = 17;
-SqlBaseParser.RULE_withSchemaSpec = 18;
+SqlBaseParser.RULE_schemaBindingSpec = 18;
 SqlBaseParser.RULE_insertInto = 19;
 SqlBaseParser.RULE_partitionSpecLocation = 20;
 SqlBaseParser.RULE_partitionSpec = 21;
@@ -18121,14 +18121,14 @@ class CreateViewContext extends StatementContext {
 		}
 	};
 
-	withSchemaSpec = function (i) {
+	schemaBindingSpec = function (i) {
 		if (i === undefined) {
 			i = null;
 		}
 		if (i === null) {
-			return this.getTypedRuleContexts(WithSchemaSpecContext);
+			return this.getTypedRuleContexts(SchemaBindingSpecContext);
 		} else {
-			return this.getTypedRuleContext(WithSchemaSpecContext, i);
+			return this.getTypedRuleContext(SchemaBindingSpecContext, i);
 		}
 	};
 
@@ -19650,7 +19650,7 @@ class QueryContext extends antlr4.ParserRuleContext {
 	}
 }
 
-class WithSchemaSpecContext extends antlr4.ParserRuleContext {
+class SchemaBindingSpecContext extends antlr4.ParserRuleContext {
 	constructor(parser, parent, invokingState) {
 		if (parent === undefined) {
 			parent = null;
@@ -19660,7 +19660,7 @@ class WithSchemaSpecContext extends antlr4.ParserRuleContext {
 		}
 		super(parent, invokingState);
 		this.parser = parser;
-		this.ruleIndex = SqlBaseParser.RULE_withSchemaSpec;
+		this.ruleIndex = SqlBaseParser.RULE_schemaBindingSpec;
 	}
 
 	WITH() {
@@ -19689,7 +19689,7 @@ class WithSchemaSpecContext extends antlr4.ParserRuleContext {
 
 	accept(visitor) {
 		if (visitor instanceof SqlBaseVisitor) {
-			return visitor.visitWithSchemaSpec(this);
+			return visitor.visitSchemaBindingSpec(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -29804,7 +29804,7 @@ SqlBaseParser.SkewSpecContext = SkewSpecContext;
 SqlBaseParser.LocationSpecContext = LocationSpecContext;
 SqlBaseParser.CommentSpecContext = CommentSpecContext;
 SqlBaseParser.QueryContext = QueryContext;
-SqlBaseParser.WithSchemaSpecContext = WithSchemaSpecContext;
+SqlBaseParser.SchemaBindingSpecContext = SchemaBindingSpecContext;
 SqlBaseParser.InsertIntoContext = InsertIntoContext;
 SqlBaseParser.PartitionSpecLocationContext = PartitionSpecLocationContext;
 SqlBaseParser.PartitionSpecContext = PartitionSpecContext;
