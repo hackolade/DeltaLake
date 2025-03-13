@@ -164,10 +164,10 @@ statement
     | CREATE (OR REPLACE)? (GLOBAL? TEMPORARY)?
         VIEW (IF NOT EXISTS)? multipartIdentifier
         identifierCommentList?
-        (commentSpec |
+        (commentSpec | schemaBindingSpec |
          (PARTITIONED ON identifierList) |
          (TBLPROPERTIES tablePropertyList))*
-        AS selectStmt=query                                                       #createView
+        AS selectStmt=query                                            #createView
     | CREATE (OR REPLACE)? GLOBAL? TEMPORARY VIEW
         tableIdentifier ('(' colTypeList ')')? tableProvider
         (OPTIONS tablePropertyList)?                                   #createTempViewUsing
@@ -313,6 +313,10 @@ commentSpec
 
 query
     : ctes? queryTerm queryOrganization
+    ;
+
+schemaBindingSpec
+    : WITH SCHEMA  (BINDING | COMPENSATION | TYPE? EVOLUTION)
     ;
 
 insertInto
@@ -1572,6 +1576,7 @@ ASC: A S C;
 AT: A T;
 AUTHORIZATION: A U T H O R I Z A T I O N;
 BETWEEN: B E T W E E N;
+BINDING: B I N D I N G;
 BOTH: B O T H;
 BUCKET: B U C K E T;
 BUCKETS: B U C K E T S;
@@ -1594,6 +1599,7 @@ COMMENT: C O M M E N T;
 COMMIT: C O M M I T;
 COMPACT: C O M P A C T;
 COMPACTIONS: C O M P A C T I O N S;
+COMPENSATION: C O M P E N S A T I O N;
 COMPUTE: C O M P U T E;
 CONCATENATE: C O N C A T E N A T E;
 CONSTRAINT: C O N S T R A I N T;
@@ -1626,6 +1632,7 @@ ELSE: E L S E;
 END: E N D;
 ESCAPE: E S C A P E;
 ESCAPED: E S C A P E D;
+EVOLUTION: E V O L U T I O N;
 EXCEPT: E X C E P T;
 EXCHANGE: E X C H A N G E;
 EXISTS: E X I S T S;
