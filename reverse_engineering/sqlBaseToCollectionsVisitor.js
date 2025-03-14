@@ -91,13 +91,14 @@ class Visitor extends SqlBaseVisitor {
 		const colList = identifierCommentListCtx
 			? this.visit(identifierCommentListCtx)
 			: colTypeCtx && this.getText(colTypeCtx);
-
+		const identifiers = identifier.split('.');
+		const dbName = identifiers.length === 2 ? identifiers[0] : identifiers[1];
 		return {
 			materialized: true,
 			orReplace: this.visitFlagValue(ctx, 'REPLACE'),
 			ifNotExists: this.visitFlagValue(ctx, 'EXISTS'),
-			identifier: identifier.split('.')[1],
-			dbName: identifier.split('.')[0] || '',
+			identifier: _.last(identifiers),
+			dbName: dbName || '',
 			colList: colList,
 			tableProperties: tableClauses.tableProperties,
 			selectStatement: this.visitIfExists(ctx, 'query'),
