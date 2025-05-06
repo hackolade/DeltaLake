@@ -1,6 +1,5 @@
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
-const logHelper = require('../reverse_engineering/logHelper');
 const { getCleanedUrl } = require('./utils/general');
 const { generateScript } = require('./generateScript');
 const { generateContainerScript } = require('./generateContainerScript');
@@ -20,7 +19,6 @@ const { ContainerJsonSchema, ContainerStyles, EntityJsonSchema } = require('./ty
 
 const logInfo = (step, connectionInfo, logger) => {
 	logger.clear();
-	logger.log('info', logHelper.getSystemInfo(connectionInfo), step);
 	logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
 };
 
