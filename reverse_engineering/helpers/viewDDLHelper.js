@@ -27,7 +27,11 @@ const getViewDataFromDDl = statement => {
 	}
 	if (!_.isEmpty(parsedViewData.colList) && Array.isArray(parsedViewData.colList)) {
 		parsedViewData.columnList = parsedViewData.colList
-			.map(({ identifier, comment }) => `${identifier}${comment ? ` COMMENT '${comment}'` : ''}`)
+			.map(({ identifier, comment }) => {
+				const commentStatement = ` COMMENT '${encodeStringLiteral(comment)}'`;
+
+				return `${identifier}${comment ? commentStatement : ''}`;
+			})
 			.join(', ');
 	}
 	return {
@@ -45,6 +49,10 @@ const getViewDataFromDDl = statement => {
 		compositePartitionKey: parsedViewData.partitionBy?.map(key => ({ name: key })),
 		compositeClusteringKey: parsedViewData.clusteredBy?.map(key => ({ name: key })),
 	};
+};
+
+const encodeStringLiteral = (str = '') => {
+	return str.replace(/(['\\])/gi, '\\$1').replace(/\n/gi, '\\n');
 };
 
 const filterRedundantProperties = (tableProperties, propertiesList) => {
