@@ -1,5 +1,3 @@
-'use strict';
-
 const async = require('async');
 let connectionData = null;
 
@@ -43,7 +41,6 @@ module.exports = {
 				logger,
 			};
 
-			logInfo('Test connection RE', connectionInfo, logger);
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
 			logger.log('info', clusterState, 'Cluster state info');
 			await databricksHelper.getFirstDatabaseCollectionName(connectionData, clusterState.spark_version, logger);
@@ -59,8 +56,6 @@ module.exports = {
 	},
 
 	async getDatabases(connectionInfo, logger, cb, app) {
-		logInfo('Retrieving databases information', connectionInfo, logger);
-
 		try {
 			const connectionData = {
 				host: getCleanedUrl(connectionInfo.host),
@@ -464,11 +459,6 @@ const handleFileData = filePath => {
 			}
 		});
 	});
-};
-
-const logInfo = (step, connectionInfo, logger) => {
-	logger.clear();
-	logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
 };
 
 const handleError = (logger, error, cb) => {

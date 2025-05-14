@@ -17,11 +17,6 @@ const { ContainerJsonSchema, ContainerStyles, EntityJsonSchema } = require('./ty
  * }} EntitiesJsonSchema
  * */
 
-const logInfo = (step, connectionInfo, logger) => {
-	logger.clear();
-	logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
-};
-
 module.exports = {
 	generateScript,
 
@@ -63,8 +58,6 @@ module.exports = {
 	 * */
 	async testConnection(connectionInfo, logger, cb) {
 		try {
-			logInfo('Test connection FE', connectionInfo, logger);
-
 			const connectionData = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
