@@ -683,6 +683,13 @@ making sure that you maintain a proper JSON format.
 						"template": "collectiontree",
 						"isCompositeKey": true,
 						"disabledItemStrategy": "default"
+					},
+					{
+						"propertyName": "Alternate key",
+						"propertyKeyword": "alternateKey",
+						"propertyTooltip": "",
+						"propertyType": "checkbox",
+						"setFieldPropertyBy": "compositeUniqueKey"
 					}
 				]
 			}

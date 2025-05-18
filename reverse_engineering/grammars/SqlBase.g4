@@ -1393,6 +1393,7 @@ nonReserved
     | DROP
     | ELSE
     | END
+    | ENFORCED
     | ESCAPE
     | ESCAPED
     | EXCHANGE
