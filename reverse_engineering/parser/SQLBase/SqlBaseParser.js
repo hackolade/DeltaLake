@@ -458,7 +458,7 @@ const serializedATN = [
 	'\u010c\u001a\u0002\u000e\u0013\u0015\u001c\u001e359<DGW[moux}\u007f',
 	'\u0081\u0083\u0086\u0088\u008c\u008e\u009a\u009c\u009f\u00a1\u00a5\u00a7',
 	'\u00cd\u00cf\u00d5\u00d7\u00d8\u00da\u00de\u00e0\u0103\u0105\u010b\u010d',
-	'\u010f\u0112\u0117\u0121\u0121\u0002\u0f0a\u0002\u0146\u0003\u0002\u0002',
+	'\u010f\u0112\u0118\u0121\u0121\u0002\u0f0a\u0002\u0146\u0003\u0002\u0002',
 	'\u0002\u0004\u014f\u0003\u0002\u0002\u0002\u0006\u0152\u0003\u0002\u0002',
 	'\u0002\b\u0155\u0003\u0002\u0002\u0002\n\u0158\u0003\u0002\u0002\u0002',
 	'\f\u015b\u0003\u0002\u0002\u0002\u000e\u015e\u0003\u0002\u0002\u0002',
@@ -15506,6 +15506,7 @@ class SqlBaseParser extends antlr4.Parser {
 								(1 << (SqlBaseParser.WITH - 257)) |
 								(1 << (SqlBaseParser.ZONE - 257)) |
 								(1 << (SqlBaseParser.KEY - 257)) |
+								(1 << (SqlBaseParser.ENFORCED - 257)) |
 								(1 << (SqlBaseParser.KW_DEFAULT - 257)))) !==
 							0)
 				)
@@ -29623,6 +29624,10 @@ class NonReservedContext extends antlr4.ParserRuleContext {
 
 	END() {
 		return this.getToken(SqlBaseParser.END, 0);
+	}
+
+	ENFORCED() {
+		return this.getToken(SqlBaseParser.ENFORCED, 0);
 	}
 
 	ESCAPE() {

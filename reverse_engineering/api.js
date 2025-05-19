@@ -1,7 +1,6 @@
 'use strict';
 
 const async = require('async');
-const logHelper = require('./logHelper');
 let connectionData = null;
 
 const fetchRequestHelper = require('./helpers/fetchRequestHelper');
@@ -469,7 +468,6 @@ const handleFileData = filePath => {
 
 const logInfo = (step, connectionInfo, logger) => {
 	logger.clear();
-	logger.log('info', logHelper.getSystemInfo(connectionInfo), step);
 	logger.log('info', connectionInfo, 'connectionInfo', connectionInfo.hiddenKeys);
 };
 
