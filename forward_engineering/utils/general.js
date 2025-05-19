@@ -4,7 +4,7 @@ const _ = require('lodash');
 const sqlFormatter = require('@sqltools/formatter');
 const { RESERVED_WORDS_AS_ARRAY } = require('../enums/reservedWords');
 const { Runtime } = require('../enums/runtime');
-const { escapeUrlIpV6WithBraces } = require('./escapeUrlIpV6WithBraces');
+const { escapeV6IpForURL } = require('./escapeV6IpForURL');
 
 const MAX_STANDARD_ASCII_SYMBOL_CODE = 127;
 
@@ -167,7 +167,7 @@ const getCleanedUrl = url => {
 		return url.slice(0, -1);
 	}
 
-	return escapeUrlIpV6WithBraces({ url });
+	return escapeV6IpForURL({ host: url });
 };
 
 const encodeStringLiteral = (str = '') => {
