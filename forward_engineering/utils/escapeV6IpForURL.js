@@ -22,7 +22,7 @@ function escapeV6IpForURL({ host }) {
 	 * !ip.isV4Format(host) check required because isV6Format returns true for ipv4 address because of backward compatibility
 	 */
 	if (ip.isV6Format(host) && !ip.isV4Format(host)) {
-		return `[${host}]`;
+		return escapeHost(host);
 	}
 
 	const isUrlValid = isValidURL(host);
@@ -42,7 +42,20 @@ function escapeV6IpForURL({ host }) {
 	const port = separatedIpPortionsAndPort.at(-1);
 	const escapedIpWithPort = `[${ipPortions.join(':')}]:${port}`;
 
-	return host.replace(unescapedIpWithPort, escapedIpWithPort);
+	const hostWithEscapedAllPortionsButTheLastOne = host.replace(unescapedIpWithPort, escapedIpWithPort);
+	if (isValidURL(hostWithEscapedAllPortionsButTheLastOne)) {
+		return hostWithEscapedAllPortionsButTheLastOne;
+	}
+
+	return host.replace(unescapedIpWithPort, escapeHost(unescapedIpWithPort));
+}
+
+/**
+ * @param {string} host
+ * @returns {string}
+ */
+function escapeHost(host) {
+	return `[${host}]`;
 }
 
 /**
