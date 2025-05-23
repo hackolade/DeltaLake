@@ -6,6 +6,10 @@ const readline = require('readline');
  * @return {Promise<number>}
  * */
 const getCountOfLines = filePath => {
+	if (!fs.existsSync(filePath)) {
+		throw new Error(`File "${filePath}" does not exist`);
+	}
+
 	const fileStream = fs.createReadStream(filePath);
 	const rl = readline.createInterface({
 		input: fileStream,

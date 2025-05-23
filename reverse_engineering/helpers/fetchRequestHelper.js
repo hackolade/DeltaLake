@@ -116,8 +116,12 @@ const logProgressOfSendingSampleBatches = logger => (lineIndex, amountOfLines) =
 	if (!shouldLogStep(lineIndex)) {
 		return;
 	}
+
 	const progress = Number(lineIndex / amountOfLines);
-	const message = `Inserted ${lineIndex} lines out of ${amountOfLines}, progress ${progress.toFixed(2)}%`;
+	const message =
+		lineIndex === 0
+			? `Start inserting data`
+			: `Inserted ${lineIndex} lines out of ${amountOfLines}, progress ${progress.toFixed(2)}%`;
 	logger.log('info', { message }, 'SEND_SAMPLE_BATCHES');
 	logger.progress({ message });
 };
