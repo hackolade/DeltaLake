@@ -65,7 +65,7 @@ const batchProcessFile = async ({
 			logProgress(lineIndex, amountOfLines);
 			try {
 				batch.push(parseLine(line));
-			} catch (e) {
+			} catch {
 				throw new Error(`Could not parse line at index ${lineIndex}. Check if the file is valid`);
 			}
 			if (batch.length === batchSize) {
@@ -77,11 +77,10 @@ const batchProcessFile = async ({
 
 		if (batch.length !== 0) {
 			await batchHandler(batch);
-			batch = [];
 		}
-	} catch (e) {
-		const batchNumber = Math.floor(lineIndex / batch) + 1;
-		throw new Error(`Error processing batch number ${batchNumber}: ${e.message}`);
+	} catch (error) {
+		const batchNumber = Math.floor(lineIndex / batchSize) + 1;
+		throw new Error(`Error processing batch number ${batchNumber}: ${error.message}`);
 	}
 };
 
