@@ -59,7 +59,37 @@
 					"disabled": false,
 					"disabledLabel": ""
 				}
-			}
+			},
+			"adapters": [
+				{
+					"dependency": {
+						"key": "primaryKey",
+						"valueType": "array"
+					},
+					"defaultValue": {
+						"primaryKey": []
+					}
+				},
+				{
+					"dependency": {
+						"type": "or",
+						"values": [
+							{
+								"key": "primaryKey",
+								"value": true
+							},
+							{
+								"key": "compositePrimaryKey",
+								"value": true
+							}
+						]
+					},
+					"defaultValue": {
+						"primaryKey": false,
+						"compositePrimaryKey": false
+					}
+				}
+			]
 		},
 		{
 			"keyword": "foreignKeys",
@@ -125,7 +155,18 @@
 					"disabled": false,
 					"disabledLabel": ""
 				}
-			}
+			},
+			"adapters": [
+				{
+					"dependency": {
+						"key": "required",
+						"value": true
+					},
+					"defaultValue": {
+						"required": false
+					}
+				}
+			]
 		},
 		{
 			"keyword": "checkConstraints",
@@ -147,7 +188,39 @@
 					"disabled": false,
 					"disabledLabel": ""
 				}
-			}
+			},
+			"adapters": [
+				{
+					"dependency": {
+						"key": "chkConstr",
+						"valueType": "array"
+					},
+					"defaultValue": {
+						"chkConstr": []
+					}
+				},
+				{
+					"dependency": [
+						{
+							"type": "or",
+							"values": [
+								{
+									"key": "checkConstraintName",
+									"exist": true
+								},
+								{
+									"key": "check",
+									"exist": true
+								}
+							]
+						}
+					],
+					"defaultValue": {
+						"check": "",
+						"checkConstraintName": ""
+					}
+				}
+			]
 		},
 		{
 			"keyword": "columnDefaultValues",
@@ -169,7 +242,18 @@
 					"disabled": false,
 					"disabledLabel": ""
 				}
-			}
+			},
+			"adapters": [
+				{
+					"dependency": {
+						"key": "default",
+						"exist": true
+					},
+					"defaultValue": {
+						"default": ""
+					}
+				}
+			]
 		},
 		{
 			"keyword": "columnComments",
@@ -191,7 +275,27 @@
 					"disabled": false,
 					"disabledLabel": ""
 				}
-			}
+			},
+			"adapters": [
+				{
+					"dependency": {
+						"type": "and",
+						"values": [
+							{
+								"key": "collectionName",
+								"exist": false
+							},
+							{
+								"key": "description",
+								"exist": true
+							}
+						]
+					},
+					"defaultValue": {
+						"description": ""
+					}
+				}
+			]
 		},
 		{
 			"keyword": "tableComments",
@@ -213,7 +317,27 @@
 					"disabled": false,
 					"disabledLabel": ""
 				}
-			}
+			},
+			"adapters": [
+				{
+					"dependency": {
+						"type": "and",
+						"values": [
+							{
+								"key": "collectionName",
+								"exist": true
+							},
+							{
+								"key": "description",
+								"exist": true
+							}
+						]
+					},
+					"defaultValue": {
+						"description": ""
+					}
+				}
+			]
 		}
 	],
 	"splitView": {
