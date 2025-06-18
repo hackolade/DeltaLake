@@ -38,6 +38,184 @@
 			"align": "right"
 		}
 	],
+	"scriptGenerationOptions": [
+		{
+			"keyword": "primaryKeys",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___PRIMARY_KEYS",
+			"disabled": false,
+			"value": {
+				"inline": {
+					"default": true,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"separate": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"ignore": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				}
+			}
+		},
+		{
+			"keyword": "foreignKeys",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___FOREIGN_KEYS",
+			"disabled": false,
+			"value": {
+				"inline": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"separate": {
+					"default": true,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"ignore": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				}
+			}
+		},
+		{
+			"keyword": "uniqueConstraints",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___UNIQUE_CONSTRAINTS",
+			"disabled": true,
+			"value": {
+				"inline": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"separate": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"ignore": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				}
+			}
+		},
+		{
+			"keyword": "columnNotNullConstraints",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___COLUMN_NOT_NULL_CONSTRAINTS",
+			"disabled": false,
+			"value": {
+				"inline": {
+					"default": true,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"separate": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"ignore": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				}
+			}
+		},
+		{
+			"keyword": "checkConstraints",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___CHECK_CONSTRAINTS",
+			"disabled": false,
+			"value": {
+				"inline": {
+					"default": false,
+					"disabled": true,
+					"disabledLabel": ""
+				},
+				"separate": {
+					"default": true,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"ignore": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				}
+			}
+		},
+		{
+			"keyword": "columnDefaultValues",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___COLUMN_DEFAULT_VALUES",
+			"disabled": false,
+			"value": {
+				"inline": {
+					"default": true,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"separate": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"ignore": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				}
+			}
+		},
+		{
+			"keyword": "columnComments",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___COLUMN_COMMENTS",
+			"disabled": false,
+			"value": {
+				"inline": {
+					"default": true,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"separate": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"ignore": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				}
+			}
+		},
+		{
+			"keyword": "tableComments",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___TABLE_COMMENTS",
+			"disabled": false,
+			"value": {
+				"inline": {
+					"default": true,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"separate": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"ignore": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				}
+			}
+		}
+	],
 	"splitView": {
 		"byAdditionalOptions": ["INCLUDE_SAMPLES"]
 	},
