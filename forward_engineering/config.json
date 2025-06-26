@@ -114,6 +114,28 @@
 			}
 		},
 		{
+			"keyword": "uniqueConstraints",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___UNIQUE_CONSTRAINTS",
+			"disabled": true,
+			"value": {
+				"inline": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"separate": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"ignore": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				}
+			}
+		},
+		{
 			"keyword": "columnNotNullConstraints",
 			"label": "FE_SCRIPT_GENERATION_OPTIONS___COLUMN_NOT_NULL_CONSTRAINTS",
 			"disabled": false,
