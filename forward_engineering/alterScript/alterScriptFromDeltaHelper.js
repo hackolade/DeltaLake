@@ -14,6 +14,7 @@ const {
 	getAddColumnsScripts,
 	getModifyColumnsScripts,
 	getModifyCollectionCommentsScripts,
+	getUseSchemaScriptDto,
 } = require('./alterScriptHelpers/alterEntityHelper');
 const {
 	getAddViewsScripts,
@@ -110,11 +111,43 @@ const filterOutExistingStatements = ({ alterScriptDtos, existingAlterStatements 
  * @return Array<AlterScriptDto>
  * */
 const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, app }) => {
+	let currentSchemaName = '';
+
 	const existingAlterStatements = new Set();
 	const getCollectionScripts = (items, compMode, getScript) =>
 		items.filter(item => item.compMod?.[compMode]).flatMap(getScript);
 
 	const getColumnScripts = (items, getScript) => items.filter(item => item.properties).flatMap(getScript);
+
+	const getModifyScripts = ({ item, schemaName, getScript }) => {
+		const scriptDtos = getScript(item);
+
+		if (currentSchemaName === schemaName) {
+			return scriptDtos;
+		}
+
+		currentSchemaName = schemaName;
+
+		const useSchemaDto = getUseSchemaScriptDto({ schemaName, ddlProvider: provider });
+
+		return [useSchemaDto, ...scriptDtos].filter(Boolean);
+	};
+
+	const getModifyCollectionScriptsWithUseSchema = (items, compMode, getScript) => {
+		return getCollectionScripts(items, compMode, collection => {
+			const schemaName = collection.compMod?.bucketProperties?.name;
+
+			return getModifyScripts({ item: collection, schemaName, getScript });
+		});
+	};
+
+	const getModifyColumnScriptsWithUseSchema = (items, getScript) => {
+		return getColumnScripts(items, item => {
+			const schemaName = item.role?.compMod?.bucketProperties?.name;
+
+			return getModifyScripts({ item, schemaName, getScript });
+		});
+	};
 	const dbVersion = data.modelData[0].dbVersion;
 
 	const getDeletedColumnsScriptsMethod = (app, definitions, provider) => {
@@ -145,7 +178,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		'deleted',
 		getDeleteCollectionsScripts(app, provider, dbVersion),
 	);
-	const modifiedCollectionsScriptDtos = getCollectionScripts(
+	const modifiedCollectionsScriptDtos = getModifyCollectionScriptsWithUseSchema(
 		getItems(schema, 'entities', 'modified'),
 		'modified',
 		getModifyCollectionsScripts(app, definitions, provider, dbVersion),
@@ -187,7 +220,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		existingAlterStatements: existingAlterStatementsWithAddedColumns,
 	});
 
-	const modifiedColumnsScriptDtos = getColumnScripts(
+	const modifiedColumnsScriptDtos = getModifyColumnScriptsWithUseSchema(
 		getItems(schema, 'entities', 'modified'),
 		getModifyColumnsScriptsMethod(app, definitions, provider),
 	);

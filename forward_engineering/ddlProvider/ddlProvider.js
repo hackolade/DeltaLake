@@ -487,5 +487,13 @@ module.exports = app => {
 			};
 			return assignTemplates(templates.setTableClustering, templatesConfig);
 		},
+
+		/**
+		 * @param {string} schemaName
+		 * @return {string}
+		 * */
+		useSchema({ schemaName }) {
+			return assignTemplates(templates.useSchema, { schemaName });
+		},
 	};
 };

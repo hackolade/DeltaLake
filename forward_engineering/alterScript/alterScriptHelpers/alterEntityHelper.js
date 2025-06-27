@@ -355,6 +355,16 @@ const getModifyColumnsScriptsForOlderRuntime = (app, definitions, ddlProvider, d
 	].filter(Boolean);
 };
 
+const getUseSchemaScriptDto = ({ schemaName, ddlProvider }) => {
+	if (!schemaName) {
+		return null;
+	}
+
+	const script = ddlProvider.useSchema({ schemaName });
+
+	return AlterScriptDto.getInstance([script], true, false);
+};
+
 module.exports = {
 	getAddCollectionsScripts,
 	getDeleteCollectionsScripts,
@@ -365,4 +375,5 @@ module.exports = {
 	getDeleteColumnScripsForOlderRuntime,
 	getModifyColumnsScriptsForOlderRuntime,
 	getModifyColumnsScripts,
+	getUseSchemaScriptDto,
 };
