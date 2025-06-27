@@ -119,7 +119,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 
 	const getColumnScripts = (items, getScript) => items.filter(item => item.properties).flatMap(getScript);
 
-	const getModifyScripts = ({ item, schemaName, getScript }) => {
+	const getModifiedScripts = ({ item, schemaName, getScript }) => {
 		const scriptDtos = getScript(item);
 
 		if (currentSchemaName === schemaName) {
@@ -133,19 +133,19 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		return [useSchemaDto, ...scriptDtos].filter(Boolean);
 	};
 
-	const getModifyCollectionScriptsWithUseSchema = (items, compMode, getScript) => {
+	const getModifiedCollectionScriptsWithUseSchema = (items, compMode, getScript) => {
 		return getCollectionScripts(items, compMode, collection => {
 			const schemaName = collection.compMod?.bucketProperties?.name;
 
-			return getModifyScripts({ item: collection, schemaName, getScript });
+			return getModifiedScripts({ item: collection, schemaName, getScript });
 		});
 	};
 
-	const getModifyColumnScriptsWithUseSchema = (items, getScript) => {
+	const getModifiedColumnScriptsWithUseSchema = (items, getScript) => {
 		return getColumnScripts(items, item => {
 			const schemaName = item.role?.compMod?.bucketProperties?.name;
 
-			return getModifyScripts({ item, schemaName, getScript });
+			return getModifiedScripts({ item, schemaName, getScript });
 		});
 	};
 	const dbVersion = data.modelData[0].dbVersion;
@@ -178,7 +178,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		'deleted',
 		getDeleteCollectionsScripts(app, provider, dbVersion),
 	);
-	const modifiedCollectionsScriptDtos = getModifyCollectionScriptsWithUseSchema(
+	const modifiedCollectionsScriptDtos = getModifiedCollectionScriptsWithUseSchema(
 		getItems(schema, 'entities', 'modified'),
 		'modified',
 		getModifyCollectionsScripts(app, definitions, provider, dbVersion),
@@ -220,7 +220,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		existingAlterStatements: existingAlterStatementsWithAddedColumns,
 	});
 
-	const modifiedColumnsScriptDtos = getModifyColumnScriptsWithUseSchema(
+	const modifiedColumnsScriptDtos = getModifiedColumnScriptsWithUseSchema(
 		getItems(schema, 'entities', 'modified'),
 		getModifyColumnsScriptsMethod(app, definitions, provider),
 	);
