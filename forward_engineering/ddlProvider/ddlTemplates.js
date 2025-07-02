@@ -86,4 +86,6 @@ module.exports = {
 	unsetColumnTags: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName}\nUNSET TAGS (${tags});',
 
 	setTableClustering: 'ALTER TABLE ${name} CLUSTER BY ${clustering};',
+
+	useSchema: 'USE ${schemaName};',
 };
