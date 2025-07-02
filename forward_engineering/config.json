@@ -98,7 +98,7 @@
 			"value": {
 				"inline": {
 					"default": false,
-					"disabled": false,
+					"disabled": true,
 					"disabledLabel": ""
 				},
 				"separate": {
