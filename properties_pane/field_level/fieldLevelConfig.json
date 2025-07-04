@@ -513,7 +513,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?\\S[a-zA-Z\\d\\s_]{1,253}\\S$"
 						}
 					},
 					{
@@ -946,7 +946,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?\\S[a-zA-Z\\d\\s_]{1,253}\\S$"
 						}
 					},
 					{
@@ -1104,7 +1104,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?\\S[a-zA-Z\\d\\s_]{1,253}\\S$"
 						}
 					},
 					{
@@ -1428,7 +1428,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?\\S[a-zA-Z\\d\\s_]{1,253}\\S$"
 						}
 					},
 					{
@@ -1807,7 +1807,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?\\S[a-zA-Z\\d\\s_]{1,253}\\S$"
 						}
 					},
 					{
@@ -2137,7 +2137,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?\\S[a-zA-Z\\d\\s_]{1,253}\\S$"
 						}
 					},
 					{
@@ -2466,7 +2466,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?\\S[a-zA-Z\\d\\s_]{1,253}\\S$"
 						}
 					},
 					{
@@ -2811,7 +2811,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?\\S[a-zA-Z\\d\\s_]{1,253}\\S$"
 						}
 					},
 					{
@@ -3181,7 +3181,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?\\S[a-zA-Z\\d\\s_]{1,253}\\S$"
 						}
 					},
 					{
@@ -3507,7 +3507,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?\\S[a-zA-Z\\d\\s_]{1,253}\\S$"
 						}
 					},
 					{
@@ -3866,7 +3866,7 @@ making sure that you maintain a proper JSON format.
 						"propertyTooltip": "The key of the tag must be between 1 and 255 UTF-8 characters inclusive, special characters cannot be used in tag names",
 						"propertyType": "text",
 						"validation": {
-							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?[a-zA-Z\\d]{1,255}$"
+							"regex": "^(?=.*?\\d)?(?=.*?[a-zA-Z])?\\S[a-zA-Z\\d\\s_]{1,253}\\S$"
 						}
 					},
 					{
