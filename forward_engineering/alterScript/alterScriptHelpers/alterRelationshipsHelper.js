@@ -1,5 +1,7 @@
-const { getFullEntityName, replaceSpaceWithUnderscore, prepareName } = require('../../utils/general');
+const { getFullEntityName, replaceSpaceWithUnderscore, prepareName, getContainerName } = require('../../utils/general');
 const { AlterScriptDto } = require('../types/AlterScriptDto');
+const { getUseSchemaScriptDto } = require('./alterEntityHelper');
+const { getItems } = require('./columnHelpers/getItems');
 
 /**
  * @param relationship {Object}
@@ -12,7 +14,8 @@ const getRelationshipName = relationship => {
 const getFullParentTableName = relationship => {
 	const compMod = relationship.role.compMod;
 
-	const parentDBName = replaceSpaceWithUnderscore(compMod.parent.bucket.name);
+	const parentDBName = replaceSpaceWithUnderscore(prepareName(compMod.parent.bucket.name));
+
 	const parentEntityName = replaceSpaceWithUnderscore(compMod.parent.collection.name);
 	return getFullEntityName(parentDBName, parentEntityName);
 };
@@ -20,7 +23,7 @@ const getFullParentTableName = relationship => {
 const getFullChildTableName = relationship => {
 	const compMod = relationship.role.compMod;
 
-	const childDBName = replaceSpaceWithUnderscore(compMod.child.bucket.name);
+	const childDBName = replaceSpaceWithUnderscore(prepareName(compMod.child.bucket.name));
 	const childEntityName = replaceSpaceWithUnderscore(compMod.child.collection.name);
 	return getFullEntityName(childDBName, childEntityName);
 };
@@ -159,8 +162,25 @@ const getModifyForeignKeyScripts = ddlProvider => modifiedRelationships => {
 		.filter(res => res.scripts.some(scriptDto => Boolean(scriptDto.script)));
 };
 
+/**
+ * @return Array<AlterScriptDto>
+ * */
+const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider }) => {
+	const deletedRelationships = getItems(schema, 'relationships', 'deleted').filter(
+		relationship => relationship.role?.compMod?.deleted,
+	);
+	const addedRelationships = getItems(schema, 'relationships', 'added').filter(
+		relationship => relationship.role?.compMod?.created,
+	);
+	const modifiedRelationships = getItems(schema, 'relationships', 'modified');
+
+	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider)(deletedRelationships);
+	const addFkScripts = getAddForeignKeyScripts(ddlProvider)(addedRelationships);
+	const modifiedFkScripts = getModifyForeignKeyScripts(ddlProvider)(modifiedRelationships);
+
+	return [...deleteFkScripts, ...addFkScripts, ...modifiedFkScripts];
+};
+
 module.exports = {
-	getDeleteForeignKeyScripts,
-	getModifyForeignKeyScripts,
-	getAddForeignKeyScripts,
+	getAlterRelationshipsScriptDtos,
 };
