@@ -15,8 +15,8 @@ const getFullParentTableName = relationship => {
 	const compMod = relationship.role.compMod;
 
 	const parentDBName = replaceSpaceWithUnderscore(prepareName(compMod.parent.bucket.name));
-
 	const parentEntityName = replaceSpaceWithUnderscore(compMod.parent.collection.name);
+
 	return getFullEntityName(parentDBName, parentEntityName);
 };
 
@@ -157,11 +157,11 @@ const getModifyForeignKeyScript = ddlProvider => relationship => {
 const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider }) => {
 	let currentSchemaName = '';
 
-	const getAddForeignKeyScripts = (addedRelationships, getScript) => {
+	const generateAddFkScriptDtos = (addedRelationships, getScript) => {
 		return addedRelationships.filter(relationship => canRelationshipBeAdded(relationship)).flatMap(getScript);
 	};
 
-	const getModifyForeignKeyScripts = (modifiedRelationships, getScript) => {
+	const generateModifyFkScriptDtos = (modifiedRelationships, getScript) => {
 		return modifiedRelationships
 			.filter(relationship => canRelationshipBeAdded(relationship) && canRelationshipBeDeleted(relationship))
 			.flatMap(getScript);
@@ -202,12 +202,12 @@ const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider }) => {
 	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider)(deletedRelationships);
 	const addFkScripts = getRelationshipsScriptsWithUseSchema(
 		addedRelationships,
-		getAddForeignKeyScripts,
+		generateAddFkScriptDtos,
 		getAddForeignKeyScript,
 	);
 	const modifiedFkScripts = getRelationshipsScriptsWithUseSchema(
 		modifiedRelationships,
-		getModifyForeignKeyScripts,
+		generateModifyFkScriptDtos,
 		getModifyForeignKeyScript,
 	);
 

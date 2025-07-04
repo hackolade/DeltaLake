@@ -107,22 +107,24 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 
 	const getColumnScripts = (items, getScript) => items.filter(item => item.properties).flatMap(getScript);
 
-	const getModifiedScripts = ({ item, schemaName, getScript }) => {
-		const scriptDtos = getScript(item);
-
-		if (!scriptDtos.length) {
+	const wrapWithUseSchema = (schemaName, scripts) => {
+		if (!scripts.length) {
 			return [];
 		}
 
 		if (currentSchemaName === schemaName) {
-			return scriptDtos;
+			return scripts;
 		}
 
 		currentSchemaName = schemaName;
-
 		const useSchemaDto = getUseSchemaScriptDto({ schemaName, ddlProvider: provider });
+		return [useSchemaDto, ...scripts];
+	};
 
-		return [useSchemaDto, ...scriptDtos].filter(Boolean);
+	const getModifiedScripts = ({ item, schemaName, getScript }) => {
+		const scriptDtos = getScript(item);
+
+		return wrapWithUseSchema(schemaName, scriptDtos);
 	};
 
 	const getSchemaName = collection =>
@@ -170,19 +172,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 			modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified').flatMap(collection => {
 				const scripts = getModifyPkConstraintsScripts(provider)({ collection, dbVersion });
 
-				if (!scripts.length) {
-					return [];
-				}
-
-				const schemaName = getSchemaName(collection);
-
-				if (currentSchemaName === schemaName) {
-					return scripts;
-				}
-
-				const useSchemaDto = getUseSchemaScriptDto({ schemaName, ddlProvider: provider });
-
-				return [useSchemaDto, ...scripts];
+				return wrapWithUseSchema(getSchemaName(collection), scripts);
 			});
 		}
 
