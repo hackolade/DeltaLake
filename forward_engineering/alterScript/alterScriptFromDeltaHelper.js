@@ -234,10 +234,10 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		...addedCollectionsScriptDtos,
 		...modifiedCollectionsScriptDtos,
 		...modifiedCollectionCommentsScriptDtos,
-		...modifiedCollectionPrimaryKeysScriptDtos,
 		...deletedColumnsScriptDtosWithNoDuplicates,
 		...addedColumnsScriptDtosWithNoDuplicates,
 		...modifiedColumnsScriptDtosWithNoDuplicates,
+		...modifiedCollectionPrimaryKeysScriptDtos,
 	].filter(Boolean);
 };
 
