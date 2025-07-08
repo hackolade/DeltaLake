@@ -26,27 +26,15 @@ const {
 	buildScript,
 	getDBVersionNumber,
 	isSupportUnityCatalog,
+	getContainerName,
+	replaceSpaceWithUnderscore,
+	prepareName,
 } = require('../utils/general');
 const { getModifyPkConstraintsScripts } = require('./alterScriptHelpers/entityHelpers/primaryKeyHelper');
-const {
-	getDeleteForeignKeyScripts,
-	getAddForeignKeyScripts,
-	getModifyForeignKeyScripts,
-} = require('./alterScriptHelpers/alterRelationshipsHelper');
+const { getAlterRelationshipsScriptDtos } = require('./alterScriptHelpers/alterRelationshipsHelper');
 const { Runtime } = require('../enums/runtime');
 const { AlterScriptDto } = require('./types/AlterScriptDto');
-
-/**
- * @param entity {Object}
- * @param nameProperty {string}
- * @param modify {'added' | 'deleted' | 'modified'}
- * @return Array<Object>
- * */
-const getItems = (entity, nameProperty, modify) =>
-	[]
-		.concat(entity.properties?.[nameProperty]?.properties?.[modify]?.items)
-		.filter(Boolean)
-		.map(items => Object.values(items.properties)[0]);
+const { getItems } = require('./alterScriptHelpers/columnHelpers/getItems');
 
 /**
  * @param scripts {Array<string>}
@@ -119,23 +107,32 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 
 	const getColumnScripts = (items, getScript) => items.filter(item => item.properties).flatMap(getScript);
 
-	const getModifiedScripts = ({ item, schemaName, getScript }) => {
-		const scriptDtos = getScript(item);
+	const wrapWithUseSchema = (schemaName, scripts) => {
+		if (!scripts.length) {
+			return [];
+		}
 
 		if (currentSchemaName === schemaName) {
-			return scriptDtos;
+			return scripts;
 		}
 
 		currentSchemaName = schemaName;
-
 		const useSchemaDto = getUseSchemaScriptDto({ schemaName, ddlProvider: provider });
-
-		return [useSchemaDto, ...scriptDtos].filter(Boolean);
+		return [useSchemaDto, ...scripts];
 	};
+
+	const getModifiedScripts = ({ item, schemaName, getScript }) => {
+		const scriptDtos = getScript(item);
+
+		return wrapWithUseSchema(schemaName, scriptDtos);
+	};
+
+	const getSchemaName = collection =>
+		replaceSpaceWithUnderscore(prepareName(getContainerName(collection.role?.compMod)));
 
 	const getModifiedCollectionScriptsWithUseSchema = (items, compMode, getScript) => {
 		return getCollectionScripts(items, compMode, collection => {
-			const schemaName = collection.compMod?.bucketProperties?.name;
+			const schemaName = getSchemaName(collection);
 
 			return getModifiedScripts({ item: collection, schemaName, getScript });
 		});
@@ -143,7 +140,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 
 	const getModifiedColumnScriptsWithUseSchema = (items, getScript) => {
 		return getColumnScripts(items, item => {
-			const schemaName = item.role?.compMod?.bucketProperties?.name;
+			const schemaName = getSchemaName(item);
 
 			return getModifiedScripts({ item, schemaName, getScript });
 		});
@@ -168,6 +165,20 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		return getModifyColumnsScripts(app, definitions, provider, dbVersion);
 	};
 
+	const getModifiedCollectionPrimaryKeysScriptDtos = () => {
+		let modifiedCollectionPrimaryKeysScriptDtos = [];
+
+		if (getDBVersionNumber(dbVersion) >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
+			modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified').flatMap(collection => {
+				const scripts = getModifyPkConstraintsScripts(provider)({ collection, dbVersion });
+
+				return wrapWithUseSchema(getSchemaName(collection), scripts);
+			});
+		}
+
+		return modifiedCollectionPrimaryKeysScriptDtos;
+	};
+
 	const addedCollectionsScriptDtos = getCollectionScripts(
 		getItems(schema, 'entities', 'added'),
 		'created',
@@ -187,12 +198,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		getModifyCollectionCommentsScripts(provider)({ collection: item, dbVersion }),
 	);
 
-	let modifiedCollectionPrimaryKeysScriptDtos = [];
-	if (getDBVersionNumber(dbVersion) >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
-		modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified').flatMap(item =>
-			getModifyPkConstraintsScripts(provider)({ collection: item, dbVersion }),
-		);
-	}
+	const modifiedCollectionPrimaryKeysScriptDtos = getModifiedCollectionPrimaryKeysScriptDtos();
 
 	const addedColumnsItems = getItems(schema, 'entities', 'added').filter(item => !item?.compMod?.created);
 	const addedColumnsScriptDtos = getColumnScripts(
@@ -281,25 +287,6 @@ const getAlterViewsScriptDtos = (schema, provider, dbVersion) => {
 };
 
 /**
- * @return Array<AlterScriptDto>
- * */
-const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider }) => {
-	const deletedRelationships = getItems(schema, 'relationships', 'deleted').filter(
-		relationship => relationship.role?.compMod?.deleted,
-	);
-	const addedRelationships = getItems(schema, 'relationships', 'added').filter(
-		relationship => relationship.role?.compMod?.created,
-	);
-	const modifiedRelationships = getItems(schema, 'relationships', 'modified');
-
-	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider)(deletedRelationships);
-	const addFkScripts = getAddForeignKeyScripts(ddlProvider)(addedRelationships);
-	const modifiedFkScripts = getModifyForeignKeyScripts(ddlProvider)(modifiedRelationships);
-
-	return [...deleteFkScripts, ...addFkScripts, ...modifiedFkScripts];
-};
-
-/**
  * @param scriptDtos {Array<AlterScriptDto>},
  * @param data {{
  *     options: {
@@ -341,7 +328,7 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
 	const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, dbVersion);
 	let relationshipsScriptDtos = [];
 	if (isUnityCatalogSupports) {
-		relationshipsScriptDtos = getAlterRelationshipsScriptDtos({ schema, ddlProvider: provider });
+		relationshipsScriptDtos = getAlterRelationshipsScriptDtos({ schema, definitions, ddlProvider: provider });
 	}
 
 	return [...containersScriptDtos, ...collectionsScriptDtos, ...viewsScriptDtos, ...relationshipsScriptDtos];
