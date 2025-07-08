@@ -198,8 +198,6 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		getModifyCollectionCommentsScripts(provider)({ collection: item, dbVersion }),
 	);
 
-	const modifiedCollectionPrimaryKeysScriptDtos = getModifiedCollectionPrimaryKeysScriptDtos();
-
 	const addedColumnsItems = getItems(schema, 'entities', 'added').filter(item => !item?.compMod?.created);
 	const addedColumnsScriptDtos = getColumnScripts(
 		addedColumnsItems,
@@ -234,6 +232,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		alterScriptDtos: modifiedColumnsScriptDtos,
 		existingAlterStatements: existingAlterStatementsWithDeletedColumns,
 	});
+	const modifiedCollectionPrimaryKeysScriptDtos = getModifiedCollectionPrimaryKeysScriptDtos();
 
 	return [
 		...deletedCollectionsScriptDtos,
