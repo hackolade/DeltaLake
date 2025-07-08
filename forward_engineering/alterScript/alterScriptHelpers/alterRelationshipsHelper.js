@@ -1,5 +1,7 @@
-const { getFullEntityName, replaceSpaceWithUnderscore, prepareName } = require('../../utils/general');
+const { getFullEntityName, replaceSpaceWithUnderscore, prepareName, getContainerName } = require('../../utils/general');
 const { AlterScriptDto } = require('../types/AlterScriptDto');
+const { getUseSchemaScriptDto } = require('./alterEntityHelper');
+const { getItems } = require('./columnHelpers/getItems');
 
 /**
  * @param relationship {Object}
@@ -12,15 +14,16 @@ const getRelationshipName = relationship => {
 const getFullParentTableName = relationship => {
 	const compMod = relationship.role.compMod;
 
-	const parentDBName = replaceSpaceWithUnderscore(compMod.parent.bucket.name);
+	const parentDBName = replaceSpaceWithUnderscore(prepareName(compMod.parent.bucket.name));
 	const parentEntityName = replaceSpaceWithUnderscore(compMod.parent.collection.name);
+
 	return getFullEntityName(parentDBName, parentEntityName);
 };
 
 const getFullChildTableName = relationship => {
 	const compMod = relationship.role.compMod;
 
-	const childDBName = replaceSpaceWithUnderscore(compMod.child.bucket.name);
+	const childDBName = replaceSpaceWithUnderscore(prepareName(compMod.child.bucket.name));
 	const childEntityName = replaceSpaceWithUnderscore(compMod.child.collection.name);
 	return getFullEntityName(childDBName, childEntityName);
 };
@@ -69,22 +72,18 @@ const canRelationshipBeAdded = relationship => {
 /**
  * @return {(addedRelationships: Array<Object>) => Array<AlterScriptDto>}
  * */
-const getAddForeignKeyScripts = ddlProvider => addedRelationships => {
-	return addedRelationships
-		.filter(relationship => canRelationshipBeAdded(relationship))
-		.map(relationship => {
-			const script = getAddSingleForeignKeyScript(ddlProvider)(relationship);
-			return {
-				isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
-				scripts: [
-					{
-						script,
-						isDropScript: false,
-					},
-				],
-			};
-		})
-		.filter(res => res.scripts.some(scriptDto => Boolean(scriptDto.script)));
+const getAddForeignKeyScript = ddlProvider => relationship => {
+	const script = getAddSingleForeignKeyScript(ddlProvider)(relationship);
+
+	return {
+		isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
+		scripts: [
+			{
+				script,
+				isDropScript: false,
+			},
+		],
+	};
 };
 
 /**
@@ -136,31 +135,85 @@ const getDeleteForeignKeyScripts = ddlProvider => deletedRelationships => {
 /**
  * @return {(modifiedRelationships: Array<Object>) => Array<AlterScriptDto>}
  * */
-const getModifyForeignKeyScripts = ddlProvider => modifiedRelationships => {
-	return modifiedRelationships
-		.filter(relationship => canRelationshipBeAdded(relationship) && canRelationshipBeDeleted(relationship))
-		.map(relationship => {
-			const deleteScript = getDeleteSingleForeignKeyScript(ddlProvider)(relationship);
-			const addScript = getAddSingleForeignKeyScript(ddlProvider)(relationship);
-			return {
-				isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
-				scripts: [
-					{
-						script: deleteScript,
-						isDropScript: true,
-					},
-					{
-						script: addScript,
-						isDropScript: false,
-					},
-				],
-			};
-		})
-		.filter(res => res.scripts.some(scriptDto => Boolean(scriptDto.script)));
+const getModifyForeignKeyScript = ddlProvider => relationship => {
+	const deleteScript = getDeleteSingleForeignKeyScript(ddlProvider)(relationship);
+	const addScript = getAddSingleForeignKeyScript(ddlProvider)(relationship);
+
+	return {
+		isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
+		scripts: [
+			{
+				script: deleteScript,
+				isDropScript: true,
+			},
+			{
+				script: addScript,
+				isDropScript: false,
+			},
+		],
+	};
+};
+
+const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider }) => {
+	let currentSchemaName = '';
+
+	const generateAddFkScriptDtos = (addedRelationships, getScript) => {
+		return addedRelationships.filter(relationship => canRelationshipBeAdded(relationship)).flatMap(getScript);
+	};
+
+	const generateModifyFkScriptDtos = (modifiedRelationships, getScript) => {
+		return modifiedRelationships
+			.filter(relationship => canRelationshipBeAdded(relationship) && canRelationshipBeDeleted(relationship))
+			.flatMap(getScript);
+	};
+
+	const getRelationshipsScriptsWithUseSchema = (relationships, processRelationships, getScript) => {
+		return processRelationships(relationships, relationship => {
+			const scriptDto = getScript(ddlProvider)(relationship);
+			const scriptIsNotEmpty = scriptDto.scripts.some(scriptDto => Boolean(scriptDto.script));
+
+			if (!scriptIsNotEmpty) {
+				return [];
+			}
+
+			const schemaName = replaceSpaceWithUnderscore(
+				prepareName(relationship.role.compMod.child.bucket?.name || ''),
+			);
+
+			if (currentSchemaName === schemaName) {
+				return [scriptDto];
+			}
+
+			currentSchemaName = schemaName;
+			const useSchemaDto = getUseSchemaScriptDto({ schemaName, ddlProvider });
+
+			return [useSchemaDto, scriptDto];
+		});
+	};
+
+	const deletedRelationships = getItems(schema, 'relationships', 'deleted').filter(
+		relationship => relationship.role?.compMod?.deleted,
+	);
+	const addedRelationships = getItems(schema, 'relationships', 'added').filter(
+		relationship => relationship.role?.compMod?.created,
+	);
+	const modifiedRelationships = getItems(schema, 'relationships', 'modified');
+
+	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider)(deletedRelationships);
+	const addFkScripts = getRelationshipsScriptsWithUseSchema(
+		addedRelationships,
+		generateAddFkScriptDtos,
+		getAddForeignKeyScript,
+	);
+	const modifiedFkScripts = getRelationshipsScriptsWithUseSchema(
+		modifiedRelationships,
+		generateModifyFkScriptDtos,
+		getModifyForeignKeyScript,
+	);
+
+	return [...deleteFkScripts, ...addFkScripts, ...modifiedFkScripts];
 };
 
 module.exports = {
-	getDeleteForeignKeyScripts,
-	getModifyForeignKeyScripts,
-	getAddForeignKeyScripts,
+	getAlterRelationshipsScriptDtos,
 };
