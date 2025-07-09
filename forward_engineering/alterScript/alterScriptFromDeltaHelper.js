@@ -234,7 +234,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 	});
 	const modifiedCollectionPrimaryKeysScriptDtos = getModifiedCollectionPrimaryKeysScriptDtos();
 
-	return [
+	const script = [
 		...deletedCollectionsScriptDtos,
 		...addedCollectionsScriptDtos,
 		...modifiedCollectionsScriptDtos,
@@ -244,6 +244,11 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		...modifiedColumnsScriptDtosWithNoDuplicates,
 		...modifiedCollectionPrimaryKeysScriptDtos,
 	].filter(Boolean);
+
+	return {
+		currentSchemaName,
+		script,
+	};
 };
 
 /**
@@ -323,11 +328,21 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
 	const dbVersion = data.modelData[0].dbVersion;
 	const isUnityCatalogSupports = isSupportUnityCatalog(dbVersion);
 	const containersScriptDtos = getAlterContainersScriptDtos({ schema, isUnityCatalogSupports, provider, data });
-	const collectionsScriptDtos = getAlterCollectionsScriptDtos({ schema, definitions, provider, data, app });
+	const { script: collectionsScriptDtos, currentSchemaName } = getAlterCollectionsScriptDtos({
+		schema,
+		definitions,
+		provider,
+		data,
+		app,
+	});
 	const viewsScriptDtos = getAlterViewsScriptDtos(schema, provider, dbVersion);
 	let relationshipsScriptDtos = [];
 	if (isUnityCatalogSupports) {
-		relationshipsScriptDtos = getAlterRelationshipsScriptDtos({ schema, definitions, ddlProvider: provider });
+		relationshipsScriptDtos = getAlterRelationshipsScriptDtos({
+			schema,
+			ddlProvider: provider,
+			initialSchemaName: currentSchemaName,
+		});
 	}
 
 	return [...containersScriptDtos, ...collectionsScriptDtos, ...viewsScriptDtos, ...relationshipsScriptDtos];
