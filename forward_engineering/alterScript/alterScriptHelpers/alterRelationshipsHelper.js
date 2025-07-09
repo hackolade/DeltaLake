@@ -154,8 +154,8 @@ const getModifyForeignKeyScript = ddlProvider => relationship => {
 	};
 };
 
-const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider }) => {
-	let currentSchemaName = '';
+const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider, initialSchemaName }) => {
+	let currentSchemaName = initialSchemaName;
 
 	const generateAddFkScriptDtos = (addedRelationships, getScript) => {
 		return addedRelationships.filter(relationship => canRelationshipBeAdded(relationship)).flatMap(getScript);
