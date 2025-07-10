@@ -115,7 +115,7 @@
 		},
 		{
 			"keyword": "uniqueConstraints",
-			"label": "FE_SCRIPT_GENERATION_OPTIONS___UNIQUE_CONSTRAINTS",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___UNIQUE_KEYS",
 			"disabled": true,
 			"value": {
 				"inline": {
@@ -137,7 +137,7 @@
 		},
 		{
 			"keyword": "columnNotNullConstraints",
-			"label": "FE_SCRIPT_GENERATION_OPTIONS___COLUMN_NOT_NULL_CONSTRAINTS",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___COLUMN_NOT_NULL",
 			"disabled": false,
 			"value": {
 				"inline": {
@@ -256,8 +256,8 @@
 			]
 		},
 		{
-			"keyword": "columnComments",
-			"label": "FE_SCRIPT_GENERATION_OPTIONS___COLUMN_COMMENTS",
+			"keyword": "schemaComments",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___SCHEMA_COMMENTS",
 			"disabled": false,
 			"value": {
 				"inline": {
@@ -279,17 +279,8 @@
 			"adapters": [
 				{
 					"dependency": {
-						"type": "and",
-						"values": [
-							{
-								"key": "collectionName",
-								"exist": false
-							},
-							{
-								"key": "description",
-								"exist": true
-							}
-						]
+						"key": "type",
+						"value": "bucket"
 					},
 					"defaultValue": {
 						"description": ""
@@ -326,6 +317,94 @@
 							{
 								"key": "collectionName",
 								"exist": true
+							},
+							{
+								"key": "description",
+								"exist": true
+							}
+						]
+					},
+					"defaultValue": {
+						"description": ""
+					}
+				}
+			]
+		},
+		{
+			"keyword": "viewComments",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___VIEW_COMMENTS",
+			"disabled": false,
+			"value": {
+				"inline": {
+					"default": true,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"separate": {
+					"default": false,
+					"disabled": true,
+					"disabledLabel": ""
+				},
+				"ignore": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				}
+			},
+			"adapters": [
+				{
+					"dependency": {
+						"key": "viewOn",
+						"exist": true
+					},
+					"defaultValue": {
+						"description": ""
+					}
+				}
+			]
+		},
+		{
+			"keyword": "columnComments",
+			"label": "FE_SCRIPT_GENERATION_OPTIONS___COLUMN_COMMENTS",
+			"disabled": false,
+			"value": {
+				"inline": {
+					"default": true,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"separate": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				},
+				"ignore": {
+					"default": false,
+					"disabled": false,
+					"disabledLabel": ""
+				}
+			},
+			"adapters": [
+				{
+					"dependency": {
+						"type": "and",
+						"values": [
+							{
+								"type": "not",
+								"values": [
+									{
+										"key": "type",
+										"value": "bucket"
+									}
+								]
+							},
+							{
+								"key": "collectionName",
+								"exist": false
+							},
+							{
+								"key": "viewOn",
+								"exist": false
 							},
 							{
 								"key": "description",
