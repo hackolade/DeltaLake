@@ -1,5 +1,5 @@
 const { EntitiesThatSupportComments } = require('../../../enums/entityType');
-const { replaceSpaceWithUnderscore, wrapInSingleQuotes } = require('../../../utils/general');
+const { replaceSpaceWithUnderscore, wrapInSingleQuotes, prepareName } = require('../../../utils/general');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 
 /**
@@ -18,9 +18,10 @@ const extractDescription = container => {
 const getUpsertCommentsScriptDto = ddlProvider => container => {
 	const description = extractDescription(container);
 	if (description.new && description.new !== description.old) {
+		const schemaName = prepareName(container.role.code || container.role.name);
 		const script = ddlProvider.updateComment({
 			entityType: EntitiesThatSupportComments.SCHEMA,
-			entityName: replaceSpaceWithUnderscore(container.role.name),
+			entityName: replaceSpaceWithUnderscore(schemaName),
 			comment: wrapInSingleQuotes(description.new),
 		});
 		return {
@@ -41,9 +42,10 @@ const getUpsertCommentsScriptDto = ddlProvider => container => {
 const getDropCommentsScriptDto = ddlProvider => container => {
 	const description = extractDescription(container);
 	if (description.old && !description.new) {
+		const schemaName = prepareName(container.role.code || container.role.name);
 		const script = ddlProvider.dropComment({
 			entityType: EntitiesThatSupportComments.SCHEMA,
-			entityName: replaceSpaceWithUnderscore(container.role.name),
+			entityName: replaceSpaceWithUnderscore(schemaName),
 		});
 		return {
 			scripts: [
