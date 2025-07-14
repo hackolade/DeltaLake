@@ -1,4 +1,10 @@
-const { getFullEntityName, replaceSpaceWithUnderscore, prepareName, getContainerName } = require('../../utils/general');
+const {
+	getFullEntityName,
+	replaceSpaceWithUnderscore,
+	replaceDotWithUnderscore,
+	prepareName,
+	getContainerName,
+} = require('../../utils/general');
 const { AlterScriptDto } = require('../types/AlterScriptDto');
 const { getUseSchemaScriptDto } = require('./alterEntityHelper');
 const { getItems } = require('./columnHelpers/getItems');
@@ -38,10 +44,11 @@ const getAddSingleForeignKeyScript = ddlProvider => relationship => {
 	const childTableName = getFullChildTableName(relationship);
 
 	const relationshipName = compMod.name?.new || getRelationshipName(relationship) || '';
+	const fkName = replaceSpaceWithUnderscore(replaceDotWithUnderscore(prepareName(relationshipName)));
 
 	const addFkConstraintDto = {
 		childTableName,
-		fkConstraintName: prepareName(relationshipName),
+		fkConstraintName: fkName,
 		childColumns: compMod.child.collection.fkFields.map(field => prepareName(field.name)),
 		parentTableName,
 		parentColumns: compMod.parent.collection.fkFields.map(field => prepareName(field.name)),

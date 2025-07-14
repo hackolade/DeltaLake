@@ -320,6 +320,7 @@ module.exports = {
 	getRelationshipName,
 	prepareName,
 	replaceSpaceWithUnderscore,
+	replaceDotWithUnderscore,
 	commentDeactivatedStatement,
 	commentDeactivatedStatements,
 	commentDeactivatedInlineKeys,
