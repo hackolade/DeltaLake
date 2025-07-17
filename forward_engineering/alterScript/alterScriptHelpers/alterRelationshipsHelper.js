@@ -49,7 +49,7 @@ const getAddSingleForeignKeyScript = (ddlProvider, options) => relationship => {
 
 	const addFkConstraintDto = {
 		childTableName,
-		fkConstraintName: prepareName(relationshipName),
+		fkConstraintName: fkName,
 		childColumns: compMod.child.collection.fkFields.map(field => prepareName(field.name)),
 		parentTableName,
 		parentColumns: compMod.parent.collection.fkFields.map(field => prepareName(field.name)),
