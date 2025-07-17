@@ -1,4 +1,10 @@
-const { getFullEntityName, replaceSpaceWithUnderscore, prepareName, getContainerName } = require('../../utils/general');
+const {
+	getFullEntityName,
+	replaceSpaceWithUnderscore,
+	prepareName,
+	getContainerName,
+	replaceDotWithUnderscore,
+} = require('../../utils/general');
 const { AlterScriptDto } = require('../types/AlterScriptDto');
 const { getUseSchemaScriptDto } = require('./alterEntityHelper');
 const { getItems } = require('./columnHelpers/getItems');
@@ -31,17 +37,19 @@ const getFullChildTableName = relationship => {
 /**
  * @return {(relationship: Object) => string}
  * */
-const getAddSingleForeignKeyScript = ddlProvider => relationship => {
+const getAddSingleForeignKeyScript = (ddlProvider, options) => relationship => {
 	const compMod = relationship.role.compMod;
-
 	const parentTableName = getFullParentTableName(relationship);
 	const childTableName = getFullChildTableName(relationship);
 
 	const relationshipName = compMod.name?.new || getRelationshipName(relationship) || '';
+	const fkName = options?.isCreate
+		? replaceSpaceWithUnderscore(replaceDotWithUnderscore(prepareName(relationshipName)))
+		: prepareName(relationshipName);
 
 	const addFkConstraintDto = {
 		childTableName,
-		fkConstraintName: prepareName(relationshipName),
+		fkConstraintName: fkName,
 		childColumns: compMod.child.collection.fkFields.map(field => prepareName(field.name)),
 		parentTableName,
 		parentColumns: compMod.parent.collection.fkFields.map(field => prepareName(field.name)),
@@ -72,8 +80,8 @@ const canRelationshipBeAdded = relationship => {
 /**
  * @return {(addedRelationships: Array<Object>) => Array<AlterScriptDto>}
  * */
-const getAddForeignKeyScript = ddlProvider => relationship => {
-	const script = getAddSingleForeignKeyScript(ddlProvider)(relationship);
+const getAddForeignKeyScript = (ddlProvider, options) => relationship => {
+	const script = getAddSingleForeignKeyScript(ddlProvider, options)(relationship);
 
 	return {
 		isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
@@ -154,7 +162,7 @@ const getModifyForeignKeyScript = ddlProvider => relationship => {
 	};
 };
 
-const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider, initialSchemaName }) => {
+const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider, initialSchemaName, options }) => {
 	let currentSchemaName = initialSchemaName;
 
 	const generateAddFkScriptDtos = (addedRelationships, getScript) => {
@@ -169,7 +177,7 @@ const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider, initialSchemaNam
 
 	const getRelationshipsScriptsWithUseSchema = (relationships, processRelationships, getScript) => {
 		return processRelationships(relationships, relationship => {
-			const scriptDto = getScript(ddlProvider)(relationship);
+			const scriptDto = getScript(ddlProvider, options)(relationship);
 			const scriptIsNotEmpty = scriptDto.scripts.some(scriptDto => Boolean(scriptDto.script));
 
 			if (!scriptIsNotEmpty) {
