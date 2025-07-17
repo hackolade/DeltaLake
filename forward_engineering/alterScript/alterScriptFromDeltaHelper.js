@@ -342,6 +342,7 @@ const getAlterScriptDtos = (schema, definitions, data, app) => {
 			schema,
 			ddlProvider: provider,
 			initialSchemaName: currentSchemaName,
+			options: data.options,
 		});
 	}
 
