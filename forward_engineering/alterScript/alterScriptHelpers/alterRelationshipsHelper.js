@@ -43,7 +43,7 @@ const getAddSingleForeignKeyScript = (ddlProvider, options) => relationship => {
 	const childTableName = getFullChildTableName(relationship);
 
 	const relationshipName = compMod.name?.new || getRelationshipName(relationship) || '';
-	const fkName = options.isCreate
+	const fkName = options?.isCreate
 		? replaceSpaceWithUnderscore(replaceDotWithUnderscore(prepareName(relationshipName)))
 		: prepareName(relationshipName);
 
