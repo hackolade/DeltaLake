@@ -40,6 +40,14 @@ const didCompositePkChange = collection => {
 };
 
 /**
+ * @param {object} collection
+ * @returns {string}
+ */
+const getDefaultPkConstraintName = collection => {
+	return getEntityNameFromCollection(collection) + '_pk';
+};
+
+/**
  * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getAddCompositePkScripts =
@@ -50,7 +58,6 @@ const getAddCompositePkScripts =
 			return [];
 		}
 		const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
-		const constraintName = getEntityNameFromCollection(collection) + '_pk';
 		const pkDto = collection?.role?.compMod?.primaryKey || {};
 		const newPrimaryKeys = pkDto.new || [];
 
@@ -59,6 +66,8 @@ const getAddCompositePkScripts =
 				const compositePrimaryKey = newPk.compositePrimaryKey || [];
 				const guidsOfColumnsInPk = compositePrimaryKey.map(compositePkEntry => compositePkEntry.keyId);
 				const columnNamesForDDL = getPropertiesNamesByGUIDs(collection, guidsOfColumnsInPk);
+				const constraintName = newPk.constraintName || getDefaultPkConstraintName(collection);
+
 				if (!columnNamesForDDL.length) {
 					return undefined;
 				}
@@ -119,7 +128,6 @@ const getAddPkScripts =
 	ddlProvider =>
 	({ collection, dbVersion }) => {
 		const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
-		const constraintName = getEntityNameFromCollection(collection) + '_pk';
 
 		return _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
@@ -131,6 +139,9 @@ const getAddPkScripts =
 			.map(([name, jsonSchema]) => {
 				const nameForDDl = prepareName(name);
 				const columnNamesForDDL = [nameForDDl];
+				const constraintName =
+					jsonSchema.primaryKeyOptions?.constraintName || getDefaultPkConstraintName(collection);
+
 				return ddlProvider.addPkConstraint(fullTableName, constraintName, columnNamesForDDL);
 			})
 			.map(scriptLine => ({
