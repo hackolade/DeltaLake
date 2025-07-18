@@ -79,7 +79,8 @@ const getAddCompositePkScripts =
 				const compositePrimaryKey = newPk.compositePrimaryKey || [];
 				const guidsOfColumnsInPk = compositePrimaryKey.map(compositePkEntry => compositePkEntry.keyId);
 				const columnNamesForDDL = getPropertiesNamesByGUIDs(collection, guidsOfColumnsInPk);
-				const constraintName = newPk.constraintName || getDefaultPkConstraintName(collection);
+				const pkConstraintName = newPk.constraintName || getDefaultPkConstraintName(collection);
+				const constraintName = prepareName(pkConstraintName);
 				const constraintOptions = getPkConstraintOptions(newPk);
 
 				if (!columnNamesForDDL.length) {
@@ -153,8 +154,9 @@ const getAddPkScripts =
 			.map(([name, jsonSchema]) => {
 				const nameForDDl = prepareName(name);
 				const columnNamesForDDL = [nameForDDl];
-				const constraintName =
+				const pkConstraintName =
 					jsonSchema.primaryKeyOptions?.constraintName || getDefaultPkConstraintName(collection);
+				const constraintName = prepareName(pkConstraintName);
 				const constraintOptions = getPkConstraintOptions(jsonSchema.primaryKeyOptions);
 
 				return ddlProvider.addPkConstraint(fullTableName, constraintName, columnNamesForDDL, constraintOptions);
