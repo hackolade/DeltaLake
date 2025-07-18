@@ -278,17 +278,19 @@ module.exports = app => {
 		},
 
 		/**
-		 * @param tableName {string}
-		 * @param constraintName {string}
-		 * @param pkColumnNames {Array<string>}
-		 * @return string
+		 * @param {string} tableName
+		 * @param {string} constraintName
+		 * @param {Array<string>} pkColumnNames
+		 * @param {string} constraintOptions
+		 * @return {string}
 		 * */
-		addPkConstraint(tableName, constraintName, pkColumnNames) {
+		addPkConstraint(tableName, constraintName, pkColumnNames, constraintOptions) {
 			const pkColumns = pkColumnNames.join(', ');
 			const templateConfig = {
 				tableName,
 				constraintName,
 				pkColumns,
+				constraintOptions,
 			};
 			return assignTemplates(templates.addPkConstraint, templateConfig);
 		},

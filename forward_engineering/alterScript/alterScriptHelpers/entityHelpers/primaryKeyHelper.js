@@ -48,6 +48,19 @@ const getDefaultPkConstraintName = collection => {
 };
 
 /**
+ * @param {object} primaryKey
+ * @returns {string}
+ */
+const getPkConstraintOptions = (primaryKey = {}) => {
+	const notEnforcedOption = primaryKey.notEnforced ? ' NOT ENFORCED' : '';
+	const deferrable = primaryKey.deferrable ? ' DEFERRABLE' : '';
+	const initiallyDeferrableOption = primaryKey.initiallyDeferrable ? ' INITIALLY DEFERRED' : '';
+	const noRelyOption = primaryKey.noRely ? ' NORELY' : '';
+
+	return notEnforcedOption + deferrable + initiallyDeferrableOption + noRelyOption;
+};
+
+/**
  * @return {({collection, dbVersion }: {collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
  * */
 const getAddCompositePkScripts =
@@ -66,12 +79,14 @@ const getAddCompositePkScripts =
 				const compositePrimaryKey = newPk.compositePrimaryKey || [];
 				const guidsOfColumnsInPk = compositePrimaryKey.map(compositePkEntry => compositePkEntry.keyId);
 				const columnNamesForDDL = getPropertiesNamesByGUIDs(collection, guidsOfColumnsInPk);
-				const constraintName = newPk.constraintName || getDefaultPkConstraintName(collection);
+				const pkConstraintName = newPk.constraintName || getDefaultPkConstraintName(collection);
+				const constraintName = prepareName(pkConstraintName);
+				const constraintOptions = getPkConstraintOptions(newPk);
 
 				if (!columnNamesForDDL.length) {
 					return undefined;
 				}
-				return ddlProvider.addPkConstraint(fullTableName, constraintName, columnNamesForDDL);
+				return ddlProvider.addPkConstraint(fullTableName, constraintName, columnNamesForDDL, constraintOptions);
 			})
 			.filter(Boolean)
 			.map(scriptLine => ({
@@ -139,10 +154,12 @@ const getAddPkScripts =
 			.map(([name, jsonSchema]) => {
 				const nameForDDl = prepareName(name);
 				const columnNamesForDDL = [nameForDDl];
-				const constraintName =
+				const pkConstraintName =
 					jsonSchema.primaryKeyOptions?.constraintName || getDefaultPkConstraintName(collection);
+				const constraintName = prepareName(pkConstraintName);
+				const constraintOptions = getPkConstraintOptions(jsonSchema.primaryKeyOptions);
 
-				return ddlProvider.addPkConstraint(fullTableName, constraintName, columnNamesForDDL);
+				return ddlProvider.addPkConstraint(fullTableName, constraintName, columnNamesForDDL, constraintOptions);
 			})
 			.map(scriptLine => ({
 				scripts: [

@@ -36,7 +36,8 @@ module.exports = {
 
 	dropCheckConstraint: 'ALTER TABLE ${tableName} DROP CONSTRAINT IF EXISTS ${constraintName};',
 
-	addPkConstraint: 'ALTER TABLE ${tableName} ADD CONSTRAINT ${constraintName} PRIMARY KEY(${pkColumns});',
+	addPkConstraint:
+		'ALTER TABLE ${tableName} ADD CONSTRAINT ${constraintName} PRIMARY KEY(${pkColumns})${constraintOptions};',
 
 	dropPkConstraint: 'ALTER TABLE ${tableName} DROP PRIMARY KEY IF EXISTS ${dropPkOption};',
 
