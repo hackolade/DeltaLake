@@ -28,7 +28,8 @@
             "views": {
                 "enabled": true,
                 "viewLevel": "model",
-                "disablePipelines": true
+                "disablePipelines": true,
+				"includeViews": true
             },
             "nestedCollections": false,
             "disablePatternField": true,
