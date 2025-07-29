@@ -13,14 +13,15 @@ const { prepareName, encodeStringLiteral, commentDeactivatedStatement } = requir
 const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
 	return _.uniq(
 		Object.entries(columns).map(([name, definition]) => {
-			const id = _.get(columns, [name, 'GUID']);
-
+			const id = definition.GUID;
+			const refId = definition.refId;
 			const itemDataId = Object.keys(collectionRefsDefinitionsMap).find(viewFieldId => {
 				const definitionData = collectionRefsDefinitionsMap[viewFieldId];
 
 				return definitionData.definitionId === id;
 			});
-			const itemData = collectionRefsDefinitionsMap[itemDataId] || {};
+			const itemData = collectionRefsDefinitionsMap[refId] || collectionRefsDefinitionsMap[itemDataId] || {};
+
 			if (!itemData.name) {
 				return prepareName(itemData.name);
 			}
@@ -29,7 +30,6 @@ const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
 			const db = _.first(itemData.bucket) || {};
 			const dbName = db.code || db.name;
 			const fullColumnName = `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
-
 			return commentDeactivatedStatement(fullColumnName, definition.isActivated);
 		}),
 	).filter(_.identity);
