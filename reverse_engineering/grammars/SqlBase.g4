@@ -399,8 +399,8 @@ createTableClauses
     ;
 
 clusterBySpec
-	: CLUSTER BY ( '(' keyNameList ')' ) | AUTO | NONE
-	;
+    : CLUSTER BY ( '(' keyNameList ')' ) | AUTO | NONE
+    ;
 
 tableProperties
     : (TBLPROPERTIES tableProps=tablePropertyList)
