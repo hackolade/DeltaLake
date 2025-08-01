@@ -385,6 +385,7 @@ createTableClauses
     : (
         tableOptions
         | (PARTITIONED BY partitioning = partitionFieldList)
+        | clusterBySpec
         | skewSpec
         | bucketSpec
         | rowFormat
@@ -396,6 +397,10 @@ createTableClauses
         | rowClause
     )*
     ;
+
+clusterBySpec
+	: CLUSTER BY ( '(' keyNameList ')' ) | AUTO | NONE
+	;
 
 tableProperties
     : (TBLPROPERTIES tableProps=tablePropertyList)
@@ -1340,6 +1345,7 @@ nonReserved
     | AS
     | ASC
     | AT
+    | AUTO
     | AUTHORIZATION
     | BETWEEN
     | BOTH
@@ -1461,6 +1467,7 @@ nonReserved
     | NAMESPACES
     | NO
     | NOT
+    | NONE
     | NULL
     | NULLS
     | OF
@@ -1592,6 +1599,7 @@ ARRAY: A R R A Y;
 AS: A S;
 ASC: A S C;
 AT: A T;
+AUTO: A U T O;
 AUTHORIZATION: A U T H O R I Z A T I O N;
 BETWEEN: B E T W E E N;
 BINDING: B I N D I N G;
@@ -1727,6 +1735,7 @@ NAMESPACE: N A M E S P A C E;
 NAMESPACES: N A M E S P A C E S;
 NATURAL: N A T U R A L;
 NO: N O;
+NONE: N O N E;
 NOT: N O T | '!';
 NULL: N U L L;
 NULLS: N U L L S;

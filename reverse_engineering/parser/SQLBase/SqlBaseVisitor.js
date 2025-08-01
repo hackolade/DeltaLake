@@ -515,6 +515,11 @@ class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by SqlBaseParser#clusterBySpec.
+	visitClusterBySpec(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by SqlBaseParser#tableProperties.
 	visitTableProperties(ctx) {
 		return this.visitChildren(ctx);

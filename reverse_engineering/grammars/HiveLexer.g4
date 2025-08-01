@@ -24,6 +24,7 @@ lexer grammar HiveLexer;
 KW_TRUE : T R U E;
 KW_FALSE : F A L S E;
 KW_ALL : A L L;
+KW_AUTO : A U T O;
 KW_NONE: N O N E;
 KW_AND : A N D;
 KW_OR : O R;
@@ -521,9 +522,10 @@ An Identifier can be:
 - macro name
 - hint name
 - window name
+- _metadata
 */
 Identifier
-    : (Letter | Digit) (Letter | Digit | '_')*
+    : (Letter | Digit | '_')+
     | QuotedIdentifier  /* though at the language level we allow all Identifiers to be QuotedIdentifiers;
                                               at the API level only columns are allowed to be of this form */
     | '`' RegexComponent+ '`'
