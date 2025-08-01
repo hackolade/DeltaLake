@@ -42,7 +42,7 @@ class Visitor extends SqlBaseVisitor {
 			using,
 			tableProvider,
 			bucketsNum: tableClauses.bucketSpec?.bucketsNum,
-			clusteredBy: tableClauses.bucketSpec?.clusteredBy,
+			clusteredBy: tableClauses.bucketSpec?.clusteredBy || tableClauses.clusterBy,
 			sortedBy: tableClauses.bucketSpec?.sortedBy,
 			commentSpec: tableClauses.commentSpec,
 			location: tableClauses.locationSpec,
@@ -321,6 +321,7 @@ class Visitor extends SqlBaseVisitor {
 			tableProperties: this.visitIfExists(ctx, 'tableProperties', [])?.[0]?.[1],
 			tableOptions: this.visitIfExists(ctx, 'tableOptions', '')?.[0] || '',
 			scheduleClause: this.visitIfExists(ctx, 'scheduleClause')?.[0],
+			clusterBy: this.visitIfExists(ctx, 'clusterBySpec', [])?.[0],
 		};
 	}
 
@@ -409,6 +410,10 @@ class Visitor extends SqlBaseVisitor {
 			sortedBy: this.visitIfExists(ctx, 'orderedIdentifierList'),
 			bucketsNum: getName(ctx.INTEGER_VALUE()),
 		};
+	}
+
+	visitClusterBySpec(ctx) {
+		return this.visitIfExists(ctx, 'keyNameList', []);
 	}
 
 	visitOrderedIdentifierList(ctx) {
