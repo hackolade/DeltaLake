@@ -1694,11 +1694,7 @@ class Visitor extends HiveParserVisitor {
 	}
 
 	visitClusterByClause(ctx) {
-		const compositeClusteringKey = ctx
-			.columnNameList()
-			.getText()
-			.split(',')
-			.map(name => ({ name }));
+		const compositeClusteringKey = (ctx.columnNameList()?.getText() || '').split(',').map(name => ({ name }));
 
 		return {
 			compositeClusteringKey,

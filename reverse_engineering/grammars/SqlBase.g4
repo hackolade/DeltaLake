@@ -399,7 +399,7 @@ createTableClauses
     ;
 
 clusterBySpec
-    : CLUSTER BY ( '(' keyNameList ')' ) | AUTO | NONE
+    : CLUSTER BY ( '(' keyNameList ')' | AUTO | NONE )
     ;
 
 tableProperties
@@ -962,6 +962,7 @@ constraintOptions
     | DEFERRABLE
     | INITIALLY DEFERRED
     | NORELY
+    | RELY
     ;
 
 columnConstraint
@@ -1437,6 +1438,7 @@ nonReserved
     | INPATH
     | INPUTFORMAT
     | INSERT
+    | INTERSECT
     | INTERVAL
     | INTO
     | IS
@@ -1859,6 +1861,7 @@ DEFERRABLE : D E F E R R A B L E;
 INITIALLY : I N I T I A L L Y;
 DEFERRED : D E F E R R E D;
 NORELY : N O R E L Y;
+RELY : R E L Y;
 MATCH : M A T C H;
 ACTION : A C T I O N;
 
