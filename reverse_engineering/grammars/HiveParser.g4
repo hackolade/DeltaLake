@@ -1315,11 +1315,11 @@ tableConstraintType
     ;
 
 constraintOptsCreate
-    : enableValidateSpecification relySpecification
+    : enableValidateSpecification? relySpecification
     ;
 
 constraintOptsAlter
-    : enableValidateSpecification relySpecification
+    : enableValidateSpecification? relySpecification
     ;
 
 columnNameColonType
