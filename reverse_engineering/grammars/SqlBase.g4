@@ -922,7 +922,7 @@ colTypeList
     ;
 
 colType
-    : colName=errorCapturingIdentifier dataType (columnConstraint)? commentSpec?
+    : colName=errorCapturingIdentifier dataType (columnConstraint)? commentSpec? (KW_MASK functionIdentifier)?
     ;
 
 tableConstraint
@@ -1429,6 +1429,7 @@ nonReserved
     | GROUP
     | GROUPING
     | HAVING
+    | HOURS
     | IF
     | IGNORE
     | IMPORT
@@ -1870,6 +1871,7 @@ KW_ALWAYS: A L W A Y S;
 KW_DEFAULT: D E F A U L T;
 KW_IDENTITY: I D E N T I T Y;
 KW_INCREMENT: I N C R E M E N T;
+KW_MASK: M A S K;
 
 //--SPARK-KEYWORD-LIST-END
 //============================
