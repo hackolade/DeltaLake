@@ -14,7 +14,11 @@ const getTableData = async (table, data, logger) => {
 		tableData = getTableDataFromDDl(ddl);
 		tableData = applyUnityTagsToTable(data.unityTags?.tableTags, tableData);
 	} catch (e) {
-		logger.log('info', ddl, 'Error parsing ddl statement below. Falling back on alternate method.');
+		logger.log(
+			'info',
+			`\n${e.message}\n\n${ddl}`,
+			'Error parsing ddl statement below. Falling back on alternate method.',
+		);
 		return {};
 	}
 	const BloomIndxs = convertIndexes(indexes);
