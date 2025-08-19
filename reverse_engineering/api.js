@@ -86,7 +86,10 @@ module.exports = {
 			} else if (connectionInfo.catalogName) {
 				catalogNames = [connectionInfo.catalogName];
 			} else {
-				catalogNames = await fetchRequestHelper.fetchClusterCatalogNames(connectionData);
+				catalogNames = await fetchRequestHelper.fetchClusterCatalogNames({
+					connectionInfo: connectionData,
+					logger,
+				});
 			}
 
 			logger.log('info', catalogNames, 'Catalog names list');
@@ -389,7 +392,7 @@ module.exports = {
 						if (fieldInference.active === 'field') {
 							documentTemplate = getTemplateDocByJsonSchema(jsonSchema);
 						}
-					} catch (e) {
+					} catch {
 						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
 						return createViewPackage({ name });
 					}
