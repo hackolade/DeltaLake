@@ -45,7 +45,7 @@ module.exports = {
 
 			logInfo('Test connection RE', connectionInfo, logger);
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
-			logger.log('info', clusterState, 'Cluster state info');
+			logger.log('info', { clusterState }, 'Cluster state info');
 			await databricksHelper.getFirstDatabaseCollectionName(connectionData, clusterState.spark_version, logger);
 
 			if (!clusterState.isRunning) {
@@ -122,7 +122,7 @@ module.exports = {
 
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
 
-			logger.log('info', clusterState, 'Cluster state info');
+			logger.log('info', { clusterState }, 'Cluster state info');
 			const dbCollectionsNames = await databricksHelper.getDatabaseCollectionNames(
 				connectionData,
 				clusterState.spark_version,
