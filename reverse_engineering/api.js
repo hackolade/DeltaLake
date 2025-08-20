@@ -164,18 +164,19 @@ module.exports = {
 			logger.log('info', message, 'Retrieving schema', data.hiddenKeys);
 			logger.progress(message);
 		};
-		let modelData;
+
+		let clusterState;
 
 		try {
-			modelData = await databricksHelper.getClusterStateInfo(connectionData, logger);
-			logger.log('info', modelData, 'Cluster state info');
+			clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
+			logger.log('info', { clusterState }, 'Cluster state info');
 
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
 			const fieldInference = data.fieldInference;
-			const isUnityCatalogSupports = isSupportUnityCatalog(modelData.spark_version);
+			const isUnityCatalogSupports = isSupportUnityCatalog(clusterState.spark_version);
 			const isUnityCatalogEnabled =
-				isUnityCatalogSupports && databricksHelper.isEnabledUnityCatalog(modelData.data_security_mode);
+				isUnityCatalogSupports && databricksHelper.isEnabledUnityCatalog(clusterState.data_security_mode);
 
 			if (!isUnityCatalogEnabled) {
 				logger.log('info', '', 'Unity Catalog is disabled');
@@ -209,7 +210,7 @@ module.exports = {
 				connectionData,
 				dataBaseNames,
 				collections,
-				modelData.spark_version,
+				clusterState.spark_version,
 				logger,
 			);
 			const ddlByEntity = entitiesDdl.reduce((ddlByEntity, ddlObject) => {
@@ -319,7 +320,7 @@ module.exports = {
 
 				const viewsNames = dataBaseNames.reduce((viewsNames, dbName) => {
 					const views = (collections[dbName] || [])
-						.map(entityName => cleanEntityName(modelData.spark_version, entityName))
+						.map(entityName => cleanEntityName(clusterState.spark_version, entityName))
 						.filter(entityName => isViewDdl(ddlByEntity[`${dbName}.${entityName}`]));
 
 					return { ...viewsNames, [dbName]: views };
@@ -418,15 +419,16 @@ module.exports = {
 			fetchRequestHelper.destroyActiveContext();
 
 			if (warnings.length) {
-				modelData = {
-					...(modelData || {}),
+				clusterState = {
+					...(clusterState || {}),
 					warning: createWarning(warnings),
 				};
 			}
 
-			cb(null, packages, modelData, relationships);
+			cb(null, packages, clusterState, relationships);
 		} catch (err) {
-			const clusterState = modelData || (await databricksHelper.getClusterStateInfo(connectionData, logger));
+			clusterState ??= await databricksHelper.getClusterStateInfo(connectionData, logger);
+
 			if (!clusterState.isRunning) {
 				logger.log(
 					'error',
