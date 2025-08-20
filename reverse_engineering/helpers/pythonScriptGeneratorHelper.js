@@ -1,3 +1,5 @@
+// --- Use only spaces in python script literals
+
 const getClusterData = (tablesNames, databasesNames) => `
 import json
 
