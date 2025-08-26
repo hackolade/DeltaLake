@@ -255,7 +255,7 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
 		}),
 	);
 	if (modifiedScript.type === 'new') {
-		return [dropIndexScriptDto, ...(modifiedScript.script || []), addIndexScriptDto].filter(Boolean);
+		return [dropIndexScriptDto, addIndexScriptDto].filter(Boolean);
 	}
 
 	const updateTypeScriptDtos = getUpdateTypesScriptDtos(ddlProvider)(collection, definitions, dbVersion);
@@ -268,7 +268,6 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
 		...modifyNotNullConstraintsScriptDtos,
 		...modifyCheckConstraintsScriptDtos,
 		...modifiedDefaultColumnValueScriptDtos,
-		...(modifiedScript.script || []),
 		addIndexScriptDto,
 		...unityColumnTagsDtos,
 	].filter(Boolean);
