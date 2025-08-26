@@ -161,12 +161,10 @@ const getDeleteColumnsScripts = (app, definitions, provider, dbVersion) => entit
 	const deleteColumnScriptDto = AlterScriptDto.getInstance([deleteColumnScript], true, true);
 
 	if (modifyScript.type === 'new') {
-		return [dropIndexScriptDto, ...(modifyScript.script || []), addIndexScriptDto].filter(Boolean);
+		return [dropIndexScriptDto, addIndexScriptDto].filter(Boolean);
 	}
 
-	return [dropIndexScriptDto, deleteColumnScriptDto, ...(modifyScript.script || []), addIndexScriptDto].filter(
-		Boolean,
-	);
+	return [dropIndexScriptDto, deleteColumnScriptDto, addIndexScriptDto].filter(Boolean);
 };
 
 /**
@@ -175,30 +173,14 @@ const getDeleteColumnsScripts = (app, definitions, provider, dbVersion) => entit
 const getDeleteColumnScripsForOlderRuntime = (app, definitions, provider, dbVersion) => entity => {
 	const deleteColumnsName = _.filter(Object.keys(entity.properties || {}), name => !entity.properties[name].compMod);
 	const properties = _.omit(_.get(entity, 'role.properties', {}), deleteColumnsName);
-	const entityData = { role: { ..._.omit(entity.role, ['properties']), properties } };
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex({ entity, properties, definitions, dbVersion });
-	const fullCollectionName = generateFullEntityName({ entity, dbVersion });
 	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
-	const deleteCollectionScript = provider.dropTable(fullCollectionName);
-	const hydratedCollection = hydrateCollection(entityData, definitions);
-	const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
-	const areNotNullConstraintsAvailable = isSupportNotNullConstraints(dbVersion);
-	const addCollectionScript = getTableStatement(app)(
-		...hydratedCollection,
-		arePkFkConstraintsAvailable,
-		areNotNullConstraintsAvailable,
-		null,
-		dbVersion,
-		true,
-	);
 
 	const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
 	const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
-	const deleteCollectionScriptDto = AlterScriptDto.getInstance([deleteCollectionScript], true, true);
-	const addCollectionScriptDto = AlterScriptDto.getInstance([addCollectionScript], true, false);
 
-	return [dropIndexScriptDto, deleteCollectionScriptDto, addCollectionScriptDto, addIndexScriptDto].filter(Boolean);
+	return [dropIndexScriptDto, addIndexScriptDto].filter(Boolean);
 };
 
 /**
