@@ -1,6 +1,6 @@
 {
     "name": "DeltaLake",
-    "version": "0.2.35",
+    "version": "0.2.36",
     "author": "hackolade",
     "engines": {
         "hackolade": "7.7.10",
@@ -69,6 +69,7 @@
         "abort-controller": "3.0.0",
         "antlr4": "4.9.2",
         "async": "3.2.6",
+        "exponential-backoff": "3.1.2",
         "ip": "2.0.1",
         "lodash": "4.17.21",
         "node-fetch": "2.6.7"

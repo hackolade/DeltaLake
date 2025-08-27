@@ -1,16 +1,19 @@
-'use strict';
-
 const async = require('async');
 const _ = require('lodash');
 const nodeFetch = require('node-fetch');
 const AbortController = require('abort-controller');
+const { backOff } = require('exponential-backoff');
+
 const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
 const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 const { generateSamplesScript } = require('../../forward_engineering/sampleGeneration/sampleGenerationService');
 const { batchProcessFile } = require('./fileHelper');
+const { COMMAND_EXECUTION_STATUS, REQUEST_TIMEOUT_MESSAGE } = require('../../shared/constants');
 
 const JSON_OBJECTS_DELIMITER = '}, {';
 const BATCH_SIZE = 5000;
+
+const COMMAND_EXECUTION_MAX_DELAY = 3000;
 
 let activeContexts = {};
 
@@ -45,9 +48,7 @@ const fetch = (query, options, attempts = 10) => {
 					}, 1000);
 				});
 			} else if (error.type === 'aborted') {
-				throw new Error(
-					'Request timeout exceeded, please try again or increase query request timeout in Tools > Options > Reverse-Engineering',
-				);
+				throw new Error(REQUEST_TIMEOUT_MESSAGE);
 			} else {
 				throw error;
 			}
@@ -87,15 +88,18 @@ const destroyActiveContext = () => {
 };
 
 /**
- * @return {(
- *     connectionInfo: Object,
- *     samples: Array<Object>,
- *     entityJsonSchema: Object,
- * ) => Promise<any>}
- * */
-const sendSampleBatch = (connectionInfo, samples, entityJsonSchema) => {
+
+ * @param {Object} params - property bag
+ * @param {Object} params.connectionInfo
+ * @param {Array<Object>} params.samples
+ * @param {Object} params.entityJsonSchema
+ * @param {Object} params.logger
+ *
+ * @returns {Promise<any>}
+ */
+const sendSampleBatch = ({ connectionInfo, samples, entityJsonSchema, logger }) => {
 	const script = generateSamplesScript(entityJsonSchema, samples);
-	return executeCommand(connectionInfo, script, 'sql');
+	return executeCommand({ connectionInfo, command: script, logger });
 };
 
 /**
@@ -118,15 +122,17 @@ const logProgressOfSendingSampleBatches = logger => (lineIndex, amountOfLines) =
 	}
 
 	const progress = Number(lineIndex / amountOfLines);
+
 	const message =
 		lineIndex === 0
 			? `Start inserting data`
 			: `Inserted ${lineIndex} lines out of ${amountOfLines}, progress ${progress.toFixed(2)}%`;
+
 	logger.log('info', { message }, 'SEND_SAMPLE_BATCHES');
 	logger.progress({ message });
 };
 
-const sendSampleBatches = logger => async connectionInfo => {
+const sendSampleBatches = async ({ connectionInfo, logger }) => {
 	const { entitiesData } = connectionInfo;
 
 	for (const entityData of Object.values(entitiesData)) {
@@ -138,7 +144,7 @@ const sendSampleBatches = logger => async connectionInfo => {
 			batchSize: BATCH_SIZE,
 			parseLine: line => JSON.parse(line),
 			batchHandler: batch => {
-				return sendSampleBatch(connectionInfo, batch, jsonSchema);
+				return sendSampleBatch({ connectionInfo, samples: batch, entityJsonSchema: jsonSchema, logger });
 			},
 			logProgress: logProgressOfSendingSampleBatches(logger),
 		});
@@ -154,10 +160,10 @@ const fetchApplyToInstance = async (connectionInfo, logger) => {
 	progress({ message: `Applying script: \n ${connectionInfo.script}` });
 
 	await Promise.race([
-		executeCommand(connectionInfo, connectionInfo.script, 'sql').then(() => {
-			return sendSampleBatches(logger)(connectionInfo);
+		executeCommand({ connectionInfo, command: connectionInfo.script, logger }).then(() => {
+			return sendSampleBatches({ connectionInfo, logger });
 		}),
-		new Promise((_r, rej) =>
+		new Promise(() =>
 			setTimeout(() => {
 				throw new Error('Timeout exceeded for script\n' + connectionInfo.script);
 			}, connectionInfo.applyToInstanceQueryRequestTimeout || 120000),
@@ -170,11 +176,12 @@ const getSampleDocSize = async ({ connectionInfo, dbName, tableName, recordSampl
 		return Number(recordSamplingSettings.absolute.value);
 	}
 
-	const countResult = await executeCommand(
+	const countResult = await executeCommand({
 		connectionInfo,
-		`SELECT COUNT(*) FROM \`${dbName}\`.\`${tableName}\``,
-		'sql',
-	);
+		command: `SELECT COUNT(*) FROM \`${dbName}\`.\`${tableName}\``,
+		logger,
+	});
+
 	const count = _.get(countResult, '[0][0]', 0);
 	const limit = Math.ceil((count * recordSamplingSettings.relative.value) / 100);
 
@@ -194,7 +201,7 @@ const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recor
 		const columnsToSelect = fields.map(field => field.name);
 		const columnsToSelectString = columnsToSelect.map(fieldName => `\`${fieldName}\``).join(', ');
 		const sqlQuery = `SELECT ${columnsToSelectString} FROM \`${dbName}\`.\`${tableName}\` LIMIT ${limit}`;
-		const documentsResult = await executeCommand(connectionInfo, sqlQuery, 'sql');
+		const documentsResult = await executeCommand({ connectionInfo, command: sqlQuery, logger });
 
 		logger.log('info', { message: `Execute query: ${sqlQuery}`, dbName, tableName }, 'Getting documents');
 
@@ -217,7 +224,7 @@ const fetchDocuments = async ({ connectionInfo, dbName, tableName, fields, recor
 const fetchEntitySchema = async ({ connectionInfo, dbName, entityName, logger }) => {
 	try {
 		const sqlQuery = `DESC \`${dbName}\`.\`${entityName}\``;
-		const schemaResult = await executeCommand(connectionInfo, sqlQuery, 'sql');
+		const schemaResult = await executeCommand({ connectionInfo, command: sqlQuery, logger });
 
 		logger.log('info', { message: `Execute query: ${sqlQuery}`, dbName, entityName }, 'Getting schema');
 
@@ -230,7 +237,11 @@ const fetchEntitySchema = async ({ connectionInfo, dbName, entityName, logger })
 				await prev;
 				const DATA_TYPE_COLUMN = 1;
 				const DATA_TYPE_ROW = 1;
-				const result = await executeCommand(connectionInfo, `${sqlQuery} \`${columnName}\``, 'sql');
+				const result = await executeCommand({
+					connectionInfo,
+					command: `${sqlQuery} \`${columnName}\``,
+					logger,
+				});
 				schemaResult[position][DATA_TYPE_COLUMN] = result[DATA_TYPE_ROW][DATA_TYPE_COLUMN];
 			}, Promise.resolve());
 		}
@@ -251,7 +262,7 @@ const fetchEntitySchema = async ({ connectionInfo, dbName, entityName, logger })
 const fetchSample = async ({ connectionInfo, dbName, entityName, logger }) => {
 	try {
 		const sqlQuery = `SELECT * FROM \`${dbName}\`.\`${entityName}\` LIMIT 1`;
-		const schemaResult = await executeCommand(connectionInfo, sqlQuery, 'sql');
+		const schemaResult = await executeCommand({ connectionInfo, command: sqlQuery, logger });
 
 		logger.log('info', { message: `Execute query: ${sqlQuery}`, dbName, entityName }, 'Fetching sample');
 
@@ -280,28 +291,29 @@ const fetchClusterProperties = async connectionInfo => {
 		});
 };
 
-const useCatalog = async connectionInfo => {
-	await executeCommand(connectionInfo, `USE CATALOG '${connectionInfo.catalogName}';`, 'sql');
+const useCatalog = async ({ connectionInfo, logger }) => {
+	const command = `USE CATALOG '${connectionInfo.catalogName}';`;
+	await executeCommand({ connectionInfo, command, logger });
 };
 
-const fetchClusterCatalogNames = async connectionInfo => {
-	const result = await executeCommand(connectionInfo, 'SHOW CATALOGS', 'sql');
+const fetchClusterCatalogNames = async ({ connectionInfo, logger }) => {
+	const result = await executeCommand({ connectionInfo, command: 'SHOW CATALOGS', logger });
 	return _.flattenDeep(result);
 };
 
-const fetchClusterDatabasesNames = async connectionInfo => {
-	const result = await executeCommand(connectionInfo, 'SHOW DATABASES', 'sql');
+const fetchClusterDatabasesNames = async ({ connectionInfo, logger }) => {
+	const result = await executeCommand({ connectionInfo, command: 'SHOW DATABASES', logger });
 	return _.flattenDeep(result);
 };
 
-const fetchDatabaseViewsNames = (dbName, connectionInfo) =>
-	executeCommand(connectionInfo, `SHOW VIEWS IN \`${dbName}\``, 'sql');
+const fetchDatabaseViewsNames = ({ dbName, connectionInfo, logger }) =>
+	executeCommand({ connectionInfo, command: `SHOW VIEWS IN \`${dbName}\``, logger });
 
-const fetchDatabaseViewsNamesViaPython = (dbName, connectionInfo) =>
-	executeCommand(connectionInfo, getViewNamesCommand(dbName), 'python');
+const fetchDatabaseViewsNamesViaPython = ({ dbName, connectionInfo, logger }) =>
+	executeCommand({ connectionInfo, command: getViewNamesCommand(dbName), language: 'python', logger });
 
-const fetchClusterTablesNames = (dbName, connectionInfo) =>
-	executeCommand(connectionInfo, `SHOW TABLES IN \`${dbName}\``, 'sql');
+const fetchClusterTablesNames = ({ dbName, connectionInfo, logger }) =>
+	executeCommand({ connectionInfo, command: `SHOW TABLES IN \`${dbName}\``, logger });
 
 const fetchClusterData = async (
 	connectionInfo,
@@ -312,13 +324,18 @@ const fetchClusterData = async (
 ) => {
 	const databasesPropertiesResult = await async.mapLimit(databasesNames, 40, async dbName => {
 		logger.log('info', '', `Start describe schema: ${dbName} `);
-		const dbInfoResult = await executeCommand(connectionInfo, `DESCRIBE DATABASE EXTENDED \`${dbName}\``, 'sql');
+		const dbInfoResult = await executeCommand({
+			connectionInfo,
+			command: `DESCRIBE DATABASE EXTENDED \`${dbName}\``,
+			logger,
+		});
 		logger.log('info', '', `Schema: ${dbName} successfully described`);
 		const dbProperties = dbInfoResult.reduce((dbProperties, row) => {
 			switch (row[0]) {
-				case 'Location':
+				case 'Location': {
 					const propertyName = isManagedLocationSupports ? 'managedLocation' : 'location';
 					return { ...dbProperties, [propertyName]: row[1] };
+				}
 				case 'Comment':
 					return { ...dbProperties, description: row[1] };
 				case 'Properties':
@@ -361,8 +378,8 @@ const splitJsonObjects = (jsonString = '') => jsonString.split(JSON_OBJECTS_DELI
  * @return {string}
  */
 const filterCorruptedEnd = corruptedJsonData => {
-	const splittedData = splitJsonObjects(corruptedJsonData);
-	return splittedData.slice(0, splittedData.length - 1).join(JSON_OBJECTS_DELIMITER);
+	const jsonObjects = splitJsonObjects(corruptedJsonData);
+	return jsonObjects.slice(0, jsonObjects.length - 1).join(JSON_OBJECTS_DELIMITER);
 };
 
 /**
@@ -370,8 +387,8 @@ const filterCorruptedEnd = corruptedJsonData => {
  * @return {string}
  */
 const filterCorruptedStart = corruptedJsonData => {
-	const splittedData = splitJsonObjects(corruptedJsonData);
-	return splittedData.slice(1).join(JSON_OBJECTS_DELIMITER);
+	const jsonObjects = splitJsonObjects(corruptedJsonData);
+	return jsonObjects.slice(1).join(JSON_OBJECTS_DELIMITER);
 };
 
 /**
@@ -397,7 +414,12 @@ const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionIn
 		'',
 		`Start retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`,
 	);
-	const databasesTablesInfoResult = await executeCommand(connectionInfo, getClusterDataCommand, 'python');
+	const databasesTablesInfoResult = await executeCommand({
+		connectionInfo,
+		command: getClusterDataCommand,
+		language: 'python',
+		logger,
+	});
 	logger.log('info', '', `Finish retrieving tables info: ${databasesTablesInfoResult}`);
 
 	const isTruncatedResponse = /\*\*\* WARNING: skipped \d* bytes of output \*\*\*$/.test(databasesTablesInfoResult);
@@ -458,7 +480,7 @@ const mergeChunksOfData = (leftObj, rightObj) => {
 
 const fetchCreateStatementRequest = async (entityName, connectionInfo, logger) => {
 	try {
-		const result = await executeCommand(connectionInfo, `SHOW CREATE TABLE ${entityName};`, 'sql');
+		const result = await executeCommand({ connectionInfo, command: `SHOW CREATE TABLE ${entityName};`, logger });
 		return _.get(result, '[0][0]', '');
 	} catch (error) {
 		logger.log('error', error, `Error during retrieve create table DDL statement. Table name: ${entityName}`);
@@ -468,27 +490,27 @@ const fetchCreateStatementRequest = async (entityName, connectionInfo, logger) =
 
 const getRequestOptions = connectionInfo => {
 	const headers = {
-		'Authorization': 'Bearer ' + connectionInfo.accessToken,
+		Authorization: 'Bearer ' + connectionInfo.accessToken,
 	};
 
 	return {
-		'method': 'GET',
-		'headers': headers,
-		'timeout': connectionInfo.queryRequestTimeout,
-		'logger': connectionInfo.logger || { log: () => {} },
+		method: 'GET',
+		headers: headers,
+		timeout: connectionInfo.queryRequestTimeout,
+		logger: connectionInfo.logger || { log: () => {} },
 	};
 };
 
 const postRequestOptions = (connectionInfo, body) => {
 	const headers = {
 		'Content-Type': 'application/json',
-		'Authorization': 'Bearer ' + connectionInfo.accessToken,
+		Authorization: 'Bearer ' + connectionInfo.accessToken,
 	};
 
 	return {
-		'method': 'POST',
-		'timeout': connectionInfo.queryRequestTimeout,
-		'logger': connectionInfo.logger || { log: () => {} },
+		method: 'POST',
+		timeout: connectionInfo.queryRequestTimeout,
+		logger: connectionInfo.logger || { log: () => {} },
 		headers,
 		body,
 	};
@@ -500,8 +522,8 @@ const createContext = (connectionInfo, language) => {
 	}
 	const query = connectionInfo.host + '/api/1.2/contexts/create';
 	const body = JSON.stringify({
-		'language': language,
-		'clusterId': connectionInfo.clusterId,
+		language,
+		clusterId: connectionInfo.clusterId,
 	});
 	const options = postRequestOptions(connectionInfo, body);
 
@@ -530,8 +552,8 @@ const createContext = (connectionInfo, language) => {
 const destroyContext = (connectionInfo, contextId) => {
 	const query = connectionInfo.host + '/api/1.2/contexts/destroy';
 	const body = JSON.stringify({
-		'contextId': contextId,
-		'clusterId': connectionInfo.clusterId,
+		contextId: contextId,
+		clusterId: connectionInfo.clusterId,
 	});
 	const options = postRequestOptions(connectionInfo, body);
 	return fetch(query, options)
@@ -548,19 +570,25 @@ const destroyContext = (connectionInfo, contextId) => {
 			};
 		})
 		.then(body => {
-			body = JSON.parse(body);
+			return JSON.parse(body);
 		});
 };
 
-const runCommand = (connectionInfo, contextId, command, language) => {
+const runCommand = ({ connectionInfo, contextId, command, language, logger }) => {
+	const { clusterId } = connectionInfo;
 	const query = connectionInfo.host + '/api/1.2/commands/execute';
+
 	const commandOptions = JSON.stringify({
 		language,
-		clusterId: connectionInfo.clusterId,
+		clusterId,
 		contextId,
 		command,
 	});
+
 	const options = postRequestOptions(connectionInfo, commandOptions);
+
+	const notFinishedJob = err =>
+		[COMMAND_EXECUTION_STATUS.QUEUED, COMMAND_EXECUTION_STATUS.RUNNING].includes(err?.message);
 
 	return fetch(query, options)
 		.then(async response => {
@@ -576,17 +604,56 @@ const runCommand = (connectionInfo, contextId, command, language) => {
 			};
 		})
 		.then(body => {
-			body = JSON.parse(body);
+			const { id: commandId } = JSON.parse(body);
 
 			const query = new URL(connectionInfo.host + '/api/1.2/commands/status');
+
 			const params = {
-				clusterId: connectionInfo.clusterId,
-				contextId: contextId,
-				commandId: body.id,
+				clusterId,
+				contextId,
+				commandId,
 			};
+
 			query.search = new URLSearchParams(params).toString();
+
 			const options = getRequestOptions(connectionInfo);
-			return getCommandExecutionResult(query, options, commandOptions);
+			const request = () => getCommandExecutionResult({ query, options, commandOptions });
+
+			const extraAttempts = 3;
+			// The number of allowed requests within the preconfigured timeout (from global RE `queryRequestTimeout` option)
+			const numOfAttempts = Math.round(options.timeout / COMMAND_EXECUTION_MAX_DELAY) + extraAttempts;
+
+			const retry = (err, attemptNum) => {
+				if (attemptNum === numOfAttempts) {
+					logger.log('info', `max retries (${numOfAttempts}) exceeded`, 'API command progress');
+					return false;
+				}
+
+				if (notFinishedJob(err)) {
+					// log each 10 iteration
+					if (attemptNum % 10 === 0) {
+						const message = `Command ID: ${commandId}, status: ${err.message}, retry count: ${attemptNum}`;
+						logger.log('info', message, 'API command progress');
+					}
+
+					return true;
+				}
+			};
+
+			return backOff(request, {
+				// the job, usually, not available immediately
+				delayFirstAttempt: true,
+				maxDelay: COMMAND_EXECUTION_MAX_DELAY,
+				numOfAttempts,
+				retry,
+			});
+		})
+		.catch(err => {
+			if (notFinishedJob(err)) {
+				throw new Error(REQUEST_TIMEOUT_MESSAGE);
+			}
+
+			throw err;
 		});
 };
 
@@ -606,8 +673,15 @@ const getPythonSparkConfig = config => {
 		.join('\n');
 };
 
-const executeCommand = (connectionInfo, command, language = 'sql', logger) => {
+const executeCommand = ({ connectionInfo, command, language = 'sql', logger }) => {
 	return createContext(connectionInfo, language).then(async contextId => {
+		const payload = {
+			connectionInfo,
+			contextId,
+			language,
+			logger,
+		};
+
 		if (connectionInfo.sparkConfig && Object.keys(connectionInfo.sparkConfig).length) {
 			let sparkConfig;
 
@@ -618,17 +692,15 @@ const executeCommand = (connectionInfo, command, language = 'sql', logger) => {
 			}
 
 			if (sparkConfig) {
-				await runCommand(connectionInfo, contextId, sparkConfig, language);
+				await runCommand({ ...payload, command: sparkConfig });
 			}
 		}
 
-		const result = await runCommand(connectionInfo, contextId, command, language);
-
-		return result;
+		return await runCommand({ ...payload, command });
 	});
 };
 
-const getCommandExecutionResult = (query, options, commandOptions) => {
+const getCommandExecutionResult = ({ query, options, commandOptions }) => {
 	return fetch(query, options)
 		.then(async response => {
 			const responseBody = await response.text();
@@ -644,7 +716,8 @@ const getCommandExecutionResult = (query, options, commandOptions) => {
 		})
 		.then(body => {
 			body = JSON.parse(body);
-			if (body.status === 'Finished' && body.results !== null) {
+
+			if (body.status === COMMAND_EXECUTION_STATUS.FINISHED && body.results !== null) {
 				if (body.results.resultType === 'error') {
 					throw {
 						message: body.results.data || body.results.cause,
@@ -655,14 +728,16 @@ const getCommandExecutionResult = (query, options, commandOptions) => {
 				return body.results.data;
 			}
 
-			if (body.status === 'Error') {
+			if (body.status === COMMAND_EXECUTION_STATUS.ERROR) {
 				throw {
 					message: 'Error during receiving command result',
 					code: '',
 					description: commandOptions,
 				};
 			}
-			return getCommandExecutionResult(query, options, commandOptions);
+
+			// Should be handled correctly by `backOff` mechanism with the retry
+			throw new Error(body.status);
 		});
 };
 
@@ -721,21 +796,21 @@ const convertDbProperties = (dbProperties = '') => {
 		.join(',\n');
 };
 
-const getFetchForUnityTags = (connectionInfo, logger) => async query => {
-	try {
-		const language = 'sql';
+const getFetchForUnityTags =
+	({ connectionInfo, logger }) =>
+	async command => {
+		try {
+			return await executeCommand({ connectionInfo, command, logger });
+		} catch (error) {
+			logger.log('error', error, 'Error during retrieve tags');
 
-		return await executeCommand(connectionInfo, query, language);
-	} catch (error) {
-		logger.log('error', error, 'Error during retrieve tags');
-
-		return [];
-	}
-};
+			return [];
+		}
+	};
 
 const fetchTagsForUnityCatalogs = async (connectionInfo, logger) => {
 	try {
-		const fetchUnityTagsForSingleLevel = getFetchForUnityTags(connectionInfo, logger);
+		const fetchUnityTagsForSingleLevel = getFetchForUnityTags({ connectionInfo, logger });
 
 		const catalogTagsQuery = 'SELECT * FROM system.information_schema.catalog_tags;';
 		const schemaTagsQuery = 'SELECT * FROM system.information_schema.schema_tags;';

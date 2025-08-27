@@ -10,7 +10,7 @@ const getEntityCreateStatement = (connectionInfo, dbName, entityName, logger) =>
 };
 
 const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logger) => {
-	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
+	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames({ connectionInfo, logger });
 	logger.log('info', databasesNames, `Schema list`);
 	if (_.isEmpty(databasesNames)) {
 		return;
@@ -18,7 +18,11 @@ const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logg
 
 	const firstDatabaseName = _.first(databasesNames);
 
-	const tableNames = await fetchRequestHelper.fetchClusterTablesNames(firstDatabaseName, connectionInfo);
+	const tableNames = await fetchRequestHelper.fetchClusterTablesNames({
+		dbName: firstDatabaseName,
+		connectionInfo,
+		logger,
+	});
 	logger.log('info', tableNames, `Tables list in ${firstDatabaseName} schema`);
 	const viewNames = await getDatabaseViewNames(firstDatabaseName, connectionInfo, sparkVersion, logger);
 	logger.log('info', viewNames, `Views list in ${firstDatabaseName} schema`);
@@ -26,7 +30,11 @@ const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logg
 
 const fetchViewNamesFallback = async (dbName, connectionInfo, logger) => {
 	try {
-		const viewNamesResponse = await fetchRequestHelper.fetchDatabaseViewsNamesViaPython(dbName, connectionInfo);
+		const viewNamesResponse = await fetchRequestHelper.fetchDatabaseViewsNamesViaPython({
+			dbName,
+			connectionInfo,
+			logger,
+		});
 		const viewNames = JSON.parse(viewNamesResponse);
 		return viewNames.map(name => [dbName, name]);
 	} catch (error) {
@@ -37,7 +45,7 @@ const fetchViewNamesFallback = async (dbName, connectionInfo, logger) => {
 
 const fetchViewNames = (dbName, connectionInfo, logger) => {
 	try {
-		return fetchRequestHelper.fetchDatabaseViewsNames(dbName, connectionInfo);
+		return fetchRequestHelper.fetchDatabaseViewsNames({ dbName, connectionInfo, logger });
 	} catch (error) {
 		logger.log(
 			'warning',
@@ -64,16 +72,16 @@ const getDatabaseViewNames = async (dbName, connectionInfo, sparkVersion, logger
 
 const getDatabaseCollectionNames = async (connectionInfo, sparkVersion, logger) => {
 	if (isSupportUnityCatalog(sparkVersion)) {
-		await fetchRequestHelper.useCatalog(connectionInfo);
+		await fetchRequestHelper.useCatalog({ connectionInfo, logger });
 	}
 
 	const databasesNames = connectionInfo.databaseName
 		? [connectionInfo.databaseName]
-		: await fetchRequestHelper.fetchClusterDatabasesNames(connectionInfo);
+		: await fetchRequestHelper.fetchClusterDatabasesNames({ connectionInfo, logger });
 
 	return await async.mapLimit(databasesNames, 30, async dbName => {
 		const { views, viewNames } = await getDatabaseViewNames(dbName, connectionInfo, sparkVersion, logger);
-		const tablesResult = await fetchRequestHelper.fetchClusterTablesNames(dbName, connectionInfo);
+		const tablesResult = await fetchRequestHelper.fetchClusterTablesNames({ dbName, connectionInfo, logger });
 		const tables = tablesResult.reduce((databaseTables, [dbName, tableName]) => {
 			if (viewNames.includes(tableName)) {
 				return databaseTables;

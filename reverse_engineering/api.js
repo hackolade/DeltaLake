@@ -44,8 +44,10 @@ module.exports = {
 			};
 
 			logInfo('Test connection RE', connectionInfo, logger);
+
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
-			logger.log('info', clusterState, 'Cluster state info');
+			logger.log('info', { clusterState }, 'Cluster state info');
+
 			await databricksHelper.getFirstDatabaseCollectionName(connectionData, clusterState.spark_version, logger);
 
 			if (!clusterState.isRunning) {
@@ -71,6 +73,7 @@ module.exports = {
 				logger,
 			};
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
+			logger.log('info', { clusterState }, 'Cluster state info');
 
 			let catalogNames = [];
 
@@ -86,7 +89,10 @@ module.exports = {
 			} else if (connectionInfo.catalogName) {
 				catalogNames = [connectionInfo.catalogName];
 			} else {
-				catalogNames = await fetchRequestHelper.fetchClusterCatalogNames(connectionData);
+				catalogNames = await fetchRequestHelper.fetchClusterCatalogNames({
+					connectionInfo: connectionData,
+					logger,
+				});
 			}
 
 			logger.log('info', catalogNames, 'Catalog names list');
@@ -119,7 +125,6 @@ module.exports = {
 
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
 
-			logger.log('info', clusterState, 'Cluster state info');
 			const dbCollectionsNames = await databricksHelper.getDatabaseCollectionNames(
 				connectionData,
 				clusterState.spark_version,
@@ -164,18 +169,18 @@ module.exports = {
 			logger.log('info', message, 'Retrieving schema', data.hiddenKeys);
 			logger.progress(message);
 		};
-		let modelData;
+
+		let clusterState;
 
 		try {
-			modelData = await databricksHelper.getClusterStateInfo(connectionData, logger);
-			logger.log('info', modelData, 'Cluster state info');
+			clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
 
 			const collections = data.collectionData.collections;
 			const dataBaseNames = data.collectionData.dataBaseNames;
 			const fieldInference = data.fieldInference;
-			const isUnityCatalogSupports = isSupportUnityCatalog(modelData.spark_version);
+			const isUnityCatalogSupports = isSupportUnityCatalog(clusterState.spark_version);
 			const isUnityCatalogEnabled =
-				isUnityCatalogSupports && databricksHelper.isEnabledUnityCatalog(modelData.data_security_mode);
+				isUnityCatalogSupports && databricksHelper.isEnabledUnityCatalog(clusterState.data_security_mode);
 
 			if (!isUnityCatalogEnabled) {
 				logger.log('info', '', 'Unity Catalog is disabled');
@@ -209,7 +214,7 @@ module.exports = {
 				connectionData,
 				dataBaseNames,
 				collections,
-				modelData.spark_version,
+				clusterState.spark_version,
 				logger,
 			);
 			const ddlByEntity = entitiesDdl.reduce((ddlByEntity, ddlObject) => {
@@ -319,7 +324,7 @@ module.exports = {
 
 				const viewsNames = dataBaseNames.reduce((viewsNames, dbName) => {
 					const views = (collections[dbName] || [])
-						.map(entityName => cleanEntityName(modelData.spark_version, entityName))
+						.map(entityName => cleanEntityName(clusterState.spark_version, entityName))
 						.filter(entityName => isViewDdl(ddlByEntity[`${dbName}.${entityName}`]));
 
 					return { ...viewsNames, [dbName]: views };
@@ -389,7 +394,7 @@ module.exports = {
 						if (fieldInference.active === 'field') {
 							documentTemplate = getTemplateDocByJsonSchema(jsonSchema);
 						}
-					} catch (e) {
+					} catch {
 						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
 						return createViewPackage({ name });
 					}
@@ -418,15 +423,16 @@ module.exports = {
 			fetchRequestHelper.destroyActiveContext();
 
 			if (warnings.length) {
-				modelData = {
-					...(modelData || {}),
+				clusterState = {
+					...(clusterState || {}),
 					warning: createWarning(warnings),
 				};
 			}
 
-			cb(null, packages, modelData, relationships);
+			cb(null, packages, clusterState, relationships);
 		} catch (err) {
-			const clusterState = modelData || (await databricksHelper.getClusterStateInfo(connectionData, logger));
+			clusterState ??= await databricksHelper.getClusterStateInfo(connectionData, logger);
+
 			if (!clusterState.isRunning) {
 				logger.log(
 					'error',
