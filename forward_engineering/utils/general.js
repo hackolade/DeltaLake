@@ -89,7 +89,7 @@ const replaceDotWithUnderscore = (name = '') => {
 	return name.replace(/\./g, '_');
 };
 
-const getName = entity => entity.code || entity.collectionName || entity.name || '';
+const getName = entity => entity.code || entity.compMod?.code?.new || entity.collectionName || entity.name || '';
 
 const getRelationshipName = relationship => {
 	return replaceDotWithUnderscore(replaceSpaceWithUnderscore(relationship.name || ''));
