@@ -92,7 +92,7 @@ const replaceDotWithUnderscore = (name = '') => {
 const getName = entity => entity.code || entity.compMod?.code?.new || entity.collectionName || entity.name || '';
 
 const getRelationshipName = relationship => {
-	return replaceDotWithUnderscore(replaceSpaceWithUnderscore(relationship.name || ''));
+	return replaceDotWithUnderscore(replaceSpaceWithUnderscore(relationship.code || relationship.name || ''));
 };
 
 const getTab = (tabNum, configData) => (Array.isArray(configData) ? configData[tabNum] || {} : {});
