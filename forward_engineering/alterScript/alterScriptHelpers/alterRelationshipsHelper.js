@@ -14,7 +14,7 @@ const { getItems } = require('./columnHelpers/getItems');
  * @return string
  * */
 const getRelationshipName = relationship => {
-	return relationship.role.name;
+	return relationship.role.code || relationship.role.name;
 };
 
 const getFullParentTableName = relationship => {
@@ -42,7 +42,7 @@ const getAddSingleForeignKeyScript = ddlProvider => relationship => {
 	const parentTableName = getFullParentTableName(relationship);
 	const childTableName = getFullChildTableName(relationship);
 
-	const relationshipName = compMod.name?.new || getRelationshipName(relationship) || '';
+	const relationshipName = compMod.code?.new || compMod.name?.new || getRelationshipName(relationship) || '';
 
 	const addFkConstraintDto = {
 		childTableName,
@@ -64,7 +64,7 @@ const canRelationshipBeAdded = relationship => {
 		return false;
 	}
 	return [
-		compMod.name?.new || getRelationshipName(relationship),
+		compMod.code?.new || compMod.name?.new || getRelationshipName(relationship),
 		compMod.parent?.bucket,
 		compMod.parent?.collection,
 		compMod.parent?.collection?.fkFields?.length,
@@ -99,7 +99,7 @@ const getDeleteSingleForeignKeyScript = ddlProvider => relationship => {
 
 	const childTableName = getFullChildTableName(relationship);
 
-	const relationshipName = compMod.name?.old || getRelationshipName(relationship) || '';
+	const relationshipName = compMod.code?.old || compMod.name?.old || getRelationshipName(relationship) || '';
 	const relationshipNameForDDL = prepareName(relationshipName);
 	return ddlProvider.dropFkConstraint(childTableName, relationshipNameForDDL);
 };
@@ -110,7 +110,7 @@ const canRelationshipBeDeleted = relationship => {
 		return false;
 	}
 	return [
-		compMod.name?.old || getRelationshipName(relationship),
+		compMod.code?.old || compMod.name?.old || getRelationshipName(relationship),
 		compMod.child?.bucket,
 		compMod.child?.collection,
 	].every(property => Boolean(property));
