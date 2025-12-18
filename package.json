@@ -43,7 +43,7 @@
 			"disableMultipleTypes": false,
 			"enableReverseEngineering": true,
 			"enableComplexTypesNormalization": true,
-			"enableManyToManyRelationshipsNormalization": true,
+			"generateAssociativeEntitiesForManyToManyRelationships": true,
 			"disableChoices": true,
 			"enableJsonType": true,
 			"relationships": {
