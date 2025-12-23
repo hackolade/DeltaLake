@@ -145,13 +145,10 @@ const getModifyClusteringScriptDto =
 	({ collection, dbVersion }) => {
 		const compMod = _.get(collection, 'role.compMod', {});
 		const compositeClusteringKeys = _.get(compMod, 'compositeClusteringKey', {});
-		const oldCompositeClusteringKeys = compositeClusteringKeys.old;
-		const newCompositeClusteringKeys = compositeClusteringKeys.new;
+		const oldCompositeClusteringKeys = compositeClusteringKeys.old ?? [];
+		const newCompositeClusteringKeys = compositeClusteringKeys.new ?? [];
 
-		if (
-			!Array.isArray(newCompositeClusteringKeys) ||
-			_.isEqual(oldCompositeClusteringKeys, newCompositeClusteringKeys)
-		) {
+		if (_.isEqual(oldCompositeClusteringKeys, newCompositeClusteringKeys)) {
 			return;
 		}
 
