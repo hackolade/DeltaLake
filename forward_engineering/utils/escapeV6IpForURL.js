@@ -1,4 +1,4 @@
-const ip = require('ip');
+const { isV6Format, isV4Format } = require('@webpod/ip');
 
 /**
  * @see https://en.wikipedia.org/wiki/IPv6_address
@@ -21,7 +21,7 @@ function escapeV6IpForURL({ host }) {
 	 * If the host is a proper ipv6 ip then the `new URL(host)` will fail with Uncaught TypeError: Invalid URL code: 'ERR_INVALID_URL',
 	 * !ip.isV4Format(host) check required because isV6Format returns true for ipv4 address because of backward compatibility
 	 */
-	if (ip.isV6Format(host) && !ip.isV4Format(host)) {
+	if (isV6Format(host) && !isV4Format(host)) {
 		return escapeHost(host);
 	}
 
