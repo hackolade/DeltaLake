@@ -1,5 +1,5 @@
 /*
-* Copyright © 2016-2019 by IntegrIT S.A. dba Hackolade.  All rights reserved.
+* Copyright © 2016-2026 by IntegrIT S.A. dba Hackolade.  All rights reserved.
 *
 * The copyright to the computer software herein is the property of IntegrIT S.A.
 * The software may be used and/or copied only with the written permission of 
@@ -113,7 +113,6 @@ making sure that you maintain a proper JSON format.
 			}
 
 */
-
 [
 	{
 		"lowerTab": "Details",
@@ -139,7 +138,42 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "External",
 				"propertyKeyword": "externalTable",
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"disabledOnCondition": {
+					"key": "streamingTable",
+					"value": true
+				},
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "External tables cannot be Streaming tables.",
+							"dependency": {
+								"key": "streamingTable",
+								"value": true
+							}
+						}
+					]
+				}
+			},
+			{
+				"propertyName": "Streaming",
+				"propertyKeyword": "streamingTable",
+				"propertyType": "checkbox",
+				"disabledOnCondition": {
+					"key": "externalTable",
+					"value": true
+				},
+				"propertyTooltip": {
+					"disabled": [
+						{
+							"tooltip": "Streaming tables cannot be External.",
+							"dependency": {
+								"key": "externalTable",
+								"value": true
+							}
+						}
+					]
+				}
 			},
 			{
 				"propertyName": "Table role",
@@ -172,6 +206,23 @@ making sure that you maintain a proper JSON format.
 				"disabledOnCondition": {
 					"key": "tableIfNotExists",
 					"value": true
+				},
+				"dependency": {
+					"key": "streamingTable",
+					"value": false
+				}
+			},
+			{
+				"propertyName": "Or refresh",
+				"propertyKeyword": "orRefresh",
+				"propertyType": "checkbox",
+				"disabledOnCondition": {
+					"key": "tableIfNotExists",
+					"value": true
+				},
+				"dependency": {
+					"key": "streamingTable",
+					"value": true
 				}
 			},
 			{
@@ -180,9 +231,153 @@ making sure that you maintain a proper JSON format.
 				"propertyTooltip": "if the specified table already exists, the command should make no changes and return a message that the table exists, rather than terminating with an error. ",
 				"propertyType": "checkbox",
 				"disabledOnCondition": {
-					"key": "orReplace",
-					"value": true
+					"type": "or",
+					"values": [
+						{
+							"key": "orReplace",
+							"value": true
+						},
+						{
+							"key": "orRefresh",
+							"value": true
+						}
+					]
 				}
+			},
+			{
+				"propertyName": "Schedule/Trigger",
+				"propertyKeyword": "scheduleGroup",
+				"propertyType": "group",
+				"groupItemLimit": 1,
+				"dependency": {
+					"key": "streamingTable",
+					"value": true
+				},
+				"structure": [
+					{
+						"propertyName": "Type",
+						"propertyKeyword": "scheduleType",
+						"propertyType": "select",
+						"options": ["None", "Cron", "Every", "Trigger on Update (Beta)"]
+					},
+					{
+						"propertyName": "Cron String",
+						"propertyKeyword": "scheduleCronString",
+						"propertyType": "text",
+						"dependency": {
+							"key": "scheduleType",
+							"value": "Cron"
+						}
+					},
+					{
+						"propertyName": "Time Zone",
+						"propertyKeyword": "scheduleTimeZone",
+						"propertyType": "text",
+						"dependency": {
+							"key": "scheduleType",
+							"value": "Cron"
+						}
+					},
+					{
+						"propertyName": "Every Unit",
+						"propertyKeyword": "scheduleEveryUnit",
+						"propertyType": "select",
+						"options": ["HOURS", "DAYS", "WEEKS"],
+						"dependency": {
+							"key": "scheduleType",
+							"value": "Every"
+						}
+					},
+					{
+						"propertyName": "Value (1-72)",
+						"propertyKeyword": "scheduleEveryValueHours",
+						"propertyType": "numeric",
+						"allowNegative": false,
+						"validation": {
+							"regex": "^([1-9]|[1-6][0-9]|7[0-2])$"
+						},
+						"dependency": {
+							"type": "and",
+							"values": [
+								{
+									"key": "scheduleType",
+									"value": "Every"
+								},
+								{
+									"key": "scheduleEveryUnit",
+									"value": "HOURS"
+								}
+							]
+						}
+					},
+					{
+						"propertyName": "Value (1-31)",
+						"propertyKeyword": "scheduleEveryValueDays",
+						"propertyType": "numeric",
+						"allowNegative": false,
+						"validation": {
+							"regex": "^([1-9]|[1-2][0-9]|3[0-1])$"
+						},
+						"dependency": {
+							"type": "and",
+							"values": [
+								{
+									"key": "scheduleType",
+									"value": "Every"
+								},
+								{
+									"key": "scheduleEveryUnit",
+									"value": "DAYS"
+								}
+							]
+						}
+					},
+					{
+						"propertyName": "Value (1-8)",
+						"propertyKeyword": "scheduleEveryValueWeeks",
+						"propertyType": "numeric",
+						"allowNegative": false,
+						"validation": {
+							"regex": "^[1-8]$"
+						},
+						"dependency": {
+							"type": "and",
+							"values": [
+								{
+									"key": "scheduleType",
+									"value": "Every"
+								},
+								{
+									"key": "scheduleEveryUnit",
+									"value": "WEEKS"
+								}
+							]
+						}
+					},
+					{
+						"propertyName": "Trigger Unit",
+						"propertyKeyword": "triggerIntervalUnit",
+						"propertyType": "select",
+						"options": ["MINUTE", "MINUTES", "HOUR", "HOURS", "DAY", "DAYS", "WEEK", "WEEKS"],
+						"dependency": {
+							"key": "scheduleType",
+							"value": "Trigger on Update (Beta)"
+						}
+					},
+					{
+						"propertyName": "Trigger Interval",
+						"propertyKeyword": "triggerIntervalValue",
+						"propertyType": "numeric",
+						"allowNegative": false,
+						"validation": {
+							"regex": "^[1-9][0-9]*$"
+						},
+						"dependency": {
+							"key": "scheduleType",
+							"value": "Trigger on Update (Beta)"
+						}
+					}
+				]
 			},
 			{
 				"propertyName": "Using",
@@ -414,8 +609,14 @@ making sure that you maintain a proper JSON format.
 				"propertyType": "fieldList",
 				"template": "orderedList",
 				"attributeList": [
-					{ "name": "ascending", "abbr": "\u2191" },
-					{ "name": "descending", "abbr": "\u2193" }
+					{
+						"name": "ascending",
+						"abbr": "\u2191"
+					},
+					{
+						"name": "descending",
+						"abbr": "\u2193"
+					}
 				]
 			},
 			{
