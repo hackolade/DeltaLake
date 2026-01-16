@@ -133,7 +133,11 @@ making sure that you maintain a proper JSON format.
 			{
 				"propertyName": "Temporary",
 				"propertyKeyword": "temporaryTable",
-				"propertyType": "checkbox"
+				"propertyType": "checkbox",
+				"disabledOnCondition": {
+					"key": "streamingTable",
+					"value": true
+				}
 			},
 			{
 				"propertyName": "External",
@@ -160,8 +164,17 @@ making sure that you maintain a proper JSON format.
 				"propertyKeyword": "streamingTable",
 				"propertyType": "checkbox",
 				"disabledOnCondition": {
-					"key": "externalTable",
-					"value": true
+					"type": "or",
+					"values": [
+						{
+							"key": "externalTable",
+							"value": true
+						},
+						{
+							"key": "temporaryTable",
+							"value": true
+						}
+					]
 				},
 				"propertyTooltip": {
 					"disabled": [
@@ -302,9 +315,8 @@ making sure that you maintain a proper JSON format.
 						"propertyKeyword": "scheduleEveryValueHours",
 						"propertyType": "numeric",
 						"allowNegative": false,
-						"validation": {
-							"regex": "^([1-9]|[1-6][0-9]|7[0-2])$"
-						},
+						"minValue": 1,
+						"maxValue": 72,
 						"dependency": {
 							"type": "and",
 							"values": [
@@ -324,9 +336,8 @@ making sure that you maintain a proper JSON format.
 						"propertyKeyword": "scheduleEveryValueDays",
 						"propertyType": "numeric",
 						"allowNegative": false,
-						"validation": {
-							"regex": "^([1-9]|[1-2][0-9]|3[0-1])$"
-						},
+						"minValue": 1,
+						"maxValue": 31,
 						"dependency": {
 							"type": "and",
 							"values": [
@@ -346,9 +357,8 @@ making sure that you maintain a proper JSON format.
 						"propertyKeyword": "scheduleEveryValueWeeks",
 						"propertyType": "numeric",
 						"allowNegative": false,
-						"validation": {
-							"regex": "^[1-8]$"
-						},
+						"minValue": 1,
+						"maxValue": 8,
 						"dependency": {
 							"type": "and",
 							"values": [
@@ -378,9 +388,7 @@ making sure that you maintain a proper JSON format.
 						"propertyKeyword": "triggerIntervalValue",
 						"propertyType": "numeric",
 						"allowNegative": false,
-						"validation": {
-							"regex": "^[1-9][0-9]*$"
-						},
+						"minValue": 1,
 						"dependency": {
 							"key": "scheduleType",
 							"value": "Trigger on Update (Beta)"
