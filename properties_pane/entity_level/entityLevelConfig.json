@@ -208,8 +208,17 @@ making sure that you maintain a proper JSON format.
 					"value": true
 				},
 				"dependency": {
-					"key": "streamingTable",
-					"value": false
+					"type": "or",
+					"values": [
+						{
+							"key": "streamingTable",
+							"value": false
+						},
+						{
+							"key": "streamingTable",
+							"exist": false
+						}
+					]
 				}
 			},
 			{
