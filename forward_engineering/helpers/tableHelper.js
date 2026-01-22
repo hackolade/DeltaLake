@@ -22,6 +22,7 @@ const {
 const constraintHelper = require('./constrainthelper');
 const { getColumnTagsStatement } = require('./unityTagsHelper');
 const { Runtime } = require('../enums/runtime');
+const { ScheduleTypesEnum, ScheduleUnitEnum } = require('../enums/schedules');
 
 const getCreateStatement = ({
 	fullTableName,
@@ -47,21 +48,35 @@ const getCreateStatement = ({
 	tableOptions,
 	orReplace,
 	ifNotExists,
+	isStreaming,
+	orRefresh,
+	scheduleGroup,
 }) => {
 	const temporary = isTemporary ? 'TEMPORARY' : '';
 	const external = isExternal ? 'EXTERNAL' : '';
-	const orReplaceStatement = orReplace ? 'OR REPLACE' : '';
+	const streaming = isStreaming ? 'STREAMING' : '';
+
+	let replaceRefreshStatement = '';
+
+	if (isStreaming && orRefresh) {
+		replaceRefreshStatement = 'OR REFRESH';
+	} else if (orReplace && !isStreaming) {
+		replaceRefreshStatement = 'OR REPLACE';
+	}
+
+	const scheduleClause = isStreaming ? getScheduleClause(scheduleGroup?.[0]) : '';
+
 	const isNotExistsStatement = ifNotExists ? ' IF NOT EXISTS' : '';
-	const tempExtStatement =
+	const modifiersStatement =
 		' ' +
-		[orReplaceStatement, temporary, external]
+		[replaceRefreshStatement, temporary, external, streaming]
 			.filter(d => d)
 			.map(item => item + ' ')
 			.join('');
 
 	if (using && likeStatement) {
 		return getCreateLikeStatement({
-			tempExtStatement,
+			modifiersStatement,
 			fullTableName,
 			using,
 			likeStatement,
@@ -82,12 +97,13 @@ const getCreateStatement = ({
 			isActivated,
 			tableOptions,
 			isNotExistsStatement,
+			scheduleClause,
 		});
 	}
 
 	if (using) {
 		return getCreateUsingStatement({
-			tempExtStatement,
+			modifiersStatement,
 			fullTableName,
 			using,
 			columnStatement,
@@ -107,11 +123,12 @@ const getCreateStatement = ({
 			isActivated,
 			tableOptions,
 			isNotExistsStatement,
+			scheduleClause,
 		});
 	}
 
 	return getCreateHiveStatement({
-		tempExtStatement,
+		modifiersStatement,
 		fullTableName,
 		columnStatement,
 		primaryKeyStatement,
@@ -129,11 +146,12 @@ const getCreateStatement = ({
 		isActivated,
 		tableOptions,
 		isNotExistsStatement,
+		scheduleClause,
 	});
 };
 
 const getCreateUsingStatement = ({
-	tempExtStatement,
+	modifiersStatement,
 	fullTableName,
 	using,
 	columnStatement,
@@ -151,8 +169,9 @@ const getCreateUsingStatement = ({
 	isNotExistsStatement,
 	rowFormatStatement,
 	storedAsStatement,
+	scheduleClause,
 }) => {
-	return buildStatement(`CREATE${tempExtStatement}TABLE${isNotExistsStatement} ${fullTableName} (`, isActivated)(
+	return buildStatement(`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} (`, isActivated)(
 		columnStatement,
 		columnStatement + (primaryKeyStatement ? ',' : ''),
 	)(primaryKeyStatement, primaryKeyStatement)(true, ')')(using, `${getUsing(using)}`)(
@@ -170,11 +189,11 @@ const getCreateUsingStatement = ({
 	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
 		tableOptions,
 		`OPTIONS ${tableOptions}`,
-	)(selectStatement, `AS ${selectStatement}`)(true, ';')();
+	)(scheduleClause, scheduleClause)(selectStatement, `AS ${selectStatement}`)(true, ';')();
 };
 
 const getCreateHiveStatement = ({
-	tempExtStatement,
+	modifiersStatement,
 	fullTableName,
 	columnStatement,
 	primaryKeyStatement,
@@ -192,9 +211,10 @@ const getCreateHiveStatement = ({
 	isActivated,
 	tableOptions,
 	isNotExistsStatement,
+	scheduleClause,
 }) => {
 	const isAddBrackets = columnStatement || primaryKeyStatement || foreignKeyStatement;
-	return buildStatement(`CREATE${tempExtStatement}TABLE${isNotExistsStatement} ${fullTableName} `, isActivated)(
+	return buildStatement(`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} `, isActivated)(
 		isAddBrackets,
 		'(',
 	)(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))(primaryKeyStatement, primaryKeyStatement)(
@@ -215,11 +235,11 @@ const getCreateHiveStatement = ({
 	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
 		tableOptions,
 		`OPTIONS ${tableOptions}`,
-	)(selectStatement, `AS ${selectStatement}`)(true, ';')();
+	)(scheduleClause, scheduleClause)(selectStatement, `AS ${selectStatement}`)(true, ';')();
 };
 
 const getCreateLikeStatement = ({
-	tempExtStatement,
+	modifiersStatement,
 	fullTableName,
 	using,
 	columnStatement,
@@ -233,9 +253,10 @@ const getCreateLikeStatement = ({
 	isNotExistsStatement,
 	tableOptions,
 	likeStatement,
+	scheduleClause,
 }) => {
 	return buildStatement(
-		`CREATE${tempExtStatement}TABLE${isNotExistsStatement} ${fullTableName} ${likeStatement} (`,
+		`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} ${likeStatement} (`,
 		isActivated,
 	)(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))(primaryKeyStatement, primaryKeyStatement)(
 		foreignKeyStatement,
@@ -246,7 +267,7 @@ const getCreateLikeStatement = ({
 	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
 		tableOptions,
 		`OPTIONS ${tableOptions}`,
-	)(location, `LOCATION '${location}'`)(true, ';')();
+	)(location, `LOCATION '${location}'`)(scheduleClause, scheduleClause)(true, ';')();
 };
 
 const getClusteringKeys = (clusteredKeys, deactivatedColumnNames, isParentItemActivated) => {
@@ -446,6 +467,7 @@ const getTableStatement =
 					isTableActivated,
 				)
 			: '';
+
 		let tableStatement = getCreateStatement({
 			fullTableName,
 			isTemporary: tableData.temporaryTable,
@@ -479,6 +501,9 @@ const getTableStatement =
 			selectStatement: '',
 			isActivated: isTableActivated,
 			tableOptions: tableData.tableOptions,
+			isStreaming: tableData.streamingTable,
+			scheduleGroup: tableData.scheduleGroup,
+			orRefresh: tableData.orRefresh,
 		});
 
 		if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
@@ -570,7 +595,7 @@ const getDeleteTablePropertiesClause = tableProperties => {
 const checkTablePropertiesDefined = tableProperties => {
 	return Boolean(
 		tableProperties?.length &&
-			tableProperties?.some(property => property.propertyKey?.trim?.() && property.propertyValue?.trim?.()),
+		tableProperties?.some(property => property.propertyKey?.trim?.() && property.propertyValue?.trim?.()),
 	);
 };
 
@@ -597,6 +622,63 @@ const adjustPropertyValue = propertyValue => {
 		return propertyValue.replace(/([\s\S]+)\)\s*$/, '$1');
 	} else {
 		return propertyValue;
+	}
+};
+
+const buildEveryClause = scheduleGroup => {
+	const { scheduleEveryUnit, scheduleEveryValueHours, scheduleEveryValueDays, scheduleEveryValueWeeks } =
+		scheduleGroup;
+
+	const unitToValueMap = {
+		[ScheduleUnitEnum.HOURS]: scheduleEveryValueHours,
+		[ScheduleUnitEnum.DAYS]: scheduleEveryValueDays,
+		[ScheduleUnitEnum.WEEKS]: scheduleEveryValueWeeks,
+	};
+
+	const value = unitToValueMap[scheduleEveryUnit];
+
+	if (!value) {
+		return '';
+	}
+
+	return `SCHEDULE REFRESH EVERY ${value} ${scheduleEveryUnit}`;
+};
+
+const buildCronClause = scheduleGroup => {
+	const { scheduleCronString, scheduleTimeZone } = scheduleGroup;
+
+	if (!scheduleCronString) {
+		return '';
+	}
+	const timezone = scheduleTimeZone ? ` AT TIME ZONE '${scheduleTimeZone}'` : '';
+	return `SCHEDULE REFRESH CRON '${scheduleCronString}'${timezone}`;
+};
+
+const buildTriggerClause = scheduleGroup => {
+	const { triggerIntervalUnit, triggerIntervalValue } = scheduleGroup;
+
+	if (triggerIntervalValue && triggerIntervalUnit) {
+		return `TRIGGER ON UPDATE AT MOST EVERY ${triggerIntervalValue} ${triggerIntervalUnit}`;
+	}
+	return 'TRIGGER ON UPDATE';
+};
+
+const getScheduleClause = scheduleGroup => {
+	if (!scheduleGroup?.scheduleType || scheduleGroup.scheduleType === ScheduleTypesEnum.NONE) {
+		return '';
+	}
+
+	switch (scheduleGroup.scheduleType) {
+		case ScheduleTypesEnum.CRON:
+			return buildCronClause(scheduleGroup);
+		case ScheduleTypesEnum.EVERY:
+			return buildEveryClause(scheduleGroup);
+		case ScheduleTypesEnum.TRIGGER_ON_UPDATE_BETA:
+		case ScheduleTypesEnum.TRIGGER_ON_UPDATE:
+			return buildTriggerClause(scheduleGroup);
+
+		default:
+			return '';
 	}
 };
 
