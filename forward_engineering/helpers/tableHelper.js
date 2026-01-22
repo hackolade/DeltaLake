@@ -637,14 +637,19 @@ const buildEveryClause = scheduleGroup => {
 
 	const value = unitToValueMap[scheduleEveryUnit];
 
-	if (!value) return '';
+	if (!value) {
+		return '';
+	}
+
 	return `SCHEDULE REFRESH EVERY ${value} ${scheduleEveryUnit}`;
 };
 
 const buildCronClause = scheduleGroup => {
 	const { scheduleCronString, scheduleTimeZone } = scheduleGroup;
 
-	if (!scheduleCronString) return '';
+	if (!scheduleCronString) {
+		return '';
+	}
 	const timezone = scheduleTimeZone ? ` AT TIME ZONE '${scheduleTimeZone}'` : '';
 	return `SCHEDULE REFRESH CRON '${scheduleCronString}'${timezone}`;
 };
