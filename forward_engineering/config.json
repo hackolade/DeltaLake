@@ -172,7 +172,19 @@
 					"disabled": false,
 					"disabledLabel": ""
 				}
-			}
+			},
+			"filterAdapters": [
+				{
+					"applyToValue": "separate",
+					"adapter": "preserveRelationshipsForTablesMatchingDependency",
+					"adapterProps": {
+						"dependency": {
+							"key": "streamingTable",
+							"value": true
+						}
+					}
+				}
+			]
 		},
 		{
 			"keyword": "uniqueConstraints",
