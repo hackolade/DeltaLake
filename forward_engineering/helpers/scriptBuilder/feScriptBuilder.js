@@ -55,6 +55,7 @@ const {
 } = require('../../utils/general');
 const { generateSamplesScript, generateSamplesForEntity } = require('../../sampleGeneration/sampleGenerationService');
 const { getDataForSampleGeneration } = require('../../sampleGeneration/getDataForSampleGeneration');
+const foreignKeyHelper = require('../foreignKeyHelper');
 
 /**
  * @param data {CoreData}
@@ -136,14 +137,30 @@ const getContainerLevelEntitiesScriptDtos =
 	}) => {
 		const scriptDtos = [];
 
+		const foreignKeyHashTable = foreignKeyHelper.getForeignKeyHashTable({
+			relationships: data.relationships,
+			entities: data.entities,
+			entityData: data.entityData,
+			jsonSchemas: entitiesJsonSchema,
+			internalDefinitions: internalDefinitions,
+			otherDefinitions: [modelDefinitions, externalDefinitions],
+			isContainerActivated: containerData[0]?.isActivated,
+			relatedSchemas: relatedSchemas,
+		});
+
 		for (const entityId of data.entities) {
 			const entityData = data.entityData[entityId];
-
+			const tableData = getTab(0, entityData);
+			const isStreaming = tableData?.streamingTable;
 			const dbVersion = data.modelData[0].dbVersion;
-			const likeTableData = data.entityData[getTab(0, entityData)?.like];
+			const likeTableData = data.entityData[tableData?.like];
 			const entityJsonSchema = entitiesJsonSchema[entityId];
 			const definitions = [internalDefinitions[entityId], modelDefinitions, externalDefinitions];
 			const createTableStatementArgs = [containerData, entityData, entityJsonSchema, definitions];
+
+			const foreignKeyStatement = foreignKeyHelper.getForeignKeyStatementsByHashItem(
+				foreignKeyHashTable[entityId] || {},
+			);
 
 			const tableStatement = getTableStatement(app)(
 				...createTableStatementArgs,
@@ -151,12 +168,14 @@ const getContainerLevelEntitiesScriptDtos =
 				areNotNullConstraintsAvailable,
 				likeTableData,
 				dbVersion,
+				false,
+				foreignKeyStatement,
 			);
 
 			const indexScript = getIndexes(...createTableStatementArgs);
 
 			let relationshipScripts = [];
-			if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
+			if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable && !isStreaming) {
 				const relationshipsWithThisTableAsChild = data.relationships.filter(
 					relationship => relationship.childCollection === entityId,
 				);

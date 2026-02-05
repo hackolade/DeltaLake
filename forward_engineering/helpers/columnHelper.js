@@ -299,8 +299,8 @@ const getTypeByProperty =
 		}
 	};
 
-const getColumn = (name, type, comment, constraints, isActivated, generatedExpression) => ({
-	[name]: { type, comment, constraints, isActivated, generatedExpression },
+const getColumn = (name, type, comment, constraints, isActivated, generatedExpression, maskingFunction) => ({
+	[name]: { type, comment, constraints, isActivated, generatedExpression, maskingFunction },
 });
 
 const getGeneratedExpression = (expressionData, defaultValue = '') => {
@@ -370,6 +370,7 @@ const getColumns = (jsonSchema, definitions, dbVersion) => {
 				},
 				property.isActivated,
 				getGeneratedExpression(property.generatedDefaultValue, property.default),
+				property.maskingFunction,
 			),
 		);
 	}, {});
@@ -403,12 +404,15 @@ const getColumnStatement = ({
 	isActivated,
 	isParentActivated,
 	generatedExpression,
+	maskingFunction,
 }) => {
 	const commentStatement = comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '';
 	const constraintsStatement = constraints ? getColumnConstraintsStatement(constraints) : '';
 	const isColumnActivated = isParentActivated ? isActivated : true;
+	const maskingStatement = maskingFunction ? ` MASK ${maskingFunction}` : '';
+
 	return commentDeactivatedStatements(
-		`${replaceSpaceWithUnderscore(name)} ${type}${generatedExpression}${constraintsStatement}${commentStatement}`,
+		`${replaceSpaceWithUnderscore(name)} ${type}${generatedExpression}${maskingStatement}${constraintsStatement}${commentStatement}`,
 		isColumnActivated,
 	);
 };

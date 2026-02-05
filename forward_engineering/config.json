@@ -159,7 +159,7 @@
 			"value": {
 				"inline": {
 					"default": false,
-					"disabled": true,
+					"disabled": false,
 					"disabledLabel": ""
 				},
 				"separate": {

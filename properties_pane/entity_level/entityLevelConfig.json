@@ -397,6 +397,80 @@ making sure that you maintain a proper JSON format.
 				]
 			},
 			{
+				"propertyName": "Source Query",
+				"propertyKeyword": "streamingSourceSelect",
+				"propertyTooltip": "Defines the query for the streaming table. You must include the SELECT part. Example: SELECT id, name FROM STREAM(default.source_table)",
+				"propertyType": "details",
+				"template": "textarea",
+				"markdown": false,
+				"dependency": {
+					"key": "streamingTable",
+					"value": true
+				}
+			},
+			{
+				"propertyName": "Data Quality Expectations",
+				"propertyKeyword": "dltExpectations",
+				"propertyTooltip": "Define data quality constraints (Delta Live Tables)",
+				"propertyType": "group",
+				"groupItemLimit": 10,
+				"dependency": {
+					"key": "streamingTable",
+					"value": true
+				},
+				"structure": [
+					{
+						"propertyName": "Constraint Name",
+						"propertyKeyword": "expectationName",
+						"propertyTooltip": "Unique name (e.g. valid_timestamp)",
+						"propertyType": "text",
+						"validation": {
+							"regex": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+						}
+					},
+					{
+						"propertyName": "Condition (SQL)",
+						"propertyKeyword": "expectationExpr",
+						"propertyTooltip": "Boolean expression (e.g. amount > 0)",
+						"propertyType": "details",
+						"template": "textarea",
+						"markdown": false
+					},
+					{
+						"propertyName": "On Violation",
+						"propertyKeyword": "expectationAction",
+						"propertyType": "select",
+						"options": ["", "FAIL UPDATE", "DROP ROW"],
+						"defaultValue": ""
+					}
+				]
+			},
+			{
+				"propertyName": "Row Filter",
+				"propertyKeyword": "rowFilterGroup",
+				"propertyType": "group",
+				"groupItemLimit": 1,
+				"dependency": {
+					"key": "streamingTable",
+					"value": true
+				},
+				"structure": [
+					{
+						"propertyName": "Filter Function",
+						"propertyKeyword": "rowFilterFunction",
+						"propertyTooltip": "Full name of the UDF (e.g. default.filter_by_region)",
+						"propertyType": "text"
+					},
+					{
+						"propertyName": "Input Columns",
+						"propertyKeyword": "rowFilterColumns",
+						"propertyTooltip": "Columns passed to the filter function",
+						"propertyType": "fieldList",
+						"template": "orderedList"
+					}
+				]
+			},
+			{
 				"propertyName": "Using",
 				"propertyKeyword": "using",
 				"propertyTooltip": "Select from list of options",

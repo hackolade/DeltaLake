@@ -51,28 +51,46 @@ const getCreateStatement = ({
 	isStreaming,
 	orRefresh,
 	scheduleGroup,
+	selectStreamingStatement,
+	expectations,
+	rowFilterGroup,
+	entityJsonProperties,
 }) => {
 	const temporary = isTemporary ? 'TEMPORARY' : '';
 	const external = isExternal ? 'EXTERNAL' : '';
-	const streaming = isStreaming ? 'STREAMING' : '';
 
-	let replaceRefreshStatement = '';
-
-	if (isStreaming && orRefresh) {
-		replaceRefreshStatement = 'OR REFRESH';
-	} else if (orReplace && !isStreaming) {
-		replaceRefreshStatement = 'OR REPLACE';
-	}
+	const replaceStatement = orReplace ? 'OR REPLACE' : '';
 
 	const scheduleClause = isStreaming ? getScheduleClause(scheduleGroup?.[0]) : '';
 
 	const isNotExistsStatement = ifNotExists ? ' IF NOT EXISTS' : '';
 	const modifiersStatement =
 		' ' +
-		[replaceRefreshStatement, temporary, external, streaming]
+		[replaceStatement, temporary, external]
 			.filter(d => d)
 			.map(item => item + ' ')
 			.join('');
+
+	if (isStreaming) {
+		return getCreateStreamingStatement({
+			fullTableName,
+			columnStatement,
+			primaryKeyStatement,
+			foreignKeyStatement,
+			comment,
+			orRefresh,
+			isNotExistsStatement,
+			isActivated,
+			selectStreamingStatement,
+			expectations,
+			clusteredKeys,
+			tableProperties,
+			scheduleClause,
+			rowFilterGroup,
+			partitionedByKeys,
+			entityJsonProperties,
+		});
+	}
 
 	if (using && likeStatement) {
 		return getCreateLikeStatement({
@@ -97,7 +115,6 @@ const getCreateStatement = ({
 			isActivated,
 			tableOptions,
 			isNotExistsStatement,
-			scheduleClause,
 		});
 	}
 
@@ -123,7 +140,6 @@ const getCreateStatement = ({
 			isActivated,
 			tableOptions,
 			isNotExistsStatement,
-			scheduleClause,
 		});
 	}
 
@@ -146,7 +162,6 @@ const getCreateStatement = ({
 		isActivated,
 		tableOptions,
 		isNotExistsStatement,
-		scheduleClause,
 	});
 };
 
@@ -169,7 +184,6 @@ const getCreateUsingStatement = ({
 	isNotExistsStatement,
 	rowFormatStatement,
 	storedAsStatement,
-	scheduleClause,
 }) => {
 	return buildStatement(`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} (`, isActivated)(
 		columnStatement,
@@ -189,7 +203,7 @@ const getCreateUsingStatement = ({
 	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
 		tableOptions,
 		`OPTIONS ${tableOptions}`,
-	)(scheduleClause, scheduleClause)(selectStatement, `AS ${selectStatement}`)(true, ';')();
+	)(selectStatement, `AS ${selectStatement}`)(true, ';')();
 };
 
 const getCreateHiveStatement = ({
@@ -211,7 +225,6 @@ const getCreateHiveStatement = ({
 	isActivated,
 	tableOptions,
 	isNotExistsStatement,
-	scheduleClause,
 }) => {
 	const isAddBrackets = columnStatement || primaryKeyStatement || foreignKeyStatement;
 	return buildStatement(`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} `, isActivated)(
@@ -235,7 +248,7 @@ const getCreateHiveStatement = ({
 	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
 		tableOptions,
 		`OPTIONS ${tableOptions}`,
-	)(scheduleClause, scheduleClause)(selectStatement, `AS ${selectStatement}`)(true, ';')();
+	)(selectStatement, `AS ${selectStatement}`)(true, ';')();
 };
 
 const getCreateLikeStatement = ({
@@ -253,7 +266,6 @@ const getCreateLikeStatement = ({
 	isNotExistsStatement,
 	tableOptions,
 	likeStatement,
-	scheduleClause,
 }) => {
 	return buildStatement(
 		`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} ${likeStatement} (`,
@@ -267,7 +279,7 @@ const getCreateLikeStatement = ({
 	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
 		tableOptions,
 		`OPTIONS ${tableOptions}`,
-	)(location, `LOCATION '${location}'`)(scheduleClause, scheduleClause)(true, ';')();
+	)(location, `LOCATION '${location}'`)(true, ';')();
 };
 
 const getClusteringKeys = (clusteredKeys, deactivatedColumnNames, isParentItemActivated) => {
@@ -444,6 +456,7 @@ const getTableStatement =
 		likeTableData,
 		dbVersion,
 		isCalledFromAlterScript = false,
+		foreignKeyStatement = null,
 	) => {
 		const { getEntityTagsStatement } = require('../helpers/unityTagsHelper');
 
@@ -467,6 +480,17 @@ const getTableStatement =
 					isTableActivated,
 				)
 			: '';
+
+		let streamingSourceQuery = '';
+		let dltExpectations = [];
+
+		if (tableData.streamingTable) {
+			streamingSourceQuery = tableData.streamingSourceSelect || '';
+
+			if (tableData.dltExpectations) {
+				dltExpectations = Array.isArray(tableData.dltExpectations) ? tableData.dltExpectations : [];
+			}
+		}
 
 		let tableStatement = getCreateStatement({
 			fullTableName,
@@ -504,6 +528,11 @@ const getTableStatement =
 			isStreaming: tableData.streamingTable,
 			scheduleGroup: tableData.scheduleGroup,
 			orRefresh: tableData.orRefresh,
+			selectStreamingStatement: streamingSourceQuery,
+			expectations: dltExpectations,
+			rowFilterGroup: tableData.rowFilterGroup,
+			foreignKeyStatement,
+			entityJsonProperties: entityJsonSchema.properties,
 		});
 
 		if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
@@ -658,7 +687,7 @@ const buildTriggerClause = scheduleGroup => {
 	const { triggerIntervalUnit, triggerIntervalValue } = scheduleGroup;
 
 	if (triggerIntervalValue && triggerIntervalUnit) {
-		return `TRIGGER ON UPDATE AT MOST EVERY ${triggerIntervalValue} ${triggerIntervalUnit}`;
+		return `TRIGGER ON UPDATE AT MOST EVERY INTERVAL ${triggerIntervalValue} ${triggerIntervalUnit}`;
 	}
 	return 'TRIGGER ON UPDATE';
 };
@@ -680,6 +709,96 @@ const getScheduleClause = scheduleGroup => {
 		default:
 			return '';
 	}
+};
+
+const getRowFilterClause = (rowFilterGroup, properties) => {
+	if (!Array.isArray(rowFilterGroup) || rowFilterGroup.length === 0) {
+		return '';
+	}
+
+	const rawFilter = rowFilterGroup[0];
+
+	const guidToNameMap = Object.keys(properties || {}).reduce((acc, key) => {
+		const property = properties[key];
+		if (property.GUID) {
+			acc[property.GUID] = key;
+		}
+		return acc;
+	}, {});
+
+	const resolvedColumns = (rawFilter.rowFilterColumns || [])
+		.map(colItem => guidToNameMap[colItem.keyId])
+		.filter(Boolean);
+
+	if (rawFilter.rowFilterFunction) {
+		const hasColumns = resolvedColumns.length > 0;
+		const columns = hasColumns ? ` ON (${resolvedColumns.join(', ')})` : '';
+		return `WITH ROW FILTER ${rawFilter.rowFilterFunction}${columns}`;
+	}
+
+	return '';
+};
+
+const getCreateStreamingStatement = ({
+	fullTableName,
+	columnStatement,
+	primaryKeyStatement,
+	foreignKeyStatement,
+	comment,
+	orRefresh,
+	ifNotExists,
+	isActivated,
+	selectStreamingStatement,
+	expectations,
+	clusteredKeys,
+	tableProperties,
+	scheduleClause,
+	rowFilterGroup,
+	partitionedByKeys,
+	isNotExistsStatement,
+	entityJsonProperties,
+}) => {
+	const createPrefix = orRefresh ? 'CREATE OR REFRESH STREAMING TABLE' : 'CREATE STREAMING TABLE';
+	let tableStructureLines = [columnStatement];
+
+	if (expectations && expectations.length > 0) {
+		const expectationsSql = expectations.map(exp => {
+			const action = exp.expectationAction ? ` ON VIOLATION ${exp.expectationAction}` : '';
+			return `CONSTRAINT ${exp.expectationName} EXPECT (${exp.expectationExpr})${action}`;
+		});
+		tableStructureLines.push(...expectationsSql);
+	}
+
+	if (primaryKeyStatement) {
+		tableStructureLines.push(primaryKeyStatement);
+	}
+	if (foreignKeyStatement) {
+		tableStructureLines.push(foreignKeyStatement);
+	}
+
+	const tableStructure = tableStructureLines.filter(Boolean).join(',\n\t');
+
+	const commentClause = comment ? `COMMENT '${encodeStringLiteral(comment)}'` : '';
+	const clusterClause = clusteredKeys ? `CLUSTER BY (${clusteredKeys})` : '';
+	const partitionedStatement = partitionedByKeys ? `PARTITIONED BY (${partitionedByKeys})` : '';
+	const propsClause = checkTablePropertiesDefined(tableProperties)
+		? `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`
+		: '';
+
+	const rowFilterClause = getRowFilterClause(rowFilterGroup, entityJsonProperties);
+
+	const queryClause = selectStreamingStatement ? `AS ${selectStreamingStatement}` : '';
+
+	return buildStatement(`${createPrefix}${isNotExistsStatement} ${fullTableName} (`, isActivated)(
+		tableStructure,
+		tableStructure,
+	)(true, ')')(commentClause, commentClause)(partitionedStatement, partitionedStatement)(
+		clusterClause,
+		clusterClause,
+	)(propsClause, propsClause)(rowFilterClause, rowFilterClause)(scheduleClause, scheduleClause)(
+		queryClause,
+		queryClause,
+	)(true, ';')();
 };
 
 module.exports = {
