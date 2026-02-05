@@ -721,7 +721,7 @@ const getRowFilterClause = (rowFilterGroup, properties) => {
 	const guidToNameMap = Object.keys(properties || {}).reduce((acc, key) => {
 		const property = properties[key];
 		if (property.GUID) {
-			acc[property.GUID] = property.code || key;
+			acc[property.GUID] = key;
 		}
 		return acc;
 	}, {});
