@@ -460,6 +460,12 @@ making sure that you maintain a proper JSON format.
 					}
 				]
 			},
+			{
+				"propertyName": "Masking Function",
+				"propertyKeyword": "maskingFunction",
+				"propertyTooltip": "Unity Catalog UDF to mask column data (e.g. default.mask_pii)",
+				"propertyType": "text"
+			},
 			"default",
 			{
 				"propertyName": "Check constraint",
@@ -826,6 +832,12 @@ making sure that you maintain a proper JSON format.
 				]
 			},
 			{
+				"propertyName": "Masking Function",
+				"propertyKeyword": "maskingFunction",
+				"propertyTooltip": "Unity Catalog UDF to mask column data (e.g. default.mask_pii)",
+				"propertyType": "text"
+			},
+			{
 				"fieldName": "Default",
 				"fieldKeyword": "default",
 				"shouldValidate": true,
@@ -1018,6 +1030,12 @@ making sure that you maintain a proper JSON format.
 				"propertyKeyword": "required",
 				"enableForReference": true,
 				"propertyType": "checkbox"
+			},
+			{
+				"propertyName": "Masking Function",
+				"propertyKeyword": "maskingFunction",
+				"propertyTooltip": "Unity Catalog UDF to mask column data (e.g. default.mask_pii)",
+				"propertyType": "text"
 			},
 			"default",
 			{
@@ -1369,6 +1387,12 @@ making sure that you maintain a proper JSON format.
 						"value": true
 					}
 				]
+			},
+			{
+				"propertyName": "Masking Function",
+				"propertyKeyword": "maskingFunction",
+				"propertyTooltip": "Unity Catalog UDF to mask column data (e.g. default.mask_pii)",
+				"propertyType": "text"
 			},
 			"default",
 			{
@@ -1745,6 +1769,12 @@ making sure that you maintain a proper JSON format.
 					}
 				]
 			},
+			{
+				"propertyName": "Masking Function",
+				"propertyKeyword": "maskingFunction",
+				"propertyTooltip": "Unity Catalog UDF to mask column data (e.g. default.mask_pii)",
+				"propertyType": "text"
+			},
 			"default",
 			{
 				"propertyName": "Check constraint",
@@ -2075,6 +2105,12 @@ making sure that you maintain a proper JSON format.
 					}
 				]
 			},
+			{
+				"propertyName": "Masking Function",
+				"propertyKeyword": "maskingFunction",
+				"propertyTooltip": "Unity Catalog UDF to mask column data (e.g. default.mask_pii)",
+				"propertyType": "text"
+			},
 			"default",
 			{
 				"propertyName": "Check constraint",
@@ -2403,6 +2439,12 @@ making sure that you maintain a proper JSON format.
 						"value": true
 					}
 				]
+			},
+			{
+				"propertyName": "Masking Function",
+				"propertyKeyword": "maskingFunction",
+				"propertyTooltip": "Unity Catalog UDF to mask column data (e.g. default.mask_pii)",
+				"propertyType": "text"
 			},
 			"default",
 			{
@@ -2752,6 +2794,12 @@ making sure that you maintain a proper JSON format.
 						"value": true
 					}
 				]
+			},
+			{
+				"propertyName": "Masking Function",
+				"propertyKeyword": "maskingFunction",
+				"propertyTooltip": "Unity Catalog UDF to mask column data (e.g. default.mask_pii)",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Check constraint",
@@ -3124,6 +3172,12 @@ making sure that you maintain a proper JSON format.
 				]
 			},
 			{
+				"propertyName": "Masking Function",
+				"propertyKeyword": "maskingFunction",
+				"propertyTooltip": "Unity Catalog UDF to mask column data (e.g. default.mask_pii)",
+				"propertyType": "text"
+			},
+			{
 				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
@@ -3451,6 +3505,12 @@ making sure that you maintain a proper JSON format.
 				]
 			},
 			{
+				"propertyName": "Masking Function",
+				"propertyKeyword": "maskingFunction",
+				"propertyTooltip": "Unity Catalog UDF to mask column data (e.g. default.mask_pii)",
+				"propertyType": "text"
+			},
+			{
 				"propertyName": "Check constraint",
 				"propertyKeyword": "check",
 				"propertyType": "details",
@@ -3600,12 +3660,30 @@ making sure that you maintain a proper JSON format.
 				"propertyKeyword": "subtype",
 				"propertyType": "select",
 				"options": [
-					{ "name": "object", "value": "object" },
-					{ "name": "array", "value": "array" },
-					{ "name": "string", "value": "string" },
-					{ "name": "number", "value": "number" },
-					{ "name": "boolean", "value": "boolean" },
-					{ "name": "null", "value": "null" }
+					{
+						"name": "object",
+						"value": "object"
+					},
+					{
+						"name": "array",
+						"value": "array"
+					},
+					{
+						"name": "string",
+						"value": "string"
+					},
+					{
+						"name": "number",
+						"value": "number"
+					},
+					{
+						"name": "boolean",
+						"value": "boolean"
+					},
+					{
+						"name": "null",
+						"value": "null"
+					}
 				],
 				"dependency": {
 					"key": "childType",
@@ -3808,6 +3886,12 @@ making sure that you maintain a proper JSON format.
 						"value": true
 					}
 				]
+			},
+			{
+				"propertyName": "Masking Function",
+				"propertyKeyword": "maskingFunction",
+				"propertyTooltip": "Unity Catalog UDF to mask column data (e.g. default.mask_pii)",
+				"propertyType": "text"
 			},
 			{
 				"propertyName": "Check constraint",
