@@ -49,6 +49,7 @@ fromSource
     : uniqueJoinToken uniqueJoinSource (COMMA uniqueJoinSource)+
     | joinSource
     | rangeTableValuedFunction
+    | streamSource
     ;
 
 
@@ -62,6 +63,11 @@ atomjoinSource
 
 joinSource
     : atomjoinSource (joinToken joinSourcePart (KW_ON expression | KW_USING columnParenthesesList)?)*
+    ;
+
+streamSource
+    : KW_STREAM LPAREN? tableName RPAREN? tableAlias?
+    | KW_STREAM tableFunctionCall
     ;
 
 joinSourcePart
@@ -201,3 +207,11 @@ rangeTableValuedFunction
     ;
 
 //-----------------------------------------------------------------------------------
+
+tableFunctionCall: identifier LPAREN functionArgList? RPAREN;
+
+functionArgList: functionArg (',' functionArg)*;
+
+functionArg: namedArg | expression | StringLiteral;
+
+namedArg: identifier FAT_ARROW (identifier | expression | StringLiteral);

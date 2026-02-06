@@ -217,6 +217,10 @@ orReplace
     : KW_OR KW_REPLACE
     ;
 
+orRefresh
+    : KW_OR KW_REFRESH
+    ;
+
 createDatabaseStatement
     : KW_CREATE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
@@ -258,7 +262,7 @@ databaseComment
     ;
 
 createTableStatement
-    : KW_CREATE KW_TEMPORARY? KW_EXTERNAL? KW_TABLE ifNotExists? tableName
+    : KW_CREATE orRefresh? KW_TEMPORARY? KW_EXTERNAL? KW_STREAMING? KW_TABLE ifNotExists? tableName
       (  KW_LIKE tableName
          tableRowFormat?
          tableFileFormat?
@@ -278,6 +282,9 @@ createTableStatement
          | tableOptions
          | tableComment
          | clusterByClause
+         | scheduleClause
+         | rowClause
+         | triggerOnUpdateClause
         )*
          (KW_AS selectStatementWithCTE)?
       )
@@ -912,6 +919,23 @@ rowClause
     : KW_WITH? KW_ROW KW_FILTER functionIdentifier KW_ON (LPAREN identifier (COMMA identifier)* RPAREN)?
     ;
 
+triggerOnUpdateClause
+    : KW_TRIGGER KW_ON KW_UPDATE (KW_AT KW_MOST KW_EVERY intervalClause)?
+    ;
+
+intervalClause
+    : KW_INTERVAL Number? intervalQualifier
+    ;
+
+intervalQualifier
+    : KW_YEAR (KW_TO KW_MONTH)?
+    | KW_MONTH
+    | KW_DAY (KW_TO (KW_HOUR | KW_MINUTE | KW_SECOND))?
+    | KW_HOUR (KW_TO (KW_MINUTE | KW_SECOND))?
+    | KW_MINUTE (KW_TO KW_SECOND)?
+    | KW_SECOND
+    ;
+
 viewPartition
     : KW_PARTITIONED KW_ON LPAREN columnNameList RPAREN
     ;
@@ -1152,6 +1176,8 @@ alterConstraintWithName
 tableLevelConstraint
     : pkUkConstraint
     | checkConstraint
+    | expectConstraint
+    | createForeignKey
     ;
 
 pkUkConstraint
@@ -1160,6 +1186,10 @@ pkUkConstraint
 
 checkConstraint
     : KW_CHECK expression
+    ;
+
+expectConstraint
+    : KW_EXPECT LPAREN expression RPAREN (KW_ON KW_VIOLATION (KW_FAIL KW_UPDATE | KW_DROP KW_ROW))?
     ;
 
 createForeignKey
@@ -1237,7 +1267,7 @@ tableConstraint
     ;
 
 columnNameTypeConstraint
-    : identifier colType columnConstraint? (KW_COMMENT StringLiteral)? (KW_MASK functionIdentifier)?
+    : identifier colType columnConstraint*
     ;
 
 columnGeneratedAs
@@ -1269,8 +1299,10 @@ partitionedColumnNameTypeConstraint
     ;
 
 columnConstraint
-    : ( foreignKeyConstraint )
-    | ( colConstraint )
+    : foreignKeyConstraint
+    | colConstraint
+    | KW_COMMENT StringLiteral
+    | KW_MASK functionIdentifier
     ;
 
 foreignKeyConstraint
