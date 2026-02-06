@@ -312,7 +312,7 @@ making sure that you maintain a proper JSON format.
 					},
 					{
 						"propertyName": "Value (1-72)",
-						"propertyKeyword": "scheduleEveryValueHours",
+						"propertyKeyword": "scheduleEveryValue",
 						"propertyType": "numeric",
 						"allowNegative": false,
 						"minValue": 1,
@@ -333,7 +333,7 @@ making sure that you maintain a proper JSON format.
 					},
 					{
 						"propertyName": "Value (1-31)",
-						"propertyKeyword": "scheduleEveryValueDays",
+						"propertyKeyword": "scheduleEveryValue",
 						"propertyType": "numeric",
 						"allowNegative": false,
 						"minValue": 1,
@@ -354,7 +354,7 @@ making sure that you maintain a proper JSON format.
 					},
 					{
 						"propertyName": "Value (1-8)",
-						"propertyKeyword": "scheduleEveryValueWeeks",
+						"propertyKeyword": "scheduleEveryValue",
 						"propertyType": "numeric",
 						"allowNegative": false,
 						"minValue": 1,
