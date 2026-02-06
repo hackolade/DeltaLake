@@ -22,7 +22,7 @@ const {
 const constraintHelper = require('./constrainthelper');
 const { getColumnTagsStatement } = require('./unityTagsHelper');
 const { Runtime } = require('../enums/runtime');
-const { ScheduleTypesEnum, ScheduleUnitEnum } = require('../enums/schedules');
+const { ScheduleTypesEnum } = require('../enums/schedules');
 
 const getCreateStatement = ({
 	fullTableName,
@@ -655,22 +655,13 @@ const adjustPropertyValue = propertyValue => {
 };
 
 const buildEveryClause = scheduleGroup => {
-	const { scheduleEveryUnit, scheduleEveryValueHours, scheduleEveryValueDays, scheduleEveryValueWeeks } =
-		scheduleGroup;
+	const { scheduleEveryUnit, scheduleEveryValue } = scheduleGroup;
 
-	const unitToValueMap = {
-		[ScheduleUnitEnum.HOURS]: scheduleEveryValueHours,
-		[ScheduleUnitEnum.DAYS]: scheduleEveryValueDays,
-		[ScheduleUnitEnum.WEEKS]: scheduleEveryValueWeeks,
-	};
-
-	const value = unitToValueMap[scheduleEveryUnit];
-
-	if (!value) {
+	if (!scheduleEveryValue) {
 		return '';
 	}
 
-	return `SCHEDULE REFRESH EVERY ${value} ${scheduleEveryUnit}`;
+	return `SCHEDULE REFRESH EVERY ${scheduleEveryValue} ${scheduleEveryUnit}`;
 };
 
 const buildCronClause = scheduleGroup => {
