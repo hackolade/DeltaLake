@@ -149,22 +149,28 @@ const convertCommandsToReDocs = (commands, originalScript) => {
 	return { result, info: reData.modelProperties, relationships: reData.relationships };
 };
 
-const createCollection = (entitiesData, bucket, statementData) => {
+const createCollection = (entitiesData, bucket, statementData, originalScript) => {
 	const { entities, currentBucket } = entitiesData;
 	const updatedEntityData = getTableMergedWithReferencedTable(entities, statementData);
+	const streamingSourceSelect = cleanUpSelectStatement(
+		originalScript.substring(statementData.select.start, statementData.select.stop),
+	);
 
 	if (!updatedEntityData.bucketName) {
-		return { ...entitiesData, entities: [...entities, { ...updatedEntityData, bucketName: bucket }] };
+		return {
+			...entitiesData,
+			entities: [...entities, { ...updatedEntityData, bucketName: bucket, streamingSourceSelect }],
+		};
 	}
 
 	if (currentBucket === DEFAULT_BUCKET) {
 		return {
 			...entitiesData,
-			entities: [...entities, updatedEntityData],
+			entities: [...entities, { ...updatedEntityData, streamingSourceSelect }],
 			bucketName: updatedEntityData.bucketName,
 		};
 	} else {
-		return { ...entitiesData, entities: [...entities, updatedEntityData] };
+		return { ...entitiesData, entities: [...entities, { ...updatedEntityData, streamingSourceSelect }] };
 	}
 };
 

@@ -41,6 +41,7 @@ const {
 	getFilteredTableProperties,
 	normalizeTableProperties,
 } = require('./helpers/visitorsHelper');
+const { ScheduleTypesEnum } = require('../forward_engineering/enums/schedules');
 
 const ALLOWED_COMMANDS = [
 	HiveParser.RULE_createTableStatement,
@@ -108,6 +109,15 @@ class Visitor extends HiveParserVisitor {
 		tableOptions = Array.isArray(tableOptions) ? tableOptions?.[0] || '' : tableOptions;
 		const temporaryTable = Boolean(ctx.KW_TEMPORARY());
 		const externalTable = Boolean(ctx.KW_EXTERNAL());
+		const streamingTable = Boolean(ctx.KW_STREAMING());
+		const orRefresh = Boolean(ctx.orRefresh());
+		const select = {
+			start: ctx.selectStatementWithCTE()?.start.start,
+			stop: ctx.selectStatementWithCTE()?.stop.stop + 1,
+		};
+		const scheduleGroup = this.visitWhenExists(ctx, 'scheduleClause');
+		const dltExpectations = [];
+
 		let storedAsTable = this.visitWhenExists(ctx, 'tableFileFormat', {});
 		storedAsTable = Array.isArray(storedAsTable) ? storedAsTable?.[0] || {} : storedAsTable;
 		const { catalog, database, table } = tableName;
@@ -138,6 +148,7 @@ class Visitor extends HiveParserVisitor {
 				type: CREATE_COLLECTION_COMMAND,
 				collectionName: table,
 				bucketName: database,
+				select,
 				schema: handleChoices({
 					collectionName: table,
 					type: 'object',
@@ -148,6 +159,7 @@ class Visitor extends HiveParserVisitor {
 					{
 						temporaryTable,
 						externalTable,
+						streamingTable,
 						description: Array.isArray(description) ? description[0] || '' : String(description),
 						compositePartitionKey: compositePartitionKey.map(([name]) => ({ name })),
 						compositeClusteringKey: compositeClusteringKey || compositeLiquidClusteringKey,
@@ -157,6 +169,8 @@ class Visitor extends HiveParserVisitor {
 						skewedOn,
 						skewStoredAsDir,
 						tableOptions,
+						orRefresh,
+						scheduleGroup,
 						location: Array.isArray(location) ? location[0] || '' : String(location),
 						tableProperties: Array.isArray(tableProperties)
 							? getFilteredTableProperties(tableProperties) || ''
@@ -455,7 +469,7 @@ class Visitor extends HiveParserVisitor {
 
 	visitMaterializedViewClause(ctx) {
 		const description = this.visitWhenExists(ctx, 'tableComment');
-		const scheduleClause = this.visitWhenExists(ctx, 'scheduleClause');
+		const [{ scheduleClause }] = this.visitWhenExists(ctx, 'scheduleClause', [{}]);
 		const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
 		const compositePartitionKeys = this.visitWhenExists(ctx, 'tablePartition', []);
 		const { compositeClusteringKey } = this.visitWhenExists(ctx, 'clusterByClause', {});
@@ -474,7 +488,33 @@ class Visitor extends HiveParserVisitor {
 	}
 
 	visitScheduleClause(ctx) {
-		return this.getText(ctx);
+		const scheduleClause = this.getText(ctx);
+
+		if (ctx.KW_EVERY()) {
+			const scheduleEveryUnitContext = ctx.KW_HOUR() || ctx.KW_DAY() || ctx.KW_WEEK();
+			const scheduleEveryUnitKeyword = _.toUpper(scheduleEveryUnitContext?.getText() || '');
+			const scheduleEveryUnit = scheduleEveryUnitKeyword.endsWith('S')
+				? scheduleEveryUnitKeyword
+				: scheduleEveryUnitKeyword + 'S';
+			const scheduleEveryValue = Number(ctx.Number().getText());
+
+			return {
+				scheduleType: ScheduleTypesEnum.EVERY,
+				scheduleEveryUnit,
+				scheduleEveryValue,
+				scheduleClause,
+			};
+		}
+
+		const scheduleCronString = this.visit(ctx.identifier()[0]);
+		const scheduleTimeZone = this.visit(ctx.identifier()[1]);
+
+		return {
+			scheduleType: ScheduleTypesEnum.CRON,
+			scheduleCronString,
+			scheduleTimeZone,
+			scheduleClause,
+		};
 	}
 
 	visitAlterStatement(ctx) {
