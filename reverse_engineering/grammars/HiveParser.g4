@@ -1299,10 +1299,8 @@ partitionedColumnNameTypeConstraint
     ;
 
 columnConstraint
-    : foreignKeyConstraint
-    | colConstraint
-    | KW_COMMENT StringLiteral
-    | KW_MASK functionIdentifier
+    : ( foreignKeyConstraint )
+    | ( colConstraint )
     ;
 
 foreignKeyConstraint
@@ -1332,6 +1330,8 @@ columnConstraintType
     | columnGeneratedAs
     | checkConstraint
     | tableConstraintType
+    | KW_COMMENT StringLiteral
+    | KW_MASK functionIdentifier
     ;
 
 defaultVal

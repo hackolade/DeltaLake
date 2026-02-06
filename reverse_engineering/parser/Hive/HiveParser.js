@@ -419,17 +419,17 @@ const serializedATN = [
 	'\u0b9d\n\u00ec\u0003\u00ed\u0005\u00ed\u0ba0\n\u00ed\u0003\u00ed\u0005',
 	'\u00ed\u0ba3\n\u00ed\u0003\u00ee\u0003\u00ee\u0003\u00ee\u0003\u00ee',
 	'\u0003\u00ef\u0003\u00ef\u0003\u00ef\u0003\u00ef\u0003\u00f0\u0003\u00f0',
-	'\u0005\u00f0\u0baf\n\u00f0\u0003\u00f1\u0003\u00f1\u0003\u00f1\u0003',
-	'\u00f1\u0003\u00f1\u0003\u00f1\u0005\u00f1\u0bb7\n\u00f1\u0003\u00f2',
-	'\u0003\u00f2\u0005\u00f2\u0bbb\n\u00f2\u0003\u00f2\u0003\u00f2\u0003',
-	'\u00f2\u0003\u00f2\u0003\u00f2\u0003\u00f2\u0005\u00f2\u0bc3\n\u00f2',
-	'\u0003\u00f3\u0003\u00f3\u0005\u00f3\u0bc7\n\u00f3\u0003\u00f3\u0003',
-	'\u00f3\u0007\u00f3\u0bcb\n\u00f3\f\u00f3\u000e\u00f3\u0bce\u000b\u00f3',
-	'\u0003\u00f3\u0005\u00f3\u0bd1\n\u00f3\u0003\u00f4\u0003\u00f4\u0005',
-	'\u00f4\u0bd5\n\u00f4\u0003\u00f5\u0003\u00f5\u0005\u00f5\u0bd9\n\u00f5',
-	'\u0003\u00f5\u0003\u00f5\u0003\u00f5\u0003\u00f5\u0003\u00f5\u0003\u00f5',
-	'\u0005\u00f5\u0be1\n\u00f5\u0003\u00f6\u0003\u00f6\u0005\u00f6\u0be5',
-	'\n\u00f6\u0003\u00f6\u0003\u00f6\u0005\u00f6\u0be9\n\u00f6\u0003\u00f7',
+	'\u0005\u00f0\u0baf\n\u00f0\u0003\u00f1\u0003\u00f1\u0005\u00f1\u0bb3',
+	'\n\u00f1\u0003\u00f2\u0003\u00f2\u0005\u00f2\u0bb7\n\u00f2\u0003\u00f2',
+	'\u0003\u00f2\u0003\u00f2\u0003\u00f2\u0003\u00f2\u0003\u00f2\u0005\u00f2',
+	'\u0bbf\n\u00f2\u0003\u00f3\u0003\u00f3\u0005\u00f3\u0bc3\n\u00f3\u0003',
+	'\u00f3\u0003\u00f3\u0007\u00f3\u0bc7\n\u00f3\f\u00f3\u000e\u00f3\u0bca',
+	'\u000b\u00f3\u0003\u00f3\u0005\u00f3\u0bcd\n\u00f3\u0003\u00f4\u0003',
+	'\u00f4\u0005\u00f4\u0bd1\n\u00f4\u0003\u00f5\u0003\u00f5\u0005\u00f5',
+	'\u0bd5\n\u00f5\u0003\u00f5\u0003\u00f5\u0003\u00f5\u0003\u00f5\u0003',
+	'\u00f5\u0003\u00f5\u0005\u00f5\u0bdd\n\u00f5\u0003\u00f6\u0003\u00f6',
+	'\u0005\u00f6\u0be1\n\u00f6\u0003\u00f6\u0003\u00f6\u0005\u00f6\u0be5',
+	'\n\u00f6\u0003\u00f7\u0003\u00f7\u0003\u00f7\u0003\u00f7\u0003\u00f7',
 	'\u0003\u00f7\u0003\u00f7\u0003\u00f7\u0003\u00f7\u0003\u00f7\u0003\u00f7',
 	'\u0005\u00f7\u0bf2\n\u00f7\u0003\u00f8\u0003\u00f8\u0003\u00f8\u0003',
 	'\u00f8\u0005\u00f8\u0bf8\n\u00f8\u0003\u00f9\u0003\u00f9\u0003\u00f9',
@@ -961,10 +961,10 @@ const serializedATN = [
 	'\u0002\u0002\u0002\u01d2\u0b86\u0003\u0002\u0002\u0002\u01d4\u0b8b\u0003',
 	'\u0002\u0002\u0002\u01d6\u0b94\u0003\u0002\u0002\u0002\u01d8\u0b9f\u0003',
 	'\u0002\u0002\u0002\u01da\u0ba4\u0003\u0002\u0002\u0002\u01dc\u0ba8\u0003',
-	'\u0002\u0002\u0002\u01de\u0bac\u0003\u0002\u0002\u0002\u01e0\u0bb6\u0003',
-	'\u0002\u0002\u0002\u01e2\u0bba\u0003\u0002\u0002\u0002\u01e4\u0bc6\u0003',
-	'\u0002\u0002\u0002\u01e6\u0bd4\u0003\u0002\u0002\u0002\u01e8\u0bd8\u0003',
-	'\u0002\u0002\u0002\u01ea\u0be4\u0003\u0002\u0002\u0002\u01ec\u0bf1\u0003',
+	'\u0002\u0002\u0002\u01de\u0bac\u0003\u0002\u0002\u0002\u01e0\u0bb2\u0003',
+	'\u0002\u0002\u0002\u01e2\u0bb6\u0003\u0002\u0002\u0002\u01e4\u0bc2\u0003',
+	'\u0002\u0002\u0002\u01e6\u0bd0\u0003\u0002\u0002\u0002\u01e8\u0bd4\u0003',
+	'\u0002\u0002\u0002\u01ea\u0be0\u0003\u0002\u0002\u0002\u01ec\u0bf1\u0003',
 	'\u0002\u0002\u0002\u01ee\u0bf7\u0003\u0002\u0002\u0002\u01f0\u0bfc\u0003',
 	'\u0002\u0002\u0002\u01f2\u0bff\u0003\u0002\u0002\u0002\u01f4\u0c04\u0003',
 	'\u0002\u0002\u0002\u01f6\u0c08\u0003\u0002\u0002\u0002\u01f8\u0c0f\u0003',
@@ -2315,48 +2315,48 @@ const serializedATN = [
 	'\u0bab\u0007\u0195\u0002\u0002\u0bab\u01dd\u0003\u0002\u0002\u0002\u0bac',
 	'\u0bae\u0005\u034c\u01a7\u0002\u0bad\u0baf\u0005\u01f8\u00fd\u0002\u0bae',
 	'\u0bad\u0003\u0002\u0002\u0002\u0bae\u0baf\u0003\u0002\u0002\u0002\u0baf',
-	'\u01df\u0003\u0002\u0002\u0002\u0bb0\u0bb7\u0005\u01e2\u00f2\u0002\u0bb1',
-	'\u0bb7\u0005\u01e4\u00f3\u0002\u0bb2\u0bb3\u0007P\u0002\u0002\u0bb3',
-	'\u0bb7\u0007\u0190\u0002\u0002\u0bb4\u0bb5\u0007h\u0002\u0002\u0bb5',
-	'\u0bb7\u0005\u034e\u01a8\u0002\u0bb6\u0bb0\u0003\u0002\u0002\u0002\u0bb6',
-	'\u0bb1\u0003\u0002\u0002\u0002\u0bb6\u0bb2\u0003\u0002\u0002\u0002\u0bb6',
-	'\u0bb4\u0003\u0002\u0002\u0002\u0bb7\u01e1\u0003\u0002\u0002\u0002\u0bb8',
-	'\u0bb9\u0007\u012b\u0002\u0002\u0bb9\u0bbb\u0005\u034c\u01a7\u0002\u0bba',
-	'\u0bb8\u0003\u0002\u0002\u0002\u0bba\u0bbb\u0003\u0002\u0002\u0002\u0bbb',
-	'\u0bbc\u0003\u0002\u0002\u0002\u0bbc\u0bbd\u0007\u012a\u0002\u0002\u0bbd',
-	'\u0bbe\u0005\u029a\u014e\u0002\u0bbe\u0bbf\u0007\u0175\u0002\u0002\u0bbf',
-	'\u0bc0\u0005\u0190\u00c9\u0002\u0bc0\u0bc2\u0007\u0176\u0002\u0002\u0bc1',
-	'\u0bc3\u0005\u01f2\u00fa\u0002\u0bc2\u0bc1\u0003\u0002\u0002\u0002\u0bc2',
-	'\u0bc3\u0003\u0002\u0002\u0002\u0bc3\u01e3\u0003\u0002\u0002\u0002\u0bc4',
-	'\u0bc5\u0007\u012b\u0002\u0002\u0bc5\u0bc7\u0005\u034c\u01a7\u0002\u0bc6',
-	'\u0bc4\u0003\u0002\u0002\u0002\u0bc6\u0bc7\u0003\u0002\u0002\u0002\u0bc7',
-	'\u0bc8\u0003\u0002\u0002\u0002\u0bc8\u0bcc\u0005\u01ec\u00f7\u0002\u0bc9',
-	'\u0bcb\u0005\u01ec\u00f7\u0002\u0bca\u0bc9\u0003\u0002\u0002\u0002\u0bcb',
-	'\u0bce\u0003\u0002\u0002\u0002\u0bcc\u0bca\u0003\u0002\u0002\u0002\u0bcc',
-	'\u0bcd\u0003\u0002\u0002\u0002\u0bcd\u0bd0\u0003\u0002\u0002\u0002\u0bce',
-	'\u0bcc\u0003\u0002\u0002\u0002\u0bcf\u0bd1\u0005\u01f2\u00fa\u0002\u0bd0',
-	'\u0bcf\u0003\u0002\u0002\u0002\u0bd0\u0bd1\u0003\u0002\u0002\u0002\u0bd1',
-	'\u01e5\u0003\u0002\u0002\u0002\u0bd2\u0bd5\u0005\u01e8\u00f5\u0002\u0bd3',
-	'\u0bd5\u0005\u01ea\u00f6\u0002\u0bd4\u0bd2\u0003\u0002\u0002\u0002\u0bd4',
-	'\u0bd3\u0003\u0002\u0002\u0002\u0bd5\u01e7\u0003\u0002\u0002\u0002\u0bd6',
-	'\u0bd7\u0007\u012b\u0002\u0002\u0bd7\u0bd9\u0005\u034c\u01a7\u0002\u0bd8',
-	'\u0bd6\u0003\u0002\u0002\u0002\u0bd8\u0bd9\u0003\u0002\u0002\u0002\u0bd9',
-	'\u0bda\u0003\u0002\u0002\u0002\u0bda\u0bdb\u0007\u012a\u0002\u0002\u0bdb',
-	'\u0bdc\u0005\u029a\u014e\u0002\u0bdc\u0bdd\u0007\u0175\u0002\u0002\u0bdd',
-	'\u0bde\u0005\u0190\u00c9\u0002\u0bde\u0be0\u0007\u0176\u0002\u0002\u0bdf',
-	'\u0be1\u0005\u01f4\u00fb\u0002\u0be0\u0bdf\u0003\u0002\u0002\u0002\u0be0',
-	'\u0be1\u0003\u0002\u0002\u0002\u0be1\u01e9\u0003\u0002\u0002\u0002\u0be2',
-	'\u0be3\u0007\u012b\u0002\u0002\u0be3\u0be5\u0005\u034c\u01a7\u0002\u0be4',
-	'\u0be2\u0003\u0002\u0002\u0002\u0be4\u0be5\u0003\u0002\u0002\u0002\u0be5',
-	'\u0be6\u0003\u0002\u0002\u0002\u0be6\u0be8\u0005\u01ec\u00f7\u0002\u0be7',
-	'\u0be9\u0005\u01f4\u00fb\u0002\u0be8\u0be7\u0003\u0002\u0002\u0002\u0be8',
-	'\u0be9\u0003\u0002\u0002\u0002\u0be9\u01eb\u0003\u0002\u0002\u0002\u0bea',
-	'\u0beb\u0007\n\u0002\u0002\u0beb\u0bf2\u0007D\u0002\u0002\u0bec\u0bed',
-	'\u0007\u0146\u0002\u0002\u0bed\u0bf2\u0005\u01ee\u00f8\u0002\u0bee\u0bf2',
-	'\u0005\u01d2\u00ea\u0002\u0bef\u0bf2\u0005\u01aa\u00d6\u0002\u0bf0\u0bf2',
-	'\u0005\u01f0\u00f9\u0002\u0bf1\u0bea\u0003\u0002\u0002\u0002\u0bf1\u0bec',
-	'\u0003\u0002\u0002\u0002\u0bf1\u0bee\u0003\u0002\u0002\u0002\u0bf1\u0bef',
-	'\u0003\u0002\u0002\u0002\u0bf1\u0bf0\u0003\u0002\u0002\u0002\u0bf2\u01ed',
+	'\u01df\u0003\u0002\u0002\u0002\u0bb0\u0bb3\u0005\u01e2\u00f2\u0002\u0bb1',
+	'\u0bb3\u0005\u01e4\u00f3\u0002\u0bb2\u0bb0\u0003\u0002\u0002\u0002\u0bb2',
+	'\u0bb1\u0003\u0002\u0002\u0002\u0bb3\u01e1\u0003\u0002\u0002\u0002\u0bb4',
+	'\u0bb5\u0007\u012b\u0002\u0002\u0bb5\u0bb7\u0005\u034c\u01a7\u0002\u0bb6',
+	'\u0bb4\u0003\u0002\u0002\u0002\u0bb6\u0bb7\u0003\u0002\u0002\u0002\u0bb7',
+	'\u0bb8\u0003\u0002\u0002\u0002\u0bb8\u0bb9\u0007\u012a\u0002\u0002\u0bb9',
+	'\u0bba\u0005\u029a\u014e\u0002\u0bba\u0bbb\u0007\u0175\u0002\u0002\u0bbb',
+	'\u0bbc\u0005\u0190\u00c9\u0002\u0bbc\u0bbe\u0007\u0176\u0002\u0002\u0bbd',
+	'\u0bbf\u0005\u01f2\u00fa\u0002\u0bbe\u0bbd\u0003\u0002\u0002\u0002\u0bbe',
+	'\u0bbf\u0003\u0002\u0002\u0002\u0bbf\u01e3\u0003\u0002\u0002\u0002\u0bc0',
+	'\u0bc1\u0007\u012b\u0002\u0002\u0bc1\u0bc3\u0005\u034c\u01a7\u0002\u0bc2',
+	'\u0bc0\u0003\u0002\u0002\u0002\u0bc2\u0bc3\u0003\u0002\u0002\u0002\u0bc3',
+	'\u0bc4\u0003\u0002\u0002\u0002\u0bc4\u0bc8\u0005\u01ec\u00f7\u0002\u0bc5',
+	'\u0bc7\u0005\u01ec\u00f7\u0002\u0bc6\u0bc5\u0003\u0002\u0002\u0002\u0bc7',
+	'\u0bca\u0003\u0002\u0002\u0002\u0bc8\u0bc6\u0003\u0002\u0002\u0002\u0bc8',
+	'\u0bc9\u0003\u0002\u0002\u0002\u0bc9\u0bcc\u0003\u0002\u0002\u0002\u0bca',
+	'\u0bc8\u0003\u0002\u0002\u0002\u0bcb\u0bcd\u0005\u01f2\u00fa\u0002\u0bcc',
+	'\u0bcb\u0003\u0002\u0002\u0002\u0bcc\u0bcd\u0003\u0002\u0002\u0002\u0bcd',
+	'\u01e5\u0003\u0002\u0002\u0002\u0bce\u0bd1\u0005\u01e8\u00f5\u0002\u0bcf',
+	'\u0bd1\u0005\u01ea\u00f6\u0002\u0bd0\u0bce\u0003\u0002\u0002\u0002\u0bd0',
+	'\u0bcf\u0003\u0002\u0002\u0002\u0bd1\u01e7\u0003\u0002\u0002\u0002\u0bd2',
+	'\u0bd3\u0007\u012b\u0002\u0002\u0bd3\u0bd5\u0005\u034c\u01a7\u0002\u0bd4',
+	'\u0bd2\u0003\u0002\u0002\u0002\u0bd4\u0bd5\u0003\u0002\u0002\u0002\u0bd5',
+	'\u0bd6\u0003\u0002\u0002\u0002\u0bd6\u0bd7\u0007\u012a\u0002\u0002\u0bd7',
+	'\u0bd8\u0005\u029a\u014e\u0002\u0bd8\u0bd9\u0007\u0175\u0002\u0002\u0bd9',
+	'\u0bda\u0005\u0190\u00c9\u0002\u0bda\u0bdc\u0007\u0176\u0002\u0002\u0bdb',
+	'\u0bdd\u0005\u01f4\u00fb\u0002\u0bdc\u0bdb\u0003\u0002\u0002\u0002\u0bdc',
+	'\u0bdd\u0003\u0002\u0002\u0002\u0bdd\u01e9\u0003\u0002\u0002\u0002\u0bde',
+	'\u0bdf\u0007\u012b\u0002\u0002\u0bdf\u0be1\u0005\u034c\u01a7\u0002\u0be0',
+	'\u0bde\u0003\u0002\u0002\u0002\u0be0\u0be1\u0003\u0002\u0002\u0002\u0be1',
+	'\u0be2\u0003\u0002\u0002\u0002\u0be2\u0be4\u0005\u01ec\u00f7\u0002\u0be3',
+	'\u0be5\u0005\u01f4\u00fb\u0002\u0be4\u0be3\u0003\u0002\u0002\u0002\u0be4',
+	'\u0be5\u0003\u0002\u0002\u0002\u0be5\u01eb\u0003\u0002\u0002\u0002\u0be6',
+	'\u0be7\u0007\n\u0002\u0002\u0be7\u0bf2\u0007D\u0002\u0002\u0be8\u0be9',
+	'\u0007\u0146\u0002\u0002\u0be9\u0bf2\u0005\u01ee\u00f8\u0002\u0bea\u0bf2',
+	'\u0005\u01d2\u00ea\u0002\u0beb\u0bf2\u0005\u01aa\u00d6\u0002\u0bec\u0bf2',
+	'\u0005\u01f0\u00f9\u0002\u0bed\u0bee\u0007P\u0002\u0002\u0bee\u0bf2',
+	'\u0007\u0190\u0002\u0002\u0bef\u0bf0\u0007h\u0002\u0002\u0bf0\u0bf2',
+	'\u0005\u034e\u01a8\u0002\u0bf1\u0be6\u0003\u0002\u0002\u0002\u0bf1\u0be8',
+	'\u0003\u0002\u0002\u0002\u0bf1\u0bea\u0003\u0002\u0002\u0002\u0bf1\u0beb',
+	'\u0003\u0002\u0002\u0002\u0bf1\u0bec\u0003\u0002\u0002\u0002\u0bf1\u0bed',
+	'\u0003\u0002\u0002\u0002\u0bf1\u0bef\u0003\u0002\u0002\u0002\u0bf2\u01ed',
 	'\u0003\u0002\u0002\u0002\u0bf3\u0bf8\u0005\u02f8\u017d\u0002\u0bf4\u0bf8',
 	'\u0005\u02e6\u0174\u0002\u0bf5\u0bf8\u0005\u02ea\u0176\u0002\u0bf6\u0bf8',
 	'\u0005\u034c\u01a7\u0002\u0bf7\u0bf3\u0003\u0002\u0002\u0002\u0bf7\u0bf4',
@@ -3575,8 +3575,8 @@ const serializedATN = [
 	'\u0a83\u0a93\u0aa3\u0aab\u0ab3\u0abb\u0ac6\u0aca\u0ad2\u0adb\u0ade\u0ae7',
 	'\u0aeb\u0aed\u0af1\u0af5\u0afb\u0b01\u0b13\u0b15\u0b19\u0b22\u0b2d\u0b31',
 	'\u0b38\u0b44\u0b4b\u0b53\u0b57\u0b5a\u0b61\u0b67\u0b6b\u0b6e\u0b74\u0b78',
-	'\u0b7c\u0b83\u0b89\u0b94\u0b9c\u0b9f\u0ba2\u0bae\u0bb6\u0bba\u0bc2\u0bc6',
-	'\u0bcc\u0bd0\u0bd4\u0bd8\u0be0\u0be4\u0be8\u0bf1\u0bf7\u0bfc\u0bff\u0c04',
+	'\u0b7c\u0b83\u0b89\u0b94\u0b9c\u0b9f\u0ba2\u0bae\u0bb2\u0bb6\u0bbe\u0bc2',
+	'\u0bc8\u0bcc\u0bd0\u0bd4\u0bdc\u0be0\u0be4\u0bf1\u0bf7\u0bfc\u0bff\u0c04',
 	'\u0c0d\u0c16\u0c1e\u0c28\u0c3b\u0c3e\u0c49\u0c65\u0c6b\u0c71\u0c77\u0c79',
 	'\u0c7c\u0c82\u0c8a\u0c99\u0ca0\u0ca5\u0ca8\u0cac\u0caf\u0cb2\u0cb5\u0cb8',
 	'\u0cbe\u0cc2\u0cc5\u0cc8\u0ccb\u0cce\u0cd1\u0cd8\u0cdb\u0ce2\u0ce5\u0ce8',
@@ -8231,24 +8231,11 @@ class HiveParser extends antlr4.Parser {
 			this.colType();
 			this.state = 1490;
 			this._errHandler.sync(this);
-			_la = this._input.LA(1);
-			if (
-				_la === HiveParser.KW_NOT ||
-				(((_la - 294) & ~0x1f) == 0 &&
-					((1 << (_la - 294)) &
-						((1 << (HiveParser.KW_PRIMARY - 294)) |
-							(1 << (HiveParser.KW_REFERENCES - 294)) |
-							(1 << (HiveParser.KW_CONSTRAINT - 294)) |
-							(1 << (HiveParser.KW_UNIQUE - 294)) |
-							(1 << (HiveParser.KW_DEFAULT - 294)) |
-							(1 << (HiveParser.KW_CHECK - 294)))) !==
-						0) ||
-				_la === HiveParser.KW_GENERATED
-			) {
+			var la_ = this._interp.adaptivePredict(this._input, 74, this._ctx);
+			if (la_ === 1) {
 				this.state = 1489;
 				this.alterColumnConstraint();
 			}
-
 			this.state = 1494;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
@@ -16997,7 +16984,7 @@ class HiveParser extends antlr4.Parser {
 		let localctx = new ColumnConstraintContext(this, this._ctx, this.state);
 		this.enterRule(localctx, 478, HiveParser.RULE_columnConstraint);
 		try {
-			this.state = 2996;
+			this.state = 2992;
 			this._errHandler.sync(this);
 			var la_ = this._interp.adaptivePredict(this._input, 292, this._ctx);
 			switch (la_) {
@@ -17011,22 +16998,6 @@ class HiveParser extends antlr4.Parser {
 					this.enterOuterAlt(localctx, 2);
 					this.state = 2991;
 					this.colConstraint();
-					break;
-
-				case 3:
-					this.enterOuterAlt(localctx, 3);
-					this.state = 2992;
-					this.match(HiveParser.KW_COMMENT);
-					this.state = 2993;
-					this.match(HiveParser.StringLiteral);
-					break;
-
-				case 4:
-					this.enterOuterAlt(localctx, 4);
-					this.state = 2994;
-					this.match(HiveParser.KW_MASK);
-					this.state = 2995;
-					this.functionIdentifier();
 					break;
 			}
 		} catch (re) {
@@ -17049,31 +17020,31 @@ class HiveParser extends antlr4.Parser {
 		var _la = 0; // Token type
 		try {
 			this.enterOuterAlt(localctx, 1);
-			this.state = 3000;
+			this.state = 2996;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === HiveParser.KW_CONSTRAINT) {
-				this.state = 2998;
+				this.state = 2994;
 				this.match(HiveParser.KW_CONSTRAINT);
-				this.state = 2999;
+				this.state = 2995;
 				this.identifier();
 			}
 
-			this.state = 3002;
+			this.state = 2998;
 			this.match(HiveParser.KW_REFERENCES);
-			this.state = 3003;
+			this.state = 2999;
 			this.tableName();
-			this.state = 3004;
+			this.state = 3000;
 			this.match(HiveParser.LPAREN);
-			this.state = 3005;
+			this.state = 3001;
 			this.columnName();
-			this.state = 3006;
+			this.state = 3002;
 			this.match(HiveParser.RPAREN);
-			this.state = 3008;
+			this.state = 3004;
 			this._errHandler.sync(this);
 			var la_ = this._interp.adaptivePredict(this._input, 294, this._ctx);
 			if (la_ === 1) {
-				this.state = 3007;
+				this.state = 3003;
 				this.constraintOptsCreate();
 			}
 		} catch (re) {
@@ -17096,36 +17067,36 @@ class HiveParser extends antlr4.Parser {
 		var _la = 0; // Token type
 		try {
 			this.enterOuterAlt(localctx, 1);
-			this.state = 3012;
+			this.state = 3008;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === HiveParser.KW_CONSTRAINT) {
-				this.state = 3010;
+				this.state = 3006;
 				this.match(HiveParser.KW_CONSTRAINT);
-				this.state = 3011;
+				this.state = 3007;
 				this.identifier();
 			}
 
-			this.state = 3014;
+			this.state = 3010;
 			this.columnConstraintType();
-			this.state = 3018;
+			this.state = 3014;
 			this._errHandler.sync(this);
 			var _alt = this._interp.adaptivePredict(this._input, 296, this._ctx);
 			while (_alt != 2 && _alt != antlr4.atn.ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
-					this.state = 3015;
+					this.state = 3011;
 					this.columnConstraintType();
 				}
-				this.state = 3020;
+				this.state = 3016;
 				this._errHandler.sync(this);
 				_alt = this._interp.adaptivePredict(this._input, 296, this._ctx);
 			}
 
-			this.state = 3022;
+			this.state = 3018;
 			this._errHandler.sync(this);
 			var la_ = this._interp.adaptivePredict(this._input, 297, this._ctx);
 			if (la_ === 1) {
-				this.state = 3021;
+				this.state = 3017;
 				this.constraintOptsCreate();
 			}
 		} catch (re) {
@@ -17146,19 +17117,19 @@ class HiveParser extends antlr4.Parser {
 		let localctx = new AlterColumnConstraintContext(this, this._ctx, this.state);
 		this.enterRule(localctx, 484, HiveParser.RULE_alterColumnConstraint);
 		try {
-			this.state = 3026;
+			this.state = 3022;
 			this._errHandler.sync(this);
 			var la_ = this._interp.adaptivePredict(this._input, 298, this._ctx);
 			switch (la_) {
 				case 1:
 					this.enterOuterAlt(localctx, 1);
-					this.state = 3024;
+					this.state = 3020;
 					this.alterForeignKeyConstraint();
 					break;
 
 				case 2:
 					this.enterOuterAlt(localctx, 2);
-					this.state = 3025;
+					this.state = 3021;
 					this.alterColConstraint();
 					break;
 			}
@@ -17182,31 +17153,31 @@ class HiveParser extends antlr4.Parser {
 		var _la = 0; // Token type
 		try {
 			this.enterOuterAlt(localctx, 1);
-			this.state = 3030;
+			this.state = 3026;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === HiveParser.KW_CONSTRAINT) {
-				this.state = 3028;
+				this.state = 3024;
 				this.match(HiveParser.KW_CONSTRAINT);
-				this.state = 3029;
+				this.state = 3025;
 				this.identifier();
 			}
 
-			this.state = 3032;
+			this.state = 3028;
 			this.match(HiveParser.KW_REFERENCES);
-			this.state = 3033;
+			this.state = 3029;
 			this.tableName();
-			this.state = 3034;
+			this.state = 3030;
 			this.match(HiveParser.LPAREN);
-			this.state = 3035;
+			this.state = 3031;
 			this.columnName();
-			this.state = 3036;
+			this.state = 3032;
 			this.match(HiveParser.RPAREN);
-			this.state = 3038;
+			this.state = 3034;
 			this._errHandler.sync(this);
 			var la_ = this._interp.adaptivePredict(this._input, 300, this._ctx);
 			if (la_ === 1) {
-				this.state = 3037;
+				this.state = 3033;
 				this.constraintOptsAlter();
 			}
 		} catch (re) {
@@ -17229,23 +17200,23 @@ class HiveParser extends antlr4.Parser {
 		var _la = 0; // Token type
 		try {
 			this.enterOuterAlt(localctx, 1);
-			this.state = 3042;
+			this.state = 3038;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === HiveParser.KW_CONSTRAINT) {
-				this.state = 3040;
+				this.state = 3036;
 				this.match(HiveParser.KW_CONSTRAINT);
-				this.state = 3041;
+				this.state = 3037;
 				this.identifier();
 			}
 
-			this.state = 3044;
+			this.state = 3040;
 			this.columnConstraintType();
-			this.state = 3046;
+			this.state = 3042;
 			this._errHandler.sync(this);
 			var la_ = this._interp.adaptivePredict(this._input, 302, this._ctx);
 			if (la_ === 1) {
-				this.state = 3045;
+				this.state = 3041;
 				this.constraintOptsAlter();
 			}
 		} catch (re) {
@@ -17271,33 +17242,47 @@ class HiveParser extends antlr4.Parser {
 			switch (this._input.LA(1)) {
 				case HiveParser.KW_NOT:
 					this.enterOuterAlt(localctx, 1);
-					this.state = 3048;
+					this.state = 3044;
 					this.match(HiveParser.KW_NOT);
-					this.state = 3049;
+					this.state = 3045;
 					this.match(HiveParser.KW_NULL);
 					break;
 				case HiveParser.KW_DEFAULT:
 					this.enterOuterAlt(localctx, 2);
-					this.state = 3050;
+					this.state = 3046;
 					this.match(HiveParser.KW_DEFAULT);
-					this.state = 3051;
+					this.state = 3047;
 					this.defaultVal();
 					break;
 				case HiveParser.KW_GENERATED:
 					this.enterOuterAlt(localctx, 3);
-					this.state = 3052;
+					this.state = 3048;
 					this.columnGeneratedAs();
 					break;
 				case HiveParser.KW_CHECK:
 					this.enterOuterAlt(localctx, 4);
-					this.state = 3053;
+					this.state = 3049;
 					this.checkConstraint();
 					break;
 				case HiveParser.KW_PRIMARY:
 				case HiveParser.KW_UNIQUE:
 					this.enterOuterAlt(localctx, 5);
-					this.state = 3054;
+					this.state = 3050;
 					this.tableConstraintType();
+					break;
+				case HiveParser.KW_COMMENT:
+					this.enterOuterAlt(localctx, 6);
+					this.state = 3051;
+					this.match(HiveParser.KW_COMMENT);
+					this.state = 3052;
+					this.match(HiveParser.StringLiteral);
+					break;
+				case HiveParser.KW_MASK:
+					this.enterOuterAlt(localctx, 7);
+					this.state = 3053;
+					this.match(HiveParser.KW_MASK);
+					this.state = 3054;
+					this.functionIdentifier();
 					break;
 				default:
 					throw new antlr4.error.NoViableAltException(this);
@@ -41888,22 +41873,6 @@ class ColumnConstraintContext extends antlr4.ParserRuleContext {
 		return this.getTypedRuleContext(ColConstraintContext, 0);
 	}
 
-	KW_COMMENT() {
-		return this.getToken(HiveParser.KW_COMMENT, 0);
-	}
-
-	StringLiteral() {
-		return this.getToken(HiveParser.StringLiteral, 0);
-	}
-
-	KW_MASK() {
-		return this.getToken(HiveParser.KW_MASK, 0);
-	}
-
-	functionIdentifier() {
-		return this.getTypedRuleContext(FunctionIdentifierContext, 0);
-	}
-
 	accept(visitor) {
 		if (visitor instanceof HiveParserVisitor) {
 			return visitor.visitColumnConstraint(this);
@@ -42173,6 +42142,22 @@ class ColumnConstraintTypeContext extends antlr4.ParserRuleContext {
 
 	tableConstraintType() {
 		return this.getTypedRuleContext(TableConstraintTypeContext, 0);
+	}
+
+	KW_COMMENT() {
+		return this.getToken(HiveParser.KW_COMMENT, 0);
+	}
+
+	StringLiteral() {
+		return this.getToken(HiveParser.StringLiteral, 0);
+	}
+
+	KW_MASK() {
+		return this.getToken(HiveParser.KW_MASK, 0);
+	}
+
+	functionIdentifier() {
+		return this.getTypedRuleContext(FunctionIdentifierContext, 0);
 	}
 
 	accept(visitor) {

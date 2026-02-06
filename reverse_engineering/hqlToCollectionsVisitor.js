@@ -399,7 +399,7 @@ class Visitor extends HiveParserVisitor {
 		return (ctx.columnNameComment() || []).map(column => {
 			const name = column.identifier()?.getText() || '';
 			const comment =
-				column.KW_COMMENT() && column.StringLiteral()
+				column.KW_COMMENT?.() && column.StringLiteral?.()
 					? removeSingleDoubleQuotes(column.StringLiteral().getText())
 					: '';
 
@@ -892,13 +892,11 @@ class Visitor extends HiveParserVisitor {
 		const type = this.visit(ctx.colType());
 		const constraintContext = ctx.columnConstraint();
 		const constraints = constraintContext && this.visit(constraintContext);
-		const description = ctx.KW_COMMENT() ? getTextFromStringLiteral(ctx) : '';
 
 		return {
 			name,
 			type: {
 				...type,
-				description,
 				...mergeConstraints(constraints),
 			},
 		};
@@ -1101,6 +1099,8 @@ class Visitor extends HiveParserVisitor {
 			...(ctx.KW_DEFAULT() ? { default: this.visit(ctx.defaultVal()) } : {}),
 			...(ctx.checkConstraint() ? { check: this.visitWhenExists(ctx, 'checkConstraint', '') } : {}),
 			...(ctx.columnGeneratedAs() ? { generatedDefaultValue: this.visit(ctx.columnGeneratedAs()) } : {}),
+			...(ctx.KW_COMMENT() ? { description: getTextFromStringLiteral(ctx) } : {}),
+			...(ctx.KW_MASK() ? { maskingFunction: this.visit(ctx.functionIdentifier()) } : {}),
 		};
 	}
 
@@ -1158,6 +1158,10 @@ class Visitor extends HiveParserVisitor {
 	}
 
 	visitIdentifier(ctx) {
+		return removeQuotes(ctx.getText());
+	}
+
+	visitFunctionIdentifier(ctx) {
 		return removeQuotes(ctx.getText());
 	}
 
@@ -1835,6 +1839,12 @@ const mergeConstraints = constraints => {
 		}
 		if (constraint.generatedDefaultValue) {
 			return { ...mergedConstraint, generatedDefaultValue: constraint.generatedDefaultValue };
+		}
+		if (constraint.description) {
+			return { ...mergedConstraint, description: constraint.description };
+		}
+		if (constraint.maskingFunction) {
+			return { ...mergedConstraint, maskingFunction: constraint.maskingFunction };
 		}
 
 		return mergedConstraint;
