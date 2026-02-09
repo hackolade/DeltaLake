@@ -912,7 +912,7 @@ materializedViewClause
 
 scheduleClause
     : KW_SCHEDULE KW_REFRESH? KW_EVERY Number (KW_HOUR | KW_DAY | KW_WEEK)
-    | KW_SCHEDULE KW_REFRESH? KW_CRON Identifier (KW_AT KW_TIME KW_ZONE Identifier)?
+    | KW_SCHEDULE KW_REFRESH? KW_CRON identifier (KW_AT KW_TIME KW_ZONE identifier)?
     ;
 
 rowClause

@@ -1983,9 +1983,9 @@ const serializedATN = [
 	'\u000f\u0002\u0002\u0966\u0968\u0007\u0165\u0002\u0002\u0967\u0969\u0007',
 	'\u0166\u0002\u0002\u0968\u0967\u0003\u0002\u0002\u0002\u0968\u0969\u0003',
 	'\u0002\u0002\u0002\u0969\u096a\u0003\u0002\u0002\u0002\u096a\u096b\u0007',
-	'\u0168\u0002\u0002\u096b\u0970\u0007\u0196\u0002\u0002\u096c\u096d\u0007',
+	'\u0168\u0002\u0002\u096b\u0970\u0005\u034e\u01a8\u0002\u096c\u096d\u0007',
 	'\u0169\u0002\u0002\u096d\u096e\u0007^\u0002\u0002\u096e\u096f\u0007',
-	'_\u0002\u0002\u096f\u0971\u0007\u0196\u0002\u0002\u0970\u096c\u0003',
+	'_\u0002\u0002\u096f\u0971\u0005\u034e\u01a8\u0002\u0970\u096c\u0003',
 	'\u0002\u0002\u0002\u0970\u0971\u0003\u0002\u0002\u0002\u0971\u0973\u0003',
 	'\u0002\u0002\u0002\u0972\u095f\u0003\u0002\u0002\u0002\u0972\u0966\u0003',
 	'\u0002\u0002\u0002\u0973\u0133\u0003\u0002\u0002\u0002\u0974\u0976\u0007',
@@ -13221,7 +13221,7 @@ class HiveParser extends antlr4.Parser {
 					this.state = 2408;
 					this.match(HiveParser.KW_CRON);
 					this.state = 2409;
-					this.match(HiveParser.Identifier);
+					this.identifier();
 					this.state = 2414;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
@@ -13233,7 +13233,7 @@ class HiveParser extends antlr4.Parser {
 						this.state = 2412;
 						this.match(HiveParser.KW_ZONE);
 						this.state = 2413;
-						this.match(HiveParser.Identifier);
+						this.identifier();
 					}
 
 					break;
@@ -38449,14 +38449,14 @@ class ScheduleClauseContext extends antlr4.ParserRuleContext {
 		return this.getToken(HiveParser.KW_CRON, 0);
 	}
 
-	Identifier = function (i) {
+	identifier = function (i) {
 		if (i === undefined) {
 			i = null;
 		}
 		if (i === null) {
-			return this.getTokens(HiveParser.Identifier);
+			return this.getTypedRuleContexts(IdentifierContext);
 		} else {
-			return this.getToken(HiveParser.Identifier, i);
+			return this.getTypedRuleContext(IdentifierContext, i);
 		}
 	};
 
