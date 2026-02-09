@@ -110,26 +110,36 @@ class Visitor extends HiveParserVisitor {
 		const temporaryTable = Boolean(ctx.KW_TEMPORARY());
 		const externalTable = Boolean(ctx.KW_EXTERNAL());
 		const streamingTable = Boolean(ctx.KW_STREAMING());
+		const tableIfNotExists = Boolean(ctx.ifNotExists());
 		const orRefresh = Boolean(ctx.orRefresh());
 		const select = {
 			start: ctx.selectStatementWithCTE()?.start.start,
 			stop: ctx.selectStatementWithCTE()?.stop.stop + 1,
 		};
-		const scheduleGroup = this.visitWhenExists(ctx, 'scheduleClause');
-		const dltExpectations = [];
+		const scheduleClauseValues = this.visitWhenExists(ctx, 'scheduleClause', []);
+		const triggerOnUpdateClauseValues = this.visitWhenExists(ctx, 'triggerOnUpdateClause', []);
+		const scheduleGroup = [...scheduleClauseValues, ...triggerOnUpdateClauseValues];
+		const rowFilterGroup = this.visitWhenExists(ctx, 'rowClause');
 
 		let storedAsTable = this.visitWhenExists(ctx, 'tableFileFormat', {});
 		storedAsTable = Array.isArray(storedAsTable) ? storedAsTable?.[0] || {} : storedAsTable;
 		const { catalog, database, table } = tableName;
-		const { properties, foreignKeys } = this.visitWhenExists(ctx, 'columnNameTypeOrConstraintList', {
+		const { properties, foreignKeys, constraints } = this.visitWhenExists(ctx, 'columnNameTypeOrConstraintList', {
 			properties: {},
 			foreignKeys: [],
+			constraints: [],
 		});
 		const tableForeignKeys = foreignKeys.map(constraint => ({
 			...constraint,
 			childDbName: database,
 			childCollection: table,
 		}));
+		const dltExpectations = constraints
+			.filter(constraint => constraint.type === 'expect')
+			.map(({ constraintName, ...constraint }) => ({
+				expectationName: constraintName,
+				...constraint,
+			}));
 
 		const bucketData = catalog
 			? [
@@ -169,8 +179,11 @@ class Visitor extends HiveParserVisitor {
 						skewedOn,
 						skewStoredAsDir,
 						tableOptions,
+						tableIfNotExists,
 						orRefresh,
 						scheduleGroup,
+						rowFilterGroup,
+						dltExpectations,
 						location: Array.isArray(location) ? location[0] || '' : String(location),
 						tableProperties: Array.isArray(tableProperties)
 							? getFilteredTableProperties(tableProperties) || ''
@@ -517,6 +530,36 @@ class Visitor extends HiveParserVisitor {
 		};
 	}
 
+	visitTriggerOnUpdateClause(ctx) {
+		const { intervalValue, intervalQualifier } = this.visit(ctx.intervalClause());
+
+		return {
+			scheduleType: ScheduleTypesEnum.TRIGGER_ON_UPDATE_BETA,
+			triggerIntervalUnit: intervalQualifier,
+			triggerIntervalValue: intervalValue,
+		};
+	}
+
+	visitIntervalClause(ctx) {
+		const intervalValue = Number(ctx.Number().getText());
+		const intervalQualifier = _.toUpper(ctx.intervalQualifier().getText());
+
+		return {
+			intervalValue,
+			intervalQualifier,
+		};
+	}
+
+	visitRowClause(ctx) {
+		const rowFilterFunction = this.visit(ctx.functionIdentifier());
+		const rowFilterColumns = this.visitWhenExists(ctx, 'identifier', []).map(name => ({ name }));
+
+		return {
+			rowFilterFunction,
+			rowFilterColumns,
+		};
+	}
+
 	visitAlterStatement(ctx) {
 		const isAlterTable = ctx.KW_TABLE();
 		if (isAlterTable) {
@@ -784,14 +827,15 @@ class Visitor extends HiveParserVisitor {
 
 	visitColumnNameTypeOrConstraintList(ctx) {
 		return this.visit(ctx.columnNameTypeOrConstraint()).reduce(
-			({ properties, foreignKeys }, column) => {
+			({ properties, foreignKeys, constraints }, column) => {
 				if (!column) {
-					return { properties, foreignKeys };
+					return { properties, foreignKeys, constraints };
 				}
 				if (column.isForeignKey) {
 					return {
 						foreignKeys: [...foreignKeys, column],
 						properties,
+						constraints,
 					};
 				}
 
@@ -799,6 +843,7 @@ class Visitor extends HiveParserVisitor {
 					return {
 						foreignKeys,
 						properties,
+						constraints: [...constraints, column],
 					};
 				}
 
@@ -810,9 +855,10 @@ class Visitor extends HiveParserVisitor {
 						[column.name]: column.type,
 					},
 					foreignKeys: [...foreignKeys, ...columnForeignKeys],
+					constraints,
 				};
 			},
-			{ properties: {}, foreignKeys: [] },
+			{ properties: {}, foreignKeys: [], constraints: [] },
 		);
 	}
 
@@ -885,7 +931,17 @@ class Visitor extends HiveParserVisitor {
 
 	visitTableLevelConstraint(ctx) {
 		const pkUkConstraint = ctx.pkUkConstraint();
-		return pkUkConstraint ? this.visit(pkUkConstraint) : {};
+		const expectConstraint = ctx.expectConstraint();
+
+		if (pkUkConstraint) {
+			return this.visit(pkUkConstraint);
+		}
+
+		if (expectConstraint) {
+			return this.visit(expectConstraint);
+		}
+
+		return {};
 	}
 
 	visitPkUkConstraint(ctx) {
@@ -912,6 +968,19 @@ class Visitor extends HiveParserVisitor {
 			dbName,
 			childField,
 			parentField,
+		};
+	}
+
+	visitExpectConstraint(ctx) {
+		const expectationExpr = this.getText(ctx.expression());
+		const failUpdateAction = ctx.KW_FAIL() && ctx.KW_UPDATE() ? 'FAIL UPDATE' : '';
+		const dropRowAction = ctx.KW_DROP() && ctx.KW_ROW() ? 'DROP ROW' : '';
+		const expectationAction = failUpdateAction || dropRowAction;
+
+		return {
+			type: 'expect',
+			expectationExpr,
+			expectationAction,
 		};
 	}
 

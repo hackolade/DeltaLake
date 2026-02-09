@@ -156,21 +156,29 @@ const createCollection = (entitiesData, bucket, statementData, originalScript) =
 		originalScript.substring(statementData.select.start, statementData.select.stop),
 	);
 
+	const entityData = {
+		...updatedEntityData,
+		entityLevelData: {
+			...updatedEntityData.entityLevelData,
+			streamingSourceSelect,
+		},
+	};
+
 	if (!updatedEntityData.bucketName) {
 		return {
 			...entitiesData,
-			entities: [...entities, { ...updatedEntityData, bucketName: bucket, streamingSourceSelect }],
+			entities: [...entities, { ...entityData, bucketName: bucket }],
 		};
 	}
 
 	if (currentBucket === DEFAULT_BUCKET) {
 		return {
 			...entitiesData,
-			entities: [...entities, { ...updatedEntityData, streamingSourceSelect }],
+			entities: [...entities, entityData],
 			bucketName: updatedEntityData.bucketName,
 		};
 	} else {
-		return { ...entitiesData, entities: [...entities, { ...updatedEntityData, streamingSourceSelect }] };
+		return { ...entitiesData, entities: [...entities, entityData] };
 	}
 };
 
