@@ -135,6 +135,11 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by HiveParser#orRefresh.
+	visitOrRefresh(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by HiveParser#createDatabaseStatement.
 	visitCreateDatabaseStatement(ctx) {
 		return this.visitChildren(ctx);
@@ -770,6 +775,21 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by HiveParser#triggerOnUpdateClause.
+	visitTriggerOnUpdateClause(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by HiveParser#intervalClause.
+	visitIntervalClause(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by HiveParser#intervalQualifier.
+	visitIntervalQualifier(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by HiveParser#viewPartition.
 	visitViewPartition(ctx) {
 		return this.visitChildren(ctx);
@@ -1047,6 +1067,11 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 
 	// Visit a parse tree produced by HiveParser#checkConstraint.
 	visitCheckConstraint(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by HiveParser#expectConstraint.
+	visitExpectConstraint(ctx) {
 		return this.visitChildren(ctx);
 	}
 
@@ -1495,6 +1520,11 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by HiveParser#exceptClause.
+	visitExceptClause(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by HiveParser#window_clause.
 	visitWindow_clause(ctx) {
 		return this.visitChildren(ctx);
@@ -1572,6 +1602,11 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 
 	// Visit a parse tree produced by HiveParser#joinSource.
 	visitJoinSource(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by HiveParser#streamSource.
+	visitStreamSource(ctx) {
 		return this.visitChildren(ctx);
 	}
 
@@ -1697,6 +1732,26 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 
 	// Visit a parse tree produced by HiveParser#rangeTableValuedFunction.
 	visitRangeTableValuedFunction(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by HiveParser#tableFunctionCall.
+	visitTableFunctionCall(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by HiveParser#functionArgList.
+	visitFunctionArgList(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by HiveParser#functionArg.
+	visitFunctionArg(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by HiveParser#namedArg.
+	visitNamedArg(ctx) {
 		return this.visitChildren(ctx);
 	}
 

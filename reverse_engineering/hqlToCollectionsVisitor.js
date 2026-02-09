@@ -41,6 +41,7 @@ const {
 	getFilteredTableProperties,
 	normalizeTableProperties,
 } = require('./helpers/visitorsHelper');
+const { ScheduleTypesEnum } = require('../forward_engineering/enums/schedules');
 
 const ALLOWED_COMMANDS = [
 	HiveParser.RULE_createTableStatement,
@@ -108,18 +109,37 @@ class Visitor extends HiveParserVisitor {
 		tableOptions = Array.isArray(tableOptions) ? tableOptions?.[0] || '' : tableOptions;
 		const temporaryTable = Boolean(ctx.KW_TEMPORARY());
 		const externalTable = Boolean(ctx.KW_EXTERNAL());
+		const streamingTable = Boolean(ctx.KW_STREAMING());
+		const tableIfNotExists = Boolean(ctx.ifNotExists());
+		const orRefresh = Boolean(ctx.orRefresh());
+		const select = {
+			start: ctx.selectStatementWithCTE()?.start.start,
+			stop: ctx.selectStatementWithCTE()?.stop.stop + 1,
+		};
+		const scheduleClauseValues = this.visitWhenExists(ctx, 'scheduleClause', []);
+		const triggerOnUpdateClauseValues = this.visitWhenExists(ctx, 'triggerOnUpdateClause', []);
+		const scheduleGroup = [...scheduleClauseValues, ...triggerOnUpdateClauseValues];
+		const rowFilterGroup = this.visitWhenExists(ctx, 'rowClause');
+
 		let storedAsTable = this.visitWhenExists(ctx, 'tableFileFormat', {});
 		storedAsTable = Array.isArray(storedAsTable) ? storedAsTable?.[0] || {} : storedAsTable;
 		const { catalog, database, table } = tableName;
-		const { properties, foreignKeys } = this.visitWhenExists(ctx, 'columnNameTypeOrConstraintList', {
+		const { properties, foreignKeys, constraints } = this.visitWhenExists(ctx, 'columnNameTypeOrConstraintList', {
 			properties: {},
 			foreignKeys: [],
+			constraints: [],
 		});
 		const tableForeignKeys = foreignKeys.map(constraint => ({
 			...constraint,
 			childDbName: database,
 			childCollection: table,
 		}));
+		const dltExpectations = constraints
+			.filter(constraint => constraint.type === 'expect')
+			.map(({ constraintName, ...constraint }) => ({
+				expectationName: constraintName,
+				...constraint,
+			}));
 
 		const bucketData = catalog
 			? [
@@ -138,6 +158,7 @@ class Visitor extends HiveParserVisitor {
 				type: CREATE_COLLECTION_COMMAND,
 				collectionName: table,
 				bucketName: database,
+				select,
 				schema: handleChoices({
 					collectionName: table,
 					type: 'object',
@@ -148,6 +169,7 @@ class Visitor extends HiveParserVisitor {
 					{
 						temporaryTable,
 						externalTable,
+						streamingTable,
 						description: Array.isArray(description) ? description[0] || '' : String(description),
 						compositePartitionKey: compositePartitionKey.map(([name]) => ({ name })),
 						compositeClusteringKey: compositeClusteringKey || compositeLiquidClusteringKey,
@@ -157,6 +179,11 @@ class Visitor extends HiveParserVisitor {
 						skewedOn,
 						skewStoredAsDir,
 						tableOptions,
+						tableIfNotExists,
+						orRefresh,
+						scheduleGroup,
+						rowFilterGroup,
+						dltExpectations,
 						location: Array.isArray(location) ? location[0] || '' : String(location),
 						tableProperties: Array.isArray(tableProperties)
 							? getFilteredTableProperties(tableProperties) || ''
@@ -399,7 +426,7 @@ class Visitor extends HiveParserVisitor {
 		return (ctx.columnNameComment() || []).map(column => {
 			const name = column.identifier()?.getText() || '';
 			const comment =
-				column.KW_COMMENT() && column.StringLiteral()
+				column.KW_COMMENT?.() && column.StringLiteral?.()
 					? removeSingleDoubleQuotes(column.StringLiteral().getText())
 					: '';
 
@@ -455,7 +482,7 @@ class Visitor extends HiveParserVisitor {
 
 	visitMaterializedViewClause(ctx) {
 		const description = this.visitWhenExists(ctx, 'tableComment');
-		const scheduleClause = this.visitWhenExists(ctx, 'scheduleClause');
+		const { scheduleClause } = this.visitWhenExists(ctx, 'scheduleClause', {});
 		const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
 		const compositePartitionKeys = this.visitWhenExists(ctx, 'tablePartition', []);
 		const { compositeClusteringKey } = this.visitWhenExists(ctx, 'clusterByClause', {});
@@ -474,7 +501,63 @@ class Visitor extends HiveParserVisitor {
 	}
 
 	visitScheduleClause(ctx) {
-		return this.getText(ctx);
+		const scheduleClause = this.getText(ctx);
+
+		if (ctx.KW_EVERY()) {
+			const scheduleEveryUnitContext = ctx.KW_HOUR() || ctx.KW_DAY() || ctx.KW_WEEK();
+			const scheduleEveryUnitKeyword = _.toUpper(scheduleEveryUnitContext?.getText() || '');
+			const scheduleEveryUnit = scheduleEveryUnitKeyword.endsWith('S')
+				? scheduleEveryUnitKeyword
+				: scheduleEveryUnitKeyword + 'S';
+			const scheduleEveryValue = Number(ctx.Number().getText());
+
+			return {
+				scheduleType: ScheduleTypesEnum.EVERY,
+				scheduleEveryUnit,
+				scheduleEveryValue,
+				scheduleClause,
+			};
+		}
+
+		const scheduleCronString = this.visit(ctx.identifier()[0]);
+		const scheduleTimeZone = this.visit(ctx.identifier()[1]);
+
+		return {
+			scheduleType: ScheduleTypesEnum.CRON,
+			scheduleCronString,
+			scheduleTimeZone,
+			scheduleClause,
+		};
+	}
+
+	visitTriggerOnUpdateClause(ctx) {
+		const { intervalValue, intervalQualifier } = this.visit(ctx.intervalClause());
+
+		return {
+			scheduleType: ScheduleTypesEnum.TRIGGER_ON_UPDATE_BETA,
+			triggerIntervalUnit: intervalQualifier,
+			triggerIntervalValue: intervalValue,
+		};
+	}
+
+	visitIntervalClause(ctx) {
+		const intervalValue = Number(ctx.Number().getText());
+		const intervalQualifier = _.toUpper(ctx.intervalQualifier().getText());
+
+		return {
+			intervalValue,
+			intervalQualifier,
+		};
+	}
+
+	visitRowClause(ctx) {
+		const rowFilterFunction = this.visit(ctx.functionIdentifier());
+		const rowFilterColumns = this.visitWhenExists(ctx, 'identifier', []).map(name => ({ name }));
+
+		return {
+			rowFilterFunction,
+			rowFilterColumns,
+		};
 	}
 
 	visitAlterStatement(ctx) {
@@ -744,14 +827,15 @@ class Visitor extends HiveParserVisitor {
 
 	visitColumnNameTypeOrConstraintList(ctx) {
 		return this.visit(ctx.columnNameTypeOrConstraint()).reduce(
-			({ properties, foreignKeys }, column) => {
+			({ properties, foreignKeys, constraints }, column) => {
 				if (!column) {
-					return { properties, foreignKeys };
+					return { properties, foreignKeys, constraints };
 				}
 				if (column.isForeignKey) {
 					return {
 						foreignKeys: [...foreignKeys, column],
 						properties,
+						constraints,
 					};
 				}
 
@@ -759,6 +843,7 @@ class Visitor extends HiveParserVisitor {
 					return {
 						foreignKeys,
 						properties,
+						constraints: [...constraints, column],
 					};
 				}
 
@@ -770,9 +855,10 @@ class Visitor extends HiveParserVisitor {
 						[column.name]: column.type,
 					},
 					foreignKeys: [...foreignKeys, ...columnForeignKeys],
+					constraints,
 				};
 			},
-			{ properties: {}, foreignKeys: [] },
+			{ properties: {}, foreignKeys: [], constraints: [] },
 		);
 	}
 
@@ -845,7 +931,17 @@ class Visitor extends HiveParserVisitor {
 
 	visitTableLevelConstraint(ctx) {
 		const pkUkConstraint = ctx.pkUkConstraint();
-		return pkUkConstraint ? this.visit(pkUkConstraint) : {};
+		const expectConstraint = ctx.expectConstraint();
+
+		if (pkUkConstraint) {
+			return this.visit(pkUkConstraint);
+		}
+
+		if (expectConstraint) {
+			return this.visit(expectConstraint);
+		}
+
+		return {};
 	}
 
 	visitPkUkConstraint(ctx) {
@@ -875,6 +971,19 @@ class Visitor extends HiveParserVisitor {
 		};
 	}
 
+	visitExpectConstraint(ctx) {
+		const expectationExpr = this.getText(ctx.expression());
+		const failUpdateAction = ctx.KW_FAIL() && ctx.KW_UPDATE() ? 'FAIL UPDATE' : '';
+		const dropRowAction = ctx.KW_DROP() && ctx.KW_ROW() ? 'DROP ROW' : '';
+		const expectationAction = failUpdateAction || dropRowAction;
+
+		return {
+			type: 'expect',
+			expectationExpr,
+			expectationAction,
+		};
+	}
+
 	visitColumnParenthesesList(ctx) {
 		return this.visit(ctx.columnNameList());
 	}
@@ -892,13 +1001,11 @@ class Visitor extends HiveParserVisitor {
 		const type = this.visit(ctx.colType());
 		const constraintContext = ctx.columnConstraint();
 		const constraints = constraintContext && this.visit(constraintContext);
-		const description = ctx.KW_COMMENT() ? getTextFromStringLiteral(ctx) : '';
 
 		return {
 			name,
 			type: {
 				...type,
-				description,
 				...mergeConstraints(constraints),
 			},
 		};
@@ -1101,6 +1208,8 @@ class Visitor extends HiveParserVisitor {
 			...(ctx.KW_DEFAULT() ? { default: this.visit(ctx.defaultVal()) } : {}),
 			...(ctx.checkConstraint() ? { check: this.visitWhenExists(ctx, 'checkConstraint', '') } : {}),
 			...(ctx.columnGeneratedAs() ? { generatedDefaultValue: this.visit(ctx.columnGeneratedAs()) } : {}),
+			...(ctx.KW_COMMENT() ? { description: getTextFromStringLiteral(ctx) } : {}),
+			...(ctx.KW_MASK() ? { maskingFunction: this.visit(ctx.functionIdentifier()) } : {}),
 		};
 	}
 
@@ -1158,6 +1267,10 @@ class Visitor extends HiveParserVisitor {
 	}
 
 	visitIdentifier(ctx) {
+		return removeQuotes(ctx.getText());
+	}
+
+	visitFunctionIdentifier(ctx) {
 		return removeQuotes(ctx.getText());
 	}
 
@@ -1835,6 +1948,12 @@ const mergeConstraints = constraints => {
 		}
 		if (constraint.generatedDefaultValue) {
 			return { ...mergedConstraint, generatedDefaultValue: constraint.generatedDefaultValue };
+		}
+		if (constraint.description) {
+			return { ...mergedConstraint, description: constraint.description };
+		}
+		if (constraint.maskingFunction) {
+			return { ...mergedConstraint, maskingFunction: constraint.maskingFunction };
 		}
 
 		return mergedConstraint;
