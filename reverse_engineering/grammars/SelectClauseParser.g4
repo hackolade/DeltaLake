@@ -39,7 +39,7 @@ selectTrfmClause
     ;
 
 selectItem
-    : tableAllColumns
+    : tableAllColumns exceptClause?
     | ( expression
       ((KW_AS? identifier) | (KW_AS LPAREN identifier (COMMA identifier)* RPAREN))?
     )
@@ -55,12 +55,16 @@ trfmClause
     ;
 
 selectExpression
-    : tableAllColumns
+    : tableAllColumns exceptClause?
     | expression
     ;
 
 selectExpressionList
     : selectExpression (COMMA selectExpression)*
+    ;
+
+exceptClause
+    : KW_EXCEPT LPAREN selectExpressionList RPAREN
     ;
 
 //---------------------- Rules for windowing clauses -------------------------------

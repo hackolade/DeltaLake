@@ -1520,6 +1520,11 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by HiveParser#exceptClause.
+	visitExceptClause(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by HiveParser#window_clause.
 	visitWindow_clause(ctx) {
 		return this.visitChildren(ctx);
