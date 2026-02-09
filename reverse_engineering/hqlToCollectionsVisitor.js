@@ -482,7 +482,7 @@ class Visitor extends HiveParserVisitor {
 
 	visitMaterializedViewClause(ctx) {
 		const description = this.visitWhenExists(ctx, 'tableComment');
-		const [{ scheduleClause }] = this.visitWhenExists(ctx, 'scheduleClause', [{}]);
+		const { scheduleClause } = this.visitWhenExists(ctx, 'scheduleClause', {});
 		const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
 		const compositePartitionKeys = this.visitWhenExists(ctx, 'tablePartition', []);
 		const { compositeClusteringKey } = this.visitWhenExists(ctx, 'clusterByClause', {});
