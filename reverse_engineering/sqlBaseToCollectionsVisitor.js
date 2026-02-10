@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const { SqlBaseVisitor } = require('./parser/SQLBase/SqlBaseVisitor');
 const { getFilteredTableProperties, getCheckConstraintsFromTableProperties } = require('./helpers/visitorsHelper');
+const { ScheduleTypesEnum } = require('../forward_engineering/enums/schedules');
 
 global.SQL_standard_keyword_behavior = false;
 global.legacy_exponent_literal_as_decimal_enabled = true;
@@ -29,15 +30,24 @@ class Visitor extends SqlBaseVisitor {
 		const fkConstraints = constraints
 			.filter(constraint => constraint.fkConstraint)
 			.flatMap(constraint => constraint.fkConstraint);
+		const dltExpectations = constraints
+			.filter(constraint => constraint.expectConstraint)
+			.flatMap(constraint => constraint.expectConstraint);
 		const tableClauses = this.visit(ctx.createTableClauses());
 		const checkConstraints = getCheckConstraintsFromTableProperties(tableClauses.tableProperties);
 		const querySelectProperties = this.visitIfExists(ctx, 'query');
 		const using = this.visitIfExists(ctx, 'tableProvider');
 		const tableProvider = tableClauses.createFileFormat?.serDeLibrary;
+		const scheduleGroup = [tableClauses.scheduleClause, tableClauses.triggerOnUpdateClause].filter(Boolean);
+		const rowFilterGroup = [tableClauses.rowClause].filter(Boolean);
+
 		return {
 			isExternal: tableHeader.isExternal,
 			isTemporary: tableHeader.isTemporary,
+			isStreaming: tableHeader.isStreaming,
 			tableName: tableHeader.tableName,
+			orRefresh: tableHeader.orRefresh,
+			tableIfNotExists: tableHeader.tableIfNotExists,
 			colList: fillColumnsWithPkConstraints(colList, pkConstraints),
 			using,
 			tableProvider,
@@ -64,6 +74,9 @@ class Visitor extends SqlBaseVisitor {
 			primaryKey: compositePrimaryKeys,
 			fkConstraints,
 			chkConstr: checkConstraints,
+			dltExpectations,
+			scheduleGroup,
+			rowFilterGroup,
 		};
 	}
 
@@ -105,12 +118,68 @@ class Visitor extends SqlBaseVisitor {
 			clusteredBy: tableClauses.bucketSpec?.clusteredBy,
 			comment: tableClauses.commentSpec,
 			partitionBy: tableClauses.partitionBy,
-			scheduleClause: tableClauses.scheduleClause,
+			scheduleClause: tableClauses.scheduleClause?.scheduleClause,
 		};
 	}
 
 	visitScheduleClause(ctx) {
-		return this.getText(ctx);
+		const scheduleClause = this.getText(ctx);
+
+		if (ctx.EVERY()) {
+			const scheduleEveryUnit = this.visit(ctx.everyQualifier());
+			const scheduleEveryValue = Number(ctx.number().getText());
+
+			return {
+				scheduleType: ScheduleTypesEnum.EVERY,
+				scheduleEveryUnit,
+				scheduleEveryValue,
+				scheduleClause,
+			};
+		}
+
+		const scheduleCronString = this.visit(ctx.identifier()[0]);
+		const scheduleTimeZone = this.visit(ctx.identifier()[1]);
+
+		return {
+			scheduleType: ScheduleTypesEnum.CRON,
+			scheduleCronString,
+			scheduleTimeZone,
+			scheduleClause,
+		};
+	}
+
+	visitEveryQualifier(ctx) {
+		return _.toUpper(ctx.getText() || '');
+	}
+
+	visitRowClause(ctx) {
+		const rowFilterFunction = this.visit(ctx.functionIdentifier());
+		const rowFilterColumns = this.visitIfExists(ctx, 'identifier', []).map(name => ({ name }));
+
+		return {
+			rowFilterFunction,
+			rowFilterColumns,
+		};
+	}
+
+	visitTriggerOnUpdateClause(ctx) {
+		const { intervalValue, intervalQualifier } = this.visit(ctx.intervalClause());
+
+		return {
+			scheduleType: ScheduleTypesEnum.TRIGGER_ON_UPDATE_BETA,
+			triggerIntervalUnit: intervalQualifier,
+			triggerIntervalValue: intervalValue,
+		};
+	}
+
+	visitIntervalClause(ctx) {
+		const intervalValue = Number(ctx.Number().getText());
+		const intervalQualifier = _.toUpper(ctx.intervalQualifier().getText());
+
+		return {
+			intervalValue,
+			intervalQualifier,
+		};
 	}
 
 	visitIdentifierCommentList(ctx) {
@@ -137,6 +206,10 @@ class Visitor extends SqlBaseVisitor {
 		return {
 			isExternal: this.visitFlagValue(ctx, 'EXTERNAL'),
 			isTemporary: this.visitFlagValue(ctx, 'TEMPORARY'),
+			isStreaming: this.visitFlagValue(ctx, 'STREAMING'),
+			orRefresh: this.visitFlagValue(ctx, 'OR') && this.visitFlagValue(ctx, 'REFRESH'),
+			tableIfNotExists:
+				this.visitFlagValue(ctx, 'IF') && this.visitFlagValue(ctx, 'NOT') && this.visitFlagValue(ctx, 'EXISTS'),
 			tableName: getName(ctx.multipartIdentifier()),
 		};
 	}
@@ -145,6 +218,7 @@ class Visitor extends SqlBaseVisitor {
 		return {
 			pkConstraint: this.visitIfExists(ctx, 'primaryKeyConstraint'),
 			fkConstraint: this.visitIfExists(ctx, 'foreignKeyConstraint'),
+			expectConstraint: this.visitIfExists(ctx, 'expectConstraint'),
 		};
 	}
 
@@ -167,6 +241,20 @@ class Visitor extends SqlBaseVisitor {
 			parentField,
 			childDbName: parentDatabase,
 			childField,
+		};
+	}
+
+	visitExpectConstraint(ctx) {
+		const expectationName = this.visitIfExists(ctx, 'tableConstraintName', '');
+		const expectationExpr = this.getText(ctx.expression());
+		const failUpdateAction = ctx.FAIL() && ctx.UPDATE() ? 'FAIL UPDATE' : '';
+		const dropRowAction = ctx.DROP() && ctx.ROW() ? 'DROP ROW' : '';
+		const expectationAction = failUpdateAction || dropRowAction;
+
+		return {
+			expectationName,
+			expectationExpr,
+			expectationAction,
 		};
 	}
 
@@ -196,8 +284,13 @@ class Visitor extends SqlBaseVisitor {
 			colName: getName(ctx.errorCapturingIdentifier()),
 			colType: this.visit(ctx.dataType()),
 			colComment: this.visitIfExists(ctx, 'commentSpec', ''),
+			maskFunction: this.visitIfExists(ctx, 'functionIdentifier'),
 			...this.visitIfExists(ctx, 'columnConstraint', {}),
 		};
+	}
+
+	visitFunctionIdentifier(ctx) {
+		return getName(ctx);
 	}
 
 	visitColumnConstraint(ctx) {
@@ -322,6 +415,8 @@ class Visitor extends SqlBaseVisitor {
 			tableOptions: this.visitIfExists(ctx, 'tableOptions', '')?.[0] || '',
 			scheduleClause: this.visitIfExists(ctx, 'scheduleClause')?.[0],
 			clusterBy: this.visitIfExists(ctx, 'clusterBySpec', [])?.[0],
+			rowClause: this.visitIfExists(ctx, 'rowClause')?.[0],
+			triggerOnUpdateClause: this.visitIfExists(ctx, 'triggerOnUpdateClause')?.[0],
 		};
 	}
 
