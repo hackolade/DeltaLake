@@ -288,7 +288,7 @@ unsupportedHiveNativeCommands
     ;
 
 createTableHeader
-    : CREATE TEMPORARY? EXTERNAL? TABLE (IF NOT EXISTS)? multipartIdentifier
+    : CREATE (OR REFRESH)? TEMPORARY? EXTERNAL? STREAMING? TABLE (IF NOT EXISTS)? multipartIdentifier
     ;
 
 replaceTableHeader
@@ -324,12 +324,31 @@ schemaBindingSpec
     ;
 
 scheduleClause
-    : SCHEDULE REFRESH? EVERY number (HOUR | HOURS | DAY | DAYS | WEEK | WEEKS)
+    : SCHEDULE REFRESH? EVERY number everyQualifier
     | SCHEDULE REFRESH? CRON identifier (AT TIME ZONE identifier)?
     ;
 
+everyQualifier: HOUR | HOURS | DAY | DAYS | WEEK | WEEKS;
+
 rowClause
     : WITH? ROW FILTER functionIdentifier ON ('(' identifier (',' identifier)* ')')?
+    ;
+
+triggerOnUpdateClause
+    : TRIGGER ON UPDATE (AT MOST EVERY intervalClause)?
+    ;
+
+intervalClause
+    : INTERVAL number? intervalQualifier
+    ;
+
+intervalQualifier
+    : YEAR (TO MONTH)?
+    | MONTH
+    | DAY (TO (HOUR | MINUTE | SECOND))?
+    | HOUR (TO (MINUTE | SECOND))?
+    | MINUTE (TO SECOND)?
+    | SECOND
     ;
 
 insertInto
@@ -395,6 +414,7 @@ createTableClauses
         | tableProperties
         | scheduleClause
         | rowClause
+        | triggerOnUpdateClause
     )*
     ;
 
@@ -928,6 +948,7 @@ colType
 tableConstraint
     : primaryKeyConstraint
     | foreignKeyConstraint
+    | expectConstraint
     ;
 
 primaryKeyConstraint
@@ -936,6 +957,10 @@ primaryKeyConstraint
 
 foreignKeyConstraint
     : tableConstraintName? FOREIGN KEY '(' keyNameList ')' REFERENCES multipartIdentifier ('(' keyNameList ')')? foreignKeyOptions*
+    ;
+
+expectConstraint
+    : tableConstraintName? EXPECT '(' expression ')' (ON VIOLATION (FAIL UPDATE | DROP ROW))?
     ;
 
 tableConstraintName
@@ -1669,11 +1694,13 @@ EVOLUTION: E V O L U T I O N;
 EXCEPT: E X C E P T;
 EXCHANGE: E X C H A N G E;
 EXISTS: E X I S T S;
+EXPECT: E X P E C T;
 EXPLAIN: E X P L A I N;
 EXPORT: E X P O R T;
 EXTENDED: E X T E N D E D;
 EXTERNAL: E X T E R N A L;
 EXTRACT: E X T R A C T;
+FAIL: F A I L;
 FALSE: F A L S E;
 FETCH: F E T C H;
 FIELDS: F I E L D S;
@@ -1733,6 +1760,9 @@ MAP: M A P;
 MATCHED: M A T C H E D;
 MATERIALIZED: M A T E R I A L I Z E D;
 MERGE: M E R G E;
+MINUTE: M I N U T E;
+MONTH: M O N T H;
+MOST: M O S T;
 MSCK: M S C K;
 NAMESPACE: N A M E S P A C E;
 NAMESPACES: N A M E S P A C E S;
@@ -1793,6 +1823,7 @@ ROW: R O W;
 ROWS: R O W S;
 SCHEDULE: S C H E D U L E;
 SCHEMA: S C H E M A;
+SECOND: S E C O N D;
 SELECT: S E L E C T;
 SEMI: S E M I;
 SEPARATED: S E P A R A T E D;
@@ -1811,6 +1842,7 @@ START: S T A R T;
 STATISTICS: S T A T I S T I C S;
 STORED: S T O R E D;
 STRATIFY: S T R A T I F Y;
+STREAMING: S T R E A M I N G;
 STRUCT: S T R U C T;
 SUBSTR: S U B S T R;
 SUBSTRING: S U B S T R I N G;
@@ -1829,6 +1861,7 @@ TRAILING: T R A I L I N G;
 TRANSACTION: T R A N S A C T I O N;
 TRANSACTIONS: T R A N S A C T I O N S;
 TRANSFORM: T R A N S F O R M;
+TRIGGER: T R I G G E R;
 TRIM: T R I M;
 TRUE: T R U E;
 TRUNCATE: T R U N C A T E;
@@ -1849,6 +1882,8 @@ USING: U S I N G;
 VALUES: V A L U E S;
 VIEW: V I E W;
 VIEWS: V I E W S;
+VIOLATION: V I O L A T I O N;
+YEAR: Y E A R;
 WEEK: W E E K;
 WEEKS: W E E K S;
 WHEN: W H E N;
