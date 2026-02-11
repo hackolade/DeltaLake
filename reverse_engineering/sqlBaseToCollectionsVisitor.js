@@ -173,7 +173,7 @@ class Visitor extends SqlBaseVisitor {
 	}
 
 	visitIntervalClause(ctx) {
-		const intervalValue = Number(ctx.Number().getText());
+		const intervalValue = Number(ctx.number().getText());
 		const intervalQualifier = _.toUpper(ctx.intervalQualifier().getText());
 
 		return {

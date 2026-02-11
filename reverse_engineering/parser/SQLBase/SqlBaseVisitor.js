@@ -440,8 +440,28 @@ class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by SqlBaseParser#everyQualifier.
+	visitEveryQualifier(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by SqlBaseParser#rowClause.
 	visitRowClause(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by SqlBaseParser#triggerOnUpdateClause.
+	visitTriggerOnUpdateClause(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by SqlBaseParser#intervalClause.
+	visitIntervalClause(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by SqlBaseParser#intervalQualifier.
+	visitIntervalQualifier(ctx) {
 		return this.visitChildren(ctx);
 	}
 
@@ -895,6 +915,11 @@ class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by SqlBaseParser#streamSource.
+	visitStreamSource(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by SqlBaseParser#inlineTable.
 	visitInlineTable(ctx) {
 		return this.visitChildren(ctx);
@@ -907,6 +932,11 @@ class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 
 	// Visit a parse tree produced by SqlBaseParser#tableAlias.
 	visitTableAlias(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by SqlBaseParser#streamTable.
+	visitStreamTable(ctx) {
 		return this.visitChildren(ctx);
 	}
 
@@ -1277,6 +1307,11 @@ class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 
 	// Visit a parse tree produced by SqlBaseParser#foreignKeyConstraint.
 	visitForeignKeyConstraint(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by SqlBaseParser#expectConstraint.
+	visitExpectConstraint(ctx) {
 		return this.visitChildren(ctx);
 	}
 

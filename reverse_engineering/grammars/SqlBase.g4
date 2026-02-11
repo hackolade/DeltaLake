@@ -328,7 +328,7 @@ scheduleClause
     | SCHEDULE REFRESH? CRON identifier (AT TIME ZONE identifier)?
     ;
 
-everyQualifier: HOUR | HOURS | DAY | DAYS | WEEK | WEEKS;
+everyQualifier: HOUR | DAY | WEEK;
 
 rowClause
     : WITH? ROW FILTER functionIdentifier ON ('(' identifier (',' identifier)* ')')?
@@ -515,7 +515,7 @@ queryTerm
 queryPrimary
     : querySpecification                                                    #queryPrimaryDefault
     | fromStatement                                                         #fromStmt
-    | TABLE multipartIdentifier                                             #table
+    | TABLE? multipartIdentifier                                            #table
     | inlineTable                                                           #inlineTableDefault1
     | '(' query ')'                                                         #subquery
     ;
@@ -733,6 +733,7 @@ relationPrimary
     | '(' relation ')' sample? tableAlias     #aliasedRelation
     | inlineTable                             #inlineTableDefault2
     | functionTable                           #tableValuedFunction
+    | streamTable                             #streamSource
     ;
 
 inlineTable
@@ -745,6 +746,11 @@ functionTable
 
 tableAlias
     : (AS? strictIdentifier identifierList?)?
+    ;
+
+streamTable
+    : STREAM '('? multipartIdentifier ')'? tableAlias
+    | STREAM functionTable
     ;
 
 rowFormat
@@ -878,7 +884,7 @@ constant
     ;
 
 comparisonOperator
-    : EQ | NEQ | NEQJ | LT | LTE | GT | GTE | NSEQ
+    : EQ | NEQ | NEQJ | LT | LTE | GT | GTE | NSEQ | FAT_ARROW
     ;
 
 arithmeticOperator
@@ -1454,7 +1460,7 @@ nonReserved
     | GROUP
     | GROUPING
     | HAVING
-    | HOURS
+    | HOUR
     | IF
     | IGNORE
     | IMPORT
@@ -1670,8 +1676,7 @@ CURRENT_USER: C U R R E N T '_' U S E R;
 DATA: D A T A;
 DATABASE: D A T A B A S E;
 DATABASES: D A T A B A S E S | S C H E M A S;
-DAY: D A Y;
-DAYS: D A Y S;
+DAY: D A Y | D A Y S;
 DBPROPERTIES: D B P R O P E R T I E S;
 DEFINED: D E F I N E D;
 DELETE: D E L E T E;
@@ -1721,8 +1726,7 @@ GRANT: G R A N T;
 GROUP: G R O U P;
 GROUPING: G R O U P I N G;
 HAVING: H A V I N G;
-HOUR: H O U R;
-HOURS: H O U R S;
+HOUR: H O U R | H O U R S;
 IF: I F;
 IGNORE: I G N O R E;
 IMPORT: I M P O R T;
@@ -1760,8 +1764,8 @@ MAP: M A P;
 MATCHED: M A T C H E D;
 MATERIALIZED: M A T E R I A L I Z E D;
 MERGE: M E R G E;
-MINUTE: M I N U T E;
-MONTH: M O N T H;
+MINUTE: M I N U T E | M I N U T E S;
+MONTH: M O N T H | M O N T H S;
 MOST: M O S T;
 MSCK: M S C K;
 NAMESPACE: N A M E S P A C E;
@@ -1823,7 +1827,7 @@ ROW: R O W;
 ROWS: R O W S;
 SCHEDULE: S C H E D U L E;
 SCHEMA: S C H E M A;
-SECOND: S E C O N D;
+SECOND: S E C O N D | S E C O N D S;
 SELECT: S E L E C T;
 SEMI: S E M I;
 SEPARATED: S E P A R A T E D;
@@ -1842,6 +1846,7 @@ START: S T A R T;
 STATISTICS: S T A T I S T I C S;
 STORED: S T O R E D;
 STRATIFY: S T R A T I F Y;
+STREAM: S T R E A M;
 STREAMING: S T R E A M I N G;
 STRUCT: S T R U C T;
 SUBSTR: S U B S T R;
@@ -1883,9 +1888,8 @@ VALUES: V A L U E S;
 VIEW: V I E W;
 VIEWS: V I E W S;
 VIOLATION: V I O L A T I O N;
-YEAR: Y E A R;
-WEEK: W E E K;
-WEEKS: W E E K S;
+YEAR: Y E A R | Y E A R S;
+WEEK: W E E K | W E E K S;
 WHEN: W H E N;
 WHERE: W H E R E;
 WINDOW: W I N D O W;
@@ -1921,6 +1925,7 @@ LT  : '<';
 LTE : '<=' | '!>';
 GT  : '>';
 GTE : '>=' | '!<';
+FAT_ARROW: '=>';
 
 PLUS: '+';
 MINUS: '-';
