@@ -11,6 +11,7 @@ const {
 	getFullEntityName,
 	getDBVersionNumber,
 	generateFullEntityName,
+	executeUnlessStreaming,
 } = require('../utils/general');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
@@ -546,26 +547,37 @@ const getTableStatement =
 		});
 
 		if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
-			const entityUnityTags = getEntityTagsStatement(entityJsonSchema, fullTableName);
+			const entityUnityTags = getEntityTagsStatement(entityJsonSchema, fullTableName, tableData.streamingTable);
 			tableStatement = tableStatement + entityUnityTags;
 		}
 
-		const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(app)(
-			columns,
-			fullTableName,
-		).join('\n');
-		const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(app)(
-			entityJsonSchema,
-			fullTableName,
-		).join('\n');
-		const constraintsStatements = buildConstraints(constraintsStatementsOnTable, constraintsStatementsOnColumns);
+		const constraintsStatements = executeUnlessStreaming(
+			tableData.streamingTable,
+			() => {
+				const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(app)(
+					columns,
+					fullTableName,
+				).join('\n');
+				const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(app)(
+					entityJsonSchema,
+					fullTableName,
+				).join('\n');
+
+				return buildConstraints(constraintsStatementsOnTable, constraintsStatementsOnColumns);
+			},
+			'',
+		);
 
 		if (!_.isEmpty(constraintsStatements)) {
 			tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements;
 		}
 
 		if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
-			const columnsUnityTags = getColumnTagsStatement(entityJsonSchema.properties, fullTableName);
+			const columnsUnityTags = getColumnTagsStatement(
+				entityJsonSchema.properties,
+				fullTableName,
+				tableData.streamingTable,
+			);
 			tableStatement = [tableStatement, ...columnsUnityTags].join('\n');
 		}
 

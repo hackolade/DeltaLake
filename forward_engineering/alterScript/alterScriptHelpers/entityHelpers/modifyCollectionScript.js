@@ -11,6 +11,7 @@ const {
 	isSupportUnityCatalog,
 	isSupportNotNullConstraints,
 	checkLiquidClusteringPropertyChanged,
+	executeUnlessStreaming,
 } = require('../../../utils/general');
 const { getTableStatement } = require('../../../helpers/tableHelper');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
@@ -173,20 +174,54 @@ const getModifyCollectionScriptDtos =
 		const compMod = _.get(collection, 'role.compMod', {});
 		const fullCollectionName = generateFullEntityName({ entity: collection, dbVersion });
 
-		const alterTableNameScript = ddlProvider.alterTableName(hydrateAlterTableName(compMod));
+		const isStreaming = collection?.role?.streamingTable;
+
+		const alterTableNameScript = executeUnlessStreaming(
+			isStreaming,
+			() => ddlProvider.alterTableName(hydrateAlterTableName(compMod)),
+			'',
+		);
+
 		const hydratedSerDeProperties = hydrateSerDeProperties(compMod, fullCollectionName);
-		const checkConstraintsDtos = getModifyCheckConstraintsScriptDtos(ddlProvider)(fullCollectionName, collection);
-		const tablePropertiesScriptDtos = getModifiedTablePropertiesScriptDtos(ddlProvider)({ collection, dbVersion });
-		const serDeProperties = ddlProvider.alterSerDeProperties(hydratedSerDeProperties);
-		const modifyLocationScriptDto = getModifyLocationScriptDto(app, ddlProvider)({ collection, dbVersion });
+
+		const checkConstraintsDtos = executeUnlessStreaming(
+			isStreaming,
+			() => getModifyCheckConstraintsScriptDtos(ddlProvider)(fullCollectionName, collection),
+			[],
+		);
+
+		const tablePropertiesScriptDtos = executeUnlessStreaming(
+			isStreaming,
+			() => getModifiedTablePropertiesScriptDtos(ddlProvider)({ collection, dbVersion }),
+			[],
+		);
+
+		const serDeProperties = executeUnlessStreaming(
+			isStreaming,
+			() => ddlProvider.alterSerDeProperties(hydratedSerDeProperties),
+			'',
+		);
+
+		const modifyLocationScriptDto = executeUnlessStreaming(
+			isStreaming,
+			() => getModifyLocationScriptDto(app, ddlProvider)({ collection, dbVersion }),
+			undefined,
+		);
+
 		const unityEntityTagsDtos = getModifyUnityEntityTagsScriptDtos({ ddlProvider })({
 			entityData: collection,
 			name: fullCollectionName,
 		});
-		const checkLiquidClusteringScriptDtos = getModifyClusteringScriptDto({ ddlProvider })({
-			collection,
-			dbVersion,
-		});
+
+		const checkLiquidClusteringScriptDtos = executeUnlessStreaming(
+			isStreaming,
+			() =>
+				getModifyClusteringScriptDto({ ddlProvider })({
+					collection,
+					dbVersion,
+				}),
+			undefined,
+		);
 
 		return {
 			type: 'modify',

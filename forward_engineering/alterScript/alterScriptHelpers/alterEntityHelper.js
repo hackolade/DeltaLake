@@ -11,6 +11,7 @@ const {
 	getContainerName,
 	isSupportUnityCatalog,
 	isSupportNotNullConstraints,
+	executeUnlessStreaming,
 } = require('../../utils/general');
 const { getModifyCollectionCommentsScripts } = require('./entityHelpers/commentsHelper');
 const { getCheckConstraintsScriptDtos } = require('./columnHelpers/checkConstraintHelper');
@@ -150,11 +151,19 @@ const getDeleteColumnsScripts = (app, definitions, provider, dbVersion) => entit
 	const properties = getEntityProperties(entity);
 	const columnStatement = getColumnsString(Object.keys(columns));
 	const fullCollectionName = generateFullEntityName({ entity, dbVersion });
+
+	const isStreaming = entity?.role?.streamingTable;
+
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex({ entity, properties, definitions, dbVersion });
 	const modifyScript = generateModifyCollectionScript(app)(entity, definitions, provider, dbVersion);
 	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
-	const deleteColumnScript = provider.dropTableColumns({ name: fullCollectionName, columns: columnStatement });
+
+	const deleteColumnScript = executeUnlessStreaming(
+		isStreaming,
+		() => provider.dropTableColumns({ name: fullCollectionName, columns: columnStatement }),
+		'',
+	);
 
 	const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
 	const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
@@ -201,7 +210,14 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
 		},
 	};
 	const hydratedAlterColumnName = hydrateAlterColumnName({ entity: collection, properties, dbVersion });
-	const alterColumnScripts = ddlProvider.alterTableColumnName(hydratedAlterColumnName);
+
+	const isStreaming = collection?.role?.streamingTable;
+	const alterColumnScripts = executeUnlessStreaming(
+		isStreaming,
+		() => ddlProvider.alterTableColumnName(hydratedAlterColumnName),
+		[],
+	);
+
 	const modifiedScript = generateModifyCollectionScript(app)(entityData, definitions, ddlProvider, dbVersion);
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex({
 		entity: collection,
@@ -216,15 +232,32 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
 		collection,
 		dbVersion,
 	});
-	const modifyNotNullConstraintsScriptDtos = getModifyNonNullColumnsScriptDtos(ddlProvider)({
-		collection,
-		dbVersion,
-	});
-	const modifyCheckConstraintsScriptDtos = getCheckConstraintsScriptDtos(ddlProvider)({ collection, dbVersion });
-	const modifiedDefaultColumnValueScriptDtos = getModifiedDefaultColumnValueScriptDtos(ddlProvider)({
-		collection,
-		dbVersion,
-	});
+
+	const modifyNotNullConstraintsScriptDtos = executeUnlessStreaming(
+		isStreaming,
+		() =>
+			getModifyNonNullColumnsScriptDtos(ddlProvider)({
+				collection,
+				dbVersion,
+			}),
+		[],
+	);
+
+	const modifyCheckConstraintsScriptDtos = executeUnlessStreaming(
+		isStreaming,
+		() => getCheckConstraintsScriptDtos(ddlProvider)({ collection, dbVersion }),
+		[],
+	);
+
+	const modifiedDefaultColumnValueScriptDtos = executeUnlessStreaming(
+		isStreaming,
+		() =>
+			getModifiedDefaultColumnValueScriptDtos(ddlProvider)({
+				collection,
+				dbVersion,
+			}),
+		[],
+	);
 
 	const dropIndexScriptDto = AlterScriptDto.getInstance([dropIndexScript], true, true);
 	const addIndexScriptDto = AlterScriptDto.getInstance([addIndexScript], true, false);
@@ -240,7 +273,11 @@ const getModifyColumnsScripts = (app, definitions, ddlProvider, dbVersion) => co
 		return [dropIndexScriptDto, addIndexScriptDto].filter(Boolean);
 	}
 
-	const updateTypeScriptDtos = getUpdateTypesScriptDtos(ddlProvider)(collection, definitions, dbVersion);
+	const updateTypeScriptDtos = executeUnlessStreaming(
+		isStreaming,
+		() => getUpdateTypesScriptDtos(ddlProvider)(collection, definitions, dbVersion),
+		[],
+	);
 
 	return [
 		dropIndexScriptDto,
@@ -272,8 +309,15 @@ const getModifyColumnsScriptsForOlderRuntime = (app, definitions, ddlProvider, d
 			properties: Object.fromEntries(unionProperties),
 		},
 	};
+
+	const isStreaming = collection?.role?.streamingTable;
 	const hydratedAlterColumnName = hydrateAlterColumnName({ entity: collection, properties, dbVersion });
-	const alterColumnScripts = ddlProvider.alterTableColumnName(hydratedAlterColumnName);
+	const alterColumnScripts = executeUnlessStreaming(
+		isStreaming,
+		() => ddlProvider.alterTableColumnName(hydratedAlterColumnName),
+		[],
+	);
+
 	const modifiedScript = generateModifyCollectionScript(app)(entityData, definitions, ddlProvider, dbVersion);
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex({
 		entity: collection,
@@ -293,7 +337,12 @@ const getModifyColumnsScriptsForOlderRuntime = (app, definitions, ddlProvider, d
 		collection,
 		dbVersion,
 	});
-	const modifyCheckConstraintsScriptDtos = getCheckConstraintsScriptDtos(ddlProvider)({ collection, dbVersion });
+
+	const modifyCheckConstraintsScriptDtos = executeUnlessStreaming(
+		isStreaming,
+		() => getCheckConstraintsScriptDtos(ddlProvider)({ collection, dbVersion }),
+		[],
+	);
 
 	let tableModificationScriptDtos = [];
 	if (!_.isEmpty(columnsToDelete)) {

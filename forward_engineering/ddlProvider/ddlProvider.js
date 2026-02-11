@@ -422,21 +422,29 @@ module.exports = app => {
 		},
 
 		/**
-		 * @param name {string}
-		 * @param tags {string}
+		 * @param {Object} params
+		 * @param {string} params.name
+		 * @param {string} params.tags
+		 * @param {boolean} [params.isStreaming]
 		 * @return {string}
 		 * */
-		setEntityTags({ name, tags }) {
-			return assignTemplates(templates.setTableTags, { name, tags });
+		setEntityTags({ name, tags, isStreaming }) {
+			return assignTemplates(templates.setTableTags, { name, tags, streaming: isStreaming ? 'STREAMING ' : '' });
 		},
 
 		/**
-		 * @param name {string}
-		 * @param tags {string}
+		 * @param {Object} params
+		 * @param {string} params.name
+		 * @param {string} params.tags
+		 * @param {boolean} [params.isStreaming]
 		 * @return {string}
-		 * */
-		unsetEntityTags({ name, tags }) {
-			return assignTemplates(templates.unsetTableTags, { name, tags });
+		 */
+		unsetEntityTags({ name, tags, isStreaming }) {
+			return assignTemplates(templates.unsetTableTags, {
+				name,
+				tags,
+				streaming: isStreaming ? 'STREAMING ' : '',
+			});
 		},
 
 		/**
@@ -458,13 +466,20 @@ module.exports = app => {
 		},
 
 		/**
-		 * @param tableName {string}
-		 * @param columnName {string}
-		 * @param tags {string}
+		 * @param {Object} params
+		 * @param {string} params.tableName
+		 * @param {string} params.columnName
+		 * @param {string} params.tags
+		 * @param {boolean} [params.isStreaming]
 		 * @return {string}
-		 * */
-		setColumnTags({ tableName, columnName, tags }) {
-			return assignTemplates(templates.setColumnTags, { tableName, columnName, tags });
+		 */
+		setColumnTags({ tableName, columnName, tags, isStreaming }) {
+			return assignTemplates(templates.setColumnTags, {
+				tableName,
+				columnName,
+				tags,
+				streaming: isStreaming ? 'STREAMING ' : '',
+			});
 		},
 
 		/**
@@ -473,8 +488,13 @@ module.exports = app => {
 		 * @param tags {string}
 		 * @return {string}
 		 * */
-		unsetColumnTags({ tableName, columnName, tags }) {
-			return assignTemplates(templates.unsetColumnTags, { tableName, columnName, tags });
+		unsetColumnTags({ tableName, columnName, tags, isStreaming }) {
+			return assignTemplates(templates.unsetColumnTags, {
+				tableName,
+				columnName,
+				tags,
+				streaming: isStreaming ? 'STREAMING ' : '',
+			});
 		},
 
 		/**

@@ -5,6 +5,7 @@ const {
 	generateFullEntityName,
 	prepareName,
 	getDBVersionNumber,
+	executeUnlessStreaming,
 } = require('../../../utils/general');
 const { getIndexes } = require('../../../helpers/indexHelper');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
@@ -66,6 +67,8 @@ const getAddColumnsScriptsForModifyModifyCollectionScript = provider => (entity,
 	const entityData = { ...entity, ..._.omit(entity.role, ['properties']) };
 	const { columns } = getColumns(entityData, definitions, dbVersion);
 
+	const isStreaming = entityData?.streamingTable;
+
 	// "NOT NULL" constraint is baked right into the "column statement". We are unsetting "not null" constraint
 	// property on each column so that we could add these constraints in separate statements and not have it duplicated.
 	const columnsWithoutNotNull = getColumnsWithoutNotNullConstraint(columns);
@@ -76,10 +79,17 @@ const getAddColumnsScriptsForModifyModifyCollectionScript = provider => (entity,
 	const { hydratedAddIndex, hydratedDropIndex } = hydrateIndex({ entity, properties, definitions, dbVersion });
 	const dropIndexScript = provider.dropTableIndex(hydratedDropIndex);
 	const addIndexScript = getIndexes(...hydratedAddIndex);
-	const addColumnScript = provider.addTableColumns({ name: fullCollectionName, columns: columnStatement });
+
+	const addColumnScript = executeUnlessStreaming(
+		isStreaming,
+		() => provider.addTableColumns({ name: fullCollectionName, columns: columnStatement }),
+		'',
+	);
 
 	const isUnityTagsSupported = getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION;
-	const columnsUnityTagsScript = isUnityTagsSupported ? getColumnTagsStatement(properties, fullCollectionName) : [];
+	const columnsUnityTagsScript = isUnityTagsSupported
+		? getColumnTagsStatement(properties, fullCollectionName, isStreaming)
+		: [];
 	const addColumnScriptWithUnityTags = isUnityTagsSupported
 		? [addColumnScript, ...columnsUnityTagsScript].join('\n')
 		: addColumnScript;

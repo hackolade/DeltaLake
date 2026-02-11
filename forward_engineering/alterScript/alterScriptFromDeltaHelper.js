@@ -29,6 +29,7 @@ const {
 	getContainerName,
 	replaceSpaceWithUnderscore,
 	prepareName,
+	executeUnlessStreaming,
 } = require('../utils/general');
 const { getModifyPkConstraintsScripts } = require('./alterScriptHelpers/entityHelpers/primaryKeyHelper');
 const { getAlterRelationshipsScriptDtos } = require('./alterScriptHelpers/alterRelationshipsHelper');
@@ -170,7 +171,13 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 
 		if (getDBVersionNumber(dbVersion) >= Runtime.RUNTIME_SUPPORTING_PK_FK_CONSTRAINTS) {
 			modifiedCollectionPrimaryKeysScriptDtos = getItems(schema, 'entities', 'modified').flatMap(collection => {
-				const scripts = getModifyPkConstraintsScripts(provider)({ collection, dbVersion });
+				const isStreaming = collection?.role?.streamingTable;
+
+				const scripts = executeUnlessStreaming(
+					isStreaming,
+					() => getModifyPkConstraintsScripts(provider)({ collection, dbVersion }),
+					[],
+				);
 
 				return wrapWithUseSchema(getSchemaName(collection), scripts);
 			});
