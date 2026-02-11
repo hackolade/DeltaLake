@@ -377,7 +377,18 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Trigger Unit",
 						"propertyKeyword": "triggerIntervalUnit",
 						"propertyType": "select",
-						"options": ["MINUTE", "MINUTES", "HOUR", "HOURS", "DAY", "DAYS", "WEEK", "WEEKS"],
+						"options": [
+							"SECOND",
+							"SECONDS",
+							"MINUTE",
+							"MINUTES",
+							"HOUR",
+							"HOURS",
+							"DAY",
+							"DAYS",
+							"WEEK",
+							"WEEKS"
+						],
 						"dependency": {
 							"key": "scheduleType",
 							"value": "Trigger on Update (Beta)"
