@@ -28,10 +28,12 @@ const getSetUnityColumnTagsDtos =
 			return [];
 		}
 
-		const script = ddlProvider.setColumnTags({ tableName, columnName, tags: buildTagPairs(setTags) });
+		const isStreaming = entityData?.role?.streamingTable;
+
+		const script = ddlProvider.setColumnTags({ tableName, columnName, tags: buildTagPairs(setTags), isStreaming });
 
 		return [AlterScriptDto.getInstance([script], true, false)];
-	}; //
+	};
 
 /**
  * @param ddlProvider {Object}
@@ -53,10 +55,13 @@ const getUnsetUnityColumnTagsScriptsDtosFrom =
 			return [];
 		}
 
+		const isStreaming = entityData?.role?.streamingTable;
+
 		const script = ddlProvider.unsetColumnTags({
 			tableName,
 			columnName,
 			tags: getUnsetTagsNamesParamString({ unsetTags }),
+			isStreaming,
 		});
 
 		return [AlterScriptDto.getInstance([script], true, true)];

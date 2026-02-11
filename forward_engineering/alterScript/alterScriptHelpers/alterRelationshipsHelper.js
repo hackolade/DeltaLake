@@ -1,9 +1,11 @@
+const _ = require('lodash');
 const {
 	getFullEntityName,
 	replaceSpaceWithUnderscore,
 	prepareName,
 	getContainerName,
 	replaceDotWithUnderscore,
+	executeUnlessStreaming,
 } = require('../../utils/general');
 const { AlterScriptDto } = require('../types/AlterScriptDto');
 const { getUseSchemaScriptDto } = require('./alterEntityHelper');
@@ -117,13 +119,24 @@ const canRelationshipBeDeleted = relationship => {
 };
 
 /**
- * @return {(deletedRelationships: Array<Object>) => Array<AlterScriptDto>}
+ * @param {Object} ddlProvider - The DDL provider instance.
+ * @return {(deletedRelationships: Array<Object>, entities: Object.<string, Object>) => Array<{isActivated: boolean, scripts: Array<{script: string, isDropScript: boolean}>}>}
  * */
-const getDeleteForeignKeyScripts = ddlProvider => deletedRelationships => {
+const getDeleteForeignKeyScripts = ddlProvider => (deletedRelationships, entities) => {
 	return deletedRelationships
 		.filter(relationship => canRelationshipBeDeleted(relationship))
 		.map(relationship => {
-			const script = getDeleteSingleForeignKeyScript(ddlProvider)(relationship);
+			const childId = relationship?.role?.childCollection;
+			const childTable = entities[childId];
+
+			const isStreaming = childTable?.role?.streamingTable;
+
+			const script = executeUnlessStreaming(
+				isStreaming,
+				() => getDeleteSingleForeignKeyScript(ddlProvider)(relationship),
+				'',
+			);
+
 			return {
 				isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
 				scripts: [
@@ -161,6 +174,14 @@ const getModifyForeignKeyScript = ddlProvider => relationship => {
 
 const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider, initialSchemaName }) => {
 	let currentSchemaName = initialSchemaName;
+
+	const allEntitiesArray = [
+		...getItems(schema, 'entities', 'added'),
+		...getItems(schema, 'entities', 'modified'),
+		...getItems(schema, 'entities', 'deleted'),
+	];
+
+	const allEntities = _.keyBy(allEntitiesArray, item => item?.role?.id);
 
 	const generateAddFkScriptDtos = (addedRelationships, getScript) => {
 		return addedRelationships.filter(relationship => canRelationshipBeAdded(relationship)).flatMap(getScript);
@@ -204,7 +225,7 @@ const getAlterRelationshipsScriptDtos = ({ schema, ddlProvider, initialSchemaNam
 	);
 	const modifiedRelationships = getItems(schema, 'relationships', 'modified');
 
-	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider)(deletedRelationships);
+	const deleteFkScripts = getDeleteForeignKeyScripts(ddlProvider)(deletedRelationships, allEntities);
 	const addFkScripts = getRelationshipsScriptsWithUseSchema(
 		addedRelationships,
 		generateAddFkScriptDtos,

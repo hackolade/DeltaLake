@@ -311,6 +311,23 @@ const checkLiquidClusteringPropertyChanged = compMod => {
 	return !compMod?.numBuckets?.new && compareProperties(compMod.compositeClusteringKey || {});
 };
 
+/**
+ * Executes a task function if the table is not a streaming table.
+ * * This utility is used to separate DDL generation logic between standard and Streaming Tables.
+ * It prevents the execution of operations that are unsupported or restricted on Streaming Tables
+ * (e.g., DROP COLUMN, ALTER CONSTRAINT), ensuring the script remains valid for Delta Live Tables.
+ *
+ * @template T
+ * @param {boolean} isStreaming - Flag indicating if the entity is a streaming table.
+ * @param {() => T} task - The function to execute to generate the script (e.g., () => provider.alterTable(...)).
+ * @param {T} [fallback] - The value to return if isStreaming is true (default is empty string '').
+ * @returns {T} - Returns either the result of the task or the fallback.
+ */
+const executeUnlessStreaming = (isStreaming, task, fallback = '') => {
+	if (isStreaming) return fallback;
+	return task();
+};
+
 module.exports = {
 	buildStatement,
 	getName,
@@ -346,4 +363,5 @@ module.exports = {
 	checkFieldPropertiesChanged,
 	checkLiquidClusteringPropertyChanged,
 	generateFullEntityNameFromBucketAndTableNames,
+	executeUnlessStreaming,
 };

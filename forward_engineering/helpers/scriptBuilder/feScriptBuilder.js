@@ -151,7 +151,6 @@ const getContainerLevelEntitiesScriptDtos =
 		for (const entityId of data.entities) {
 			const entityData = data.entityData[entityId];
 			const tableData = getTab(0, entityData);
-			const isStreaming = tableData?.streamingTable;
 			const dbVersion = data.modelData[0].dbVersion;
 			const likeTableData = data.entityData[tableData?.like];
 			const entityJsonSchema = entitiesJsonSchema[entityId];
@@ -174,18 +173,6 @@ const getContainerLevelEntitiesScriptDtos =
 
 			const indexScript = getIndexes(...createTableStatementArgs);
 
-			let relationshipScripts = [];
-			if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable && !isStreaming) {
-				const relationshipsWithThisTableAsChild = data.relationships.filter(
-					relationship => relationship.childCollection === entityId,
-				);
-				relationshipScripts = getCreateRelationshipScripts(app)({
-					relationships: relationshipsWithThisTableAsChild,
-					jsonSchemas: entitiesJsonSchema,
-					relatedSchemas,
-				});
-			}
-
 			const sampleScript = await getSampleScriptForContainerLevelScript({
 				data,
 				entitiesJsonSchema,
@@ -193,7 +180,7 @@ const getContainerLevelEntitiesScriptDtos =
 				includeSamplesInEntityScripts,
 			});
 
-			let tableScript = buildScript([tableStatement, indexScript, ...relationshipScripts]);
+			let tableScript = buildScript([tableStatement, indexScript]);
 			if (sampleScript) {
 				// This is because SQL formatter breaks some "INSERT" statements with complex types
 				tableScript = [tableScript, sampleScript].join('\n');
@@ -263,21 +250,11 @@ const buildContainerLevelFEScriptDto =
 			relatedSchemas,
 		});
 
-		let relationshipScrips = [];
-		if (!includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
-			relationshipScrips = getCreateRelationshipScripts(app)({
-				relationships: data.relationships,
-				jsonSchemas: entitiesJsonSchema,
-				relatedSchemas,
-			});
-		}
-
 		return {
 			catalog: useCatalogStatement,
 			container: databaseStatement,
 			entities: entityScriptDtos,
 			views: viewsScriptDtos,
-			relationships: relationshipScrips,
 		};
 	};
 
@@ -287,7 +264,6 @@ const buildContainerLevelFEScript = containerLevelFEScriptDto => {
 		containerLevelFEScriptDto.container,
 		...containerLevelFEScriptDto.entities.map(e => e.script),
 		...containerLevelFEScriptDto.views.map(v => v.script),
-		...containerLevelFEScriptDto.relationships,
 	]);
 };
 

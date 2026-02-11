@@ -27,11 +27,13 @@ const getSetUnityEntityTagsDtos =
 
 		const setTags = getUnityTagsFromCompMod({ tagsToFilter: newUnityTags, filterBy: oldUnityTags });
 
+		const isStreaming = entityData?.role?.streamingTable;
+
 		if (!setTags.length) {
 			return [];
 		}
 
-		const script = ddlProvider.setEntityTags({ name, tags: buildTagPairs(setTags) });
+		const script = ddlProvider.setEntityTags({ name, tags: buildTagPairs(setTags), isStreaming });
 
 		return [AlterScriptDto.getInstance([script], true, false)];
 	};
@@ -49,11 +51,17 @@ const getUnsetUnityEntityTagsScriptsDtosFrom =
 
 		const unsetTags = getUnityTagsFromCompMod({ tagsToFilter: oldUnityTags, filterBy: newUnityTags });
 
+		const isStreaming = entityData?.role?.streamingTable;
+
 		if (!unsetTags.length) {
 			return [];
 		}
 
-		const script = ddlProvider.unsetEntityTags({ name, tags: getUnsetTagsNamesParamString({ unsetTags }) });
+		const script = ddlProvider.unsetEntityTags({
+			name,
+			tags: getUnsetTagsNamesParamString({ unsetTags }),
+			isStreaming,
+		});
 
 		return [AlterScriptDto.getInstance([script], true, true)];
 	};

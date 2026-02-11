@@ -11,6 +11,7 @@ const {
 	getFullEntityName,
 	getDBVersionNumber,
 	generateFullEntityName,
+	executeUnlessStreaming,
 } = require('../utils/general');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
@@ -184,14 +185,20 @@ const getCreateUsingStatement = ({
 	isNotExistsStatement,
 	rowFormatStatement,
 	storedAsStatement,
+	foreignKeyStatement,
 }) => {
+	const isPkOrFkStatement = primaryKeyStatement || foreignKeyStatement;
+
 	return buildStatement(`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} (`, isActivated)(
 		columnStatement,
-		columnStatement + (primaryKeyStatement ? ',' : ''),
-	)(primaryKeyStatement, primaryKeyStatement)(true, ')')(using, `${getUsing(using)}`)(
-		rowFormatStatement,
-		`ROW FORMAT ${rowFormatStatement}`,
-	)(storedAsStatement, storedAsStatement)(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)(
+		columnStatement + (isPkOrFkStatement ? ',' : ''),
+	)(primaryKeyStatement, primaryKeyStatement + (foreignKeyStatement ? ',' : ''))(
+		foreignKeyStatement,
+		foreignKeyStatement,
+	)(true, ')')(using, `${getUsing(using)}`)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(
+		storedAsStatement,
+		storedAsStatement,
+	)(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)(
 		!numBuckets && clusteredKeys,
 		`CLUSTER BY (${clusteredKeys})`,
 	)(numBuckets && clusteredKeys, `CLUSTERED BY (${clusteredKeys})`)(
@@ -227,28 +234,30 @@ const getCreateHiveStatement = ({
 	isNotExistsStatement,
 }) => {
 	const isAddBrackets = columnStatement || primaryKeyStatement || foreignKeyStatement;
+	const isPkOrFkStatement = primaryKeyStatement || foreignKeyStatement;
+
 	return buildStatement(`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} `, isActivated)(
 		isAddBrackets,
 		'(',
-	)(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))(primaryKeyStatement, primaryKeyStatement)(
-		foreignKeyStatement,
-		foreignKeyStatement,
-	)(isAddBrackets, ')')(comment, `COMMENT '${encodeStringLiteral(comment)}'`)(
-		partitionedByKeys,
-		`PARTITIONED BY (${partitionedByKeys})`,
-	)(!numBuckets && clusteredKeys, `CLUSTER BY (${clusteredKeys})`)(
-		numBuckets && clusteredKeys,
-		`CLUSTERED BY (${clusteredKeys})`,
-	)(numBuckets && sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)(
-		numBuckets && clusteredKeys,
-		`INTO ${numBuckets} BUCKETS`,
-	)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(storedAsStatement, storedAsStatement)(
-		location,
-		`LOCATION '${location}'`,
-	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
-		tableOptions,
-		`OPTIONS ${tableOptions}`,
-	)(selectStatement, `AS ${selectStatement}`)(true, ';')();
+	)(columnStatement, columnStatement + (isPkOrFkStatement ? ',' : ''))(
+		primaryKeyStatement,
+		primaryKeyStatement + (foreignKeyStatement ? ',' : ''),
+	)(foreignKeyStatement, foreignKeyStatement)(isAddBrackets, ')')(
+		comment,
+		`COMMENT '${encodeStringLiteral(comment)}'`,
+	)(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)(
+		!numBuckets && clusteredKeys,
+		`CLUSTER BY (${clusteredKeys})`,
+	)(numBuckets && clusteredKeys, `CLUSTERED BY (${clusteredKeys})`)(
+		numBuckets && sortedKeys && clusteredKeys,
+		`SORTED BY (${sortedKeys})`,
+	)(numBuckets && clusteredKeys, `INTO ${numBuckets} BUCKETS`)(
+		rowFormatStatement,
+		`ROW FORMAT ${rowFormatStatement}`,
+	)(storedAsStatement, storedAsStatement)(location, `LOCATION '${location}'`)(
+		checkTablePropertiesDefined(tableProperties),
+		`TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`,
+	)(tableOptions, `OPTIONS ${tableOptions}`)(selectStatement, `AS ${selectStatement}`)(true, ';')();
 };
 
 const getCreateLikeStatement = ({
@@ -267,19 +276,21 @@ const getCreateLikeStatement = ({
 	tableOptions,
 	likeStatement,
 }) => {
+	const isPkOrFkStatement = primaryKeyStatement || foreignKeyStatement;
+
 	return buildStatement(
 		`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} ${likeStatement} (`,
 		isActivated,
-	)(columnStatement, columnStatement + (primaryKeyStatement ? ',' : ''))(primaryKeyStatement, primaryKeyStatement)(
-		foreignKeyStatement,
-		foreignKeyStatement,
-	)(true, ')')(using, `${getUsing(using)}`)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(
-		storedAsStatement,
-		storedAsStatement,
-	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
-		tableOptions,
-		`OPTIONS ${tableOptions}`,
-	)(location, `LOCATION '${location}'`)(true, ';')();
+	)(columnStatement, columnStatement + (isPkOrFkStatement ? ',' : ''))(
+		primaryKeyStatement,
+		primaryKeyStatement + (foreignKeyStatement ? ',' : ''),
+	)(foreignKeyStatement, foreignKeyStatement)(true, ')')(using, `${getUsing(using)}`)(
+		rowFormatStatement,
+		`ROW FORMAT ${rowFormatStatement}`,
+	)(storedAsStatement, storedAsStatement)(
+		checkTablePropertiesDefined(tableProperties),
+		`TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`,
+	)(tableOptions, `OPTIONS ${tableOptions}`)(location, `LOCATION '${location}'`)(true, ';')();
 };
 
 const getClusteringKeys = (clusteredKeys, deactivatedColumnNames, isParentItemActivated) => {
@@ -536,26 +547,37 @@ const getTableStatement =
 		});
 
 		if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
-			const entityUnityTags = getEntityTagsStatement(entityJsonSchema, fullTableName);
+			const entityUnityTags = getEntityTagsStatement(entityJsonSchema, fullTableName, tableData.streamingTable);
 			tableStatement = tableStatement + entityUnityTags;
 		}
 
-		const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(app)(
-			columns,
-			fullTableName,
-		).join('\n');
-		const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(app)(
-			entityJsonSchema,
-			fullTableName,
-		).join('\n');
-		const constraintsStatements = buildConstraints(constraintsStatementsOnTable, constraintsStatementsOnColumns);
+		const constraintsStatements = executeUnlessStreaming(
+			tableData.streamingTable,
+			() => {
+				const constraintsStatementsOnColumns = getCheckConstraintsScriptsOnColumnLevel(app)(
+					columns,
+					fullTableName,
+				).join('\n');
+				const constraintsStatementsOnTable = getCheckConstraintsScriptsOnTableLevel(app)(
+					entityJsonSchema,
+					fullTableName,
+				).join('\n');
+
+				return buildConstraints(constraintsStatementsOnTable, constraintsStatementsOnColumns);
+			},
+			'',
+		);
 
 		if (!_.isEmpty(constraintsStatements)) {
 			tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements;
 		}
 
 		if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
-			const columnsUnityTags = getColumnTagsStatement(entityJsonSchema.properties, fullTableName);
+			const columnsUnityTags = getColumnTagsStatement(
+				entityJsonSchema.properties,
+				fullTableName,
+				tableData.streamingTable,
+			);
 			tableStatement = [tableStatement, ...columnsUnityTags].join('\n');
 		}
 
