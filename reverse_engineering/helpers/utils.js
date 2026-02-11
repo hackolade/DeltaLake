@@ -44,9 +44,7 @@ const isView = name => name.slice(-4) === ' (v)';
 const isViewDdl = (statement = '') =>
 	/^create (or replace |global |temporary |materialized )*view/.test(statement.toLocaleLowerCase());
 const isTableDdl = (statement = '') =>
-	/^create (or (replace|refresh) ){0,1}(external |streaming |temp |temporary ){0,1}table/.test(
-		statement.toLocaleLowerCase(),
-	);
+	/^create (or (replace|refresh) )?(external |streaming |temp |temporary )?table/.test(statement.toLocaleLowerCase());
 
 const cleanEntityName = (sparkVersion, name = '') => {
 	return isSupportGettingListOfViews(sparkVersion) ? name.replace(/ \(v\)$/, '') : name;
