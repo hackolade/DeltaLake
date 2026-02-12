@@ -46,13 +46,13 @@ const getAddSingleForeignKeyScript = ddlProvider => relationship => {
 
 	const relationshipName = compMod.code?.new || compMod.name?.new || getRelationshipName(relationship) || '';
 
-	const addFkConstraintDto = ddlProvider.addFkConstraint({
+	const addFkConstraintDto = {
 		childTableName,
 		fkConstraintName: relationshipName ? `CONSTRAINT ${prepareName(relationshipName)} ` : '',
 		childColumns: compMod.child.collection.fkFields.map(field => prepareName(field.name)),
 		parentTableName,
 		parentColumns: compMod.parent.collection.fkFields.map(field => prepareName(field.name)),
-	});
+	};
 
 	return ddlProvider.addFkConstraint(addFkConstraintDto);
 };
