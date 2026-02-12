@@ -19,6 +19,7 @@ const buildEntityLevelFEScript =
 		containerData,
 		entityData,
 		modelData,
+		relatedCollectionsJsonSchema,
 	}) => {
 		const dbVersion = data.modelData[0].dbVersion;
 		const arePkFkConstraintsAvailable = isSupportUnityCatalog(dbVersion);
@@ -44,9 +45,16 @@ const buildEntityLevelFEScript =
 			const relationshipsWithThisTableAsChild = modelData[1]?.relationships.filter(
 				relationship => relationship.childCollection === entityId,
 			);
+
+			const parsedEntitiesById = data.relatedCollectionsJsonSchema?.reduce((result, schema) => {
+				const data = JSON.parse(schema);
+				result[data.GUID] = data;
+				return result;
+			}, {});
+
 			relationshipScripts = getCreateRelationshipScripts(app)({
 				relationships: relationshipsWithThisTableAsChild,
-				jsonSchemas: jsonSchema,
+				jsonSchemas: parsedEntitiesById,
 			});
 		}
 
