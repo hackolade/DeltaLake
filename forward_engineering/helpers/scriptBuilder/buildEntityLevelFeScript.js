@@ -1,6 +1,6 @@
 const { getIndexes } = require('../indexHelper');
 const { getTableStatement } = require('../tableHelper');
-const { getCreateRelationshipScripts, getCreateInlineRelationshipScripts } = require('../relationshipHelper');
+const { getCreateInlineRelationshipScripts } = require('../relationshipHelper');
 const { getUseCatalogStatement, getDatabaseStatement } = require('../databaseHelper');
 const { isSupportUnityCatalog, isSupportNotNullConstraints, buildScript } = require('../../utils/general');
 
@@ -11,15 +11,13 @@ const getForeignKeyStatements = ({ app, data, arePkFkConstraintsAvailable, jsonS
 
 	let inlineForeignKeyStatements = '';
 	if (arePkFkConstraintsAvailable && relationshipsWithThisTableAsChild?.length) {
-		const ddlProvider = require('../../ddlProvider/ddlProvider')(app);
-
 		const parsedEntitiesById = data.relatedCollectionsJsonSchema?.reduce((result, schema) => {
 			const data = JSON.parse(schema);
 			result[data.GUID] = data;
 			return result;
 		}, {});
 
-		const inlineRelationshipScripts = getCreateInlineRelationshipScripts(ddlProvider)({
+		const inlineRelationshipScripts = getCreateInlineRelationshipScripts(app)({
 			relationships: relationshipsWithThisTableAsChild,
 			jsonSchemas: parsedEntitiesById,
 		});

@@ -317,7 +317,7 @@ module.exports = app => {
 		 * }}
 		 * @return string
 		 * */
-		getInlineFkConstraint(inlineFkConstraintDto) {
+		addInlineFkConstraint(inlineFkConstraintDto) {
 			const { fkConstraintName, childColumns, parentTableName, parentColumns } = inlineFkConstraintDto;
 			const templateConfig = {
 				fkConstraintName,
@@ -325,7 +325,7 @@ module.exports = app => {
 				parentTableName,
 				parentColumns: parentColumns.join(', ') || '',
 			};
-			return assignTemplates(templates.inlineFkConstraint, templateConfig);
+			return assignTemplates(templates.addInlineFkConstraint, templateConfig);
 		},
 
 		/**

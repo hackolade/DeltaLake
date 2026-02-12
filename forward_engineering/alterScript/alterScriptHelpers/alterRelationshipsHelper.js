@@ -66,7 +66,7 @@ const canRelationshipBeAdded = relationship => {
 		return false;
 	}
 	return [
-		compMod.code?.new || compMod.name?.new || getRelationshipName(relationship),
+		// FKs may be created without constraint name
 		compMod.parent?.bucket,
 		compMod.parent?.collection,
 		compMod.parent?.collection?.fkFields?.length,

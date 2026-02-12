@@ -39,46 +39,54 @@ const getParentFieldIds = relationship => {
 };
 
 /**
- * @returns {({ relationship: Object, jsonSchemas: Record<string, Object>, relatedSchemas?: Record<string, Object> }) => string}
+ * Extracts and resolves relationship data (tables, columns) from a relationship definition
+ * @param {Object} relationship
+ * @param {Record<string, Object>} jsonSchemas
+ * @param {Record<string, Object>} relatedSchemas
+ * @return {{
+ *   parentColumnNames: Array<string>,
+ *   childColumnNames: Array<string>,
+ *   childTableName: string,
+ *   parentTableName: string,
+ *   constraintName: string,
+ *   isValid: boolean
+ * } | null}
  */
-const createSingleRelationship =
-	ddlProvider =>
-	({ relationship, jsonSchemas, relatedSchemas }) => {
-		const parentTable =
-			jsonSchemas[relationship.parentCollection] ?? relatedSchemas?.[relationship.parentCollection];
-		const childTable = jsonSchemas[relationship.childCollection];
-		const childBucketName = prepareName(childTable?.bucketName);
-		const parentBucketName = prepareName(parentTable?.bucketName);
+const getRelationshipData = (relationship, jsonSchemas, relatedSchemas) => {
+	const parentTable = jsonSchemas[relationship.parentCollection] ?? relatedSchemas?.[relationship.parentCollection];
+	const childTable = jsonSchemas[relationship.childCollection];
 
-		if (!parentTable || !childTable) {
-			return '';
-		}
-		const childFieldIds = getChildFieldIds(relationship);
-		const parentFieldIds = getParentFieldIds(relationship);
+	if (!parentTable || !childTable) {
+		return null;
+	}
 
-		const parentColumnNames = getCollectionPropertyNamesByIds(parentTable, parentFieldIds);
-		const childColumnNames = getCollectionPropertyNamesByIds(childTable, childFieldIds);
-		if (!parentColumnNames?.length || !childColumnNames?.length) {
-			return '';
-		}
+	const childFieldIds = getChildFieldIds(relationship);
+	const parentFieldIds = getParentFieldIds(relationship);
 
-		const childBucketNameForDDL = replaceSpaceWithUnderscore(childBucketName);
-		const childTableNameForDDL = prepareName(replaceSpaceWithUnderscore(getName(childTable)));
-		const parentBucketNameForDDL = replaceSpaceWithUnderscore(parentBucketName);
-		const parentTableNameForDDL = prepareName(replaceSpaceWithUnderscore(getName(parentTable)));
+	const parentColumnNames = getCollectionPropertyNamesByIds(parentTable, parentFieldIds);
+	const childColumnNames = getCollectionPropertyNamesByIds(childTable, childFieldIds);
 
-		const addFkScript = ddlProvider.addFkConstraint({
-			childTableName: getFullEntityName(childBucketNameForDDL, childTableNameForDDL),
-			childColumns: childColumnNames.map(name => prepareName(name)),
-			fkConstraintName: wrapInTicks(getRelationshipName(relationship)),
-			parentColumns: parentColumnNames.map(name => prepareName(name)),
-			parentTableName: getFullEntityName(parentBucketNameForDDL, parentTableNameForDDL),
-		});
-		if (relationship.isActivated === false) {
-			return commentDeactivatedStatements(addFkScript, false);
-		}
-		return addFkScript;
+	if (!parentColumnNames?.length || !childColumnNames?.length) {
+		return null;
+	}
+
+	const childBucketName = prepareName(childTable?.bucketName);
+	const parentBucketName = prepareName(parentTable?.bucketName);
+	const childBucketNameForDDL = replaceSpaceWithUnderscore(childBucketName);
+	const childTableNameForDDL = prepareName(replaceSpaceWithUnderscore(getName(childTable)));
+	const parentBucketNameForDDL = replaceSpaceWithUnderscore(parentBucketName);
+	const parentTableNameForDDL = prepareName(replaceSpaceWithUnderscore(getName(parentTable)));
+	const constraintName = getRelationshipName(relationship);
+
+	return {
+		constraintName: constraintName ? `CONSTRAINT ${wrapInTicks(constraintName)}` : '',
+		parentColumnNames: parentColumnNames.map(name => prepareName(name)),
+		childColumnNames: childColumnNames.map(name => prepareName(name)),
+		childTableName: getFullEntityName(childBucketNameForDDL, childTableNameForDDL),
+		parentTableName: getFullEntityName(parentBucketNameForDDL, parentTableNameForDDL),
+		isValid: true,
 	};
+};
 
 /**
  * @returns {({ relationships: Object[], jsonSchemas: Record<string, Object>, relatedSchemas?: Record<string, Object> }) => Array<string>}
@@ -88,54 +96,50 @@ const getCreateRelationshipScripts =
 	({ relationships, jsonSchemas, relatedSchemas }) => {
 		const ddlProvider = require('../ddlProvider/ddlProvider')(app);
 		return relationships
-			.map(relationship =>
-				createSingleRelationship(ddlProvider)({
-					relationship,
-					jsonSchemas,
-					relatedSchemas,
-				}),
-			)
+			.map(relationship => {
+				const relationshipData = getRelationshipData(relationship, jsonSchemas, relatedSchemas);
+
+				if (!relationshipData) {
+					return '';
+				}
+
+				const addFkScript = ddlProvider.addFkConstraint({
+					childTableName: relationshipData.childTableName,
+					childColumns: relationshipData.childColumnNames,
+					fkConstraintName: relationshipData.constraintName,
+					parentColumns: relationshipData.parentColumnNames,
+					parentTableName: relationshipData.parentTableName,
+				});
+
+				if (relationship.isActivated === false) {
+					return commentDeactivatedStatements(addFkScript, false);
+				}
+				return addFkScript;
+			})
 			.filter(Boolean);
 	};
 
 /**
- * @returns {({ relationships: Object[], jsonSchemas: Record<string, Object>, relatedSchemas?: Record<string, Object> }) => string}
+ * @returns {({ relationships: Object[], jsonSchemas: Record<string, Object>, relatedSchemas?: Record<string, Object> }) => Array<string>}
  */
 const getCreateInlineRelationshipScripts =
-	ddlProvider =>
+	app =>
 	({ relationships, jsonSchemas, relatedSchemas }) => {
+		const ddlProvider = require('../ddlProvider/ddlProvider')(app);
 		return relationships
 			.filter(relationship => relationship.isActivated !== false)
 			.map(relationship => {
-				const parentTable =
-					jsonSchemas[relationship.parentCollection] ?? relatedSchemas?.[relationship.parentCollection];
-				const childTable = jsonSchemas[relationship.childCollection];
+				const relationshipData = getRelationshipData(relationship, jsonSchemas, relatedSchemas);
 
-				if (!parentTable || !childTable) {
+				if (!relationshipData) {
 					return '';
 				}
 
-				const childFieldIds = getChildFieldIds(relationship);
-				const parentFieldIds = getParentFieldIds(relationship);
-
-				const parentColumnNames = getCollectionPropertyNamesByIds(parentTable, parentFieldIds);
-				const childColumnNames = getCollectionPropertyNamesByIds(childTable, childFieldIds);
-
-				if (!parentColumnNames?.length || !childColumnNames?.length) {
-					return '';
-				}
-
-				const parentBucketName = prepareName(parentTable?.bucketName);
-				const parentTableNameForDDL = prepareName(replaceSpaceWithUnderscore(getName(parentTable)));
-				const parentBucketNameForDDL = replaceSpaceWithUnderscore(parentBucketName);
-
-				const fkConstraintName = getRelationshipName(relationship);
-
-				return ddlProvider.getInlineFkConstraint({
-					fkConstraintName: fkConstraintName ? `CONSTRAINT ${wrapInTicks(fkConstraintName)}` : '',
-					childColumns: childColumnNames.map(name => prepareName(name)),
-					parentTableName: getFullEntityName(parentBucketNameForDDL, parentTableNameForDDL),
-					parentColumns: parentColumnNames.map(name => prepareName(name)),
+				return ddlProvider.addInlineFkConstraint({
+					fkConstraintName: relationshipData.constraintName,
+					childColumns: relationshipData.childColumnNames,
+					parentTableName: relationshipData.parentTableName,
+					parentColumns: relationshipData.parentColumnNames,
 				});
 			})
 			.filter(Boolean);
