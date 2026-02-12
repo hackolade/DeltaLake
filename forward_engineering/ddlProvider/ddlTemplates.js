@@ -44,6 +44,9 @@ module.exports = {
 	addFkConstraint:
 		'ALTER TABLE ${childTableName} ADD CONSTRAINT ${fkConstraintName} FOREIGN KEY (${childColumns}) REFERENCES ${parentTableName}(${parentColumns});',
 
+	inlineFkConstraint:
+		'${fkConstraintName}FOREIGN KEY (${childColumns}) REFERENCES ${parentTableName}(${parentColumns})',
+
 	dropFkConstraint: 'ALTER TABLE ${childTableName} DROP CONSTRAINT IF EXISTS ${fkConstraintName};',
 
 	addTableColumns: 'ALTER TABLE ${name} ADD COLUMNS (${columns});',

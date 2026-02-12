@@ -1,8 +1,34 @@
 const { getIndexes } = require('../indexHelper');
 const { getTableStatement } = require('../tableHelper');
-const { getCreateRelationshipScripts } = require('../relationshipHelper');
+const { getCreateRelationshipScripts, getCreateInlineRelationshipScripts } = require('../relationshipHelper');
 const { getUseCatalogStatement, getDatabaseStatement } = require('../databaseHelper');
 const { isSupportUnityCatalog, isSupportNotNullConstraints, buildScript } = require('../../utils/general');
+
+const getForeignKeyStatements = ({ app, data, arePkFkConstraintsAvailable, jsonSchema, modelData }) => {
+	const relationshipsWithThisTableAsChild = modelData[1]?.relationships.filter(
+		relationship => relationship.childCollection === jsonSchema.GUID,
+	);
+
+	let inlineForeignKeyStatements = '';
+	if (arePkFkConstraintsAvailable && relationshipsWithThisTableAsChild?.length) {
+		const ddlProvider = require('../../ddlProvider/ddlProvider')(app);
+
+		const parsedEntitiesById = data.relatedCollectionsJsonSchema?.reduce((result, schema) => {
+			const data = JSON.parse(schema);
+			result[data.GUID] = data;
+			return result;
+		}, {});
+
+		const inlineRelationshipScripts = getCreateInlineRelationshipScripts(ddlProvider)({
+			relationships: relationshipsWithThisTableAsChild,
+			jsonSchemas: parsedEntitiesById,
+		});
+
+		inlineForeignKeyStatements = inlineRelationshipScripts.join(',\n\t');
+	}
+
+	return inlineForeignKeyStatements;
+};
 
 /**
  * @param data {CoreData}
@@ -27,6 +53,14 @@ const buildEntityLevelFEScript =
 		const useCatalogStatement = arePkFkConstraintsAvailable ? getUseCatalogStatement(containerData) : '';
 		const databaseStatement = getDatabaseStatement(containerData, arePkFkConstraintsAvailable, dbVersion);
 		const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
+		const foreignKeyStatements = getForeignKeyStatements({
+			app,
+			data,
+			arePkFkConstraintsAvailable,
+			jsonSchema,
+			modelData,
+		});
+
 		const tableStatements = getTableStatement(app)(
 			containerData,
 			entityData,
@@ -36,35 +70,12 @@ const buildEntityLevelFEScript =
 			areNotNullConstraintsAvailable,
 			null,
 			dbVersion,
+			false,
+			foreignKeyStatements,
 		);
 		const indexScript = getIndexes(containerData, entityData, jsonSchema, definitions);
 
-		let relationshipScripts = [];
-		if (arePkFkConstraintsAvailable) {
-			const entityId = jsonSchema.GUID;
-			const relationshipsWithThisTableAsChild = modelData[1]?.relationships.filter(
-				relationship => relationship.childCollection === entityId,
-			);
-
-			const parsedEntitiesById = data.relatedCollectionsJsonSchema?.reduce((result, schema) => {
-				const data = JSON.parse(schema);
-				result[data.GUID] = data;
-				return result;
-			}, {});
-
-			relationshipScripts = getCreateRelationshipScripts(app)({
-				relationships: relationshipsWithThisTableAsChild,
-				jsonSchemas: parsedEntitiesById,
-			});
-		}
-
-		return buildScript([
-			useCatalogStatement,
-			databaseStatement,
-			tableStatements,
-			...relationshipScripts,
-			indexScript,
-		]);
+		return buildScript([useCatalogStatement, databaseStatement, tableStatements, indexScript]);
 	};
 
 module.exports = {

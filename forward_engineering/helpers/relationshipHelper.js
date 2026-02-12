@@ -98,6 +98,50 @@ const getCreateRelationshipScripts =
 			.filter(Boolean);
 	};
 
+/**
+ * @returns {({ relationships: Object[], jsonSchemas: Record<string, Object>, relatedSchemas?: Record<string, Object> }) => string}
+ */
+const getCreateInlineRelationshipScripts =
+	ddlProvider =>
+	({ relationships, jsonSchemas, relatedSchemas }) => {
+		return relationships
+			.filter(relationship => relationship.isActivated !== false)
+			.map(relationship => {
+				const parentTable =
+					jsonSchemas[relationship.parentCollection] ?? relatedSchemas?.[relationship.parentCollection];
+				const childTable = jsonSchemas[relationship.childCollection];
+
+				if (!parentTable || !childTable) {
+					return '';
+				}
+
+				const childFieldIds = getChildFieldIds(relationship);
+				const parentFieldIds = getParentFieldIds(relationship);
+
+				const parentColumnNames = getCollectionPropertyNamesByIds(parentTable, parentFieldIds);
+				const childColumnNames = getCollectionPropertyNamesByIds(childTable, childFieldIds);
+
+				if (!parentColumnNames?.length || !childColumnNames?.length) {
+					return '';
+				}
+
+				const parentBucketName = prepareName(parentTable?.bucketName);
+				const parentTableNameForDDL = prepareName(replaceSpaceWithUnderscore(getName(parentTable)));
+				const parentBucketNameForDDL = replaceSpaceWithUnderscore(parentBucketName);
+
+				const fkConstraintName = getRelationshipName(relationship);
+
+				return ddlProvider.getInlineFkConstraint({
+					fkConstraintName: fkConstraintName ? `CONSTRAINT ${wrapInTicks(fkConstraintName)}` : '',
+					childColumns: childColumnNames.map(name => prepareName(name)),
+					parentTableName: getFullEntityName(parentBucketNameForDDL, parentTableNameForDDL),
+					parentColumns: parentColumnNames.map(name => prepareName(name)),
+				});
+			})
+			.filter(Boolean);
+	};
+
 module.exports = {
 	getCreateRelationshipScripts,
+	getCreateInlineRelationshipScripts,
 };
