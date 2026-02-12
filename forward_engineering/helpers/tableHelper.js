@@ -12,6 +12,7 @@ const {
 	getDBVersionNumber,
 	generateFullEntityName,
 	executeUnlessStreaming,
+	cleanQuery,
 } = require('../utils/general');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
@@ -800,7 +801,8 @@ const getCreateStreamingStatement = ({
 
 	const rowFilterClause = getRowFilterClause(rowFilterGroup, entityJsonProperties);
 
-	const queryClause = selectStreamingStatement ? `AS ${selectStreamingStatement}` : '';
+	const cleanedStatement = cleanQuery(selectStreamingStatement);
+	const queryClause = cleanedStatement ? `AS ${cleanedStatement}` : '';
 
 	return buildStatement(`${createPrefix}${isNotExistsStatement} ${fullTableName} (`, isActivated)(
 		tableStructure,

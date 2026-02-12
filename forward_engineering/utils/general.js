@@ -328,6 +328,19 @@ const executeUnlessStreaming = (isStreaming, task, fallback = '') => {
 	return task();
 };
 
+/**
+ * Prepares the raw SQL query for embedding in the final DDL statement.
+ * It removes leading/trailing whitespace and strips any trailing semicolons
+ * to prevent syntax errors when the query is used inside a subquery or CTAS statement.
+ *
+ * @param {string} query - The raw SQL query string from the user input.
+ * @returns {string} The cleaned query string without trailing semicolons.
+ */
+const cleanQuery = query => {
+	if (!query) return '';
+	return query.trim().replace(/;+$/, '');
+};
+
 module.exports = {
 	buildStatement,
 	getName,
@@ -364,4 +377,5 @@ module.exports = {
 	checkLiquidClusteringPropertyChanged,
 	generateFullEntityNameFromBucketAndTableNames,
 	executeUnlessStreaming,
+	cleanQuery,
 };
