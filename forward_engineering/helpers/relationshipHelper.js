@@ -91,37 +91,6 @@ const getRelationshipData = (relationship, jsonSchemas, relatedSchemas) => {
 /**
  * @returns {({ relationships: Object[], jsonSchemas: Record<string, Object>, relatedSchemas?: Record<string, Object> }) => Array<string>}
  */
-const getCreateRelationshipScripts =
-	app =>
-	({ relationships, jsonSchemas, relatedSchemas }) => {
-		const ddlProvider = require('../ddlProvider/ddlProvider')(app);
-		return relationships
-			.map(relationship => {
-				const relationshipData = getRelationshipData(relationship, jsonSchemas, relatedSchemas);
-
-				if (!relationshipData) {
-					return '';
-				}
-
-				const addFkScript = ddlProvider.addFkConstraint({
-					childTableName: relationshipData.childTableName,
-					childColumns: relationshipData.childColumnNames,
-					fkConstraintName: relationshipData.constraintName,
-					parentColumns: relationshipData.parentColumnNames,
-					parentTableName: relationshipData.parentTableName,
-				});
-
-				if (relationship.isActivated === false) {
-					return commentDeactivatedStatements(addFkScript, false);
-				}
-				return addFkScript;
-			})
-			.filter(Boolean);
-	};
-
-/**
- * @returns {({ relationships: Object[], jsonSchemas: Record<string, Object>, relatedSchemas?: Record<string, Object> }) => Array<string>}
- */
 const getCreateInlineRelationshipScripts =
 	app =>
 	({ relationships, jsonSchemas, relatedSchemas }) => {
@@ -146,6 +115,5 @@ const getCreateInlineRelationshipScripts =
 	};
 
 module.exports = {
-	getCreateRelationshipScripts,
 	getCreateInlineRelationshipScripts,
 };
