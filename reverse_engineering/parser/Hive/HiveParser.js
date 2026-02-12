@@ -1991,14 +1991,14 @@ const serializedATN = [
 	'\u0002\u0002\u0002\u0973\u0133\u0003\u0002\u0002\u0002\u0974\u0976\u0007',
 	'\u009c\u0002\u0002\u0975\u0974\u0003\u0002\u0002\u0002\u0975\u0976\u0003',
 	'\u0002\u0002\u0002\u0976\u0977\u0003\u0002\u0002\u0002\u0977\u0978\u0007',
-	'q\u0002\u0002\u0978\u0979\u0007\u016a\u0002\u0002\u0979\u097a\u0005',
-	'\u0350\u01a9\u0002\u097a\u0986\u0007%\u0002\u0002\u097b\u097c\u0007',
+	'q\u0002\u0002\u0978\u0979\u0007\u016a\u0002\u0002\u0979\u0986\u0005',
+	'\u0350\u01a9\u0002\u097a\u097b\u0007%\u0002\u0002\u097b\u097c\u0007',
 	'\u0175\u0002\u0002\u097c\u0981\u0005\u034e\u01a8\u0002\u097d\u097e\u0007',
 	'\u0173\u0002\u0002\u097e\u0980\u0005\u034e\u01a8\u0002\u097f\u097d\u0003',
 	'\u0002\u0002\u0002\u0980\u0983\u0003\u0002\u0002\u0002\u0981\u097f\u0003',
 	'\u0002\u0002\u0002\u0981\u0982\u0003\u0002\u0002\u0002\u0982\u0984\u0003',
 	'\u0002\u0002\u0002\u0983\u0981\u0003\u0002\u0002\u0002\u0984\u0985\u0007',
-	'\u0176\u0002\u0002\u0985\u0987\u0003\u0002\u0002\u0002\u0986\u097b\u0003',
+	'\u0176\u0002\u0002\u0985\u0987\u0003\u0002\u0002\u0002\u0986\u097a\u0003',
 	'\u0002\u0002\u0002\u0986\u0987\u0003\u0002\u0002\u0002\u0987\u0135\u0003',
 	'\u0002\u0002\u0002\u0988\u0989\u0007\u00d9\u0002\u0002\u0989\u098a\u0007',
 	'%\u0002\u0002\u098a\u098f\u0007\u00e9\u0002\u0002\u098b\u098c\u0007',
@@ -13276,12 +13276,12 @@ class HiveParser extends antlr4.Parser {
 			this.match(HiveParser.KW_FILTER);
 			this.state = 2423;
 			this.functionIdentifier();
-			this.state = 2424;
-			this.match(HiveParser.KW_ON);
 			this.state = 2436;
 			this._errHandler.sync(this);
-			var la_ = this._interp.adaptivePredict(this._input, 216, this._ctx);
-			if (la_ === 1) {
+			_la = this._input.LA(1);
+			if (_la === HiveParser.KW_ON) {
+				this.state = 2424;
+				this.match(HiveParser.KW_ON);
 				this.state = 2425;
 				this.match(HiveParser.LPAREN);
 				this.state = 2426;
@@ -38311,12 +38311,12 @@ class RowClauseContext extends antlr4.ParserRuleContext {
 		return this.getTypedRuleContext(FunctionIdentifierContext, 0);
 	}
 
-	KW_ON() {
-		return this.getToken(HiveParser.KW_ON, 0);
-	}
-
 	KW_WITH() {
 		return this.getToken(HiveParser.KW_WITH, 0);
+	}
+
+	KW_ON() {
+		return this.getToken(HiveParser.KW_ON, 0);
 	}
 
 	LPAREN() {

@@ -916,7 +916,7 @@ scheduleClause
     ;
 
 rowClause
-    : KW_WITH? KW_ROW KW_FILTER functionIdentifier KW_ON (LPAREN identifier (COMMA identifier)* RPAREN)?
+    : KW_WITH? KW_ROW KW_FILTER functionIdentifier (KW_ON LPAREN identifier (COMMA identifier)* RPAREN)?
     ;
 
 triggerOnUpdateClause
