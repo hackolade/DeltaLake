@@ -1930,7 +1930,7 @@ const getTextFromStringLiteral = ctx => {
 };
 
 const mergeConstraints = constraints => {
-	return Object.values(constraints || []).reduce((mergedConstraint, constraint) => {
+	return _.flatten(constraints).reduce((mergedConstraint, constraint) => {
 		if (constraint.required) {
 			return { ...mergedConstraint, required: true };
 		}
