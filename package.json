@@ -1,6 +1,6 @@
 {
     "name": "DeltaLake",
-    "version": "0.2.40",
+    "version": "0.2.41",
     "author": "hackolade",
     "engines": {
         "hackolade": "7.7.10",
@@ -72,14 +72,14 @@
         "antlr4": "4.9.2",
         "async": "3.2.6",
         "exponential-backoff": "3.1.2",
-        "lodash": "4.17.21",
+        "lodash": "4.17.23",
         "node-fetch": "2.6.7"
     },
     "lint-staged": {
         "*.{js,json}": "prettier --write"
     },
     "simple-git-hooks": {
-        "pre-commit": "npx lint-staged",
+        "pre-commit": "npm run package && npx lint-staged",
         "pre-push": "npx eslint ."
     },
     "scripts": {
