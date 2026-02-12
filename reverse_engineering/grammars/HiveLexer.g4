@@ -381,6 +381,12 @@ KW_EVERY: E V E R Y;
 KW_CRON: C R O N;
 KW_AT: A T;
 KW_FILTER: F I L T E R;
+KW_STREAM: S T R E A M;
+KW_STREAMING: S T R E A M I N G;
+KW_MOST: M O S T;
+KW_EXPECT: E X P E C T;
+KW_VIOLATION: V I O L A T I O N;
+KW_FAIL: F A I L;
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
 
@@ -403,6 +409,7 @@ LESSTHANOREQUALTO : '<=';
 LESSTHAN : '<';
 GREATERTHANOREQUALTO : '>=';
 GREATERTHAN : '>';
+FAT_ARROW: '=>';
 
 DIVIDE : '/';
 PLUS : '+';

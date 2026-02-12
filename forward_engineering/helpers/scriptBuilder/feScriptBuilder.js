@@ -55,6 +55,7 @@ const {
 } = require('../../utils/general');
 const { generateSamplesScript, generateSamplesForEntity } = require('../../sampleGeneration/sampleGenerationService');
 const { getDataForSampleGeneration } = require('../../sampleGeneration/getDataForSampleGeneration');
+const foreignKeyHelper = require('../foreignKeyHelper');
 
 /**
  * @param data {CoreData}
@@ -136,14 +137,29 @@ const getContainerLevelEntitiesScriptDtos =
 	}) => {
 		const scriptDtos = [];
 
+		const foreignKeyHashTable = foreignKeyHelper.getForeignKeyHashTable({
+			relationships: data.relationships,
+			entities: data.entities,
+			entityData: data.entityData,
+			jsonSchemas: entitiesJsonSchema,
+			internalDefinitions: internalDefinitions,
+			otherDefinitions: [modelDefinitions, externalDefinitions],
+			isContainerActivated: containerData[0]?.isActivated,
+			relatedSchemas: relatedSchemas,
+		});
+
 		for (const entityId of data.entities) {
 			const entityData = data.entityData[entityId];
-
+			const tableData = getTab(0, entityData);
 			const dbVersion = data.modelData[0].dbVersion;
-			const likeTableData = data.entityData[getTab(0, entityData)?.like];
+			const likeTableData = data.entityData[tableData?.like];
 			const entityJsonSchema = entitiesJsonSchema[entityId];
 			const definitions = [internalDefinitions[entityId], modelDefinitions, externalDefinitions];
 			const createTableStatementArgs = [containerData, entityData, entityJsonSchema, definitions];
+
+			const foreignKeyStatement = foreignKeyHelper.getForeignKeyStatementsByHashItem(
+				foreignKeyHashTable[entityId] || {},
+			);
 
 			const tableStatement = getTableStatement(app)(
 				...createTableStatementArgs,
@@ -151,21 +167,11 @@ const getContainerLevelEntitiesScriptDtos =
 				areNotNullConstraintsAvailable,
 				likeTableData,
 				dbVersion,
+				false,
+				foreignKeyStatement,
 			);
 
 			const indexScript = getIndexes(...createTableStatementArgs);
-
-			let relationshipScripts = [];
-			if (includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
-				const relationshipsWithThisTableAsChild = data.relationships.filter(
-					relationship => relationship.childCollection === entityId,
-				);
-				relationshipScripts = getCreateRelationshipScripts(app)({
-					relationships: relationshipsWithThisTableAsChild,
-					jsonSchemas: entitiesJsonSchema,
-					relatedSchemas,
-				});
-			}
 
 			const sampleScript = await getSampleScriptForContainerLevelScript({
 				data,
@@ -174,7 +180,7 @@ const getContainerLevelEntitiesScriptDtos =
 				includeSamplesInEntityScripts,
 			});
 
-			let tableScript = buildScript([tableStatement, indexScript, ...relationshipScripts]);
+			let tableScript = buildScript([tableStatement, indexScript]);
 			if (sampleScript) {
 				// This is because SQL formatter breaks some "INSERT" statements with complex types
 				tableScript = [tableScript, sampleScript].join('\n');
@@ -244,21 +250,11 @@ const buildContainerLevelFEScriptDto =
 			relatedSchemas,
 		});
 
-		let relationshipScrips = [];
-		if (!includeRelationshipsInEntityScripts && arePkFkConstraintsAvailable) {
-			relationshipScrips = getCreateRelationshipScripts(app)({
-				relationships: data.relationships,
-				jsonSchemas: entitiesJsonSchema,
-				relatedSchemas,
-			});
-		}
-
 		return {
 			catalog: useCatalogStatement,
 			container: databaseStatement,
 			entities: entityScriptDtos,
 			views: viewsScriptDtos,
-			relationships: relationshipScrips,
 		};
 	};
 
@@ -268,7 +264,6 @@ const buildContainerLevelFEScript = containerLevelFEScriptDto => {
 		containerLevelFEScriptDto.container,
 		...containerLevelFEScriptDto.entities.map(e => e.script),
 		...containerLevelFEScriptDto.views.map(v => v.script),
-		...containerLevelFEScriptDto.relationships,
 	]);
 };
 

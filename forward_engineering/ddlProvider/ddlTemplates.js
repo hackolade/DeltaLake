@@ -74,17 +74,17 @@ module.exports = {
 
 	unsetSchemaTags: 'ALTER SCHEMA ${name}\nUNSET TAGS (${tags});',
 
-	setTableTags: 'ALTER TABLE ${name}\nSET TAGS (${tags});',
+	setTableTags: 'ALTER ${streaming}TABLE ${name}\nSET TAGS (${tags});',
 
-	unsetTableTags: 'ALTER TABLE ${name}\nUNSET TAGS (${tags});',
+	unsetTableTags: 'ALTER ${streaming}TABLE ${name}\nUNSET TAGS (${tags});',
 
 	setViewTags: 'ALTER VIEW ${name}\nSET TAGS (${tags});',
 
 	unsetViewTags: 'ALTER VIEW ${name}\nUNSET TAGS (${tags});',
 
-	setColumnTags: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName}\nSET TAGS (${tags});',
+	setColumnTags: 'ALTER ${streaming}TABLE ${tableName} ALTER COLUMN ${columnName}\nSET TAGS (${tags});',
 
-	unsetColumnTags: 'ALTER TABLE ${tableName} ALTER COLUMN ${columnName}\nUNSET TAGS (${tags});',
+	unsetColumnTags: 'ALTER ${streaming}TABLE ${tableName} ALTER COLUMN ${columnName}\nUNSET TAGS (${tags});',
 
 	setTableClustering: 'ALTER TABLE ${name} CLUSTER BY ${clustering};',
 

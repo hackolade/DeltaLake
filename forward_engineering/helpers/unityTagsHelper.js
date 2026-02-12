@@ -62,17 +62,19 @@ const getSchemaTagsStatement = (containerData, preparedName) => {
 	return `ALTER SCHEMA ${preparedName} SET TAGS (${tags});`;
 };
 
-const getEntityTagsStatement = (entity, fullTableName) => {
+const getEntityTagsStatement = (entity, fullTableName, isStreaming) => {
 	if (!entity.unityEntityTags?.length) {
 		return '';
 	}
 
 	const tags = buildTagPairs(entity.unityEntityTags);
 
-	return `ALTER TABLE ${fullTableName} SET TAGS (${tags});`;
+	const streamingClause = isStreaming ? 'STREAMING ' : '';
+
+	return `ALTER ${streamingClause}TABLE ${fullTableName} SET TAGS (${tags});`;
 };
 
-const getColumnTagsStatement = (columns, fullTableName) => {
+const getColumnTagsStatement = (columns, fullTableName, isStreaming) => {
 	return _.toPairs(columns)
 		.map(([colName, schema]) => {
 			if (!schema.unityColumnTags?.length) {
@@ -81,7 +83,9 @@ const getColumnTagsStatement = (columns, fullTableName) => {
 
 			const tags = buildTagPairs(schema.unityColumnTags);
 
-			return `ALTER TABLE ${fullTableName} ALTER COLUMN ${colName} SET TAGS (${tags});`;
+			const streamingClause = isStreaming ? 'STREAMING ' : '';
+
+			return `ALTER ${streamingClause}TABLE ${fullTableName} ALTER COLUMN ${colName} SET TAGS (${tags});`;
 		})
 		.filter(Boolean);
 };
