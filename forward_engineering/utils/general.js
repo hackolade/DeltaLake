@@ -328,6 +328,26 @@ const executeUnlessStreaming = (isStreaming, task, fallback = '') => {
 	return task();
 };
 
+/**
+ * Prepares the raw SQL query for embedding in the final DDL statement.
+ * It removes leading/trailing whitespace and strips any trailing semicolons
+ * to prevent syntax errors.
+ *
+ * @param {string} query - The raw SQL query string from the user input.
+ * @returns {string} The cleaned query string without trailing semicolons.
+ */
+const cleanQuery = query => {
+	const cleaned = query?.trim();
+	if (!cleaned) return '';
+
+	let finalQuery = cleaned;
+	while (finalQuery.endsWith(';')) {
+		finalQuery = finalQuery.slice(0, -1);
+	}
+
+	return finalQuery;
+};
+
 module.exports = {
 	buildStatement,
 	getName,
@@ -364,4 +384,5 @@ module.exports = {
 	checkLiquidClusteringPropertyChanged,
 	generateFullEntityNameFromBucketAndTableNames,
 	executeUnlessStreaming,
+	cleanQuery,
 };
