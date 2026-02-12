@@ -1,31 +1,46 @@
 const { getIndexes } = require('../indexHelper');
 const { getTableStatement } = require('../tableHelper');
-const { getCreateInlineRelationshipScripts } = require('../relationshipHelper');
 const { getUseCatalogStatement, getDatabaseStatement } = require('../databaseHelper');
 const { isSupportUnityCatalog, isSupportNotNullConstraints, buildScript } = require('../../utils/general');
+const foreignKeyHelper = require('../foreignKeyHelper');
 
-const getForeignKeyStatements = ({ app, data, arePkFkConstraintsAvailable, jsonSchema, modelData }) => {
-	const relationshipsWithThisTableAsChild = modelData[1]?.relationships.filter(
-		relationship => relationship.childCollection === jsonSchema.GUID,
-	);
-
-	let inlineForeignKeyStatements = '';
-	if (arePkFkConstraintsAvailable && relationshipsWithThisTableAsChild?.length) {
-		const parsedEntitiesById = data.relatedCollectionsJsonSchema?.reduce((result, schema) => {
-			const data = JSON.parse(schema);
-			result[data.GUID] = data;
-			return result;
-		}, {});
-
-		const inlineRelationshipScripts = getCreateInlineRelationshipScripts(app)({
-			relationships: relationshipsWithThisTableAsChild,
-			jsonSchemas: parsedEntitiesById,
-		});
-
-		inlineForeignKeyStatements = inlineRelationshipScripts.join(',\n\t');
+const getForeignKeyStatements = ({
+	app,
+	jsonSchema,
+	entityData,
+	modelDefinitions,
+	internalDefinitions,
+	externalDefinitions,
+	relatedCollectionsJsonSchema = [],
+	relationships = [],
+}) => {
+	if (!relationships.length || !relatedCollectionsJsonSchema.length) {
+		return null;
 	}
 
-	return inlineForeignKeyStatements;
+	const parsedEntitiesById = relatedCollectionsJsonSchema.reduce((result, schema) => {
+		const data = JSON.parse(schema);
+		result[data.GUID] = data;
+		return result;
+	}, {});
+
+	const foreignKeyHashTable = foreignKeyHelper.getForeignKeyHashTable({
+		relationships,
+		entities: Object.keys(parsedEntitiesById),
+		entityData: {
+			[jsonSchema.GUID]: entityData,
+		},
+		jsonSchemas: parsedEntitiesById,
+		modelDefinitions,
+		internalDefinitions,
+		otherDefinitions: [modelDefinitions, externalDefinitions],
+		isContainerActivated: true,
+		relatedSchemas: {},
+	});
+
+	return foreignKeyHashTable[jsonSchema.GUID]
+		? foreignKeyHelper.getForeignKeyStatementsByHashItem(app, foreignKeyHashTable[jsonSchema.GUID])
+		: null;
 };
 
 /**
@@ -53,10 +68,13 @@ const buildEntityLevelFEScript =
 		const definitions = [modelDefinitions, internalDefinitions, externalDefinitions];
 		const foreignKeyStatements = getForeignKeyStatements({
 			app,
-			data,
-			arePkFkConstraintsAvailable,
 			jsonSchema,
-			modelData,
+			entityData,
+			modelDefinitions,
+			internalDefinitions,
+			externalDefinitions,
+			relatedCollectionsJsonSchema: data.relatedCollectionsJsonSchema,
+			relationships: data.modelData.find(modelData => 'relationships' in modelData)?.relationships,
 		});
 
 		const tableStatements = getTableStatement(app)(

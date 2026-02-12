@@ -157,6 +157,7 @@ const getContainerLevelEntitiesScriptDtos =
 			const createTableStatementArgs = [containerData, entityData, entityJsonSchema, definitions];
 
 			const foreignKeyStatement = foreignKeyHelper.getForeignKeyStatementsByHashItem(
+				app,
 				foreignKeyHashTable[entityId] || {},
 			);
 
