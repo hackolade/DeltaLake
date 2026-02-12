@@ -74,6 +74,9 @@ const getTableDataFromDDl = statement => {
 			code: parsedTableData.table,
 			temporaryTable: parsedTableData.isTemporary,
 			externalTable: parsedTableData.isExternal,
+			streamingTable: parsedTableData.isStreaming,
+			orRefresh: parsedTableData.orRefresh,
+			tableIfNotExists: parsedTableData.tableIfNotExists,
 			using: getTableProvider(parsedTableData.using),
 			storedAsTable: getTableProvider(parsedTableData.tableProvider),
 			rowFormat: parsedTableData.rowFormat,
@@ -99,6 +102,10 @@ const getTableDataFromDDl = statement => {
 			tableOptions: parsedTableData.tableOptions,
 			primaryKey: parsedTableData.primaryKey,
 			chkConstr: parsedTableData.chkConstr,
+			dltExpectations: parsedTableData.dltExpectations,
+			scheduleGroup: parsedTableData.scheduleGroup,
+			rowFilterGroup: parsedTableData.rowFilterGroup,
+			streamingSourceSelect: parsedTableData.query,
 		},
 	};
 };
