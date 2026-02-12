@@ -331,14 +331,21 @@ const executeUnlessStreaming = (isStreaming, task, fallback = '') => {
 /**
  * Prepares the raw SQL query for embedding in the final DDL statement.
  * It removes leading/trailing whitespace and strips any trailing semicolons
- * to prevent syntax errors when the query is used inside a subquery or CTAS statement.
+ * to prevent syntax errors.
  *
  * @param {string} query - The raw SQL query string from the user input.
  * @returns {string} The cleaned query string without trailing semicolons.
  */
 const cleanQuery = query => {
-	if (!query) return '';
-	return query.trim().replace(/;+$/, '');
+	const cleaned = query?.trim();
+	if (!cleaned) return '';
+
+	let finalQuery = cleaned;
+	while (finalQuery.endsWith(';')) {
+		finalQuery = finalQuery.slice(0, -1);
+	}
+
+	return finalQuery;
 };
 
 module.exports = {
