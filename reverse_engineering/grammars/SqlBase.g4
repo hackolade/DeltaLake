@@ -325,13 +325,18 @@ schemaBindingSpec
 
 scheduleClause
     : SCHEDULE REFRESH? EVERY number everyQualifier
-    | SCHEDULE REFRESH? CRON identifier (AT TIME ZONE identifier)?
+    | SCHEDULE REFRESH? CRON cronString=STRING (AT TIME ZONE timeZoneValue)?
+    ;
+
+timeZoneValue
+    : identifier
+    | STRING
     ;
 
 everyQualifier: HOUR | DAY | WEEK;
 
 rowClause
-    : WITH? ROW FILTER functionIdentifier ON ('(' identifier (',' identifier)* ')')?
+    : WITH? ROW FILTER functionIdentifier (ON '(' identifier (',' identifier)* ')')?
     ;
 
 triggerOnUpdateClause
@@ -1003,7 +1008,14 @@ columnConstraint
 columnConstraintType
     : NOT NULL
     | PRIMARY KEY
+    | KW_DEFAULT defaultValue
     | columnGeneratedAs
+    ;
+
+defaultValue
+    : identifier
+    | constant
+    | primaryExpression
     ;
 
 columnGeneratedAs
