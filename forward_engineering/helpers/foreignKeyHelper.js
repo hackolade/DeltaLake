@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const schemaHelper = require('./jsonSchemaHelper');
 const { getName, getTab, commentDeactivatedStatements, prepareName } = require('../utils/general');
+const ddlTemplates = require('../ddlProvider/ddlTemplates');
 
 const getIdToNameHashTable = (
 	relationships,
@@ -103,12 +104,7 @@ const getForeignKeyHashTable = ({
 	}, {});
 };
 
-const getForeignKeyConstraint = ({ constraintName, childColumns, parentTableName, parentColumns }) => {
-	const constraintNameStatement = constraintName ? `CONSTRAINT ${prepareName(constraintName)} ` : '';
-	return `${constraintNameStatement}FOREIGN KEY (${childColumns}) REFERENCES ${parentTableName}(${parentColumns})`.trim();
-};
-
-const getForeignKeyStatementsByHashItem = hashItem => {
+const getForeignKeyStatementsByHashItem = (app, hashItem) => {
 	return Object.keys(hashItem || {})
 		.map(groupKey => {
 			const keys = hashItem[groupKey];
@@ -120,14 +116,15 @@ const getForeignKeyStatementsByHashItem = hashItem => {
 			const childColumns = keys.map(item => item.childColumn).join(', ');
 			const parentColumns = keys.map(item => item.parentColumn).join(', ');
 			const isActivated = firstKey.isActivated;
+			const { assignTemplates } = app.require('@hackolade/ddl-fe-utils');
 
-			const statement = getForeignKeyConstraint({
-				constraintName,
+			const statement = assignTemplates(ddlTemplates.addInlineFkConstraint, {
+				fkConstraintName: constraintName ? `CONSTRAINT ${prepareName(constraintName)} ` : '',
 				childColumns,
 				parentTableName,
 				parentColumns,
 				disableNoValidate,
-			});
+			}).trim();
 
 			return commentDeactivatedStatements(statement, isActivated);
 		})
@@ -139,13 +136,12 @@ const getPreparedForeignColumns = (columnsPaths, idToNameHashTable) => {
 		return columnsPaths
 			.map(path => schemaHelper.getNameByPath(idToNameHashTable, (path || []).slice(1)))
 			.join(', ');
-	} else {
-		return schemaHelper.getNameByPath(idToNameHashTable, (columnsPaths || []).slice(1));
 	}
+
+	return schemaHelper.getNameByPath(idToNameHashTable, (columnsPaths || []).slice(1));
 };
 
 module.exports = {
 	getForeignKeyHashTable,
 	getForeignKeyStatementsByHashItem,
-	getForeignKeyConstraint,
 };

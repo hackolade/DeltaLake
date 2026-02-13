@@ -48,11 +48,12 @@ const getAddSingleForeignKeyScript = ddlProvider => relationship => {
 
 	const addFkConstraintDto = {
 		childTableName,
-		fkConstraintName: prepareName(relationshipName),
+		fkConstraintName: relationshipName ? `CONSTRAINT ${prepareName(relationshipName)} ` : '',
 		childColumns: compMod.child.collection.fkFields.map(field => prepareName(field.name)),
 		parentTableName,
 		parentColumns: compMod.parent.collection.fkFields.map(field => prepareName(field.name)),
 	};
+
 	return ddlProvider.addFkConstraint(addFkConstraintDto);
 };
 
@@ -65,8 +66,8 @@ const canRelationshipBeAdded = relationship => {
 	if (!compMod) {
 		return false;
 	}
+	// It's possible to create a FK without constraint name
 	return [
-		compMod.code?.new || compMod.name?.new || getRelationshipName(relationship),
 		compMod.parent?.bucket,
 		compMod.parent?.collection,
 		compMod.parent?.collection?.fkFields?.length,

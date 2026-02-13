@@ -43,7 +43,6 @@
 
 const _ = require('lodash');
 const { getDatabaseStatement, getUseCatalogStatement } = require('../databaseHelper');
-const { getCreateRelationshipScripts } = require('../relationshipHelper');
 const { getTableStatement } = require('../tableHelper');
 const { getIndexes } = require('../indexHelper');
 const {
@@ -158,6 +157,7 @@ const getContainerLevelEntitiesScriptDtos =
 			const createTableStatementArgs = [containerData, entityData, entityJsonSchema, definitions];
 
 			const foreignKeyStatement = foreignKeyHelper.getForeignKeyStatementsByHashItem(
+				app,
 				foreignKeyHashTable[entityId] || {},
 			);
 
