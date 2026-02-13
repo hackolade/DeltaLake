@@ -777,8 +777,15 @@ const getCreateStreamingStatement = ({
 
 	if (expectations && expectations.length > 0) {
 		const expectationsSql = expectations.map(exp => {
+			const name = exp.expectationName?.trim();
+			const expr = exp.expectationExpr?.trim();
+
+			if (!name || !expr) {
+				return null;
+			}
+
 			const action = exp.expectationAction ? ` ON VIOLATION ${exp.expectationAction}` : '';
-			return `CONSTRAINT ${exp.expectationName} EXPECT (${exp.expectationExpr})${action}`;
+			return `CONSTRAINT ${name} EXPECT (${expr})${action}`;
 		});
 		tableStructureLines.push(...expectationsSql);
 	}
