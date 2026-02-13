@@ -137,7 +137,7 @@ class Visitor extends SqlBaseVisitor {
 			};
 		}
 
-		const scheduleCronString = this.getText(ctx.cronString());
+		const scheduleCronString = removeQuotes(ctx.cronString?.text);
 		const scheduleTimeZone = this.visitIfExists(ctx, 'timeZoneValue');
 
 		return {
