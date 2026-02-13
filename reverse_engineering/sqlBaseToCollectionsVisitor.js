@@ -137,8 +137,8 @@ class Visitor extends SqlBaseVisitor {
 			};
 		}
 
-		const scheduleCronString = this.visit(ctx.identifier()[0]);
-		const scheduleTimeZone = this.visit(ctx.identifier()[1]);
+		const scheduleCronString = this.getText(ctx.cronString());
+		const scheduleTimeZone = this.visitIfExists(ctx, 'timeZoneValue');
 
 		return {
 			scheduleType: ScheduleTypesEnum.CRON,
@@ -150,6 +150,10 @@ class Visitor extends SqlBaseVisitor {
 
 	visitEveryQualifier(ctx) {
 		return _.toUpper(ctx.getText() || '');
+	}
+
+	visitTimeZoneValue(ctx) {
+		return removeQuotes(this.getText(ctx));
 	}
 
 	visitRowClause(ctx) {
@@ -314,6 +318,10 @@ class Visitor extends SqlBaseVisitor {
 				return { ...result, primaryKey: true };
 			}
 
+			if (this.visitFlagValue(constraint, 'KW_DEFAULT')) {
+				return { ...result, default: this.visit(constraint.defaultValue()) };
+			}
+
 			return result;
 		}, {});
 	}
@@ -365,6 +373,10 @@ class Visitor extends SqlBaseVisitor {
 			key: this.visit(ctx.key),
 			val: this.visit(ctx.val),
 		};
+	}
+
+	visitDefaultValue(ctx) {
+		return ctx.getText();
 	}
 
 	visitStructDataType(ctx) {
