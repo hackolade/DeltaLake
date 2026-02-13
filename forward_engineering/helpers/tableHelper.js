@@ -816,6 +816,31 @@ const getCreateStreamingStatement = ({
 	)(true, ';')();
 };
 
+/**
+ * Sorts entities to ensure Standard tables are processed before Streaming tables.
+ * This prevents dependency errors when a Streaming table reads from a Standard table.
+ * * @param {Array<string>} entities - Array of entity IDs
+ * @param {Object} entityData - Object containing entity data
+ * @returns {Array<string>} Sorted array of entity IDs
+ */
+const sortEntitiesByStreaming = (entities, entityData) => {
+	if (!entities || !entityData) return [];
+
+	return [...entities].sort((aId, bId) => {
+		const tableDataA = getTab(0, entityData[aId]);
+		const tableDataB = getTab(0, entityData[bId]);
+
+		const isStreamingA = Boolean(tableDataA?.streamingTable);
+		const isStreamingB = Boolean(tableDataB?.streamingTable);
+
+		if (isStreamingA === isStreamingB) {
+			return 0;
+		}
+
+		return isStreamingA ? 1 : -1;
+	});
+};
+
 module.exports = {
 	getTableStatement,
 	getTablePropertiesClause,
@@ -825,4 +850,5 @@ module.exports = {
 	getPartitionKeyStatement,
 	getClusteringKeys,
 	getPartitionsKeys,
+	sortEntitiesByStreaming,
 };
