@@ -440,6 +440,11 @@ class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by SqlBaseParser#timeZoneValue.
+	visitTimeZoneValue(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by SqlBaseParser#everyQualifier.
 	visitEveryQualifier(ctx) {
 		return this.visitChildren(ctx);
@@ -1347,6 +1352,11 @@ class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 
 	// Visit a parse tree produced by SqlBaseParser#columnConstraintType.
 	visitColumnConstraintType(ctx) {
+		return this.visitChildren(ctx);
+	}
+
+	// Visit a parse tree produced by SqlBaseParser#defaultValue.
+	visitDefaultValue(ctx) {
 		return this.visitChildren(ctx);
 	}
 
