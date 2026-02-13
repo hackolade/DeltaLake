@@ -190,10 +190,20 @@ const wrapInBrackets = (str = '') => {
  * @param statements {Array<string>}
  * */
 const buildScript = statements => {
+	const FAIL_UPDATE_TOKEN = 'FAIL_UPDATE_GUARD_TOKEN';
+
 	const nonEmptyScripts = statements.filter(statement => statement);
-	const formattedScripts = nonEmptyScripts.map(script =>
-		sqlFormatter.format(script, { indent: '    ', linesBetweenQueries: 2 }).replace(/\{ \{ (.+?) } }/g, '{{$1}}'),
-	);
+	const formattedScripts = nonEmptyScripts.map(script => {
+		// We need to replace "FAIL UPDATE" with a guard token before formatting the script,
+		// because the SQL formatter doesn't recognize "FAIL UPDATE" as a valid syntax and breaks it,
+		// while "FAIL_UPDATE_GUARD_TOKEN" is not a valid SQL syntax and will be left unchanged by the formatter.
+		const protectedScript = script.replaceAll(/FAIL\s+UPDATE/gi, FAIL_UPDATE_TOKEN);
+
+		return sqlFormatter
+			.format(protectedScript, { indent: '    ', linesBetweenQueries: 2 })
+			.replace(/\{ \{ (.+?) } }/g, '{{$1}}')
+			.replaceAll(FAIL_UPDATE_TOKEN, 'FAIL UPDATE');
+	});
 
 	return formattedScripts.join('\n\n') + '\n\n';
 };
