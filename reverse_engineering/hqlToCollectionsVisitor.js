@@ -519,8 +519,8 @@ class Visitor extends HiveParserVisitor {
 			};
 		}
 
-		const scheduleCronString = this.visit(ctx.identifier()[0]);
-		const scheduleTimeZone = this.visit(ctx.identifier()[1]);
+		const scheduleCronString = removeSingleDoubleQuotes(ctx.StringLiteral().getText());
+		const scheduleTimeZone = this.visitWhenExists(ctx, 'timeZoneValue');
 
 		return {
 			scheduleType: ScheduleTypesEnum.CRON,
@@ -528,6 +528,10 @@ class Visitor extends HiveParserVisitor {
 			scheduleTimeZone,
 			scheduleClause,
 		};
+	}
+
+	visitTimeZoneValue(ctx) {
+		return removeSingleDoubleQuotes(this.getText(ctx));
 	}
 
 	visitTriggerOnUpdateClause(ctx) {
