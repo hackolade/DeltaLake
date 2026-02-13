@@ -43,7 +43,7 @@
 
 const _ = require('lodash');
 const { getDatabaseStatement, getUseCatalogStatement } = require('../databaseHelper');
-const { getTableStatement } = require('../tableHelper');
+const { getTableStatement, sortEntitiesByStreaming } = require('../tableHelper');
 const { getIndexes } = require('../indexHelper');
 const {
 	buildScript,
@@ -147,7 +147,9 @@ const getContainerLevelEntitiesScriptDtos =
 			relatedSchemas: relatedSchemas,
 		});
 
-		for (const entityId of data.entities) {
+		const sortedEntities = sortEntitiesByStreaming(data.entities, data.entityData);
+
+		for (const entityId of sortedEntities) {
 			const entityData = data.entityData[entityId];
 			const tableData = getTab(0, entityData);
 			const dbVersion = data.modelData[0].dbVersion;

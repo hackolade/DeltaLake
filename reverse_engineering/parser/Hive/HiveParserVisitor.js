@@ -770,6 +770,11 @@ class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 
+	// Visit a parse tree produced by HiveParser#timeZoneValue.
+	visitTimeZoneValue(ctx) {
+		return this.visitChildren(ctx);
+	}
+
 	// Visit a parse tree produced by HiveParser#rowClause.
 	visitRowClause(ctx) {
 		return this.visitChildren(ctx);
