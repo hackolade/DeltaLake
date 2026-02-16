@@ -280,7 +280,8 @@ making sure that you maintain a proper JSON format.
 						"propertyName": "Type",
 						"propertyKeyword": "scheduleType",
 						"propertyType": "select",
-						"options": ["None", "Cron", "Every", "Trigger on Update (Beta)"]
+						"options": ["None", "Cron", "Every", "Trigger on Update (Beta)"],
+						"defaultValue": "None"
 					},
 					{
 						"propertyName": "Cron String",
