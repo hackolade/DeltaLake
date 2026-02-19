@@ -20,14 +20,21 @@
 		"**/*.d.ts",
 		"**/*.e2e.ts",
 		"**/*.spec.ts",
+		"**/*Parser.js",
+		"**/*Visitor.js",
 		".git",
 		".idea",
 		".vscode",
+		"antlr",
 		"build",
 		"forward_engineering/node_modules",
 		"node_modules",
 		"out/**/*",
 		"release",
-		"reverse_engineering/node_modules"
+		"reverse_engineering/antlr",
+		"reverse_engineering/grammars",
+		"reverse_engineering/node_modules",
+		"reverse_engineering/parser",
+		"reverse_engineering/thriftService"
 	]
 }
