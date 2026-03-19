@@ -400,7 +400,11 @@ const filterCorruptedData = (databasesTablesInfoResult, isTruncatedInMiddle) => 
 	if (isTruncatedInMiddle) {
 		const warningDelimiter = '*** WARNING: max output size exceeded, skipping output. ***';
 		const [firstChunk, lastChunk] = databasesTablesInfoResult.split(warningDelimiter);
-		return [filterCorruptedEnd(firstChunk), filterCorruptedStart(lastChunk)].join(', ');
+		const filteredFirst = filterCorruptedEnd(firstChunk);
+		const filteredLast = filterCorruptedStart(lastChunk);
+		const filteredChunks = [filteredFirst, filteredLast].filter(Boolean);
+		const joined = filteredChunks.join(JSON_OBJECTS_DELIMITER);
+		return filteredLast ? joined : joined + '}]}';
 	}
 
 	return filterCorruptedEnd(databasesTablesInfoResult) + '}]}';
