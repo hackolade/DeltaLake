@@ -1,9 +1,10 @@
 'use strict';
 
 const _ = require('lodash');
-const { getTab, buildStatement, prepareName, getName, replaceSpaceWithUnderscore } = require('../utils/general');
+const { getTab, buildStatement, getName, replaceSpaceWithUnderscore } = require('../utils/general');
 const schemaHelper = require('./jsonSchemaHelper');
 const { getItemByPath } = require('./jsonSchemaHelper');
+const { prepareName } = require('../../shared/general');
 
 const getIndexStatement = ({ tableName, dbName, columns, options, isActivated }) => {
 	return buildStatement(

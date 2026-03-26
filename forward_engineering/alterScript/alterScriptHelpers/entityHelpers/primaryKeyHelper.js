@@ -1,6 +1,6 @@
 const _ = require('lodash');
-const { generateFullEntityName, getEntityNameFromCollection, prepareName } = require('../../../utils/general');
-const { AlterScriptDto } = require('../../types/AlterScriptDto');
+const { generateFullEntityName, getEntityNameFromCollection } = require('../../../utils/general');
+const { prepareName } = require('../../../../shared/general');
 
 /**
  * @return {(collection: Object, guid: string) => Object | undefined}

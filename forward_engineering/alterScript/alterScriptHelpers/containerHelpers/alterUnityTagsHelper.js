@@ -1,6 +1,5 @@
 const { getUnityTagsFromCompMod, getUnsetTagsNamesParamString } = require('../../../helpers/unityTagsHelper');
 const { buildTagPairs } = require('../../../helpers/unityTagsHelper');
-const { prepareName } = require('../../../utils/general');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 
 /**

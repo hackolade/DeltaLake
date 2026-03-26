@@ -4,13 +4,23 @@ const nodeFetch = require('node-fetch');
 const AbortController = require('abort-controller');
 const { backOff } = require('exponential-backoff');
 
-const { getClusterData, getViewNamesCommand } = require('./pythonScriptGeneratorHelper');
+const {
+	getClusterData,
+	getClusterColumnNames,
+	getClusterFieldMetadataBatch,
+	getTableSchemaColumnsForDdlFallback,
+	getViewNamesCommand,
+} = require('./pythonScriptGeneratorHelper');
 const { prepareNamesForInsertionIntoScalaCode, removeParentheses } = require('./utils');
 const { generateSamplesScript } = require('../../forward_engineering/sampleGeneration/sampleGenerationService');
 const { batchProcessFile } = require('./fileHelper');
-const { COMMAND_EXECUTION_STATUS, REQUEST_TIMEOUT_MESSAGE } = require('../../shared/constants');
-
-const JSON_OBJECTS_DELIMITER = '}, {';
+const {
+	COMMAND_EXECUTION_STATUS,
+	REQUEST_TIMEOUT_MESSAGE,
+	FIELD_METADATA_COLUMN_BATCH_SIZE,
+	SPARK_LANGUAGE,
+} = require('../../shared/constants');
+const { prepareName } = require('../../shared/general');
 const BATCH_SIZE = 5000;
 
 const COMMAND_EXECUTION_MAX_DELAY = 3000;
@@ -310,7 +320,7 @@ const fetchDatabaseViewsNames = ({ dbName, connectionInfo, logger }) =>
 	executeCommand({ connectionInfo, command: `SHOW VIEWS IN \`${dbName}\``, logger });
 
 const fetchDatabaseViewsNamesViaPython = ({ dbName, connectionInfo, logger }) =>
-	executeCommand({ connectionInfo, command: getViewNamesCommand(dbName), language: 'python', logger });
+	executeCommand({ connectionInfo, command: getViewNamesCommand(dbName), language: SPARK_LANGUAGE.python, logger });
 
 const fetchClusterTablesNames = ({ dbName, connectionInfo, logger }) =>
 	executeCommand({ connectionInfo, command: `SHOW TABLES IN \`${dbName}\``, logger });
@@ -324,28 +334,35 @@ const fetchClusterData = async (
 ) => {
 	const databasesPropertiesResult = await async.mapLimit(databasesNames, 40, async dbName => {
 		logger.log('info', '', `Start describe schema: ${dbName} `);
+
 		const dbInfoResult = await executeCommand({
 			connectionInfo,
 			command: `DESCRIBE DATABASE EXTENDED \`${dbName}\``,
 			logger,
 		});
+
 		logger.log('info', '', `Schema: ${dbName} successfully described`);
+
 		const dbProperties = dbInfoResult.reduce((dbProperties, row) => {
-			switch (row[0]) {
+			const key = row[0];
+			const value = row[1];
+
+			switch (key) {
 				case 'Location': {
 					const propertyName = isManagedLocationSupports ? 'managedLocation' : 'location';
-					return { ...dbProperties, [propertyName]: row[1] };
+					return { ...dbProperties, [propertyName]: value };
 				}
 				case 'Comment':
-					return { ...dbProperties, description: row[1] };
+					return { ...dbProperties, description: value };
 				case 'Properties':
-					return { ...dbProperties, dbProperties: convertDbProperties(row[1]) };
+					return { ...dbProperties, dbProperties: convertDbProperties(value) };
 				case 'Catalog Name':
-					return { ...dbProperties, catalogName: row[1] };
+					return { ...dbProperties, catalogName: value };
 				default:
 					return dbProperties;
 			}
 		}, {});
+
 		return { dbName, dbProperties };
 	});
 
@@ -355,11 +372,12 @@ const fetchClusterData = async (
 	);
 
 	const databasesTablesInfo = await fetchFieldMetadata(databasesNames, collectionsNames, connectionInfo, logger);
+
 	return databasesNames.reduce(
 		(clusterData, dbName) => ({
 			...clusterData,
 			[dbName]: {
-				dbTables: _.get(databasesTablesInfo, dbName, {}),
+				dbTables: _.get(databasesTablesInfo, dbName, []),
 				dbProperties: _.get(databasesProperties, dbName, {}),
 			},
 		}),
@@ -368,110 +386,240 @@ const fetchClusterData = async (
 };
 
 /**
- * @param {string} jsonString
- * @return {string[]}
- */
-const splitJsonObjects = (jsonString = '') => jsonString.split(JSON_OBJECTS_DELIMITER);
-
-/**
- * @param {string} corruptedJsonData
+ * @param {unknown} raw
  * @return {string}
  */
-const filterCorruptedEnd = corruptedJsonData => {
-	const jsonObjects = splitJsonObjects(corruptedJsonData);
-	return jsonObjects.slice(0, jsonObjects.length - 1).join(JSON_OBJECTS_DELIMITER);
-};
-
-/**
- * @param {string} corruptedJsonData
- * @return {string}
- */
-const filterCorruptedStart = corruptedJsonData => {
-	const jsonObjects = splitJsonObjects(corruptedJsonData);
-	return jsonObjects.slice(1).join(JSON_OBJECTS_DELIMITER);
-};
-
-/**
- * @param {string} databasesTablesInfoResult
- * @param {boolean} isTruncatedInMiddle
- * @return {string}
- */
-const filterCorruptedData = (databasesTablesInfoResult, isTruncatedInMiddle) => {
-	if (isTruncatedInMiddle) {
-		const warningDelimiter = '*** WARNING: max output size exceeded, skipping output. ***';
-		const [firstChunk, lastChunk] = databasesTablesInfoResult.split(warningDelimiter);
-		const filteredFirst = filterCorruptedEnd(firstChunk);
-		const filteredLast = filterCorruptedStart(lastChunk);
-		const filteredChunks = [filteredFirst, filteredLast].filter(Boolean);
-		const joined = filteredChunks.join(JSON_OBJECTS_DELIMITER);
-		return filteredLast ? joined : joined + '}]}';
+const coercePythonNotebookOutput = raw => {
+	if (raw == null) {
+		return '';
 	}
 
-	return filterCorruptedEnd(databasesTablesInfoResult) + '}]}';
+	if (typeof raw === 'string') {
+		return raw.trim();
+	}
+
+	if (Array.isArray(raw)) {
+		const mapSubArrays = row => row.map(content => String(content ?? '')).join('');
+
+		return raw.map(row => (Array.isArray(row) ? mapSubArrays(row) : String(row ?? ''))).join('\n');
+	}
+
+	if (typeof raw === 'object') {
+		if (raw.data != null) {
+			return String(raw.data).trim();
+		}
+		try {
+			return JSON.stringify(raw);
+		} catch {
+			return '';
+		}
+	}
+
+	return String(raw).trim();
+};
+
+/**
+ * @param {unknown} err
+ * @return {string}
+ */
+const stringifyErrorMessage = err => {
+	if (err == null) {
+		return '';
+	}
+	if (typeof err === 'string') {
+		return err;
+	}
+	if (typeof err === 'object' && err.message != null) {
+		return String(err.message);
+	}
+	try {
+		return JSON.stringify(err);
+	} catch {
+		return String(err);
+	}
+};
+
+const isNotebookOutputTruncation = str => /\*\*\* WARNING:.*output/i.test(str);
+
+/**
+ * @param {string} message
+ * @return {boolean}
+ */
+const isOutputLimitExceeded = message =>
+	/results too large/i.test(message) ||
+	/max output size exceeded/i.test(message) ||
+	/skipped \d* bytes of output/i.test(message);
+
+const chunkColumnNames = (names, size) => {
+	const out = [];
+	for (let i = 0; i < names.length; i += size) {
+		out.push(names.slice(i, i + size));
+	}
+	return out;
+};
+
+const mergeTableFieldBatches = partials =>
+	partials.reduce(
+		(acc, partial) => ({
+			name: partial.name,
+			nullableMap: { ...acc.nullableMap, ...partial.nullableMap },
+			indexes: { ...acc.indexes, ...partial.indexes },
+		}),
+		{ name: '', nullableMap: {}, indexes: {} },
+	);
+
+/**
+ * @param {Object} params - property bag
+ * @param {Record<string, Array<{ name: string, columns: string[] }>>} params.columnPlan
+ * @param {Object} params.connectionInfo
+ * @param {Object} params.logger
+ * @returns {Promise<Record<string, object[]>>}
+ */
+const fetchClusterFieldMetadataInBatches = async ({ columnPlan, connectionInfo, logger }) => {
+	const tasks = [];
+
+	for (const dbName of Object.keys(columnPlan)) {
+		for (const table of columnPlan[dbName]) {
+			const batches = chunkColumnNames(table.columns, FIELD_METADATA_COLUMN_BATCH_SIZE);
+			const batchList = batches.length ? batches : [[]];
+
+			for (const batch of batchList) {
+				tasks.push({ dbName, tableName: table.name, batch });
+			}
+		}
+	}
+
+	const rows = await async.mapLimit(tasks, 10, async ({ dbName, tableName, batch }) => {
+		const columnsJson = JSON.stringify(batch);
+		const command = getClusterFieldMetadataBatch(dbName, tableName, columnsJson);
+		const out = await executeCommand({ connectionInfo, command, language: SPARK_LANGUAGE.python, logger });
+		const parsed = JSON.parse(coercePythonNotebookOutput(out));
+		return { dbName, tableName, table: parsed };
+	});
+
+	const byTable = new Map();
+
+	const keySeparator = '_';
+
+	for (const row of rows) {
+		const key = `${row.dbName}${keySeparator}${row.tableName}`;
+		if (!byTable.has(key)) {
+			byTable.set(key, []);
+		}
+		byTable.get(key).push(row.table);
+	}
+
+	const clusterData = {};
+
+	for (const dbName of Object.keys(columnPlan)) {
+		clusterData[dbName] = columnPlan[dbName].map(({ name }) => {
+			const key = `${dbName}${keySeparator}${name}`;
+			const parts = byTable.get(key) || [];
+			return mergeTableFieldBatches(parts);
+		});
+	}
+
+	return clusterData;
+};
+
+const fetchFieldMetadataBatched = async (
+	databasesNames,
+	collectionsNames,
+	connectionInfo,
+	logger,
+	previousData = {},
+) => {
+	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
+
+	const columnListCommand = getClusterColumnNames(tableNames.join(', '), dbNames.join(', '));
+
+	logger.log(
+		'info',
+		'',
+		`Start retrieving tables info (batched): \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`,
+	);
+
+	const namesRaw = await executeCommand({
+		connectionInfo,
+		command: columnListCommand,
+		language: SPARK_LANGUAGE.python,
+		logger,
+	});
+
+	const namesStr = coercePythonNotebookOutput(namesRaw);
+
+	if (isNotebookOutputTruncation(namesStr)) {
+		throw new Error('Databricks truncated the column name list. Try reverse-engineering fewer tables at once.');
+	}
+
+	let columnPlan;
+
+	try {
+		columnPlan = JSON.parse(namesStr);
+	} catch (error) {
+		logger.log('error', { error }, `Column list parse failed. Snippet: ${namesStr.slice(0, 1500)}`);
+		throw error;
+	}
+
+	const clusterData = await fetchClusterFieldMetadataInBatches({ columnPlan, connectionInfo, logger });
+
+	logger.log('info', '', 'Finished retrieving table field metadata (batched).');
+
+	return mergeChunksOfData(previousData, clusterData);
 };
 
 const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionInfo, logger, previousData = {}) => {
 	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
-	const getClusterDataCommand = getClusterData(tableNames.join(', '), dbNames.join(', '));
+
 	logger.log(
 		'info',
 		'',
 		`Start retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`,
 	);
-	const databasesTablesInfoResult = await executeCommand({
-		connectionInfo,
-		command: getClusterDataCommand,
-		language: 'python',
-		logger,
-	});
-	logger.log('info', '', `Finish retrieving tables info: ${databasesTablesInfoResult}`);
 
-	const isTruncatedResponse = /\*\*\* WARNING: skipped \d* bytes of output \*\*\*$/.test(databasesTablesInfoResult);
-	const isTruncatedInMiddle = /\*\*\* WARNING: max output size exceeded, skipping output. \*\*\*/.test(
-		databasesTablesInfoResult,
-	);
+	const getFullClusterInfoCommand = getClusterData(tableNames.join(', '), dbNames.join(', '));
 
 	try {
-		if (!isTruncatedResponse && !isTruncatedInMiddle) {
-			const parsedData = JSON.parse(databasesTablesInfoResult);
-			return mergeChunksOfData(previousData, parsedData);
+		const rawOutput = await executeCommand({
+			connectionInfo,
+			command: getFullClusterInfoCommand,
+			language: SPARK_LANGUAGE.python,
+			logger,
+		});
+
+		const str = coercePythonNotebookOutput(rawOutput);
+
+		if (isNotebookOutputTruncation(str)) {
+			logger.log('info', '', 'Cluster field metadata output truncated; using batched retrieval.');
+			return fetchFieldMetadataBatched(databasesNames, collectionsNames, connectionInfo, logger, previousData);
 		}
 
-		const fullCompletedData = filterCorruptedData(databasesTablesInfoResult, isTruncatedInMiddle);
-		const parsedData = JSON.parse(fullCompletedData);
-		const mergedDataChunks = mergeChunksOfData(previousData, parsedData);
-		const { dbNames: filteredDbNames, tableNames: filteredTableNames } = getFilteredEntities(
-			collectionsNames,
-			mergedDataChunks,
-		);
+		try {
+			const parsed = JSON.parse(str);
+			logger.log('info', '', 'Finished retrieving table field metadata (single command).');
 
-		return fetchFieldMetadata(filteredDbNames, filteredTableNames, connectionInfo, logger, mergedDataChunks);
+			return mergeChunksOfData(previousData, parsed);
+		} catch (parseError) {
+			logger.log(
+				'warning',
+				{ error: parseError },
+				'Single-pass metadata JSON parse failed; using batched retrieval.',
+			);
+
+			return fetchFieldMetadataBatched(databasesNames, collectionsNames, connectionInfo, logger, previousData);
+		}
 	} catch (error) {
-		logger.log('error', { error }, `\nDatabricks response: ${databasesTablesInfoResult}\n`);
+		const msg = stringifyErrorMessage(error);
+		if (isOutputLimitExceeded(msg)) {
+			logger.log(
+				'info',
+				{ message: msg.slice(0, 300) },
+				'Single-pass cluster metadata failed; using batched retrieval.',
+			);
+			return fetchFieldMetadataBatched(databasesNames, collectionsNames, connectionInfo, logger, previousData);
+		}
 		throw error;
 	}
-};
-
-const getFilteredEntities = (tableNames, parsedData) => {
-	return Object.keys(parsedData).reduce(
-		(resultEntities, dbName) => {
-			const parsedTableNames = parsedData[dbName].map(table => table.name);
-			const dbTableNames = tableNames[dbName];
-			const filteredTableNames = dbTableNames.filter(name => !parsedTableNames.includes(name));
-			if (!filteredTableNames.length) {
-				return resultEntities;
-			}
-
-			return {
-				dbNames: [...resultEntities.dbNames, dbName],
-				tableNames: {
-					...resultEntities.tableNames,
-					[dbName]: filteredTableNames,
-				},
-			};
-		},
-		{ dbNames: [], tableNames: {} },
-	);
 };
 
 const mergeChunksOfData = (leftObj, rightObj) => {
@@ -482,13 +630,96 @@ const mergeChunksOfData = (leftObj, rightObj) => {
 	});
 };
 
-const fetchCreateStatementRequest = async (entityName, connectionInfo, logger) => {
+/**
+ * @param {string} entityName - `` `default`.`my_table` ``
+ * @return {{ schemaName: string, tableName: string } | null}
+ */
+const parseEntityBacktickParts = entityName => {
+	const parts = new RegExp(/`([^`]+)`\.`([^`]+)`/).exec(String(entityName));
+	return parts ? { schemaName: parts[1], tableName: parts[2] } : null;
+};
+
+/**
+ * Python notebook context does not inherit USE CATALOG from the SQL context; qualify with catalog when present.
+ * @param {Object} params - property bag
+ * @param {string} params.schemaName
+ * @param {string} params.tableName
+ * @param {string} [params.catalogName]
+ * @return {string}
+ */
+const buildSparkTableFullNameForPython = ({ schemaName, tableName, catalogName } = {}) => {
+	if (catalogName) {
+		return `${catalogName}.${schemaName}.${tableName}`;
+	}
+	return `${schemaName}.${tableName}`;
+};
+
+/**
+ * @param {string} entityName
+ * @param {Array<{ name: string, colType: string }>} columns
+ * @return {string}
+ */
+const buildMinimalCreateTableFromSchema = (entityName, columns) => {
+	if (!columns.length) {
+		return '';
+	}
+
+	const lines = columns
+		.map(column => {
+			return `  \`${String(column.name).replaceAll('`', '')}\` ${column.colType}`;
+		})
+		.join(',\n');
+
+	return `CREATE TABLE ${entityName} (\n${lines}\n)\nUSING DELTA`;
+};
+
+const fetchCreateStatementRequest = async (entityName, connectionInfo, logger, ddlOptions = {}) => {
 	try {
 		const result = await executeCommand({ connectionInfo, command: `SHOW CREATE TABLE ${entityName};`, logger });
 		return _.get(result, '[0][0]', '');
 	} catch (error) {
-		logger.log('error', error, `Error during retrieve create table DDL statement. Table name: ${entityName}`);
-		return '';
+		const msg = stringifyErrorMessage(error);
+
+		if (!isOutputLimitExceeded(msg)) {
+			logger.log('error', error, `Error during retrieve create table DDL statement. Table name: ${entityName}`);
+			return '';
+		}
+
+		logger.log(
+			'info',
+			{ message: msg.slice(0, 500) },
+			`SHOW CREATE TABLE result too large for ${entityName}; building minimal DDL from Spark schema.`,
+		);
+
+		const parts = parseEntityBacktickParts(entityName);
+
+		if (!parts) {
+			logger.log('warning', { entityName }, 'Cannot parse schema/table for DDL fallback.');
+			return '';
+		}
+
+		const catalogForFqn = ddlOptions.resolvedCatalogName || connectionInfo.catalogName;
+
+		const fullName = buildSparkTableFullNameForPython({
+			schemaName: parts.schemaName,
+			tableName: parts.tableName,
+			catalogName: prepareName(catalogForFqn),
+		});
+
+		try {
+			const script = getTableSchemaColumnsForDdlFallback(fullName);
+			const raw = await executeCommand({
+				connectionInfo,
+				command: script,
+				language: SPARK_LANGUAGE.python,
+				logger,
+			});
+			const columns = JSON.parse(coercePythonNotebookOutput(raw));
+			return buildMinimalCreateTableFromSchema(entityName, columns);
+		} catch (fallbackError) {
+			logger.log('error', fallbackError, `DDL fallback failed for ${entityName}`);
+			return '';
+		}
 	}
 };
 
@@ -677,7 +908,7 @@ const getPythonSparkConfig = config => {
 		.join('\n');
 };
 
-const executeCommand = ({ connectionInfo, command, language = 'sql', logger }) => {
+const executeCommand = ({ connectionInfo, command, language = SPARK_LANGUAGE.sql, logger }) => {
 	return createContext(connectionInfo, language).then(async contextId => {
 		const payload = {
 			connectionInfo,
@@ -689,9 +920,9 @@ const executeCommand = ({ connectionInfo, command, language = 'sql', logger }) =
 		if (connectionInfo.sparkConfig && Object.keys(connectionInfo.sparkConfig).length) {
 			let sparkConfig;
 
-			if (language === 'sql') {
+			if (language === SPARK_LANGUAGE.sql) {
 				sparkConfig = getSqlSparkConfig(connectionInfo.sparkConfig);
-			} else if (language === 'python') {
+			} else if (language === SPARK_LANGUAGE.python) {
 				sparkConfig = getPythonSparkConfig(connectionInfo.sparkConfig);
 			}
 
@@ -702,6 +933,22 @@ const executeCommand = ({ connectionInfo, command, language = 'sql', logger }) =
 
 		return await runCommand({ ...payload, command });
 	});
+};
+
+const getCommandExecutionErrorDetail = body => {
+	const error = body?.results;
+	if (error) {
+		const parts = [error.data, error.cause].filter(v => v != null && String(v).length).map(String);
+		if (parts.length) {
+			return parts.join(' | ');
+		}
+	}
+	try {
+		const s = JSON.stringify(body);
+		return s.length > 4000 ? `${s.slice(0, 4000)}…` : s;
+	} catch {
+		return 'Command execution failed';
+	}
 };
 
 const getCommandExecutionResult = ({ query, options, commandOptions }) => {
@@ -734,7 +981,7 @@ const getCommandExecutionResult = ({ query, options, commandOptions }) => {
 
 			if (body.status === COMMAND_EXECUTION_STATUS.ERROR) {
 				throw {
-					message: 'Error during receiving command result',
+					message: getCommandExecutionErrorDetail(body),
 					code: '',
 					description: commandOptions,
 				};

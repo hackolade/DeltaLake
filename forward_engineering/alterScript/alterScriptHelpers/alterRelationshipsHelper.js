@@ -1,15 +1,9 @@
 const _ = require('lodash');
-const {
-	getFullEntityName,
-	replaceSpaceWithUnderscore,
-	prepareName,
-	getContainerName,
-	replaceDotWithUnderscore,
-	executeUnlessStreaming,
-} = require('../../utils/general');
+const { getFullEntityName, replaceSpaceWithUnderscore, executeUnlessStreaming } = require('../../utils/general');
 const { AlterScriptDto } = require('../types/AlterScriptDto');
 const { getUseSchemaScriptDto } = require('./alterEntityHelper');
 const { getItems } = require('./columnHelpers/getItems');
+const { prepareName } = require('../../../shared/general');
 
 /**
  * @param relationship {Object}

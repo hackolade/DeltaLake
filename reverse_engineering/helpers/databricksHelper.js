@@ -5,8 +5,13 @@ const async = require('async');
 const fetchRequestHelper = require('./fetchRequestHelper');
 const { convertCustomTags, cleanEntityName, isSupportGettingListOfViews } = require('./utils');
 
-const getEntityCreateStatement = (connectionInfo, dbName, entityName, logger) => {
-	return fetchRequestHelper.fetchCreateStatementRequest(`\`${dbName}\`.\`${entityName}\``, connectionInfo, logger);
+const getEntityCreateStatement = (connectionInfo, dbName, entityName, logger, ddlOptions = {}) => {
+	return fetchRequestHelper.fetchCreateStatementRequest(
+		`\`${dbName}\`.\`${entityName}\``,
+		connectionInfo,
+		logger,
+		ddlOptions,
+	);
 };
 
 const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logger) => {
@@ -136,7 +141,7 @@ const isSupportUnityCatalog = sparkVersion => {
 
 const isEnabledUnityCatalog = data_security_mode => ['SINGLE_USER', 'USER_ISOLATION'].includes(data_security_mode);
 
-const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkVersion, logger) => {
+const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkVersion, logger, clusterData) => {
 	const entitiesNames = _.flatMap(databasesNames, dbName => {
 		return (collectionsNames[dbName] || []).map(entityName => ({ dbName, name: entityName }));
 	});
@@ -145,7 +150,10 @@ const getEntitiesDDL = (connectionInfo, databasesNames, collectionsNames, sparkV
 		const entityName = cleanEntityName(sparkVersion, entity.name);
 		logger.log('info', { db: entity.dbName, entity: entityName }, 'Getting entity DDL');
 
-		const ddlStatement = await getEntityCreateStatement(connectionInfo, entity.dbName, entityName, logger);
+		const resolvedCatalogName = _.get(clusterData, [entity.dbName, 'dbProperties', 'catalogName']);
+		const ddlStatement = await getEntityCreateStatement(connectionInfo, entity.dbName, entityName, logger, {
+			resolvedCatalogName,
+		});
 
 		logger.log('info', { db: entity.dbName, entity: entityName }, 'DDL retrieved successfully');
 

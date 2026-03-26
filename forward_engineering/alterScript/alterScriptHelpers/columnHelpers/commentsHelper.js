@@ -1,6 +1,7 @@
 const _ = require('lodash');
-const { generateFullEntityName, prepareName, wrapInSingleQuotes } = require('../../../utils/general');
+const { generateFullEntityName, wrapInSingleQuotes } = require('../../../utils/general');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
+const { prepareName } = require('../../../../shared/general');
 
 /**
  * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}

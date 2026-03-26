@@ -1,5 +1,6 @@
 const _ = require('lodash');
-const { prepareName, getName, getFullEntityName } = require('../../utils/general');
+const { getName, getFullEntityName } = require('../../utils/general');
+const { prepareName } = require('../../../shared/general');
 
 /**
  * @param entityJsonSchema {Object}

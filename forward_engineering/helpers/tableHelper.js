@@ -6,7 +6,6 @@ const {
 	replaceSpaceWithUnderscore,
 	commentDeactivatedInlineKeys,
 	encodeStringLiteral,
-	prepareName,
 	getDifferentItems,
 	getFullEntityName,
 	getDBVersionNumber,
@@ -25,6 +24,7 @@ const constraintHelper = require('./constrainthelper');
 const { getColumnTagsStatement } = require('./unityTagsHelper');
 const { Runtime } = require('../enums/runtime');
 const { ScheduleTypesEnum } = require('../enums/schedules');
+const { prepareName } = require('../../shared/general');
 
 const getCreateStatement = ({
 	fullTableName,

@@ -1,6 +1,7 @@
 const _ = require('lodash');
-const { generateFullEntityName, wrapInTicks } = require('../../../utils/general');
+const { generateFullEntityName } = require('../../../utils/general');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
+const { wrapInTicks } = require('../../../../shared/general');
 
 /**
  * @typedef GetAlterScriptDtoFunction

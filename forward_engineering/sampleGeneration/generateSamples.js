@@ -1,6 +1,7 @@
 const _ = require('lodash');
-const { generateFullEntityNameFromBucketAndTableNames, prepareName } = require('../utils/general');
+const { generateFullEntityNameFromBucketAndTableNames } = require('../utils/general');
 const { mapInsertSampleToDml } = require('./mapInsertSampleToDml');
+const { prepareName } = require('../../shared/general');
 
 /**
  * @param columnIndex {number}

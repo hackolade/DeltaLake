@@ -1,7 +1,8 @@
 const _ = require('lodash');
 const schemaHelper = require('./jsonSchemaHelper');
-const { getName, getTab, commentDeactivatedStatements, prepareName } = require('../utils/general');
+const { getName, getTab, commentDeactivatedStatements } = require('../utils/general');
 const ddlTemplates = require('../ddlProvider/ddlTemplates');
+const { prepareName } = require('../../shared/general');
 
 const getIdToNameHashTable = (
 	relationships,

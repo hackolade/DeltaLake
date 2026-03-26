@@ -216,6 +216,7 @@ module.exports = {
 				collections,
 				clusterState.spark_version,
 				logger,
+				clusterData,
 			);
 			const ddlByEntity = entitiesDdl.reduce((ddlByEntity, ddlObject) => {
 				const entityName = Object.keys(ddlObject)[0];
