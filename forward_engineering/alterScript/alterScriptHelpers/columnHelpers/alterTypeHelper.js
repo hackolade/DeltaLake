@@ -1,7 +1,8 @@
 const _ = require('lodash');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
-const { checkFieldPropertiesChanged, generateFullEntityName, prepareName } = require('../../../utils/general');
+const { checkFieldPropertiesChanged, generateFullEntityName } = require('../../../utils/general');
 const { getColumns, getColumnStatement } = require('../../../helpers/columnHelper');
+const { prepareName } = require('../../../../shared/general');
 
 /**
  * @return {boolean}

@@ -3,7 +3,6 @@ const { getColumns, getColumnsStatement } = require('../../../helpers/columnHelp
 const {
 	getEntityProperties,
 	generateFullEntityName,
-	prepareName,
 	getDBVersionNumber,
 	executeUnlessStreaming,
 } = require('../../../utils/general');
@@ -13,6 +12,7 @@ const { hydrateIndex } = require('./indexHelper');
 const { generateModifyCollectionScript } = require('./modifyCollectionScript');
 const { Runtime } = require('../../../enums/runtime');
 const { getColumnTagsStatement } = require('../../../helpers/unityTagsHelper');
+const { prepareName } = require('../../../../shared/general');
 
 /**
  * @typedef {{

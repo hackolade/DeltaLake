@@ -28,7 +28,6 @@ const {
 	isSupportUnityCatalog,
 	getContainerName,
 	replaceSpaceWithUnderscore,
-	prepareName,
 	executeUnlessStreaming,
 } = require('../utils/general');
 const { getModifyPkConstraintsScripts } = require('./alterScriptHelpers/entityHelpers/primaryKeyHelper');
@@ -36,6 +35,7 @@ const { getAlterRelationshipsScriptDtos } = require('./alterScriptHelpers/alterR
 const { Runtime } = require('../enums/runtime');
 const { AlterScriptDto } = require('./types/AlterScriptDto');
 const { getItems } = require('./alterScriptHelpers/columnHelpers/getItems');
+const { prepareName } = require('../../shared/general');
 
 /**
  * @param scripts {Array<string>}

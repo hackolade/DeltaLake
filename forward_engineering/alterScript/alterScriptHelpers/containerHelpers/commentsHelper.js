@@ -1,6 +1,7 @@
 const { EntitiesThatSupportComments } = require('../../../enums/entityType');
-const { replaceSpaceWithUnderscore, wrapInSingleQuotes, prepareName } = require('../../../utils/general');
+const { replaceSpaceWithUnderscore, wrapInSingleQuotes } = require('../../../utils/general');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
+const { prepareName } = require('../../../../shared/general');
 
 /**
  * @return {{

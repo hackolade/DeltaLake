@@ -1,4 +1,4 @@
-const { wrapInTicks } = require('../../utils/general');
+const { wrapInTicks } = require('../../../shared/general');
 
 /**
  * @typedef GetStatementsFunction

@@ -8,7 +8,8 @@ const _ = require('lodash');
 const { getKeyNames } = require('./keyHelper');
 const { getColumns } = require('./columnHelper');
 const { getPartitionKeyStatement, getPartitionsKeys, getClusteringKeys } = require('./tableHelper');
-const { prepareName, encodeStringLiteral, commentDeactivatedStatement } = require('../utils/general');
+const { encodeStringLiteral, commentDeactivatedStatement } = require('../utils/general');
+const { prepareName } = require('../../shared/general');
 
 const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
 	return _.uniq(

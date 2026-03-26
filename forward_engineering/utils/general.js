@@ -1,12 +1,8 @@
-'use strict';
-
 const _ = require('lodash');
 const sqlFormatter = require('@sqltools/formatter');
-const { RESERVED_WORDS_AS_ARRAY } = require('../enums/reservedWords');
 const { Runtime } = require('../enums/runtime');
 const { escapeV6IpForURL } = require('./escapeV6IpForURL');
-
-const MAX_STANDARD_ASCII_SYMBOL_CODE = 127;
+const { prepareName } = require('../../shared/general');
 
 /**
  * @typedef {((args: any) => string) | ((args: any) => ChainFunction)} ChainFunction
@@ -53,34 +49,6 @@ const buildStatement = (mainStatement, isActivated) => {
 	return chain;
 };
 
-const isEscaped = name => /`[\s\S]*`/.test(name);
-
-const checkContainSpecialCharacters = (name = '') => {
-	return !/^\w+$/.test(name);
-};
-
-const prepareName = (name = '') => {
-	const containSpacesRegexp = /[\s-]/g;
-	const isEscapedName = isEscaped(name);
-	const containSpaces = containSpacesRegexp.test(name);
-	const containSpecialCharacters = checkContainSpecialCharacters(name);
-	const includeReversedWords = RESERVED_WORDS_AS_ARRAY.includes(name.toLowerCase());
-	const containVariableExpression = /\$\{.+\}/g.test(name);
-
-	const shouldBeWrappedInTicks =
-		!isEscapedName &&
-		(containSpaces || containSpecialCharacters || includeReversedWords || containVariableExpression);
-
-	if (name === '') {
-		return '';
-	} else if (shouldBeWrappedInTicks) {
-		name = name.replace('`', '``');
-
-		return wrapInTicks(name);
-	} else {
-		return name;
-	}
-};
 const replaceSpaceWithUnderscore = (name = '') => {
 	return name.replace(/\s/g, '_');
 };
@@ -96,6 +64,7 @@ const getRelationshipName = relationship => {
 };
 
 const getTab = (tabNum, configData) => (Array.isArray(configData) ? configData[tabNum] || {} : {});
+
 const indentString = (str, tab = 4) =>
 	(str || '')
 		.split('\n')
@@ -112,7 +81,7 @@ const getTypeDescriptor = typeName => {
 		descriptors[typeName] = require(`../../types/${typeName}.json`);
 
 		return descriptors[typeName];
-	} catch (e) {
+	} catch {
 		return {};
 	}
 };
@@ -176,10 +145,6 @@ const encodeStringLiteral = (str = '') => {
 
 const wrapInSingleQuotes = (str = '') => {
 	return `'${encodeStringLiteral(str)}'`;
-};
-
-const wrapInTicks = (str = '') => {
-	return `\`${str}\``;
 };
 
 const wrapInBrackets = (str = '') => {
@@ -365,7 +330,6 @@ module.exports = {
 	indentString,
 	getTypeDescriptor,
 	getRelationshipName,
-	prepareName,
 	replaceSpaceWithUnderscore,
 	replaceDotWithUnderscore,
 	commentDeactivatedStatement,
@@ -375,7 +339,6 @@ module.exports = {
 	encodeStringLiteral,
 	buildScript,
 	wrapInSingleQuotes,
-	wrapInTicks,
 	wrapInBrackets,
 	getEntityData,
 	getFullEntityName,

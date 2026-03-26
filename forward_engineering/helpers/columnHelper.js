@@ -1,10 +1,7 @@
-'use strict';
-
 const {
 	replaceSpaceWithUnderscore,
 	getName,
 	getTypeDescriptor,
-	prepareName,
 	commentDeactivatedStatements,
 	encodeStringLiteral,
 	wrapInBrackets,
@@ -13,6 +10,7 @@ const {
 	getDBVersionNumber,
 } = require('../utils/general');
 const { getCheckConstraint } = require('./constrainthelper');
+const { prepareName } = require('../../shared/general');
 
 const getStructChild = (name, type, comment) =>
 	`${prepareName(name)}: ${type}` + (comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '');

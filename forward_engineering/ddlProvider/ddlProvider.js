@@ -1,10 +1,10 @@
 const _ = require('lodash');
 const templates = require('./ddlTemplates');
-const { getFullEntityName, replaceSpaceWithUnderscore, prepareName, wrapInBrackets } = require('../utils/general');
+const { getFullEntityName, replaceSpaceWithUnderscore, wrapInBrackets } = require('../utils/general');
 const { getViewTagsStatement } = require('../helpers/unityTagsHelper');
 const { getTablePropertiesClause, checkTablePropertiesDefined } = require('../helpers/tableHelper');
 const viewHelper = require('../helpers/viewHelper');
-const keyHelper = require('../helpers/keyHelper');
+const { prepareName } = require('../../shared/general');
 
 module.exports = app => {
 	const { assignTemplates } = app.require('@hackolade/ddl-fe-utils');

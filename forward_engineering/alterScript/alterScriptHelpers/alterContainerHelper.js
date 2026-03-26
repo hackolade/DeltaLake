@@ -3,7 +3,6 @@ const { getDatabaseStatement, getDatabaseAlterStatement, getBucketKeyword } = re
 const {
 	getEntityData,
 	getIsChangeProperties,
-	prepareName,
 	replaceSpaceWithUnderscore,
 	isSupportUnityCatalog,
 } = require('../../utils/general');
@@ -13,6 +12,7 @@ const {
 	getModifyUnityCatalogTagsScriptDtos,
 	getModifyUnitySchemaTagsScriptDtos,
 } = require('./containerHelpers/alterUnityTagsHelper');
+const { prepareName } = require('../../../shared/general');
 
 const containerProperties = ['comment', 'location', 'dbProperties', 'description'];
 const otherContainerProperties = ['name', 'location'];

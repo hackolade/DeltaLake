@@ -6,11 +6,11 @@ const {
 	getTab,
 	replaceSpaceWithUnderscore,
 	encodeStringLiteral,
-	prepareName,
 	getDBVersionNumber,
 } = require('../utils/general');
 const { getCatalogTagsStatement, getSchemaTagsStatement } = require('../helpers/unityTagsHelper');
 const { Runtime } = require('../enums/runtime');
+const { prepareName } = require('../../shared/general');
 
 /**
  * @param {string|undefined} location
