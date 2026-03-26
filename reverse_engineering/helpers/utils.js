@@ -8,22 +8,21 @@ const splitTableAndViewNames = names => {
 
 const getCount = (count, recordSamplingSettings) => {
 	const per = recordSamplingSettings.relative.value;
-	const size =
-		recordSamplingSettings.active === 'absolute'
-			? recordSamplingSettings.absolute.value
-			: Math.round((count / 100) * per);
-	return size;
+
+	return recordSamplingSettings.active === 'absolute'
+		? recordSamplingSettings.absolute.value
+		: Math.round((count / 100) * per);
 };
 
 const prepareNamesForInsertionIntoScalaCode = (databasesNames, collectionsNames) =>
 	databasesNames.reduce(
 		(entities, dbName) => {
 			const { tables } = splitTableAndViewNames(collectionsNames[dbName]);
-			const tableNames = tables.map(tableName => `\"${tableName}\"`).join(', ');
+			const tableNames = tables.map(tableName => `"${tableName}"`).join(', ');
 
 			return {
-				tableNames: [...entities.tableNames, `\"${dbName}\": [${tableNames}]`],
-				dbNames: databasesNames.map(name => `\"${name}\"`),
+				tableNames: [...entities.tableNames, `"${dbName}": [${tableNames}]`],
+				dbNames: databasesNames.map(name => `"${name}"`),
 			};
 		},
 		{ viewNames: [], tableNames: [] },
@@ -34,8 +33,8 @@ const convertCustomTags = (custom_tags, logger) => {
 		return Object.keys(custom_tags).reduce((tags, tagKey) => {
 			return [...tags, { customTagKey: tagKey, customtagvalue: custom_tags[tagKey] }];
 		}, []);
-	} catch (e) {
-		logger.log('error', custom_tags, 'Error converting custom tags');
+	} catch (err) {
+		logger.log('error', custom_tags, `Error converting custom tags: ${JSON.stringify(err, null, 2)}`);
 		return [];
 	}
 };
@@ -52,7 +51,7 @@ const cleanEntityName = (sparkVersion, name = '') => {
 
 const isSupportGettingListOfViews = (sparkVersionString = '') => {
 	const MAX_NOT_SUPPORT_VERSION = 6;
-	const databricksRuntimeMajorVersion = parseInt(sparkVersionString.slice(0, sparkVersionString.indexOf('.')));
+	const databricksRuntimeMajorVersion = Number.parseInt(sparkVersionString.slice(0, sparkVersionString.indexOf('.')));
 	return databricksRuntimeMajorVersion > MAX_NOT_SUPPORT_VERSION;
 };
 
@@ -68,7 +67,7 @@ const getErrorMessage = (error = {}) => {
 	return error.message || 'Reverse Engineering error';
 };
 
-const removeParentheses = string => string.replace(/^\(|\)$/g, '');
+const removeParentheses = string => string.replaceAll(/^\(|\)$/g, '');
 
 const getTemplateDocByJsonSchema = schema => {
 	if (!schema) {
