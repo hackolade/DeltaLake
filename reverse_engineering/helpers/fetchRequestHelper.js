@@ -320,7 +320,12 @@ const fetchDatabaseViewsNames = ({ dbName, connectionInfo, logger }) =>
 	executeCommand({ connectionInfo, command: `SHOW VIEWS IN \`${dbName}\``, logger });
 
 const fetchDatabaseViewsNamesViaPython = ({ dbName, connectionInfo, logger }) =>
-	executeCommand({ connectionInfo, command: getViewNamesCommand(dbName), language: SPARK_LANGUAGE.python, logger });
+	executeCommand({
+		connectionInfo,
+		command: getViewNamesCommand({ dbName }),
+		language: SPARK_LANGUAGE.python,
+		logger,
+	});
 
 const fetchClusterTablesNames = ({ dbName, connectionInfo, logger }) =>
 	executeCommand({ connectionInfo, command: `SHOW TABLES IN \`${dbName}\``, logger });
@@ -491,7 +496,7 @@ const fetchClusterFieldMetadataInBatches = async ({ columnPlan, connectionInfo, 
 
 	const rows = await async.mapLimit(tasks, 10, async ({ dbName, tableName, batch }) => {
 		const columnsJson = JSON.stringify(batch);
-		const command = getClusterFieldMetadataBatch(dbName, tableName, columnsJson);
+		const command = getClusterFieldMetadataBatch({ dbName, tableName, columnsJson });
 		const out = await executeCommand({ connectionInfo, command, language: SPARK_LANGUAGE.python, logger });
 		const parsed = JSON.parse(coercePythonNotebookOutput(out));
 		return { dbName, tableName, table: parsed };
@@ -522,21 +527,13 @@ const fetchClusterFieldMetadataInBatches = async ({ columnPlan, connectionInfo, 
 	return clusterData;
 };
 
-const fetchFieldMetadataBatched = async (
-	databasesNames,
-	collectionsNames,
-	connectionInfo,
-	logger,
-	previousData = {},
-) => {
-	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
-
-	const columnListCommand = getClusterColumnNames(tableNames.join(', '), dbNames.join(', '));
+const fetchFieldMetadataBatched = async (namesJoined, connectionInfo, logger, previousData = {}) => {
+	const columnListCommand = getClusterColumnNames(namesJoined);
 
 	logger.log(
 		'info',
 		'',
-		`Start retrieving tables info (batched): \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`,
+		`Start retrieving tables info (batched): \nDatabases: ${namesJoined.databasesNames} \nTables: ${namesJoined.tablesNames}`,
 	);
 
 	const namesRaw = await executeCommand({
@@ -571,15 +568,23 @@ const fetchFieldMetadataBatched = async (
 const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionInfo, logger, previousData = {}) => {
 	const { tableNames, dbNames } = prepareNamesForInsertionIntoScalaCode(databasesNames, collectionsNames);
 
-	logger.log(
-		'info',
-		'',
-		`Start retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`,
-	);
+	const tableNamesJoined = tableNames.join(', ');
+	const dbNamesJoined = dbNames.join(', ');
 
-	const getFullClusterInfoCommand = getClusterData(tableNames.join(', '), dbNames.join(', '));
+	const namesJoined = {
+		tablesNames: tableNamesJoined,
+		databasesNames: dbNamesJoined,
+	};
 
 	try {
+		const getFullClusterInfoCommand = getClusterData(namesJoined);
+
+		logger.log(
+			'info',
+			'',
+			`Start retrieving tables info: \nDatabases: ${dbNames.join(', ')} \nTables: ${tableNames.join(', ')}`,
+		);
+
 		const rawOutput = await executeCommand({
 			connectionInfo,
 			command: getFullClusterInfoCommand,
@@ -591,7 +596,7 @@ const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionIn
 
 		if (isNotebookOutputTruncation(str)) {
 			logger.log('info', '', 'Cluster field metadata output truncated; using batched retrieval.');
-			return fetchFieldMetadataBatched(databasesNames, collectionsNames, connectionInfo, logger, previousData);
+			return fetchFieldMetadataBatched(namesJoined, connectionInfo, logger, previousData);
 		}
 
 		try {
@@ -606,7 +611,7 @@ const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionIn
 				'Single-pass metadata JSON parse failed; using batched retrieval.',
 			);
 
-			return fetchFieldMetadataBatched(databasesNames, collectionsNames, connectionInfo, logger, previousData);
+			return fetchFieldMetadataBatched(namesJoined, connectionInfo, logger, previousData);
 		}
 	} catch (error) {
 		const msg = stringifyErrorMessage(error);
@@ -616,7 +621,7 @@ const fetchFieldMetadata = async (databasesNames, collectionsNames, connectionIn
 				{ message: msg.slice(0, 300) },
 				'Single-pass cluster metadata failed; using batched retrieval.',
 			);
-			return fetchFieldMetadataBatched(databasesNames, collectionsNames, connectionInfo, logger, previousData);
+			return fetchFieldMetadataBatched(namesJoined, connectionInfo, logger, previousData);
 		}
 		throw error;
 	}
@@ -707,7 +712,7 @@ const fetchCreateStatementRequest = async (entityName, connectionInfo, logger, d
 		});
 
 		try {
-			const script = getTableSchemaColumnsForDdlFallback(fullName);
+			const script = getTableSchemaColumnsForDdlFallback({ fullName });
 			const raw = await executeCommand({
 				connectionInfo,
 				command: script,

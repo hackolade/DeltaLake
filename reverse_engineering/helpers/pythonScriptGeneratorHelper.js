@@ -3,7 +3,7 @@
 const { FIELD_METADATA_STRING_MAX } = require('../../shared/constants');
 
 /** Full cluster field metadata in one notebook exit (preferred when output fits). */
-const getClusterData = (tablesNames, databasesNames) => `
+const getClusterData = ({ tablesNames, databasesNames, sizeOnly = false }) => `
 import json
 
 databasesNames = [${databasesNames}]
@@ -38,10 +38,14 @@ def getDatabaseMetadata(dbName):
 
 clusterData = { dbName: getDatabaseMetadata(dbName) for dbName in databasesNames }
 
-dbutils.notebook.exit(json.dumps(clusterData))
+payload = json.dumps(clusterData)
+
+size_bytes = len(payload.encode("utf-8"))
+
+dbutils.notebook.exit(${sizeOnly ? 'size_bytes' : 'payload'})
 `;
 
-const getClusterColumnNames = (tablesNames, databasesNames) => `
+const getClusterColumnNames = ({ tablesNames, databasesNames }) => `
 import json
 
 databasesNames = [${databasesNames}]
@@ -68,7 +72,7 @@ dbutils.notebook.exit(json.dumps(cluster_column_names))
  * @param {string} tableName
  * @param {string} columnsJson - JSON array string ('["a","b"]')
  */
-const getClusterFieldMetadataBatch = (dbName, tableName, columnsJson) => `
+const getClusterFieldMetadataBatch = ({ dbName, tableName, columnsJson }) => `
 import json
 _db = ${JSON.stringify(dbName)}
 _table = ${JSON.stringify(tableName)}
@@ -105,21 +109,21 @@ except Exception:
 dbutils.notebook.exit(json.dumps(out))
 `;
 
-const getViewNamesCommand = databaseName => `
+const getViewNamesCommand = ({ dbName }) => `
 import json
 
-viewNames = spark.sql("show views in ${databaseName}").rdd.map(lambda p: p.viewName).collect()
+viewNames = spark.sql("show views in ${dbName}").rdd.map(lambda p: p.viewName).collect()
 dbutils.notebook.exit(json.dumps(viewNames))
 `;
 
 /**
  * Compact column name + Spark type list for building a minimal CREATE TABLE when SHOW CREATE TABLE output is too large.
  * Use a 3-part name (catalog.schema.table) when Unity Catalog applies — the Python command context does not share SQL session catalog state.
- * @param {string} fqn - e.g. "hive_metastore.default.my_table" or "default.my_table"
+ * @param {string} fullName - e.g. "hive_metastore.default.my_table" or "default.my_table"
  */
-const getTableSchemaColumnsForDdlFallback = fqn => `
+const getTableSchemaColumnsForDdlFallback = ({ fullName }) => `
 import json
-_fqn = ${JSON.stringify(fqn)}
+_fqn = ${JSON.stringify(fullName)}
 _cols = [{"name": f.name, "colType": f.dataType.simpleString()} for f in spark.table(_fqn).schema.fields]
 dbutils.notebook.exit(json.dumps(_cols))
 `;
