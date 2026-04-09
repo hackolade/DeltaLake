@@ -396,9 +396,6 @@ class Visitor extends HiveParserVisitor {
 		const { table } = this.visitWhenExists(ctx, 'selectStatementWithCTE', {});
 		const columns = this.visitWhenExists(ctx, 'columnNameCommentList', []);
 		const jsonSchema = convertColumnsToJsonSchema(columns);
-		const columnList = columns
-			.map(column => column.name + (column.comment ? ` COMMENT '${column.comment}'` : ''))
-			.join(', ');
 		const columnNames = columns.map(column => column.name).join(', ');
 		const tableProperties = this.visitWhenExists(ctx, 'tablePropertiesPrefixed');
 
@@ -413,7 +410,7 @@ class Visitor extends HiveParserVisitor {
 			data: {
 				description,
 				tableProperties,
-				columnList,
+				columnList: '',
 			},
 		};
 	}
