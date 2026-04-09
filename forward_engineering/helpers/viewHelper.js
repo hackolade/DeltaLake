@@ -101,7 +101,7 @@ function getDefaultColumnList(properties) {
 		.reduce((columnList, [name, property]) => {
 			columnList.push({
 				name: `${prepareName(name)}`,
-				comment: property.description,
+				comment: property.refDescription || property.description,
 				isActivated: property.isActivated,
 			});
 
