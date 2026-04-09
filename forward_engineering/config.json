@@ -561,13 +561,23 @@
 								"exist": false
 							},
 							{
-								"key": "description",
-								"exist": true
+								"type": "or",
+								"values": [
+									{
+										"key": "description",
+										"exist": true
+									},
+									{
+										"key": "refDescription",
+										"exist": true
+									}
+								]
 							}
 						]
 					},
 					"defaultValue": {
-						"description": ""
+						"description": "",
+						"refDescription": ""
 					},
 					"applyToValue": "ignore"
 				},
@@ -593,8 +603,17 @@
 								"exist": false
 							},
 							{
-								"key": "description",
-								"exist": true
+								"type": "or",
+								"values": [
+									{
+										"key": "description",
+										"exist": true
+									},
+									{
+										"key": "refDescription",
+										"exist": true
+									}
+								]
 							},
 							{
 								"type": "not",
@@ -609,7 +628,8 @@
 						]
 					},
 					"defaultValue": {
-						"description": ""
+						"description": "",
+						"refDescription": ""
 					},
 					"applyToValue": "separate"
 				}
