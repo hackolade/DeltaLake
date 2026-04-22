@@ -1345,9 +1345,6 @@ ansiNonReserved
     | VIEWS
     | WINDOW
     | ZONE
-    | YEAR
-    | MONTH
-    | DAY
 //--ANSI-NON-RESERVED-END
     ;
 
@@ -1624,6 +1621,9 @@ nonReserved
     | WINDOW
     | WITH
     | ZONE
+    | YEAR
+    | MONTH
+    | DAY
 //--DEFAULT-NON-RESERVED-END
     ;
 
