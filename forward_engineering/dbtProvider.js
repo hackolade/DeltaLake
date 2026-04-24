@@ -52,6 +52,7 @@ class DbtProvider {
 	 */
 	getEntityProperties({ modelData, containerData, entityData }) {
 		return {
+			databaseName: containerData?.[0]?.catalogName,
 			schemaName: containerData?.[0]?.code ?? containerData?.[0]?.name,
 		};
 	}
