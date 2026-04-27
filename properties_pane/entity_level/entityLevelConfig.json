@@ -1051,5 +1051,29 @@ making sure that you maintain a proper JSON format.
 				]
 			}
 		]
+	},
+	{
+		"lowerTab": "dbt",
+		"system": true,
+		"structure": [
+			{
+				"propertyName": "Config",
+				"propertyKeyword": "dbtConfig",
+				"propertyType": "block",
+				"structure": [
+					{
+						"propertyName": "Incremental strategy",
+						"propertyKeyword": "dbtIncrementalStrategy",
+						"propertyType": "select",
+						"options": ["", "append", "merge", "replace_where", "microbatch"],
+						"hidden": false,
+						"dependency": {
+							"key": "dbtMaterialized",
+							"value": "incremental"
+						}
+					}
+				]
+			}
+		]
 	}
 ]
