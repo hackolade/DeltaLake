@@ -937,7 +937,7 @@ dataType
     : complex=ARRAY '<' dataType '>'                            #arrayDataType
     | complex=MAP '<' key=dataType ',' val=dataType '>'         #mapDataType
     | complex=STRUCT ('<' complexColTypeList? '>' | NEQ)        #structDataType
-    | identifier ('(' precision=INTEGER_VALUE (',' scale=INTEGER_VALUE)* ')')?  #primitiveDataType
+    | identifier ('(' precision=INTEGER_VALUE (',' scale=INTEGER_VALUE)* ')')? (COLLATE collation=identifier)?  #primitiveDataType
     ;
 
 qualifiedColTypeWithPositionList
@@ -1148,6 +1148,7 @@ alterColumnAction
     | commentSpec
     | colPosition
     | setOrDrop=(SET | DROP) NOT NULL
+    | COLLATE collation=identifier
     ;
 
 // When `SQL_standard_keyword_behavior=true`, there are 2 kinds of keywords in Spark SQL.

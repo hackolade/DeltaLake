@@ -117,6 +117,8 @@ const handleType = typeContainer => {
 };
 
 const reverseTableColumn = column => {
+	const collation = getCollation(column);
+
 	return {
 		...handleType(column.colType),
 		name: column.colName,
@@ -124,7 +126,19 @@ const reverseTableColumn = column => {
 		default: column.default,
 		...(column.generatedDefaultValue && { generatedDefaultValue: column.generatedDefaultValue }),
 		...(column.primaryKey && { primaryKey: true, primaryKeyOptions: column.primaryKeyOptions }),
+		...(collation && { collation }),
 	};
+};
+
+const getCollation = column => {
+	if (column.colType?.type === 'array') {
+		return column.colType.elements?.collation;
+	}
+	if (column.colType?.type === 'map') {
+		return column.colType.val?.collation;
+	}
+
+	return column.colType?.collation;
 };
 
 /**
