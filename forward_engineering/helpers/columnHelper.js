@@ -300,7 +300,16 @@ const getTypeByProperty =
 		}
 	};
 
-const getColumn = (name, type, comment, constraints, isActivated, generatedExpression, maskingFunction, collation) => ({
+const getColumn = ({
+	name,
+	type,
+	comment,
+	constraints,
+	isActivated,
+	generatedExpression,
+	maskingFunction,
+	collation,
+}) => ({
 	[name]: { type, comment, constraints, isActivated, generatedExpression, maskingFunction, collation },
 });
 
@@ -359,21 +368,21 @@ const getColumns = (jsonSchema, definitions, dbVersion) => {
 		return Object.assign(
 			{},
 			hash,
-			getColumn(
-				prepareName(name),
-				getTypeByProperty(definitions, dbVersion)(property),
-				getDescription(definitions, property),
-				{
+			getColumn({
+				name: prepareName(name),
+				type: getTypeByProperty(definitions, dbVersion)(property),
+				comment: getDescription(definitions, property),
+				constraints: {
 					unique: property.unique,
 					...(property.check && getCheckConstraint(property)),
 					...(areNotNullConstraintsAvailable && { notNull: isRequired }),
 					...(arePkFkColumnConstraintsAvailable && { primaryKey: isPrimaryKey }),
 				},
-				property.isActivated,
-				getGeneratedExpression(property.generatedDefaultValue, property.default),
-				property.maskingFunction,
-				property.collation,
-			),
+				isActivated: property.isActivated,
+				generatedExpression: getGeneratedExpression(property.generatedDefaultValue, property.default),
+				maskingFunction: property.maskingFunction,
+				collation: property.collation,
+			}),
 		);
 	}, {});
 
@@ -381,7 +390,8 @@ const getColumns = (jsonSchema, definitions, dbVersion) => {
 		const unions = getUnionFromOneOf(getTypeByProperty(definitions, dbVersion))(jsonSchema);
 
 		columns = Object.keys(unions).reduce(
-			(hash, typeName) => Object.assign({}, hash, getColumn(prepareName(typeName), unions[typeName])),
+			(hash, typeName) =>
+				Object.assign({}, hash, getColumn({ name: prepareName(typeName), type: unions[typeName] })),
 			columns,
 		);
 	}
@@ -390,7 +400,8 @@ const getColumns = (jsonSchema, definitions, dbVersion) => {
 		const unions = getUnionFromAllOf(getTypeByProperty(definitions, dbVersion))(jsonSchema);
 
 		columns = Object.keys(unions).reduce(
-			(hash, typeName) => Object.assign({}, hash, getColumn(prepareName(typeName), unions[typeName])),
+			(hash, typeName) =>
+				Object.assign({}, hash, getColumn({ name: prepareName(typeName), type: unions[typeName] })),
 			columns,
 		);
 	}
