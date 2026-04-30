@@ -138,6 +138,12 @@ making sure that you maintain a proper JSON format.
 				"valueType": "string"
 			},
 			{
+				"propertyName": "Collation",
+				"propertyKeyword": "collation",
+				"propertyTooltip": "collation",
+				"propertyType": "text"
+			},
+			{
 				"propertyName": "JSON Types",
 				"propertyKeyword": "subtype",
 				"propertyType": "select",
@@ -2595,6 +2601,16 @@ making sure that you maintain a proper JSON format.
 					"array<union>"
 				]
 			},
+			{
+				"propertyName": "Collation",
+				"propertyKeyword": "collation",
+				"propertyTooltip": "collation",
+				"propertyType": "text",
+				"dependency": {
+					"key": "subtype",
+					"value": "array<txt>"
+				}
+			},
 			"minItems",
 			"maxItems",
 			"uniqueItems",
@@ -2971,6 +2987,16 @@ making sure that you maintain a proper JSON format.
 					"map<struct>",
 					"map<union>"
 				]
+			},
+			{
+				"propertyName": "Value collation",
+				"propertyKeyword": "collation",
+				"propertyTooltip": "collation",
+				"propertyType": "text",
+				"dependency": {
+					"key": "subtype",
+					"value": "map<txt>"
+				}
 			},
 			"minProperties",
 			"maxProperties",
