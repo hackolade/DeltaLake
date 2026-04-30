@@ -76,12 +76,10 @@ const getChildBySubtype = (parentType, subtype) => {
 const getPropertyByType = type => {
 	const childTypeDescriptor = getTypeDescriptor(type);
 
-	return Object.assign(
-		{
-			type,
-		},
-		childTypeDescriptor.defaultValues || {},
-	);
+	return {
+		type,
+		...(childTypeDescriptor.defaultValues || {}),
+	};
 };
 
 const getArray = getTypeByProperty => property => {
@@ -181,7 +179,7 @@ const getJsonType = getTypeByProperty => property => {
 		return 'string';
 	}
 
-	return getTypeByProperty(Object.assign({}, property, { type: property.physicalType }));
+	return getTypeByProperty({ ...property, type: property.physicalType });
 };
 
 const getUnionTypeFromMultiple = getTypeByProperty => property => {
@@ -224,7 +222,7 @@ const getUnionFromAllOf = getTypeByProperty => property => {
 			return types;
 		}
 
-		return Object.assign({}, types, getUnionFromOneOf(getTypeByProperty)(subschema));
+		return { ...types, ...getUnionFromOneOf(getTypeByProperty)(subschema) };
 	}, {});
 };
 
@@ -365,10 +363,9 @@ const getColumns = (jsonSchema, definitions, dbVersion) => {
 
 		const isPrimaryKey = property.primaryKey && !property.compositePrimaryKey && !property.primaryKeyOptions;
 
-		return Object.assign(
-			{},
-			hash,
-			getColumn({
+		return {
+			...hash,
+			...getColumn({
 				name: prepareName(name),
 				type: getTypeByProperty(definitions, dbVersion)(property),
 				comment: getDescription(definitions, property),
@@ -383,15 +380,14 @@ const getColumns = (jsonSchema, definitions, dbVersion) => {
 				maskingFunction: property.maskingFunction,
 				collation: property.collation,
 			}),
-		);
+		};
 	}, {});
 
 	if (Array.isArray(jsonSchema.oneOf)) {
 		const unions = getUnionFromOneOf(getTypeByProperty(definitions, dbVersion))(jsonSchema);
 
 		columns = Object.keys(unions).reduce(
-			(hash, typeName) =>
-				Object.assign({}, hash, getColumn({ name: prepareName(typeName), type: unions[typeName] })),
+			(hash, typeName) => ({ ...hash, ...getColumn({ name: prepareName(typeName), type: unions[typeName] }) }),
 			columns,
 		);
 	}
@@ -400,8 +396,7 @@ const getColumns = (jsonSchema, definitions, dbVersion) => {
 		const unions = getUnionFromAllOf(getTypeByProperty(definitions, dbVersion))(jsonSchema);
 
 		columns = Object.keys(unions).reduce(
-			(hash, typeName) =>
-				Object.assign({}, hash, getColumn({ name: prepareName(typeName), type: unions[typeName] })),
+			(hash, typeName) => ({ ...hash, ...getColumn({ name: prepareName(typeName), type: unions[typeName] }) }),
 			columns,
 		);
 	}
@@ -437,7 +432,7 @@ const isCommentedStatement = (statement = '') => statement.startsWith('--');
 
 const getColumnsStatement = (columns, isParentActivated) => {
 	const columnStatements = Object.keys(columns).map(name => {
-		return getColumnStatement(Object.assign({}, columns[name], { name, isParentActivated }));
+		return getColumnStatement({ ...columns[name], name, isParentActivated });
 	});
 
 	const lastColumnStatement = columnStatements[columnStatements.length - 1];
