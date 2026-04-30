@@ -105,7 +105,8 @@ const getArray = getTypeByProperty => property => {
 		type = getTypeByProperty(getChildBySubtype('array', property.subtype));
 	}
 
-	return `array<${type}>`;
+	const collation = property.collation ? ` COLLATE ${property.collation}` : '';
+	return `array<${type}${collation}>`;
 };
 
 const getMapKey = property => {
@@ -139,7 +140,9 @@ const getMap = getTypeByProperty => property => {
 		type = getTypeByProperty(getChildBySubtype('map', property.subtype));
 	}
 
-	return `map<${key}, ${type}>`;
+	const collation = property.collation ? ` COLLATE ${property.collation}` : '';
+
+	return `map<${key}, ${type}${collation}>`;
 };
 
 const getText = property => {
@@ -297,8 +300,8 @@ const getTypeByProperty =
 		}
 	};
 
-const getColumn = (name, type, comment, constraints, isActivated, generatedExpression, maskingFunction) => ({
-	[name]: { type, comment, constraints, isActivated, generatedExpression, maskingFunction },
+const getColumn = (name, type, comment, constraints, isActivated, generatedExpression, maskingFunction, collation) => ({
+	[name]: { type, comment, constraints, isActivated, generatedExpression, maskingFunction, collation },
 });
 
 const getGeneratedExpression = (expressionData, defaultValue = '') => {
@@ -369,6 +372,7 @@ const getColumns = (jsonSchema, definitions, dbVersion) => {
 				property.isActivated,
 				getGeneratedExpression(property.generatedDefaultValue, property.default),
 				property.maskingFunction,
+				property.collation,
 			),
 		);
 	}, {});
@@ -403,14 +407,17 @@ const getColumnStatement = ({
 	isParentActivated,
 	generatedExpression,
 	maskingFunction,
+	collation,
 }) => {
 	const commentStatement = comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '';
 	const constraintsStatement = constraints ? getColumnConstraintsStatement(constraints) : '';
 	const isColumnActivated = isParentActivated ? isActivated : true;
 	const maskingStatement = maskingFunction ? ` MASK ${maskingFunction}` : '';
+	const isCollationInType = type?.includes(' COLLATE ');
+	const collationStatement = collation && !isCollationInType ? ` COLLATE ${collation}` : '';
 
 	return commentDeactivatedStatements(
-		`${replaceSpaceWithUnderscore(name)} ${type}${generatedExpression}${maskingStatement}${constraintsStatement}${commentStatement}`,
+		`${replaceSpaceWithUnderscore(name)} ${type}${collationStatement}${generatedExpression}${maskingStatement}${constraintsStatement}${commentStatement}`,
 		isColumnActivated,
 	);
 };
