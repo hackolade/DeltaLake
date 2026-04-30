@@ -76,12 +76,10 @@ const getChildBySubtype = (parentType, subtype) => {
 const getPropertyByType = type => {
 	const childTypeDescriptor = getTypeDescriptor(type);
 
-	return Object.assign(
-		{
-			type,
-		},
-		childTypeDescriptor.defaultValues || {},
-	);
+	return {
+		type,
+		...(childTypeDescriptor.defaultValues || {}),
+	};
 };
 
 const getArray = getTypeByProperty => property => {
@@ -105,7 +103,8 @@ const getArray = getTypeByProperty => property => {
 		type = getTypeByProperty(getChildBySubtype('array', property.subtype));
 	}
 
-	return `array<${type}>`;
+	const collation = property.collation ? ` COLLATE ${property.collation}` : '';
+	return `array<${type}${collation}>`;
 };
 
 const getMapKey = property => {
@@ -139,7 +138,9 @@ const getMap = getTypeByProperty => property => {
 		type = getTypeByProperty(getChildBySubtype('map', property.subtype));
 	}
 
-	return `map<${key}, ${type}>`;
+	const collation = property.collation ? ` COLLATE ${property.collation}` : '';
+
+	return `map<${key}, ${type}${collation}>`;
 };
 
 const getText = property => {
@@ -178,7 +179,7 @@ const getJsonType = getTypeByProperty => property => {
 		return 'string';
 	}
 
-	return getTypeByProperty(Object.assign({}, property, { type: property.physicalType }));
+	return getTypeByProperty({ ...property, type: property.physicalType });
 };
 
 const getUnionTypeFromMultiple = getTypeByProperty => property => {
@@ -221,7 +222,7 @@ const getUnionFromAllOf = getTypeByProperty => property => {
 			return types;
 		}
 
-		return Object.assign({}, types, getUnionFromOneOf(getTypeByProperty)(subschema));
+		return { ...types, ...getUnionFromOneOf(getTypeByProperty)(subschema) };
 	}, {});
 };
 
@@ -297,8 +298,17 @@ const getTypeByProperty =
 		}
 	};
 
-const getColumn = (name, type, comment, constraints, isActivated, generatedExpression, maskingFunction) => ({
-	[name]: { type, comment, constraints, isActivated, generatedExpression, maskingFunction },
+const getColumn = ({
+	name,
+	type,
+	comment,
+	constraints,
+	isActivated,
+	generatedExpression,
+	maskingFunction,
+	collation,
+}) => ({
+	[name]: { type, comment, constraints, isActivated, generatedExpression, maskingFunction, collation },
 });
 
 const getGeneratedExpression = (expressionData, defaultValue = '') => {
@@ -353,31 +363,31 @@ const getColumns = (jsonSchema, definitions, dbVersion) => {
 
 		const isPrimaryKey = property.primaryKey && !property.compositePrimaryKey && !property.primaryKeyOptions;
 
-		return Object.assign(
-			{},
-			hash,
-			getColumn(
-				prepareName(name),
-				getTypeByProperty(definitions, dbVersion)(property),
-				getDescription(definitions, property),
-				{
+		return {
+			...hash,
+			...getColumn({
+				name: prepareName(name),
+				type: getTypeByProperty(definitions, dbVersion)(property),
+				comment: getDescription(definitions, property),
+				constraints: {
 					unique: property.unique,
 					...(property.check && getCheckConstraint(property)),
 					...(areNotNullConstraintsAvailable && { notNull: isRequired }),
 					...(arePkFkColumnConstraintsAvailable && { primaryKey: isPrimaryKey }),
 				},
-				property.isActivated,
-				getGeneratedExpression(property.generatedDefaultValue, property.default),
-				property.maskingFunction,
-			),
-		);
+				isActivated: property.isActivated,
+				generatedExpression: getGeneratedExpression(property.generatedDefaultValue, property.default),
+				maskingFunction: property.maskingFunction,
+				collation: property.collation,
+			}),
+		};
 	}, {});
 
 	if (Array.isArray(jsonSchema.oneOf)) {
 		const unions = getUnionFromOneOf(getTypeByProperty(definitions, dbVersion))(jsonSchema);
 
 		columns = Object.keys(unions).reduce(
-			(hash, typeName) => Object.assign({}, hash, getColumn(prepareName(typeName), unions[typeName])),
+			(hash, typeName) => ({ ...hash, ...getColumn({ name: prepareName(typeName), type: unions[typeName] }) }),
 			columns,
 		);
 	}
@@ -386,7 +396,7 @@ const getColumns = (jsonSchema, definitions, dbVersion) => {
 		const unions = getUnionFromAllOf(getTypeByProperty(definitions, dbVersion))(jsonSchema);
 
 		columns = Object.keys(unions).reduce(
-			(hash, typeName) => Object.assign({}, hash, getColumn(prepareName(typeName), unions[typeName])),
+			(hash, typeName) => ({ ...hash, ...getColumn({ name: prepareName(typeName), type: unions[typeName] }) }),
 			columns,
 		);
 	}
@@ -403,14 +413,17 @@ const getColumnStatement = ({
 	isParentActivated,
 	generatedExpression,
 	maskingFunction,
+	collation,
 }) => {
 	const commentStatement = comment ? ` COMMENT '${encodeStringLiteral(comment)}'` : '';
 	const constraintsStatement = constraints ? getColumnConstraintsStatement(constraints) : '';
 	const isColumnActivated = isParentActivated ? isActivated : true;
 	const maskingStatement = maskingFunction ? ` MASK ${maskingFunction}` : '';
+	const isCollationInType = type?.includes(' COLLATE ');
+	const collationStatement = collation && !isCollationInType ? ` COLLATE ${collation}` : '';
 
 	return commentDeactivatedStatements(
-		`${replaceSpaceWithUnderscore(name)} ${type}${generatedExpression}${maskingStatement}${constraintsStatement}${commentStatement}`,
+		`${replaceSpaceWithUnderscore(name)} ${type}${collationStatement}${generatedExpression}${maskingStatement}${constraintsStatement}${commentStatement}`,
 		isColumnActivated,
 	);
 };
@@ -419,7 +432,7 @@ const isCommentedStatement = (statement = '') => statement.startsWith('--');
 
 const getColumnsStatement = (columns, isParentActivated) => {
 	const columnStatements = Object.keys(columns).map(name => {
-		return getColumnStatement(Object.assign({}, columns[name], { name, isParentActivated }));
+		return getColumnStatement({ ...columns[name], name, isParentActivated });
 	});
 
 	const lastColumnStatement = columnStatements[columnStatements.length - 1];

@@ -1,5 +1,6 @@
 // Generated from grammars/SqlBase.g4 by ANTLR 4.9.2
 // jshint ignore: start
+
 const antlr4 = require('antlr4');
 
 /**
@@ -3694,5 +3695,4 @@ SqlBaseLexer.prototype.BRACKETED_COMMENT_sempred = function (localctx, predIndex
 			throw 'No predicate with index:' + predIndex;
 	}
 };
-
 module.exports = { SqlBaseLexer };

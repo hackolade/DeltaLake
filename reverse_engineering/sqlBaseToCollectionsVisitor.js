@@ -395,9 +395,10 @@ class Visitor extends SqlBaseVisitor {
 
 	visitPrimitiveDataType(ctx) {
 		return {
-			type: getName(ctx.identifier()).toLowerCase(),
+			type: getName(ctx.identifier(0)).toLowerCase(),
 			precision: getLabelValue(ctx, 'precision'),
 			scale: getLabelValue(ctx, 'scale'),
+			collation: ctx.collation ? getName(ctx.collation) : undefined,
 		};
 	}
 
