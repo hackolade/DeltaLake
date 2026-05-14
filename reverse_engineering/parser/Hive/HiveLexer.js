@@ -1,7 +1,6 @@
 // Generated from grammars/HiveLexer.g4 by ANTLR 4.9.2
 // jshint ignore: start
-
-import antlr4 from 'antlr4';
+const antlr4 = require('antlr4');
 
 const serializedATN = [
 	'\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786',
@@ -2706,7 +2705,7 @@ const atn = new antlr4.atn.ATNDeserializer().deserialize(serializedATN);
 
 const decisionsToDFA = atn.decisionToState.map((ds, index) => new antlr4.dfa.DFA(ds, index));
 
-export default class HiveLexer extends antlr4.Lexer {
+class HiveLexer extends antlr4.Lexer {
 	static grammarFileName = 'HiveLexer.g4';
 	static channelNames = ['DEFAULT_TOKEN_CHANNEL', 'HIDDEN'];
 	static modeNames = ['DEFAULT_MODE'];
@@ -4391,3 +4390,5 @@ HiveLexer.LINE_COMMENT = 408;
 HiveLexer.QUERY_HINT = 409;
 HiveLexer.SHOW_HINT = 410;
 HiveLexer.HIDDEN_HINT = 411;
+
+module.exports = { HiveLexer };

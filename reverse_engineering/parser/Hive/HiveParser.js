@@ -1,9 +1,7 @@
 // Generated from grammars/HiveParser.g4 by ANTLR 4.9.2
 // jshint ignore: start
-
-import antlr4 from 'antlr4';
-
-import HiveParserVisitor from './HiveParserVisitor.js';
+const antlr4 = require('antlr4');
+const { HiveParserVisitor } = require('./HiveParserVisitor.js');
 
 const serializedATN = [
 	'\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786',
@@ -3624,7 +3622,7 @@ const decisionsToDFA = atn.decisionToState.map((ds, index) => new antlr4.dfa.DFA
 
 const sharedContextCache = new antlr4.PredictionContextCache();
 
-export default class HiveParser extends antlr4.Parser {
+class HiveParser extends antlr4.Parser {
 	static grammarFileName = 'HiveParser.g4';
 	static literalNames = [
 		null,
@@ -53480,3 +53478,5 @@ HiveParser.DropPoolStatementContext = DropPoolStatementContext;
 HiveParser.CreateMappingStatementContext = CreateMappingStatementContext;
 HiveParser.AlterMappingStatementContext = AlterMappingStatementContext;
 HiveParser.DropMappingStatementContext = DropMappingStatementContext;
+
+module.exports = { HiveParser };

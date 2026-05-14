@@ -1,11 +1,10 @@
 // Generated from grammars/HiveParser.g4 by ANTLR 4.9.2
 // jshint ignore: start
-
-import antlr4 from 'antlr4';
+const antlr4 = require('antlr4');
 
 // This class defines a complete generic visitor for a parse tree produced by HiveParser.
 
-export default class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
+class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 	// Visit a parse tree produced by HiveParser#statements.
 	visitStatements(ctx) {
 		return this.visitChildren(ctx);
@@ -2351,3 +2350,5 @@ export default class HiveParserVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 }
+
+module.exports = { HiveParserVisitor };
