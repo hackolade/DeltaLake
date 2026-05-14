@@ -1,11 +1,11 @@
 // Generated from grammars/SqlBase.g4 by ANTLR 4.9.2
 // jshint ignore: start
 
-import antlr4 from 'antlr4';
+const antlr4 = require('antlr4');
 
 // This class defines a complete generic visitor for a parse tree produced by SqlBaseParser.
 
-export default class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
+class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 	// Visit a parse tree produced by SqlBaseParser#singleStatement.
 	visitSingleStatement(ctx) {
 		return this.visitChildren(ctx);
@@ -1571,3 +1571,4 @@ export default class SqlBaseVisitor extends antlr4.tree.ParseTreeVisitor {
 		return this.visitChildren(ctx);
 	}
 }
+module.exports = { SqlBaseVisitor };

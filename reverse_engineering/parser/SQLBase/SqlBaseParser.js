@@ -1,9 +1,9 @@
 // Generated from grammars/SqlBase.g4 by ANTLR 4.9.2
 // jshint ignore: start
 
-import antlr4 from 'antlr4';
+const antlr4 = require('antlr4');
 
-import SqlBaseVisitor from './SqlBaseVisitor.js';
+const { SqlBaseVisitor } = require('./SqlBaseVisitor.js');
 
 const serializedATN = [
 	'\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786',
@@ -2546,7 +2546,7 @@ const decisionsToDFA = atn.decisionToState.map((ds, index) => new antlr4.dfa.DFA
 
 const sharedContextCache = new antlr4.PredictionContextCache();
 
-export default class SqlBaseParser extends antlr4.Parser {
+class SqlBaseParser extends antlr4.Parser {
 	static grammarFileName = 'SqlBase.g4';
 	static literalNames = [
 		null,
@@ -32191,3 +32191,4 @@ SqlBaseParser.AlterColumnActionContext = AlterColumnActionContext;
 SqlBaseParser.AnsiNonReservedContext = AnsiNonReservedContext;
 SqlBaseParser.StrictNonReservedContext = StrictNonReservedContext;
 SqlBaseParser.NonReservedContext = NonReservedContext;
+module.exports = { SqlBaseParser };

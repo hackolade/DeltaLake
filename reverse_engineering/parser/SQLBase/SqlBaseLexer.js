@@ -1,7 +1,7 @@
 // Generated from grammars/SqlBase.g4 by ANTLR 4.9.2
 // jshint ignore: start
 
-import antlr4 from 'antlr4';
+const antlr4 = require('antlr4');
 
 /**
  * Verify whether current token is a valid decimal token (which contains dot).
@@ -2305,7 +2305,7 @@ const atn = new antlr4.atn.ATNDeserializer().deserialize(serializedATN);
 
 const decisionsToDFA = atn.decisionToState.map((ds, index) => new antlr4.dfa.DFA(ds, index));
 
-export default class SqlBaseLexer extends antlr4.Lexer {
+class SqlBaseLexer extends antlr4.Lexer {
 	static grammarFileName = 'SqlBase.g4';
 	static channelNames = ['DEFAULT_TOKEN_CHANNEL', 'HIDDEN'];
 	static modeNames = ['DEFAULT_MODE'];
@@ -3796,3 +3796,5 @@ SqlBaseLexer.prototype.BRACKETED_COMMENT_sempred = function (localctx, predIndex
 			throw 'No predicate with index:' + predIndex;
 	}
 };
+
+module.exports = { SqlBaseLexer };
