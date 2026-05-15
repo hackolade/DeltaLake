@@ -390,10 +390,29 @@ module.exports = {
 							...viewDDLHelper.getViewDataFromDDl(ddl),
 							...unityTagsHelper.getUnityTagsForView(viewTags),
 						};
+
 						jsonSchema = viewDDLHelper.getJsonSchema(viewSchema, viewSample);
 
 						if (fieldInference.active === 'field') {
 							documentTemplate = getTemplateDocByJsonSchema(jsonSchema);
+						}
+
+						if (!viewData.selectStatement?.trim()) {
+							logger.log(
+								'info',
+								`[info] Could not parse select statement from the "${name}" view DDL:\n${ddl}\n`,
+								'Get view data from DDL',
+								data.hiddenKeys,
+							);
+						}
+
+						if (!viewData.columnList?.length) {
+							logger.log(
+								'info',
+								`[info] Could not parse columns from the "${name}" view DDL:\n${ddl}\n`,
+								'Get view data from DDL',
+								data.hiddenKeys,
+							);
 						}
 					} catch {
 						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
