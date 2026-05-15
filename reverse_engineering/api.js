@@ -414,8 +414,8 @@ module.exports = {
 								data.hiddenKeys,
 							);
 						}
-					} catch {
-						logger.log('info', data, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
+					} catch (error) {
+						logger.log('info', error, `Error parsing ddl statement: \n${ddl}\n`, data.hiddenKeys);
 						return createViewPackage({ name });
 					}
 
