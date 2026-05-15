@@ -164,9 +164,14 @@ statement
     | CREATE (OR REPLACE)? (GLOBAL? TEMPORARY)?
         VIEW (IF NOT EXISTS)? multipartIdentifier
         identifierCommentList?
-        (commentSpec | schemaBindingSpec |
-         (PARTITIONED ON identifierList) |
-         (TBLPROPERTIES tablePropertyList))*
+        (
+			commentSpec |
+			withClause |
+         	PARTITIONED ON identifierList |
+			DEFAULT COLLATION collation=identifier |
+         	TBLPROPERTIES tablePropertyList |
+			LANGUAGE YAML
+		)*
         AS selectStmt=query                                            #createView
     | CREATE (OR REPLACE)? GLOBAL? TEMPORARY VIEW
         tableIdentifier ('(' colTypeList ')')? tableProvider
@@ -319,8 +324,19 @@ query
     : ctes? queryTerm queryOrganization
     ;
 
+withClause
+    : schemaBindingSpec
+    | WITH METRICS
+    | WITH '(' withClauseElement (',' withClauseElement)* ')'
+    ;
+
+withClauseElement
+    : schemaBindingSpec
+    | METRICS
+    ;
+
 schemaBindingSpec
-    : WITH SCHEMA  (BINDING | COMPENSATION | TYPE? EVOLUTION)
+    : WITH SCHEMA (BINDING | COMPENSATION | TYPE? EVOLUTION)
     ;
 
 scheduleClause
@@ -420,8 +436,14 @@ createTableClauses
         | scheduleClause
         | rowClause
         | triggerOnUpdateClause
+		| DEFAULT COLLATION UTF8_BINARY
+		| REFRESH POLICY refreshClause
     )*
     ;
+
+refreshClause
+	: AUTO | INCREMENTAL | INCREMENTAL STRICT | FULL
+	;
 
 clusterBySpec
     : CLUSTER BY ( '(' keyNameList ')' | AUTO | NONE )
@@ -1184,6 +1206,7 @@ ansiNonReserved
     | CLUSTERED
     | CODEGEN
     | COLLECTION
+    | COLLATION
     | COLUMNS
     | COMMENT
     | COMMIT
@@ -1198,6 +1221,7 @@ ansiNonReserved
     | DATABASE
     | DATABASES
     | DBPROPERTIES
+    | DEFAULT
     | DEFINED
     | DELETE
     | DELIMITED
@@ -1236,8 +1260,10 @@ ansiNonReserved
     | INPUTFORMAT
     | INSERT
     | INTERVAL
+    | INCREMENTAL
     | ITEMS
     | KEYS
+    | LANGUAGE
     | LAST
     | LATERAL
     | LAZY
@@ -1255,6 +1281,7 @@ ansiNonReserved
     | MAP
     | MATCHED
     | MERGE
+    | METRICS
     | MSCK
     | NAMESPACE
     | NAMESPACES
@@ -1274,6 +1301,7 @@ ansiNonReserved
     | PERCENTLIT
     | PIVOT
     | PLACING
+    | POLICY
     | POSITION
     | PRECEDING
     | PRINCIPALS
@@ -1314,6 +1342,7 @@ ansiNonReserved
     | SORTED
     | START
     | STATISTICS
+    | STRICT
     | STORED
     | STRATIFY
     | STRUCT
@@ -1341,10 +1370,13 @@ ansiNonReserved
     | UNSET
     | UPDATE
     | USE
+    | USER
+    | UTF8_BINARY
     | VALUES
     | VIEW
     | VIEWS
     | WINDOW
+    | YAML
     | ZONE
 //--ANSI-NON-RESERVED-END
     ;
@@ -1408,6 +1440,7 @@ nonReserved
     | CLUSTERED
     | CODEGEN
     | COLLATE
+    | COLLATION
     | COLLECTION
     | COLUMN
     | COLUMNS
@@ -1485,13 +1518,15 @@ nonReserved
     | INSERT
     | INTERSECT
     | INTERVAL
+    | INCREMENTAL
     | INTO
     | IS
     | ITEMS
     | KEY
     | KEYS
     | KW_DEFAULT
-    | LAST
+    | LANGUAGE
+	| LAST
     | LATERAL
     | LAZY
     | LEADING
@@ -1509,6 +1544,7 @@ nonReserved
     | MAP
     | MATCHED
     | MERGE
+    | METRICS
     | MSCK
     | NAMESPACE
     | NAMESPACES
@@ -1536,6 +1572,7 @@ nonReserved
     | PERCENTLIT
     | PIVOT
     | PLACING
+    | POLICY
     | POSITION
     | PRECEDING
     | PRIMARY
@@ -1579,6 +1616,7 @@ nonReserved
     | SORTED
     | START
     | STATISTICS
+    | STRICT
     | STORED
     | STRATIFY
     | STRUCT
@@ -1614,6 +1652,7 @@ nonReserved
     | UPDATE
     | USE
     | USER
+    | UTF8_BINARY
     | VALUES
     | VIEW
     | VIEWS
@@ -1621,6 +1660,7 @@ nonReserved
     | WHERE
     | WINDOW
     | WITH
+    | YAML
     | ZONE
     | YEAR
     | MONTH
@@ -1668,6 +1708,7 @@ CLUSTER: C L U S T E R;
 CLUSTERED: C L U S T E R E D;
 CODEGEN: C O D E G E N;
 COLLATE: C O L L A T E;
+COLLATION: C O L L A T I O N;
 COLLECTION: C O L L E C T I O N;
 COLUMN: C O L U M N;
 COLUMNS: C O L U M N S;
@@ -1694,6 +1735,7 @@ DATABASE: D A T A B A S E;
 DATABASES: D A T A B A S E S | S C H E M A S;
 DAY: D A Y | D A Y S;
 DBPROPERTIES: D B P R O P E R T I E S;
+DEFAULT: D E F A U L T;
 DEFINED: D E F I N E D;
 DELETE: D E L E T E;
 DELIMITED: D E L I M I T E D;
@@ -1755,6 +1797,7 @@ INPUTFORMAT: I N P U T F O R M A T;
 INSERT: I N S E R T;
 INTERSECT: I N T E R S E C T;
 INTERVAL: I N T E R V A L;
+INCREMENTAL: I N C R E M E N T A L;
 INTO: I N T O;
 IS: I S;
 ITEMS: I T E M S;
@@ -1768,6 +1811,7 @@ LEFT: L E F T;
 LIKE: L I K E;
 LIMIT: L I M I T;
 LINES: L I N E S;
+LANGUAGE: L A N G U A G E;
 LIST: L I S T;
 LOAD: L O A D;
 LOCAL: L O C A L;
@@ -1780,6 +1824,7 @@ MAP: M A P;
 MATCHED: M A T C H E D;
 MATERIALIZED: M A T E R I A L I Z E D;
 MERGE: M E R G E;
+METRICS: M E T R I C S;
 MINUTE: M I N U T E | M I N U T E S;
 MONTH: M O N T H | M O N T H S;
 MOST: M O S T;
@@ -1812,6 +1857,7 @@ PARTITIONS: P A R T I T I O N S;
 PERCENTLIT: P E R C E N T L I T;
 PIVOT: P I V O T;
 PLACING: P L A C I N G;
+POLICY: P O L I C Y;
 POSITION: P O S I T I O N;
 PRECEDING: P R E C E D I N G;
 PRIMARY: P R I M A R Y;
@@ -1860,6 +1906,7 @@ SORT: S O R T;
 SORTED: S O R T E D;
 START: S T A R T;
 STATISTICS: S T A T I S T I C S;
+STRICT: S T R I C T;
 STORED: S T O R E D;
 STRATIFY: S T R A T I F Y;
 STREAM: S T R E A M;
@@ -1900,10 +1947,12 @@ UPDATE: U P D A T E;
 USE: U S E;
 USER: U S E R;
 USING: U S I N G;
+UTF8_BINARY: U T F '8' '_' B I N A R Y;
 VALUES: V A L U E S;
 VIEW: V I E W;
 VIEWS: V I E W S;
 VIOLATION: V I O L A T I O N;
+YAML: Y A M L;
 YEAR: Y E A R | Y E A R S;
 WEEK: W E E K | W E E K S;
 WHEN: W H E N;
