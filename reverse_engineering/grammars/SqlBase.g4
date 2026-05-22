@@ -1463,6 +1463,7 @@ nonReserved
     | DATABASE
     | DATABASES
     | DBPROPERTIES
+    | DEFAULT
     | DEFINED
     | DELETE
     | DELIMITED
