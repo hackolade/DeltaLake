@@ -1506,7 +1506,6 @@ nonReserved
     | GROUP
     | GROUPING
     | HAVING
-    | HOUR
     | IF
     | IGNORE
     | IMPORT
@@ -1665,6 +1664,9 @@ nonReserved
     | YEAR
     | MONTH
     | DAY
+	| HOUR
+	| MINUTE
+	| SECOND
 //--DEFAULT-NON-RESERVED-END
     ;
 
