@@ -1664,6 +1664,7 @@ nonReserved
     | ZONE
     | YEAR
     | MONTH
+    | WEEK
     | DAY
 	| HOUR
 	| MINUTE
