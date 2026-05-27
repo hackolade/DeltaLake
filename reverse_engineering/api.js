@@ -14,10 +14,7 @@ const {
 	isTableDdl,
 	getTemplateDocByJsonSchema,
 } = require('./helpers/utils');
-const fs = require('fs');
 const { getCleanedUrl } = require('../forward_engineering/utils/general');
-const { parseViewStatement } = require('./parseViewStatement');
-const { parseDDLStatements } = require('./parseDDLStatements');
 const { isSupportUnityCatalog } = require('./helpers/databricksHelper');
 const unityTagsHelper = require('./helpers/unityTagsHelper');
 const { adaptJsonSchema } = require('./adaptJsonSchema');
@@ -465,31 +462,7 @@ module.exports = {
 			handleError(logger, err, cb);
 		}
 	},
-	reFromFile: async (data, logger, callback, app) => {
-		try {
-			const input = await handleFileData(data.filePath);
-			const { result, info, relationships } = parseDDLStatements(input);
-			callback(null, result, info, relationships, 'multipleSchema');
-		} catch (err) {
-			handleError(logger, err, callback);
-		}
-	},
-
 	adaptJsonSchema,
-
-	parseViewStatement,
-};
-
-const handleFileData = filePath => {
-	return new Promise((resolve, reject) => {
-		fs.readFile(filePath, 'utf-8', (err, content) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve(content);
-			}
-		});
-	});
 };
 
 const logInfo = (step, connectionInfo, logger) => {

@@ -1,107 +1,107 @@
 {
-    "name": "DeltaLake",
-    "version": "0.2.51",
-    "author": "hackolade",
-    "engines": {
-        "hackolade": "7.7.10",
-        "hackoladePlugin": "1.2.0"
-    },
-    "contributes": {
-        "target": {
-            "applicationTarget": "DeltaLake",
-            "title": "Delta Lake on Databricks",
-            "versions": [
-                "Runtime 6",
-                "Runtime 7",
-                "Runtime 8",
-                "Runtime 9",
-                "Runtime 10",
-                "Runtime 11",
-                "Runtime 12",
-                "Runtime 13",
-                "Runtime 14",
-                "Runtime 15",
-                "Runtime 16",
-                "Runtime 17",
-                "Runtime 18"
-            ]
-        },
-        "features": {
-            "views": {
-                "enabled": true,
-                "viewLevel": "model",
-                "disablePipelines": true,
-                "includeViews": true
-            },
-            "nestedCollections": false,
-            "disablePatternField": true,
-            "enableForwardEngineering": {
-                "jsonDocument": true,
-                "jsonSchema": true,
-                "excel": true,
-                "plugin": true,
-                "dbt": true
-            },
-            "disableMultipleTypes": false,
-            "enableReverseEngineering": true,
-            "enableComplexTypesNormalization": true,
-            "generateAssociativeEntitiesForManyToManyRelationships": true,
-            "disableChoices": true,
-            "enableJsonType": true,
-            "relationships": {
-                "compositeRelationships": {
-                    "allowRelationshipsByProperties": [
-                        "primaryKey",
-                        "unique",
-                        "compositeUniqueKey",
-                        "compositePrimaryKey"
-                    ]
-                }
-            },
-            "FEScriptCommentsSupported": [
-                "2.x",
-                "3.x"
-            ],
-            "discoverRelationships": true,
-            "enableKeysMultipleAbrr": true
-        }
-    },
-    "description": "Hackolade plugin for Delta Lake on Databricks, including Azure Databricks, and Databricks on AWS",
-    "dependencies": {
-        "@sqltools/formatter": "1.2.5",
-        "@webpod/ip": "0.6.1",
-        "abort-controller": "3.0.0",
-        "antlr4": "4.9.2",
-        "async": "3.2.6",
-        "exponential-backoff": "3.1.2",
-        "lodash": "4.18.1",
-        "node-fetch": "2.6.7"
-    },
-    "simple-git-hooks": {
-        "pre-commit": "npm run package && npx lint-staged --config lint-staged.config.js",
-        "pre-push": "npm run lint"
-    },
-    "scripts": {
-        "lint": "oxlint . || true",
-        "package": "node esbuild.package.js",
-        "postinstall": "npx simple-git-hooks",
-        "lint:check": "oxlint --type-aware --type-check . || true",
-        "format": "prettier --write ."
-    },
-    "devDependencies": {
-        "@hackolade/hck-esbuild-plugins-pack": "0.0.1",
-        "@ianvs/prettier-plugin-sort-imports": "4.7.1",
-        "esbuild": "0.27.3",
-        "esbuild-node-externals": "1.20.1",
-        "esbuild-plugin-clean": "1.0.1",
-        "esbuild-plugin-copy": "2.1.1",
-        "lint-staged": "16.2.7",
-        "oxlint": "1.38.0",
-        "oxlint-tsgolint": "0.10.1",
-        "prettier": "3.8.1",
-        "simple-git-hooks": "2.13.1"
-    },
-    "overrides": {
-        "minimatch": "10.2.4"
-    }
+	"name": "DeltaLake",
+	"version": "0.2.51",
+	"author": "hackolade",
+	"engines": {
+		"hackolade": "8.11.4",
+		"hackoladePlugin": "1.2.0"
+	},
+	"contributes": {
+		"target": {
+			"applicationTarget": "DeltaLake",
+			"title": "Delta Lake on Databricks",
+			"versions": [
+				"Runtime 6",
+				"Runtime 7",
+				"Runtime 8",
+				"Runtime 9",
+				"Runtime 10",
+				"Runtime 11",
+				"Runtime 12",
+				"Runtime 13",
+				"Runtime 14",
+				"Runtime 15",
+				"Runtime 16",
+				"Runtime 17",
+				"Runtime 18"
+			]
+		},
+		"features": {
+			"views": {
+				"enabled": true,
+				"viewLevel": "model",
+				"disablePipelines": true,
+				"includeViews": true
+			},
+			"nestedCollections": false,
+			"disablePatternField": true,
+			"enableForwardEngineering": {
+				"jsonDocument": true,
+				"jsonSchema": true,
+				"excel": true,
+				"plugin": true,
+				"dbt": true
+			},
+			"disableMultipleTypes": false,
+			"enableReverseEngineering": true,
+			"enableComplexTypesNormalization": true,
+			"generateAssociativeEntitiesForManyToManyRelationships": true,
+			"disableChoices": true,
+			"enableJsonType": true,
+			"relationships": {
+				"compositeRelationships": {
+					"allowRelationshipsByProperties": [
+						"primaryKey",
+						"unique",
+						"compositeUniqueKey",
+						"compositePrimaryKey"
+					]
+				}
+			},
+			"FEScriptCommentsSupported": [
+				"2.x",
+				"3.x"
+			],
+			"discoverRelationships": true,
+			"enableKeysMultipleAbrr": true
+		}
+	},
+	"description": "Hackolade plugin for Delta Lake on Databricks, including Azure Databricks, and Databricks on AWS",
+	"dependencies": {
+		"@sqltools/formatter": "1.2.5",
+		"@webpod/ip": "0.6.1",
+		"abort-controller": "3.0.0",
+		"antlr4": "4.9.2",
+		"async": "3.2.6",
+		"exponential-backoff": "3.1.2",
+		"lodash": "4.18.1",
+		"node-fetch": "2.6.7"
+	},
+	"simple-git-hooks": {
+		"pre-commit": "npm run package && npx lint-staged --config lint-staged.config.js",
+		"pre-push": "npm run lint"
+	},
+	"scripts": {
+		"lint": "oxlint . || true",
+		"package": "node esbuild.package.js",
+		"postinstall": "npx simple-git-hooks",
+		"lint:check": "oxlint --type-aware --type-check . || true",
+		"format": "prettier --write ."
+	},
+	"devDependencies": {
+		"@hackolade/hck-esbuild-plugins-pack": "0.0.1",
+		"@ianvs/prettier-plugin-sort-imports": "4.7.1",
+		"esbuild": "0.27.3",
+		"esbuild-node-externals": "1.20.1",
+		"esbuild-plugin-clean": "1.0.1",
+		"esbuild-plugin-copy": "2.1.1",
+		"lint-staged": "16.2.7",
+		"oxlint": "1.38.0",
+		"oxlint-tsgolint": "0.10.1",
+		"prettier": "3.8.1",
+		"simple-git-hooks": "2.13.1"
+	},
+	"overrides": {
+		"minimatch": "10.2.4"
+	}
 }

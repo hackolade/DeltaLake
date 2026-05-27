@@ -1,6 +1,6 @@
 {
-	"extension": "hql",
-	"filterName": "Hive Query Language",
+	"extension": "sql",
+	"filterName": "Delta Lake SQL",
 	"namePrefix": "DeltaLake",
 	"level": {
 		"entity": true,
