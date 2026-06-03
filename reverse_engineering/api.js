@@ -20,6 +20,7 @@ const unityTagsHelper = require('./helpers/unityTagsHelper');
 const { adaptJsonSchema } = require('./adaptJsonSchema');
 const { getVariantColumnsWithResolvedSubtype } = require('./helpers/variantPropertiesSubtypeResolveHelper');
 const { getPropertiesPotentiallyContainingJSON } = require('./helpers/columnsREHelper');
+const { parseViewStatement } = require('./parseViewStatement');
 
 const DEFAULT_DATABRICKS_CATALOG_NAME = 'hive_metastore';
 
@@ -441,7 +442,7 @@ module.exports = {
 
 			if (warnings.length) {
 				clusterState = {
-					...(clusterState || {}),
+					...clusterState,
 					warning: createWarning(warnings),
 				};
 			}
@@ -462,7 +463,10 @@ module.exports = {
 			handleError(logger, err, cb);
 		}
 	},
+
 	adaptJsonSchema,
+
+	parseViewStatement,
 };
 
 const logInfo = (step, connectionInfo, logger) => {
