@@ -11,7 +11,7 @@
 # alias antlr4='java -jar /usr/local/lib/antlr-4.9.2-complete.jar'
 # alias grun='java org.antlr.v4.gui.TestRig'
 
-# build parser
+# build SqlBase parser (still needed for RE from instance, table/view DDL parsing)
 java -jar /usr/local/lib/antlr-4.9.2-complete.jar -Dlanguage=JavaScript \
     -lib grammars \
     -o parser/SQLBase \
@@ -19,14 +19,5 @@ java -jar /usr/local/lib/antlr-4.9.2-complete.jar -Dlanguage=JavaScript \
     -no-listener \
     -Xexact-output-dir \
     grammars/SqlBase.g4
-
-java -jar /usr/local/lib/antlr-4.9.2-complete.jar -Dlanguage=JavaScript \
-    -lib grammars \
-    -o parser/Hive \
-    -visitor \
-    -no-listener \
-    -Xexact-output-dir \
-    grammars/HiveParser.g4 \
-    grammars/HiveLexer.g4
 
 npx prettier --write ./parser/**/*.js

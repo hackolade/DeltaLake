@@ -1,15 +1,18 @@
 const { getErrorMessage } = require('./helpers/utils');
-const { parseDDLStatements } = require('./parseDDLStatements');
 
 module.exports = {
 	parseViewStatement(data, logger, callback, app) {
 		try {
 			const statement = data.statement;
-			const { result } = parseDDLStatements('CREATE VIEW `db`.`name` AS ' + statement + ';\n');
+			const viewDdl = 'CREATE VIEW `db`.`name` AS ' + statement + ';\n';
 
 			callback(null, {
 				jsonSchema: {},
-				ddl: result?.[0]?.doc?.views?.[0]?.ddl,
+				ddl: {
+					type: 'databricks',
+					script: viewDdl,
+					takeAllDdlProperties: true,
+				},
 			});
 		} catch (error) {
 			const message = getErrorMessage(error);
