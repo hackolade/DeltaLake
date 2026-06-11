@@ -1,4 +1,4 @@
-const { wrapInSingleQuotes } = require('../utils/general');
+const { wrapInSingleQuotes, wrapInParseJsonCall } = require('../utils/general');
 
 /**
  * @typedef {
@@ -104,6 +104,31 @@ const mapJsonObjectToDml = (column, sample) => {
 const mapJsonArrayToDml = (column, sample) => {
 	const stringified = JSON.stringify(sample);
 	return wrapInSingleQuotes(stringified);
+};
+
+/**
+ * Maps a variant sample to a DML string.
+ * @param column {Object}
+ * @param sample {any}
+ * @returns {string}
+ * */
+const mapVariantToDml = (column, sample) => {
+	switch (column.subtype) {
+		case 'object':
+			return wrapInParseJsonCall(mapJsonObjectToDml(column, sample));
+		case 'array':
+			return wrapInParseJsonCall(mapJsonArrayToDml(column, sample));
+		case 'string':
+			return mapStringToDml(column, sample);
+		case 'number':
+			return mapNumberToDml(column, sample);
+		case 'boolean':
+			return mapBooleanToDml(column, sample);
+		case 'null':
+			return 'NULL';
+		default:
+			return sample.toString();
+	}
 };
 
 /**
@@ -225,7 +250,8 @@ const typeToMapperMap = new Map()
 	.set('array', mapArrayToDml)
 	.set('struct', mapStructToDml)
 	.set('jsonObject', mapJsonObjectToDml)
-	.set('jsonArray', mapJsonArrayToDml);
+	.set('jsonArray', mapJsonArrayToDml)
+	.set('variant', mapVariantToDml);
 
 /**
  * @param column {Object}
