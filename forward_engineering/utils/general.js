@@ -151,6 +151,10 @@ const wrapInBrackets = (str = '') => {
 	return /^\(.*\)$/.test(str) ? str : `(${str})`;
 };
 
+const wrapInParseJsonCall = (str = '') => {
+	return `parse_json(${str})`;
+};
+
 /**
  * @param statements {Array<string>}
  * */
@@ -340,6 +344,7 @@ module.exports = {
 	buildScript,
 	wrapInSingleQuotes,
 	wrapInBrackets,
+	wrapInParseJsonCall,
 	getEntityData,
 	getFullEntityName,
 	generateFullEntityName,
