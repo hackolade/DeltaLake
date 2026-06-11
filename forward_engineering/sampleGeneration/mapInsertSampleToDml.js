@@ -113,21 +113,23 @@ const mapJsonArrayToDml = (column, sample) => {
  * @returns {string}
  * */
 const mapVariantToDml = (column, sample) => {
+	const sampleValue = column.sample || sample;
+
 	switch (column.subtype) {
 		case 'object':
-			return wrapInParseJsonCall(mapJsonObjectToDml(column, sample));
+			return wrapInParseJsonCall(mapJsonObjectToDml(column, sampleValue));
 		case 'array':
-			return wrapInParseJsonCall(mapJsonArrayToDml(column, sample));
+			return wrapInParseJsonCall(mapJsonArrayToDml(column, sampleValue));
 		case 'string':
-			return mapStringToDml(column, sample);
+			return mapStringToDml(column, sampleValue);
 		case 'number':
-			return mapNumberToDml(column, sample);
+			return mapNumberToDml(column, sampleValue);
 		case 'boolean':
-			return mapBooleanToDml(column, sample);
+			return mapBooleanToDml(column, sampleValue);
 		case 'null':
 			return 'NULL';
 		default:
-			return sample.toString();
+			return sampleValue.toString();
 	}
 };
 
