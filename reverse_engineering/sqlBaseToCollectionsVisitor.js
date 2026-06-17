@@ -394,10 +394,16 @@ class Visitor extends SqlBaseVisitor {
 	}
 
 	visitPrimitiveDataType(ctx) {
+		const type = getName(ctx.identifier(0)).toLowerCase();
+		const precision = getLabelValue(ctx, 'precision');
+		const scale = getLabelValue(ctx, 'scale');
+		const isTextType = type === 'char' || type === 'varchar';
+
 		return {
-			type: getName(ctx.identifier(0)).toLowerCase(),
-			precision: getLabelValue(ctx, 'precision'),
-			scale: getLabelValue(ctx, 'scale'),
+			type,
+			precision: isTextType ? undefined : precision,
+			scale,
+			maxLength: isTextType && precision && !scale ? precision : '',
 			collation: ctx.collation ? getName(ctx.collation) : undefined,
 		};
 	}

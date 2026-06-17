@@ -98,7 +98,7 @@ const handleType = typeContainer => {
 		case 'char':
 		case 'varchar':
 		case 'string':
-			return { type: 'text', mode: typeContainer.type };
+			return { type: 'text', mode: typeContainer.type, maxLength: typeContainer.maxLength };
 		case 'boolean':
 			return { type: 'bool' };
 		case 'binary':
