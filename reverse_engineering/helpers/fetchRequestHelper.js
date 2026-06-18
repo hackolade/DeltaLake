@@ -269,6 +269,75 @@ const fetchEntitySchema = async ({ connectionInfo, dbName, entityName, logger })
 	}
 };
 
+const getDescribeColumnRowsFromDesc = viewSchema => {
+	if (!Array.isArray(viewSchema)) {
+		return [];
+	}
+
+	const columnRows = [];
+
+	for (const row of viewSchema) {
+		const columnName = row?.[0];
+		if (typeof columnName !== 'string') {
+			continue;
+		}
+
+		const trimmedName = columnName.trim();
+		if (!trimmedName || trimmedName.startsWith('#')) {
+			break;
+		}
+
+		columnRows.push(row);
+	}
+
+	return columnRows;
+};
+
+const mapSparkSchemaColumnsToDescribeRows = columns => {
+	if (!Array.isArray(columns)) {
+		return [];
+	}
+
+	return columns.map(({ name, colType }) => [name, colType]);
+};
+
+const fetchViewSchema = async ({ connectionInfo, dbName, entityName, catalogName, logger }) => {
+	const fullName = buildSparkTableFullNameForPython({
+		schemaName: prepareName(dbName),
+		tableName: prepareName(entityName),
+		catalogName: prepareName(catalogName || connectionInfo.catalogName),
+	});
+
+	try {
+		debugger;
+		const command = getTableSchemaColumnsForDdlFallback({ fullName });
+		const raw = await executeCommand({
+			connectionInfo,
+			command,
+			language: SPARK_LANGUAGE.python,
+			logger,
+		});
+		const columns = JSON.parse(coercePythonNotebookOutput(raw));
+
+		logger.log(
+			'info',
+			{ message: `View schema from spark.table(${fullName})`, dbName, entityName },
+			'Getting view schema',
+		);
+
+		return mapSparkSchemaColumnsToDescribeRows(columns);
+	} catch (pythonError) {
+		logger.log(
+			'info',
+			{ message: pythonError.message, dbName, entityName },
+			'fetchViewSchema Python failed; falling back to DESC',
+		);
+
+		const descRows = await fetchEntitySchema({ connectionInfo, dbName, entityName, logger });
+		return getDescribeColumnRowsFromDesc(descRows);
+	}
+};
+
 const fetchSample = async ({ connectionInfo, dbName, entityName, logger }) => {
 	try {
 		const sqlQuery = `SELECT * FROM \`${dbName}\`.\`${entityName}\` LIMIT 1`;
@@ -1103,6 +1172,7 @@ module.exports = {
 	fetchClusterTablesNames,
 	fetchDatabaseViewsNamesViaPython,
 	fetchEntitySchema,
+	fetchViewSchema,
 	useCatalog,
 	fetchSample,
 	fetchTagsForUnityCatalogs,
