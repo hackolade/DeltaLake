@@ -1030,7 +1030,7 @@ columnConstraint
 columnConstraintType
     : NOT NULL
     | PRIMARY KEY
-    | KW_DEFAULT defaultValue
+    | DEFAULT defaultValue
     | columnGeneratedAs
     ;
 
@@ -1049,7 +1049,7 @@ generatedAsExpression
     ;
 
 generatedAsIdentity
-    : (KW_ALWAYS | BY KW_DEFAULT) AS KW_IDENTITY ('(' identityOptions ')')?
+    : (KW_ALWAYS | BY DEFAULT) AS KW_IDENTITY ('(' identityOptions ')')?
     ;
 
 identityOptions
@@ -1524,7 +1524,6 @@ nonReserved
     | ITEMS
     | KEY
     | KEYS
-    | KW_DEFAULT
     | LANGUAGE
 	| LAST
     | LATERAL
@@ -1976,7 +1975,6 @@ ACTION : A C T I O N;
 
 KW_GENERATED: G E N E R A T E D;
 KW_ALWAYS: A L W A Y S;
-KW_DEFAULT: D E F A U L T;
 KW_IDENTITY: I D E N T I T Y;
 KW_INCREMENT: I N C R E M E N T;
 KW_MASK: M A S K;
