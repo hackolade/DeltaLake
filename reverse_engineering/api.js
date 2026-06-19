@@ -364,10 +364,11 @@ module.exports = {
 						let viewSample = [];
 
 						try {
-							viewSchema = await fetchRequestHelper.fetchEntitySchema({
+							viewSchema = await fetchRequestHelper.fetchViewSchema({
 								connectionInfo: connectionData,
 								dbName,
 								entityName: name,
+								catalogName: dbData.dbProperties.catalogName,
 								logger,
 							});
 							viewSample = await fetchRequestHelper.fetchSample({

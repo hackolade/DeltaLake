@@ -318,7 +318,7 @@ class Visitor extends SqlBaseVisitor {
 				return { ...result, primaryKey: true };
 			}
 
-			if (this.visitFlagValue(constraint, 'KW_DEFAULT')) {
+			if (this.visitFlagValue(constraint, 'DEFAULT')) {
 				return { ...result, default: this.visit(constraint.defaultValue()) };
 			}
 
@@ -346,7 +346,7 @@ class Visitor extends SqlBaseVisitor {
 	visitGeneratedAsIdentity(ctx) {
 		const hasIdentityOptions = ctx.identityOptions();
 		return {
-			generatedType: ctx.KW_DEFAULT() ? 'by default' : 'always',
+			generatedType: ctx.DEFAULT() ? 'by default' : 'always',
 			asIdentity: true,
 			...(hasIdentityOptions && { identity: this.visit(ctx.identityOptions()) }),
 		};
