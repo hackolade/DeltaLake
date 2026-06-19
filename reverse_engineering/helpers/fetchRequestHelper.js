@@ -309,7 +309,6 @@ const fetchViewSchema = async ({ connectionInfo, dbName, entityName, catalogName
 	});
 
 	try {
-		debugger;
 		const command = getTableSchemaColumnsForDdlFallback({ fullName });
 		const raw = await executeCommand({
 			connectionInfo,
