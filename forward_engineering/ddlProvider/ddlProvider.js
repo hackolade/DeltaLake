@@ -1,6 +1,11 @@
 const _ = require('lodash');
 const templates = require('./ddlTemplates');
-const { getFullEntityName, replaceSpaceWithUnderscore, wrapInBrackets } = require('../utils/general');
+const {
+	getFullEntityName,
+	getEntityNameWithTemporaryFlag,
+	replaceSpaceWithUnderscore,
+	wrapInBrackets,
+} = require('../utils/general');
 const { getViewTagsStatement } = require('../helpers/unityTagsHelper');
 const { getTablePropertiesClause, checkTablePropertiesDefined } = require('../helpers/tableHelper');
 const viewHelper = require('../helpers/viewHelper');
@@ -31,7 +36,11 @@ module.exports = app => {
 			const isTemporary = !isMaterialized && schema.viewTemporary;
 			const isGlobal = isTemporary && schema.viewGlobal;
 			const orReplace = !ifNotExists && schema.viewOrReplace;
-			const name = bucketName && !isTemporary ? `${bucketName}.${viewName}` : `${viewName}`;
+			const name = getEntityNameWithTemporaryFlag({
+				containerName: bucketName,
+				entityName: viewName,
+				isTemporary,
+			});
 			const tableProperties =
 				schema.tableProperties && Array.isArray(schema.tableProperties)
 					? viewHelper.filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime'])

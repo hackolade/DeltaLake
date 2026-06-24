@@ -8,6 +8,7 @@ const {
 	encodeStringLiteral,
 	getDifferentItems,
 	getFullEntityName,
+	getEntityNameWithTemporaryFlag,
 	getDBVersionNumber,
 	generateFullEntityName,
 	executeUnlessStreaming,
@@ -480,10 +481,12 @@ const getTableStatement =
 		const tableName = replaceSpaceWithUnderscore(prepareName(getName(tableData)));
 		let fullTableName = isCalledFromAlterScript
 			? generateFullEntityName({ entity: { role: tableData }, dbVersion })
-			: getFullEntityName(dbName, tableName);
-		if (tableData.temporaryTable) {
-			fullTableName = tableName;
-		}
+			: getEntityNameWithTemporaryFlag({
+					containerName: dbName,
+					entityName: tableName,
+					isTemporary: tableData.temporaryTable,
+				});
+
 		const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, definitions, dbVersion);
 		const keyNames = keyHelper.getKeyNames(tableData, entityJsonSchema, definitions);
 		const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);
