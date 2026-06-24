@@ -478,9 +478,12 @@ const getTableStatement =
 		const isTableActivated =
 			tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
 		const tableName = replaceSpaceWithUnderscore(prepareName(getName(tableData)));
-		const fullTableName = isCalledFromAlterScript
+		let fullTableName = isCalledFromAlterScript
 			? generateFullEntityName({ entity: { role: tableData }, dbVersion })
 			: getFullEntityName(dbName, tableName);
+		if (tableData.temporaryTable) {
+			fullTableName = tableName;
+		}
 		const { columns, deactivatedColumnNames } = getColumns(entityJsonSchema, definitions, dbVersion);
 		const keyNames = keyHelper.getKeyNames(tableData, entityJsonSchema, definitions);
 		const tableColumns = getTableColumnsStatement(columns, tableData.using, keyNames.compositePartitionKey);

@@ -30,7 +30,7 @@ const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
 			const collectionName = collection.code || collection.collectionName;
 			const db = _.first(itemData.bucket) || {};
 			const dbName = db.code || db.name;
-			const fullColumnName = `${dbName ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
+			const fullColumnName = `${dbName && !collection.temporaryTable ? prepareName(dbName) + '.' : ''}${prepareName(collectionName)}.${prepareName(itemData.name)} as ${prepareName(name)}`;
 			return commentDeactivatedStatement(fullColumnName, definition.isActivated);
 		}),
 	).filter(_.identity);
@@ -49,7 +49,8 @@ const getFromStatement = (collectionRefsDefinitionsMap, columns) => {
 				const bucket = _.first(source?.bucket) || {};
 				const collectionName = prepareName(collection.collectionName || collection.code);
 				const bucketName = prepareName(bucket.name || bucket.code || '');
-				const fullCollectionName = bucketName ? `${bucketName}.${collectionName}` : `${collectionName}`;
+				const fullCollectionName =
+					bucketName && !collection.temporaryTable ? `${bucketName}.${collectionName}` : `${collectionName}`;
 
 				return fullCollectionName;
 			})

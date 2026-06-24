@@ -31,7 +31,7 @@ module.exports = app => {
 			const isTemporary = !isMaterialized && schema.viewTemporary;
 			const isGlobal = isTemporary && schema.viewGlobal;
 			const orReplace = !ifNotExists && schema.viewOrReplace;
-			const name = bucketName ? `${bucketName}.${viewName}` : `${viewName}`;
+			const name = bucketName && !isTemporary ? `${bucketName}.${viewName}` : `${viewName}`;
 			const tableProperties =
 				schema.tableProperties && Array.isArray(schema.tableProperties)
 					? viewHelper.filterRedundantProperties(schema.tableProperties, ['transient_lastDdlTime'])
