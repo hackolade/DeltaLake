@@ -479,7 +479,7 @@ const getTableStatement =
 		const isTableActivated =
 			tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
 		const tableName = replaceSpaceWithUnderscore(prepareName(getName(tableData)));
-		let fullTableName = isCalledFromAlterScript
+		const fullTableName = isCalledFromAlterScript
 			? generateFullEntityName({ entity: { role: tableData }, dbVersion })
 			: getEntityNameWithTemporaryFlag({
 					containerName: dbName,
