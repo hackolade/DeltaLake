@@ -35,8 +35,8 @@ const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
 			const db = _.first(itemData.bucket) || {};
 			const dbName = db.code || db.name;
 			const tablePrefix = getEntityNameWithTemporaryFlag({
-				containerName: dbName,
-				entityName: collectionName,
+				containerName: prepareName(dbName),
+				entityName: prepareName(collectionName),
 				isTemporary: collection.temporaryTable,
 			});
 			const fullColumnName = `${tablePrefix}.${prepareName(itemData.name)} as ${prepareName(name)}`;
