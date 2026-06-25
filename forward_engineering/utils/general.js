@@ -191,6 +191,12 @@ const getEntityData = (object, properties = [], type = 'new') =>
 const getFullEntityName = (dbName, entityName) => (dbName ? `${dbName}.${entityName}` : entityName);
 
 /**
+ * Builds full entity name, omitting container/schema when isTemporary is true.
+ */
+const getEntityNameWithTemporaryFlag = ({ containerName, entityName, isTemporary = false }) =>
+	containerName && !isTemporary ? `${containerName}.${entityName}` : entityName;
+
+/**
  * @param bucketName {string}
  * @param tableName {string}
  * @return {string}
@@ -347,6 +353,7 @@ module.exports = {
 	wrapInParseJsonCall,
 	getEntityData,
 	getFullEntityName,
+	getEntityNameWithTemporaryFlag,
 	generateFullEntityName,
 	getEntityNameFromCollection,
 	getEntityProperties,
