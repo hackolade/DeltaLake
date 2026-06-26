@@ -1,6 +1,6 @@
 {
     "name": "DeltaLake",
-    "version": "0.2.53",
+    "version": "0.2.54",
     "author": "hackolade",
     "engines": {
         "hackolade": "8.11.4",
