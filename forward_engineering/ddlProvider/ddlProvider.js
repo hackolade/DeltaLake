@@ -172,6 +172,10 @@ module.exports = app => {
 		 * @return string
 		 * */
 		setCheckConstraint(tableName, constraintName, check) {
+			if (!check?.trim?.()) {
+				return '';
+			}
+
 			return assignTemplates(templates.addCheckConstraint, {
 				tableName,
 				constraintName,
@@ -185,6 +189,10 @@ module.exports = app => {
 		 * @return string
 		 * */
 		dropCheckConstraint(tableName, constraintName) {
+			if (!constraintName) {
+				return '';
+			}
+
 			return assignTemplates(templates.dropCheckConstraint, {
 				tableName,
 				constraintName,
