@@ -14,12 +14,37 @@ const getEntityCreateStatement = (connectionInfo, dbName, entityName, logger, dd
 	);
 };
 
+/**
+ * `SHOW DATABASES` runs on the workspace default catalog, the user is not always have access to;
+ * use actual catalog name if specified
+ */
+const probeCatalogsOrSchemas = async ({ connectionInfo, sparkVersion, logger }) => {
+	if (!isSupportUnityCatalog(sparkVersion)) {
+		return fetchRequestHelper.fetchClusterDatabasesNames({ connectionInfo, logger });
+	}
+
+	if (!connectionInfo.catalogName) {
+		const catalogNames = await fetchRequestHelper.fetchClusterCatalogNames({ connectionInfo, logger });
+		logger.log('info', catalogNames, 'Catalogs');
+		return [];
+	}
+
+	await fetchRequestHelper.useCatalog({ connectionInfo, logger });
+
+	if (connectionInfo.databaseName) {
+		return [connectionInfo.databaseName];
+	}
+
+	return fetchRequestHelper.fetchClusterDatabasesNames({ connectionInfo, logger });
+};
+
 const getFirstDatabaseCollectionName = async (connectionInfo, sparkVersion, logger) => {
-	const databasesNames = await fetchRequestHelper.fetchClusterDatabasesNames({ connectionInfo, logger });
-	logger.log('info', databasesNames, `Schema list`);
+	const databasesNames = await probeCatalogsOrSchemas({ connectionInfo, sparkVersion, logger });
 	if (_.isEmpty(databasesNames)) {
 		return;
 	}
+
+	logger.log('info', databasesNames, `Schemas`);
 
 	const firstDatabaseName = _.first(databasesNames);
 
