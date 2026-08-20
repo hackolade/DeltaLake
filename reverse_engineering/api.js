@@ -36,6 +36,8 @@ module.exports = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
 				accessToken: connectionInfo.accessToken,
+				catalogName: connectionInfo.catalogName,
+				databaseName: connectionInfo.databaseName,
 				queryRequestTimeout: connectionInfo.queryRequestTimeout,
 				sparkConfig: getSparkConfigurations(connectionInfo),
 				logger,
