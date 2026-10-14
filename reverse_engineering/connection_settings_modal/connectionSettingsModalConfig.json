@@ -135,6 +135,22 @@
 		"lowerTab": "Authentication",
 		"structure": [
 			{
+				"inputLabel": "Authentication method",
+				"inputKeyword": "authMethod",
+				"inputType": "select",
+				"defaultValue": "Personal access token",
+				"options": [
+					{
+						"value": "Personal access token",
+						"label": "Personal access token"
+					},
+					{
+						"value": "OAuth",
+						"label": "OAuth"
+					}
+				]
+			},
+			{
 				"inputLabel": "Databricks personal access token",
 				"inputKeyword": "accessToken",
 				"inputType": "password",
@@ -142,6 +158,23 @@
 				"isHiddenKey": true,
 				"validation": {
 					"regex": "([^\\s])"
+				},
+				"dependency": {
+					"key": "authMethod",
+					"value": "Personal access token"
+				}
+			},
+			{
+				"inputLabel": "Client id",
+				"inputKeyword": "clientId",
+				"inputType": "text",
+				"inputPlaceholder": "OAuth client id",
+				"validation": {
+					"regex": "([^\\s])"
+				},
+				"dependency": {
+					"key": "authMethod",
+					"value": "OAuth"
 				}
 			}
 		]
