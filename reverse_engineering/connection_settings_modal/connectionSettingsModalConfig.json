@@ -138,11 +138,15 @@
 				"inputLabel": "Authentication method",
 				"inputKeyword": "authMethod",
 				"inputType": "select",
-				"defaultValue": "OAuth",
+				"defaultValue": "OAuth (Azure Databricks)",
 				"options": [
 					{
+						"value": "OAuth (Azure Databricks)",
+						"label": "Microsoft Entra ID via authorization code flow (PCKE)"
+					},
+					{
 						"value": "OAuth",
-						"label": "OAuth"
+						"label": "OAuth authorization code flow (PCKE)"
 					},
 					{
 						"value": "Personal access token",
