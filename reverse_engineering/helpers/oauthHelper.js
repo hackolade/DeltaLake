@@ -111,7 +111,7 @@ const resolveAccessToken = async ({ connectionInfo, app } = {}) => {
 		assertAzureOauthProvider({ connectionInfo });
 	}
 
-	const entra = isAzureOauth(connectionInfo) ? getOauthClient({ app }).getEntraIdOAuthConfig() : null;
+	const entra = isAzureOauth(connectionInfo) ? await getOauthClient({ app }).getEntraIdOAuthConfig() : null;
 	const clientId = entra ? entra.productionClientId : connectionInfo.clientId;
 	const connectionKey = getConnectionKey({
 		host: connectionInfo.host,
