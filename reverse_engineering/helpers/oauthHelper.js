@@ -69,11 +69,6 @@ const getAzureOauthTokenOptions = ({ entra } = {}) => ({
 	scope: AZURE_DATABRICKS_SCOPE,
 	port: OAUTH_REDIRECT_PORT,
 	failOnPortConflict: true,
-	tokenRequestOptions: {
-		headers: {
-			Origin: 'http://localhost',
-		},
-	},
 });
 
 const assertAzureOauthProvider = ({ connectionInfo } = {}) => {
