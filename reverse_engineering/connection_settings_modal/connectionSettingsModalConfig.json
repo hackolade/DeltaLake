@@ -135,6 +135,26 @@
 		"lowerTab": "Authentication",
 		"structure": [
 			{
+				"inputLabel": "Authentication method",
+				"inputKeyword": "authMethod",
+				"inputType": "select",
+				"defaultValue": "OAuth (Azure Databricks)",
+				"options": [
+					{
+						"value": "OAuth (Azure Databricks)",
+						"label": "Microsoft Entra ID via authorization code flow (PCKE)"
+					},
+					{
+						"value": "OAuth",
+						"label": "OAuth authorization code flow (PCKE)"
+					},
+					{
+						"value": "Personal access token",
+						"label": "Personal access token (Legacy)"
+					}
+				]
+			},
+			{
 				"inputLabel": "Databricks personal access token",
 				"inputKeyword": "accessToken",
 				"inputType": "password",
@@ -142,6 +162,23 @@
 				"isHiddenKey": true,
 				"validation": {
 					"regex": "([^\\s])"
+				},
+				"dependency": {
+					"key": "authMethod",
+					"value": "Personal access token"
+				}
+			},
+			{
+				"inputLabel": "Client id",
+				"inputKeyword": "clientId",
+				"inputType": "text",
+				"inputPlaceholder": "OAuth client id",
+				"validation": {
+					"regex": "([^\\s])"
+				},
+				"dependency": {
+					"key": "authMethod",
+					"value": "OAuth"
 				}
 			}
 		]
