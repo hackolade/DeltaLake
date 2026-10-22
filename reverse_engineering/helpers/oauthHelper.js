@@ -9,10 +9,7 @@ const NEWER_STUDIO_MESSAGE =
 const WORKSPACE_OAUTH_AUTH_METHOD = 'OAuth';
 const AZURE_OAUTH_AUTH_METHOD = 'OAuth (Azure Databricks)';
 const AZURE_DATABRICKS_PROVIDER = 'Azure Databricks';
-const HACKOLADE_ENTRA_CLIENT_ID = '0dc36597-bc44-49f8-a4a7-ae5401959b85';
 const AZURE_DATABRICKS_SCOPE = '2ff814a6-3304-4ab8-85cb-cd0e6f879c1d/user_impersonation';
-const ENTRA_AUTHORIZATION_ENDPOINT = 'https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize';
-const ENTRA_TOKEN_ENDPOINT = 'https://login.microsoftonline.com/organizations/oauth2/v2.0/token';
 const CONSENT_REQUIRED_ERROR_ID = 'AADSTS65001';
 const AZURE_PROVIDER_REQUIRED_MESSAGE =
 	'Microsoft Entra ID via authorization code flow (PCKE) is only available when the cloud provider is Azure Databricks.';
@@ -31,8 +28,8 @@ const isOauthAuthMethod = ({ authMethod } = {}) => isWorkspaceOauth({ authMethod
 const getConnectionKey = ({ host, clientId, authMethod } = {}) =>
 	`${authMethod}|${getWorkspaceOrigin({ host })}|${clientId}`;
 
-const getConsentRequiredErrorMessage = ({ clientId } = {}) => {
-	const consentLink = `https://login.microsoftonline.com/organizations/adminconsent?client_id=${clientId}`;
+const getConsentRequiredErrorMessage = ({ adminConsentBase, clientId } = {}) => {
+	const consentLink = `${adminConsentBase}?client_id=${clientId}`;
 
 	return `Your Azure administrator needs to grant tenant-wide consent to the Hackolade application using the link below: ${consentLink}`;
 };
@@ -65,10 +62,10 @@ const getWorkspaceOauthTokenOptions = ({ connectionInfo } = {}) => {
 	};
 };
 
-const getAzureOauthTokenOptions = () => ({
-	authorizationEndpoint: ENTRA_AUTHORIZATION_ENDPOINT,
-	tokenEndpoint: ENTRA_TOKEN_ENDPOINT,
-	clientId: HACKOLADE_ENTRA_CLIENT_ID,
+const getAzureOauthTokenOptions = ({ entra } = {}) => ({
+	authorizationEndpoint: entra.authorizationEndpoint,
+	tokenEndpoint: entra.tokenEndpoint,
+	clientId: entra.productionClientId,
 	scope: AZURE_DATABRICKS_SCOPE,
 	port: OAUTH_REDIRECT_PORT,
 	failOnPortConflict: true,
@@ -85,7 +82,7 @@ const assertAzureOauthProvider = ({ connectionInfo } = {}) => {
 	throw new Error(AZURE_PROVIDER_REQUIRED_MESSAGE);
 };
 
-const requestAccessToken = async ({ app, tokenOptions } = {}) => {
+const requestAccessToken = async ({ app, tokenOptions, entra } = {}) => {
 	try {
 		const { accessToken: oauthAccessToken } = await getOauthClient({ app }).getUserToMachineAccessToken(
 			tokenOptions,
@@ -93,10 +90,14 @@ const requestAccessToken = async ({ app, tokenOptions } = {}) => {
 
 		return oauthAccessToken;
 	} catch (error) {
-		if (tokenOptions?.clientId === HACKOLADE_ENTRA_CLIENT_ID && isConsentRequiredError(error)) {
-			throw new Error(getConsentRequiredErrorMessage({ clientId: HACKOLADE_ENTRA_CLIENT_ID }), {
-				cause: error,
-			});
+		if (entra && tokenOptions?.clientId === entra.productionClientId && isConsentRequiredError(error)) {
+			throw new Error(
+				getConsentRequiredErrorMessage({
+					adminConsentBase: entra.adminConsentBase,
+					clientId: entra.productionClientId,
+				}),
+				{ cause: error },
+			);
 		}
 
 		throw error;
@@ -115,7 +116,8 @@ const resolveAccessToken = async ({ connectionInfo, app } = {}) => {
 		assertAzureOauthProvider({ connectionInfo });
 	}
 
-	const clientId = isAzureOauth(connectionInfo) ? HACKOLADE_ENTRA_CLIENT_ID : connectionInfo.clientId;
+	const entra = isAzureOauth(connectionInfo) ? getOauthClient({ app }).getEntraIdOAuthConfig() : null;
+	const clientId = entra ? entra.productionClientId : connectionInfo.clientId;
 	const connectionKey = getConnectionKey({
 		host: connectionInfo.host,
 		clientId,
@@ -126,11 +128,11 @@ const resolveAccessToken = async ({ connectionInfo, app } = {}) => {
 		return accessToken;
 	}
 
-	const tokenOptions = isAzureOauth(connectionInfo)
-		? getAzureOauthTokenOptions()
+	const tokenOptions = entra
+		? getAzureOauthTokenOptions({ entra })
 		: getWorkspaceOauthTokenOptions({ connectionInfo });
 
-	const oauthAccessToken = await requestAccessToken({ app, tokenOptions });
+	const oauthAccessToken = await requestAccessToken({ app, tokenOptions, entra });
 
 	if (!oauthAccessToken) {
 		throw new Error('Databricks token response did not include an access token.');
