@@ -69,8 +69,10 @@ const getAzureOauthTokenOptions = ({ entra } = {}) => ({
 	scope: AZURE_DATABRICKS_SCOPE,
 	port: OAUTH_REDIRECT_PORT,
 	failOnPortConflict: true,
-	headers: {
-		Origin: 'http://localhost',
+	tokenRequestOptions: {
+		headers: {
+			Origin: 'http://localhost',
+		},
 	},
 });
 
@@ -84,9 +86,7 @@ const assertAzureOauthProvider = ({ connectionInfo } = {}) => {
 
 const requestAccessToken = async ({ app, tokenOptions, entra } = {}) => {
 	try {
-		const { accessToken: oauthAccessToken } = await getOauthClient({ app }).getUserToMachineAccessToken(
-			tokenOptions,
-		);
+		const { accessToken: oauthAccessToken } = await getOauthClient({ app }).browserLoginFlow(tokenOptions);
 
 		return oauthAccessToken;
 	} catch (error) {
