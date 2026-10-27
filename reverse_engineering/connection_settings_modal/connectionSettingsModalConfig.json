@@ -138,7 +138,7 @@
 				"inputLabel": "Authentication method",
 				"inputKeyword": "authMethod",
 				"inputType": "select",
-				"defaultValue": "OAuth (Azure Databricks)",
+				"defaultValue": "Personal access token",
 				"options": [
 					{
 						"value": "OAuth (Azure Databricks)",
@@ -169,7 +169,7 @@
 				}
 			},
 			{
-				"inputLabel": "Client id",
+				"inputLabel": "Client ID",
 				"inputKeyword": "clientId",
 				"inputType": "text",
 				"inputPlaceholder": "OAuth client id",
