@@ -12,7 +12,7 @@ const AZURE_DATABRICKS_PROVIDER = 'Azure Databricks';
 const AZURE_DATABRICKS_SCOPE = '2ff814a6-3304-4ab8-85cb-cd0e6f879c1d/user_impersonation';
 const CONSENT_REQUIRED_ERROR_ID = 'AADSTS65001';
 const AZURE_PROVIDER_REQUIRED_MESSAGE =
-	'Microsoft Entra ID via authorization code flow (PCKE) is only available when the cloud provider is Azure Databricks.';
+	'Microsoft Entra ID via authorization code flow (PKCE) is only available when the cloud provider is Azure Databricks.';
 
 let accessToken = '';
 let cachedConnectionKey = '';
@@ -81,7 +81,7 @@ const assertAzureOauthProvider = ({ connectionInfo } = {}) => {
 
 const requestAccessToken = async ({ app, tokenOptions, entra } = {}) => {
 	try {
-		const { accessToken: oauthAccessToken } = await getOauthClient({ app }).browserLoginFlow(tokenOptions);
+		const { accessToken: oauthAccessToken } = await getOauthClient({ app }).signInWithBrowser(tokenOptions);
 
 		return oauthAccessToken;
 	} catch (error) {

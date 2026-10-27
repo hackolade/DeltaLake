@@ -142,11 +142,11 @@
 				"options": [
 					{
 						"value": "OAuth (Azure Databricks)",
-						"label": "Microsoft Entra ID via authorization code flow (PCKE)"
+						"label": "Microsoft Entra ID via authorization code flow (PKCE)"
 					},
 					{
 						"value": "OAuth",
-						"label": "OAuth authorization code flow (PCKE)"
+						"label": "OAuth authorization code flow (PKCE)"
 					},
 					{
 						"value": "Personal access token",
