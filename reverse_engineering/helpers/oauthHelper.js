@@ -13,7 +13,16 @@ const AZURE_PROVIDER_REQUIRED_MESSAGE =
 	'Microsoft Entra ID via authorization code flow (PKCE) is only available when the cloud provider is Azure Databricks.';
 
 let accessToken = '';
+let accessTokenExpiration = null;
 let cachedConnectionKey = '';
+
+const isAccessTokenExpired = ({ expiration } = {}) => {
+	if (expiration === null || expiration === undefined) {
+		return false;
+	}
+
+	return expiration < Math.round(Date.now() / 1000);
+};
 
 const getWorkspaceOrigin = ({ host = '' } = {}) => (host.endsWith('/') ? host.slice(0, -1) : host);
 
@@ -79,9 +88,7 @@ const assertAzureOauthProvider = ({ connectionInfo } = {}) => {
 
 const requestAccessToken = async ({ app, tokenOptions, entra } = {}) => {
 	try {
-		const { accessToken: oauthAccessToken } = await getOauthClient({ app }).signInWithBrowser(tokenOptions);
-
-		return oauthAccessToken;
+		return await getOauthClient({ app }).signInWithBrowser(tokenOptions);
 	} catch (error) {
 		if (entra && tokenOptions?.clientId === entra.productionClientId && isConsentRequiredError(error)) {
 			throw new Error(
@@ -100,6 +107,7 @@ const requestAccessToken = async ({ app, tokenOptions, entra } = {}) => {
 const resolveAccessToken = async ({ connectionInfo, app } = {}) => {
 	if (!isOauthAuthMethod(connectionInfo)) {
 		accessToken = '';
+		accessTokenExpiration = null;
 		cachedConnectionKey = '';
 
 		return connectionInfo?.accessToken;
@@ -117,7 +125,11 @@ const resolveAccessToken = async ({ connectionInfo, app } = {}) => {
 		authMethod: connectionInfo.authMethod,
 	});
 
-	if (accessToken && cachedConnectionKey === connectionKey) {
+	if (
+		accessToken &&
+		cachedConnectionKey === connectionKey &&
+		!isAccessTokenExpired({ expiration: accessTokenExpiration })
+	) {
 		return accessToken;
 	}
 
@@ -125,13 +137,15 @@ const resolveAccessToken = async ({ connectionInfo, app } = {}) => {
 		? getAzureOauthTokenOptions({ entra })
 		: getWorkspaceOauthTokenOptions({ connectionInfo });
 
-	const oauthAccessToken = await requestAccessToken({ app, tokenOptions, entra });
+	const { accessToken: oauthAccessToken, accessTokenExpiration: oauthAccessTokenExpiration } =
+		await requestAccessToken({ app, tokenOptions, entra });
 
 	if (!oauthAccessToken) {
 		throw new Error('Databricks token response did not include an access token.');
 	}
 
 	accessToken = oauthAccessToken;
+	accessTokenExpiration = oauthAccessTokenExpiration;
 	cachedConnectionKey = connectionKey;
 
 	return accessToken;
@@ -139,6 +153,7 @@ const resolveAccessToken = async ({ connectionInfo, app } = {}) => {
 
 const clearAccessToken = () => {
 	accessToken = '';
+	accessTokenExpiration = null;
 	cachedConnectionKey = '';
 };
 

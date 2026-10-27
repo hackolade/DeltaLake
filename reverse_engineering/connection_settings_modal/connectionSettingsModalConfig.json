@@ -172,8 +172,8 @@
 				"inputLabel": "Client ID",
 				"inputKeyword": "clientId",
 				"inputType": "text",
-				"inputPlaceholder": "Client ID",
-				"description": "Register an OAuth application in your Databricks account and add http://localhost:30424/oauth as a redirect URL before signing in.",
+				"inputPlaceholder": "OAuth client id",
+				"description": "Client ID of an OAuth app connection in your Databricks account, with http://localhost:30424/oauth as redirect URL",
 				"validation": {
 					"regex": "([^\\s])"
 				},
