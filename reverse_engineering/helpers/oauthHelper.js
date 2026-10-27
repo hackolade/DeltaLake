@@ -1,5 +1,3 @@
-'use strict';
-
 const OAUTH_SCOPE = 'all-apis offline_access';
 const OAUTH_REDIRECT_PORT = 30424;
 const OAUTH_MODULE = '@hackolade/oauth';
