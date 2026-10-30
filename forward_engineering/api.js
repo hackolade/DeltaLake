@@ -1,4 +1,5 @@
 const fetchRequestHelper = require('../reverse_engineering/helpers/fetchRequestHelper');
+const { resolveAccessToken } = require('../reverse_engineering/helpers/oauthHelper');
 const databricksHelper = require('../reverse_engineering/helpers/databricksHelper');
 const { getCleanedUrl } = require('./utils/general');
 const { generateScript } = require('./generateScript');
@@ -41,7 +42,7 @@ module.exports = {
 		const connectionData = {
 			host: getCleanedUrl(data.host),
 			clusterId: data.clusterId,
-			accessToken: data.accessToken,
+			accessToken: await resolveAccessToken({ connectionInfo: data, app }),
 			applyToInstanceQueryRequestTimeout: data.applyToInstanceQueryRequestTimeout,
 			script: data.script,
 			entitiesData: data.entitiesData,
@@ -61,14 +62,14 @@ module.exports = {
 	 * @param {Logger} logger
 	 * @param {PluginCallback} cb
 	 * */
-	async testConnection(connectionInfo, logger, cb) {
+	async testConnection(connectionInfo, logger, cb, app) {
 		try {
 			logInfo('Test connection FE', connectionInfo, logger);
 
 			const connectionData = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
-				accessToken: connectionInfo.accessToken,
+				accessToken: await resolveAccessToken({ connectionInfo, app }),
 			};
 
 			const clusterState = await databricksHelper.getClusterStateInfo(connectionData, logger);
