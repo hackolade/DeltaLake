@@ -23,9 +23,13 @@ const getUpdatedCommentOnColumnScriptDtos =
 					columnName: prepareName(name),
 					comment: wrapInSingleQuotes(newComment),
 				};
-				return ddlProvider.updateCommentOnColumn(scriptGenerationConfig);
+				const isActivated = collection.role?.isActivated !== false && jsonSchema.isActivated !== false;
+				return AlterScriptDto.getInstance(
+					[ddlProvider.updateCommentOnColumn(scriptGenerationConfig)],
+					isActivated,
+					false,
+				);
 			})
-			.map(script => AlterScriptDto.getInstance([script], true, false))
 			.filter(Boolean);
 	};
 
@@ -47,9 +51,13 @@ const getDeletedCommentOnColumnScripts =
 					fullTableName: generateFullEntityName({ entity: collection, dbVersion }),
 					columnName: prepareName(name),
 				};
-				return ddlProvider.dropCommentOnColumn(scriptGenerationConfig);
+				const isActivated = collection.role?.isActivated !== false && jsonSchema.isActivated !== false;
+				return AlterScriptDto.getInstance(
+					[ddlProvider.dropCommentOnColumn(scriptGenerationConfig)],
+					isActivated,
+					true,
+				);
 			})
-			.map(script => AlterScriptDto.getInstance([script], true, true))
 			.filter(Boolean);
 	};
 
