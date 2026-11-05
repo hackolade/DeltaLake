@@ -46,7 +46,7 @@
             "enableReverseEngineering": true,
             "enableComplexTypesNormalization": true,
             "generateAssociativeEntitiesForManyToManyRelationships": true,
-            "createForeignKeysForConceptualRelationships": true,
+            "generateForeignKeysForConceptualRelationships": true,
             "disableChoices": true,
             "enableJsonType": true,
             "relationships": {

@@ -25,6 +25,7 @@ const getUpdatedCommentOnCollectionScriptDto =
 		};
 		const script = ddlProvider.updateComment(scriptGenerationConfig);
 		return {
+			isActivated: collection.role?.isActivated !== false,
 			scripts: [
 				{
 					isDropScript: false,
@@ -56,6 +57,7 @@ const getDeletedCommentOnCollectionScriptDto =
 		};
 		const script = ddlProvider.dropComment(scriptGenerationConfig);
 		return {
+			isActivated: collection.role?.isActivated !== false,
 			scripts: [
 				{
 					isDropScript: false,

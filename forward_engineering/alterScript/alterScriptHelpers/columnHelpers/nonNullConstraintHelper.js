@@ -10,6 +10,7 @@ const getModifyNonNullColumnsScriptDtos =
 	ddlProvider =>
 	({ collection, dbVersion }) => {
 		const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
+		const isCollectionActivated = collection.role?.isActivated !== false;
 
 		const currentRequiredColumnNames = collection.required || [];
 		const previousRequiredColumnNames = collection.role.required || [];
@@ -27,8 +28,14 @@ const getModifyNonNullColumnsScriptDtos =
 				const shouldAddForNewName = columnNamesToAddNotNullConstraint.includes(name);
 				return shouldAddForNewName && !shouldRemoveForOldName;
 			})
-			.map(([columnName]) => ddlProvider.setNotNullConstraint(fullTableName, prepareName(columnName)))
-			.map(script => AlterScriptDto.getInstance([script], true, false))
+			.map(([columnName, jsonSchema]) => {
+				const isActivated = isCollectionActivated && jsonSchema.isActivated !== false;
+				return AlterScriptDto.getInstance(
+					[ddlProvider.setNotNullConstraint(fullTableName, prepareName(columnName))],
+					isActivated,
+					false,
+				);
+			})
 			.filter(Boolean);
 		const removeNotNullConstraintScriptDtos = _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
@@ -37,8 +44,14 @@ const getModifyNonNullColumnsScriptDtos =
 				const shouldAddForNewName = columnNamesToAddNotNullConstraint.includes(name);
 				return shouldRemoveForOldName && !shouldAddForNewName;
 			})
-			.map(([name]) => ddlProvider.dropNotNullConstraint(fullTableName, prepareName(name)))
-			.map(script => AlterScriptDto.getInstance([script], true, true))
+			.map(([name, jsonSchema]) => {
+				const isActivated = isCollectionActivated && jsonSchema.isActivated !== false;
+				return AlterScriptDto.getInstance(
+					[ddlProvider.dropNotNullConstraint(fullTableName, prepareName(name))],
+					isActivated,
+					true,
+				);
+			})
 			.filter(Boolean);
 
 		return [...addNotNullConstraintsScriptDtos, ...removeNotNullConstraintScriptDtos];
