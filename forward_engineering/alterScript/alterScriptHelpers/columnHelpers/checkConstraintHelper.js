@@ -37,9 +37,10 @@ const getAddCheckConstraintsScriptsDtos = ddlProvider => (fullTableName, collect
 		})
 		.map(([columnName, jsonSchema]) => {
 			const constraintName = getCheckConstraintNameForDdlProvider(jsonSchema.checkConstraintName, columnName);
-			return ddlProvider.setCheckConstraint(fullTableName, constraintName, jsonSchema.check);
-		})
-		.map(script => AlterScriptDto.getInstance([script], true, false));
+			const script = ddlProvider.setCheckConstraint(fullTableName, constraintName, jsonSchema.check);
+			const isActivated = collection.role?.isActivated !== false && jsonSchema.isActivated !== false;
+			return AlterScriptDto.getInstance([script], isActivated, false);
+		});
 };
 
 /**
@@ -54,12 +55,13 @@ const getRemoveCheckConstraintsScriptsDtos = ddlProvider => (fullTableName, coll
 			const previousCheckConstraintOnColumn = collection.role.properties[oldName]?.check;
 			return previousCheckConstraintOnColumn && !currentCheckConstraintOnColumn;
 		})
-		.map(([name]) => {
+		.map(([name, jsonSchema]) => {
 			const oldConstraintName = collection.role.properties[name]?.checkConstraintName;
 			const constraintName = getCheckConstraintNameForDdlProvider(oldConstraintName, name);
-			return ddlProvider.dropCheckConstraint(fullTableName, constraintName);
-		})
-		.map(script => AlterScriptDto.getInstance([script], true, true));
+			const script = ddlProvider.dropCheckConstraint(fullTableName, constraintName);
+			const isActivated = collection.role?.isActivated !== false && jsonSchema.isActivated !== false;
+			return AlterScriptDto.getInstance([script], isActivated, true);
+		});
 };
 
 /**
@@ -90,10 +92,11 @@ const getModifyCheckConstraintsScriptDtos = ddlProvider => (fullTableName, colle
 				newConstraintName,
 				jsonSchema.check,
 			);
+			const isActivated = collection.role?.isActivated !== false && jsonSchema.isActivated !== false;
 
 			return [
-				AlterScriptDto.getInstance([dropOldConstraint], true, true),
-				AlterScriptDto.getInstance([createNewConstraint], true, false),
+				AlterScriptDto.getInstance([dropOldConstraint], isActivated, true),
+				AlterScriptDto.getInstance([createNewConstraint], isActivated, false),
 			];
 		});
 };
