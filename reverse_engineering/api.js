@@ -21,11 +21,13 @@ const { adaptJsonSchema } = require('./adaptJsonSchema');
 const { getVariantColumnsWithResolvedSubtype } = require('./helpers/variantPropertiesSubtypeResolveHelper');
 const { getPropertiesPotentiallyContainingJSON } = require('./helpers/columnsREHelper');
 const { parseViewStatement } = require('./parseViewStatement');
+const { clearAccessToken, resolveAccessToken } = require('./helpers/oauthHelper');
 
 const DEFAULT_DATABRICKS_CATALOG_NAME = 'hive_metastore';
 
 module.exports = {
 	disconnect: function (connectionInfo, logger, cb) {
+		clearAccessToken();
 		fetchRequestHelper.destroyActiveContext();
 		cb();
 	},
@@ -35,7 +37,7 @@ module.exports = {
 			connectionData = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
-				accessToken: connectionInfo.accessToken,
+				accessToken: await resolveAccessToken({ connectionInfo, app }),
 				catalogName: connectionInfo.catalogName,
 				databaseName: connectionInfo.databaseName,
 				queryRequestTimeout: connectionInfo.queryRequestTimeout,
@@ -67,7 +69,7 @@ module.exports = {
 			const connectionData = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
-				accessToken: connectionInfo.accessToken,
+				accessToken: await resolveAccessToken({ connectionInfo, app }),
 				queryRequestTimeout: connectionInfo.queryRequestTimeout,
 				sparkConfig: getSparkConfigurations(connectionInfo),
 				logger,
@@ -115,7 +117,7 @@ module.exports = {
 			connectionData = {
 				host: getCleanedUrl(connectionInfo.host),
 				clusterId: connectionInfo.clusterId,
-				accessToken: connectionInfo.accessToken,
+				accessToken: await resolveAccessToken({ connectionInfo, app }),
 				catalogName: connectionInfo.database,
 				databaseName: connectionInfo.databaseName,
 				queryRequestTimeout: connectionInfo.queryRequestTimeout,
