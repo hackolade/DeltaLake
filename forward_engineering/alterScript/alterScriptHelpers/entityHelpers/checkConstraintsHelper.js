@@ -15,6 +15,7 @@ const getAddCheckConstraintsScriptsDtosFromTable = ddlProvider => (fullTableName
 	const checkConstraints = collection?.role?.compMod?.chkConstr || {};
 	const newCheckConstraints = checkConstraints.new || [];
 	const oldCheckConstraints = checkConstraints.old || [];
+	const isActivated = collection.role?.isActivated !== false;
 
 	return newCheckConstraints
 		.filter(newCheckConstraint => {
@@ -42,7 +43,7 @@ const getAddCheckConstraintsScriptsDtosFromTable = ddlProvider => (fullTableName
 				newCheckConstraint.constrExpression,
 			);
 		})
-		.map(script => AlterScriptDto.getInstance([script], true, false));
+		.map(script => AlterScriptDto.getInstance([script], isActivated, false));
 };
 
 /**
@@ -53,6 +54,7 @@ const getRemoveCheckConstraintsScriptsDtosFromTable = ddlProvider => (fullTableN
 	const checkConstraints = collection?.role?.compMod?.chkConstr || {};
 	const newCheckConstraints = checkConstraints.new || [];
 	const oldCheckConstraints = checkConstraints.old || [];
+	const isActivated = collection.role?.isActivated !== false;
 
 	return oldCheckConstraints
 		.filter(oldCheckConstraint => {
@@ -76,7 +78,7 @@ const getRemoveCheckConstraintsScriptsDtosFromTable = ddlProvider => (fullTableN
 		.map(oldCheckConstraint => {
 			return ddlProvider.dropCheckConstraint(fullTableName, oldCheckConstraint.chkConstrName);
 		})
-		.map(script => AlterScriptDto.getInstance([script], true, true));
+		.map(script => AlterScriptDto.getInstance([script], isActivated, true));
 };
 
 /**

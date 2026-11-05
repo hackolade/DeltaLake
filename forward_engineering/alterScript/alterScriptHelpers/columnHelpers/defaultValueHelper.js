@@ -9,6 +9,8 @@ const { prepareName } = require('../../../../shared/general');
 const getUpdatedDefaultColumnValueScriptDtos =
 	ddlProvider =>
 	({ collection, dbVersion }) => {
+		const isCollectionActivated = collection.role?.isActivated !== false;
+
 		return _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
 				const newDefaultValue = jsonSchema.default;
@@ -23,9 +25,13 @@ const getUpdatedDefaultColumnValueScriptDtos =
 					columnName: prepareName(name),
 					defaultValue: newDefaultValue,
 				};
-				return ddlProvider.updateColumnDefaultValue(scriptGenerationConfig);
+				const isActivated = isCollectionActivated && jsonSchema.isActivated !== false;
+				return AlterScriptDto.getInstance(
+					[ddlProvider.updateColumnDefaultValue(scriptGenerationConfig)],
+					isActivated,
+					false,
+				);
 			})
-			.map(script => AlterScriptDto.getInstance([script], true, false))
 			.filter(Boolean);
 	};
 
@@ -35,6 +41,8 @@ const getUpdatedDefaultColumnValueScriptDtos =
 const getDeletedDefaultColumnValueScriptDtos =
 	ddlProvider =>
 	({ collection, dbVersion }) => {
+		const isCollectionActivated = collection.role?.isActivated !== false;
+
 		return _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
 				const newDefault = jsonSchema.default;
@@ -47,9 +55,13 @@ const getDeletedDefaultColumnValueScriptDtos =
 					fullTableName: generateFullEntityName({ entity: collection, dbVersion }),
 					columnName: prepareName(name),
 				};
-				return ddlProvider.dropColumnDefaultValue(scriptGenerationConfig);
+				const isActivated = isCollectionActivated && jsonSchema.isActivated !== false;
+				return AlterScriptDto.getInstance(
+					[ddlProvider.dropColumnDefaultValue(scriptGenerationConfig)],
+					isActivated,
+					true,
+				);
 			})
-			.map(script => AlterScriptDto.getInstance([script], true, true))
 			.filter(Boolean);
 	};
 
