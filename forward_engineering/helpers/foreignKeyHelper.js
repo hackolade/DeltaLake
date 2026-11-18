@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const schemaHelper = require('./jsonSchemaHelper');
-const { getName, getTab, commentDeactivatedStatements } = require('../utils/general');
+const { getName, getTab, commentDeactivatedStatements, joinStatementsWithCommas } = require('../utils/general');
 const ddlTemplates = require('../ddlProvider/ddlTemplates');
 const { prepareName } = require('../../shared/general');
 
@@ -73,12 +73,14 @@ const getForeignKeyHashTable = ({
 		const groupKey = parentTableName + constraintName;
 		const childFieldActivated = relationship.childField.reduce((isActivated, field) => {
 			const fieldData = schemaHelper.getItemByPath(field.slice(1), childSchema);
-			return isActivated && _.get(fieldData, 'isActivated');
+			return isActivated && _.get(fieldData, 'isActivated') !== false;
 		}, true);
 		const parentFieldActivated = relationship.parentField.reduce((isActivated, field) => {
 			const fieldData = schemaHelper.getItemByPath(field.slice(1), parentSchema);
-			return isActivated && _.get(fieldData, 'isActivated');
+			return isActivated && _.get(fieldData, 'isActivated') !== false;
 		}, true);
+		const isParentTableActivated = (parentTableData.isActivated ?? parentSchema?.isActivated) !== false;
+		const isChildTableActivated = (childTableData.isActivated ?? childSchema?.isActivated) !== false;
 
 		if (!hashTable[relationship.childCollection][groupKey]) {
 			hashTable[relationship.childCollection][groupKey] = [];
@@ -94,9 +96,10 @@ const getForeignKeyHashTable = ({
 			parentColumn: getPreparedForeignColumns(relationship.parentField, idToNameHashTable),
 			childColumn: getPreparedForeignColumns(relationship.childField, idToNameHashTable),
 			isActivated:
-				isContainerActivated &&
-				_.get(parentTableData, 'isActivated') &&
-				_.get(childTableData, 'isActivated') &&
+				isContainerActivated !== false &&
+				relationship.isActivated !== false &&
+				isParentTableActivated &&
+				isChildTableActivated &&
 				childFieldActivated &&
 				parentFieldActivated,
 		});
@@ -106,30 +109,30 @@ const getForeignKeyHashTable = ({
 };
 
 const getForeignKeyStatementsByHashItem = (app, hashItem) => {
-	return Object.keys(hashItem || {})
-		.map(groupKey => {
-			const keys = hashItem[groupKey];
-			const firstKey = keys[0] || {};
-			const keyName = firstKey.code || firstKey.name || '';
-			const constraintName = keyName.includes(' ') ? `\`${keyName}\`` : keyName;
-			const parentTableName = firstKey.parentTableName;
-			const disableNoValidate = keys.some(item => item?.disableNoValidate);
-			const childColumns = keys.map(item => item.childColumn).join(', ');
-			const parentColumns = keys.map(item => item.parentColumn).join(', ');
-			const isActivated = firstKey.isActivated;
-			const { assignTemplates } = app.require('@hackolade/ddl-fe-utils');
+	const statements = Object.keys(hashItem || {}).map(groupKey => {
+		const keys = hashItem[groupKey];
+		const firstKey = keys[0] || {};
+		const keyName = firstKey.code || firstKey.name || '';
+		const constraintName = keyName.includes(' ') ? `\`${keyName}\`` : keyName;
+		const parentTableName = firstKey.parentTableName;
+		const disableNoValidate = keys.some(item => item?.disableNoValidate);
+		const childColumns = keys.map(item => item.childColumn).join(', ');
+		const parentColumns = keys.map(item => item.parentColumn).join(', ');
+		const isActivated = firstKey.isActivated;
+		const { assignTemplates } = app.require('@hackolade/ddl-fe-utils');
 
-			const statement = assignTemplates(ddlTemplates.addInlineFkConstraint, {
-				fkConstraintName: constraintName ? `CONSTRAINT ${prepareName(constraintName)} ` : '',
-				childColumns,
-				parentTableName,
-				parentColumns,
-				disableNoValidate,
-			}).trim();
+		const statement = assignTemplates(ddlTemplates.addInlineFkConstraint, {
+			fkConstraintName: constraintName ? `CONSTRAINT ${prepareName(constraintName)} ` : '',
+			childColumns,
+			parentTableName,
+			parentColumns,
+			disableNoValidate,
+		}).trim();
 
-			return commentDeactivatedStatements(statement, isActivated);
-		})
-		.join(',\n');
+		return commentDeactivatedStatements(statement, isActivated);
+	});
+
+	return joinStatementsWithCommas(statements);
 };
 
 const getPreparedForeignColumns = (columnsPaths, idToNameHashTable) => {

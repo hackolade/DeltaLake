@@ -100,18 +100,64 @@ const commentDeactivatedStatement = (statement, isActivated = true) =>
  * @return {string}
  * */
 const commentDeactivatedStatements = (statement, isActivated = true) => {
-	if (isActivated) {
+	if (isActivated || !statement) {
 		return statement;
 	}
 
 	const insertBeforeEachLine = (statement, insertValue) =>
 		statement
 			.split('\n')
-			.map(line => `${insertValue}${line}`)
+			.map(line => (line.trimStart().startsWith('--') ? line : `${insertValue}${line}`))
 			.join('\n');
 
 	return insertBeforeEachLine(statement, '-- ');
 };
+
+/**
+ * @param statement {string}
+ * @return {boolean}
+ * */
+const isStatementFullyCommented = (statement = '') =>
+	statement
+		.split('\n')
+		.filter(line => line.trim())
+		.every(line => line.trimStart().startsWith('--'));
+
+/**
+ * @param statements {Array<string>}
+ * @return {string}
+ * */
+const joinStatementsWithCommas = statements => {
+	const nonEmptyStatements = statements.filter(Boolean);
+	const lastActiveIndex = nonEmptyStatements.findLastIndex(statement => !isStatementFullyCommented(statement));
+
+	return nonEmptyStatements
+		.map((statement, index) => {
+			if (index < lastActiveIndex && !isStatementFullyCommented(statement)) {
+				return `${statement},`;
+			}
+			if (lastActiveIndex === -1 && index < nonEmptyStatements.length - 1) {
+				return `${statement},`;
+			}
+			return statement;
+		})
+		.join('\n');
+};
+
+const isObjectInDeltaModelActivated = modelObject =>
+	modelObject?.role?.compMod?.isActivated?.new ??
+	modelObject?.compMod?.isActivated?.new ??
+	modelObject?.role?.isActivated ??
+	modelObject?.isActivated ??
+	true;
+
+const isParentContainerActivated = modelObject =>
+	modelObject?.role?.compMod?.bucketProperties?.isActivated ??
+	modelObject?.compMod?.bucketProperties?.isActivated ??
+	true;
+
+const isCollectionInDeltaModelActivated = collection =>
+	Boolean(isParentContainerActivated(collection) && isObjectInDeltaModelActivated(collection));
 
 const commentDeactivatedInlineKeys = (keys, deactivatedKeyNames) => {
 	const [activatedKeys, deactivatedKeys] = _.partition(
@@ -345,6 +391,11 @@ module.exports = {
 	commentDeactivatedStatement,
 	commentDeactivatedStatements,
 	commentDeactivatedInlineKeys,
+	isStatementFullyCommented,
+	joinStatementsWithCommas,
+	isObjectInDeltaModelActivated,
+	isParentContainerActivated,
+	isCollectionInDeltaModelActivated,
 	getCleanedUrl,
 	encodeStringLiteral,
 	buildScript,

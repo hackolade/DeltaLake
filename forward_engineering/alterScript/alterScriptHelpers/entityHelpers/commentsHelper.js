@@ -1,4 +1,8 @@
-const { generateFullEntityName, wrapInSingleQuotes } = require('../../../utils/general');
+const {
+	generateFullEntityName,
+	wrapInSingleQuotes,
+	isCollectionInDeltaModelActivated,
+} = require('../../../utils/general');
 const { EntitiesThatSupportComments } = require('../../../enums/entityType');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 
@@ -25,7 +29,7 @@ const getUpdatedCommentOnCollectionScriptDto =
 		};
 		const script = ddlProvider.updateComment(scriptGenerationConfig);
 		return {
-			isActivated: collection.role?.isActivated !== false,
+			isActivated: isCollectionInDeltaModelActivated(collection),
 			scripts: [
 				{
 					isDropScript: false,
@@ -57,7 +61,7 @@ const getDeletedCommentOnCollectionScriptDto =
 		};
 		const script = ddlProvider.dropComment(scriptGenerationConfig);
 		return {
-			isActivated: collection.role?.isActivated !== false,
+			isActivated: isCollectionInDeltaModelActivated(collection),
 			scripts: [
 				{
 					isDropScript: false,

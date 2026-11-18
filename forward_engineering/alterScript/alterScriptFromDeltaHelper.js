@@ -27,6 +27,7 @@ const {
 	getDBVersionNumber,
 	isSupportUnityCatalog,
 	getContainerName,
+	isParentContainerActivated,
 	replaceSpaceWithUnderscore,
 	executeUnlessStreaming,
 } = require('../utils/general');
@@ -108,7 +109,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 
 	const getColumnScripts = (items, getScript) => items.filter(item => item.properties).flatMap(getScript);
 
-	const wrapWithUseSchema = (schemaName, scripts) => {
+	const wrapWithUseSchema = (schemaName, scripts, isSchemaActivated = true) => {
 		if (!scripts.length) {
 			return [];
 		}
@@ -118,14 +119,18 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 		}
 
 		currentSchemaName = schemaName;
-		const useSchemaDto = getUseSchemaScriptDto({ schemaName, ddlProvider: provider });
+		const useSchemaDto = getUseSchemaScriptDto({
+			schemaName,
+			ddlProvider: provider,
+			isActivated: isSchemaActivated,
+		});
 		return [useSchemaDto, ...scripts];
 	};
 
 	const getModifiedScripts = ({ item, schemaName, getScript }) => {
 		const scriptDtos = getScript(item);
 
-		return wrapWithUseSchema(schemaName, scriptDtos);
+		return wrapWithUseSchema(schemaName, scriptDtos, isParentContainerActivated(item));
 	};
 
 	const getSchemaName = collection =>
@@ -179,7 +184,7 @@ const getAlterCollectionsScriptDtos = ({ schema, definitions, provider, data, ap
 					[],
 				);
 
-				return wrapWithUseSchema(getSchemaName(collection), scripts);
+				return wrapWithUseSchema(getSchemaName(collection), scripts, isParentContainerActivated(collection));
 			});
 		}
 

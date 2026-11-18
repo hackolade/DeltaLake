@@ -5,6 +5,7 @@ const {
 	getIsChangeProperties,
 	replaceSpaceWithUnderscore,
 	isSupportUnityCatalog,
+	isObjectInDeltaModelActivated,
 } = require('../../utils/general');
 const { getAlterCommentsScriptDtos } = require('./containerHelpers/commentsHelper');
 const { AlterScriptDto } = require('../types/AlterScriptDto');
@@ -34,7 +35,7 @@ const getDatabaseName = container => {
  * @return {(container: AlterScriptDto | undefined) => AlterScriptDto | undefined}
  * */
 const getAddContainerScriptDto = (isUnityCatalogSupports, dbVersion) => container => {
-	const dataContainer = [container.role || {}];
+	const dataContainer = [{ ...(container.role || {}), isActivated: isObjectInDeltaModelActivated(container) }];
 	const script = getDatabaseStatement(dataContainer, isUnityCatalogSupports, dbVersion);
 	if (!script?.length) {
 		return undefined;
@@ -95,7 +96,11 @@ const getModifyContainerScriptDtos = (provider, isUnityCatalogSupports, dbVersio
 	if (!didPropertiesChange) {
 		const alterCommentsScriptDtos = getAlterCommentsScriptDtos(provider)(container);
 		const alterDatabaseScript = getDatabaseAlterStatement([containerData], dbVersion);
-		const alterDatabaseScriptDto = AlterScriptDto.getInstance([alterDatabaseScript], true, false);
+		const alterDatabaseScriptDto = AlterScriptDto.getInstance(
+			[alterDatabaseScript],
+			isObjectInDeltaModelActivated(container),
+			false,
+		);
 		const alterUnityCatalogTagsScript = getModifyUnityCatalogTagsScriptDtos({ ddlProvider: provider })({
 			entityData: container,
 			name: catalogName,

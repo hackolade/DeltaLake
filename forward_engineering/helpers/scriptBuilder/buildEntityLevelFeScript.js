@@ -8,6 +8,7 @@ const getForeignKeyStatements = ({
 	app,
 	jsonSchema,
 	entityData,
+	containerData,
 	modelDefinitions,
 	internalDefinitions,
 	externalDefinitions,
@@ -34,7 +35,7 @@ const getForeignKeyStatements = ({
 		modelDefinitions,
 		internalDefinitions,
 		otherDefinitions: [modelDefinitions, externalDefinitions],
-		isContainerActivated: true,
+		isContainerActivated: containerData?.[0]?.isActivated,
 		relatedSchemas: {},
 	});
 
@@ -70,6 +71,7 @@ const buildEntityLevelFEScript =
 			app,
 			jsonSchema,
 			entityData,
+			containerData,
 			modelDefinitions,
 			internalDefinitions,
 			externalDefinitions,

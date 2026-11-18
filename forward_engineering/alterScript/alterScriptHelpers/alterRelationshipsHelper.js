@@ -13,6 +13,25 @@ const getRelationshipName = relationship => {
 	return relationship.role.code || relationship.role.name;
 };
 
+const areFkFieldsActivated = fields => (fields || []).every(field => field?.isActivated !== false);
+
+const isForeignKeyConstraintActivated = relationship => {
+	const compMod = relationship.role?.compMod;
+	const isRelationshipActivated = Boolean(compMod?.isActivated?.new);
+	const isParentTableActivated = compMod?.parent?.collection?.isActivated !== false;
+	const isChildTableActivated = compMod?.child?.collection?.isActivated !== false;
+	const areParentFieldsActivated = areFkFieldsActivated(compMod?.parent?.collection?.fkFields);
+	const areChildFieldsActivated = areFkFieldsActivated(compMod?.child?.collection?.fkFields);
+
+	return (
+		isRelationshipActivated &&
+		isParentTableActivated &&
+		isChildTableActivated &&
+		areParentFieldsActivated &&
+		areChildFieldsActivated
+	);
+};
+
 const getFullParentTableName = relationship => {
 	const compMod = relationship.role.compMod;
 
@@ -78,7 +97,7 @@ const getAddForeignKeyScript = ddlProvider => relationship => {
 	const script = getAddSingleForeignKeyScript(ddlProvider)(relationship);
 
 	return {
-		isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
+		isActivated: isForeignKeyConstraintActivated(relationship),
 		scripts: [
 			{
 				script,
@@ -133,7 +152,7 @@ const getDeleteForeignKeyScripts = ddlProvider => (deletedRelationships, entitie
 			);
 
 			return {
-				isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
+				isActivated: isForeignKeyConstraintActivated(relationship),
 				scripts: [
 					{
 						script,
@@ -153,7 +172,7 @@ const getModifyForeignKeyScript = ddlProvider => relationship => {
 	const addScript = getAddSingleForeignKeyScript(ddlProvider)(relationship);
 
 	return {
-		isActivated: Boolean(relationship.role?.compMod?.isActivated?.new),
+		isActivated: isForeignKeyConstraintActivated(relationship),
 		scripts: [
 			{
 				script: deleteScript,

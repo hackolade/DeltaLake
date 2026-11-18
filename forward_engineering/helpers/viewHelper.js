@@ -15,17 +15,43 @@ const {
 } = require('../utils/general');
 const { prepareName } = require('../../shared/general');
 
+const getColumnRefData = (collectionRefsDefinitionsMap, definition) => {
+	const itemDataId = Object.keys(collectionRefsDefinitionsMap).find(viewFieldId => {
+		const definitionData = collectionRefsDefinitionsMap[viewFieldId];
+
+		return definitionData.definitionId === definition.GUID;
+	});
+
+	return collectionRefsDefinitionsMap[definition.refId] || collectionRefsDefinitionsMap[itemDataId] || {};
+};
+
+const isSourceCollectionActivated = itemData =>
+	_.first(itemData?.collection)?.isActivated !== false && _.first(itemData?.bucket)?.isActivated !== false;
+
+const isSourceColumnActivated = itemData => itemData?.definition?.isActivated !== false;
+
+/**
+ * @param {{ columns: JsonSchema; collectionRefsDefinitionsMap: CollectionRefsDefinitionsMap; isParentActivated: boolean }}
+ * @returns {JsonSchema}
+ */
+const getViewColumnsWithActivation = ({ columns, collectionRefsDefinitionsMap, isParentActivated }) =>
+	_.mapValues(columns, definition => {
+		const source = getColumnRefData(collectionRefsDefinitionsMap, definition);
+
+		return {
+			...definition,
+			isActivated:
+				!isParentActivated ||
+				(definition.isActivated !== false &&
+					isSourceCollectionActivated(source) &&
+					isSourceColumnActivated(source)),
+		};
+	});
+
 const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
 	return _.uniq(
 		Object.entries(columns).map(([name, definition]) => {
-			const id = definition.GUID;
-			const refId = definition.refId;
-			const itemDataId = Object.keys(collectionRefsDefinitionsMap).find(viewFieldId => {
-				const definitionData = collectionRefsDefinitionsMap[viewFieldId];
-
-				return definitionData.definitionId === id;
-			});
-			const itemData = collectionRefsDefinitionsMap[refId] || collectionRefsDefinitionsMap[itemDataId] || {};
+			const itemData = getColumnRefData(collectionRefsDefinitionsMap, definition);
 
 			if (!itemData.name) {
 				return prepareName(itemData.name);
@@ -45,34 +71,46 @@ const getColumnNames = (collectionRefsDefinitionsMap, columns) => {
 	).filter(_.identity);
 };
 
-const getFromStatement = (collectionRefsDefinitionsMap, columns) => {
-	const sourceCollections = _.uniq(
-		Object.keys(columns)
-			.map(name => {
-				const refId = columns[name].refId;
-				const source = collectionRefsDefinitionsMap[refId];
-				if (!source) {
-					return;
-				}
-				const collection = _.first(source?.collection) || {};
-				const bucket = _.first(source?.bucket) || {};
-				const collectionName = prepareName(collection.collectionName || collection.code);
-				const bucketName = prepareName(bucket.name || bucket.code || '');
-				const fullCollectionName = getEntityNameWithTemporaryFlag({
-					containerName: bucketName,
-					entityName: collectionName,
-					isTemporary: collection.temporaryTable,
-				});
+const getFromStatement = (collectionRefsDefinitionsMap, columns, isParentActivated) => {
+	const sourceCollections = Object.keys(columns).reduce((result, name) => {
+		const source = getColumnRefData(collectionRefsDefinitionsMap, columns[name]);
+		const collection = _.first(source?.collection) || {};
 
-				return fullCollectionName;
-			})
-			.filter(Boolean),
-	);
+		if (_.isEmpty(collection)) {
+			return result;
+		}
+
+		const bucket = _.first(source?.bucket) || {};
+		const collectionName = prepareName(collection.collectionName || collection.code);
+		const bucketName = prepareName(bucket.name || bucket.code || '');
+		const fullCollectionName = getEntityNameWithTemporaryFlag({
+			containerName: bucketName,
+			entityName: collectionName,
+			isTemporary: collection.temporaryTable,
+		});
+		const columnActivated = !isParentActivated || columns[name].isActivated !== false;
+		const existing = result.find(item => item.name === fullCollectionName);
+
+		if (existing) {
+			existing.isActivated = existing.isActivated || columnActivated;
+		} else {
+			result.push({ name: fullCollectionName, isActivated: columnActivated });
+		}
+
+		return result;
+	}, []);
 	if (_.isEmpty(sourceCollections)) {
 		return '';
 	}
 
-	return 'FROM ' + sourceCollections.join(' INNER JOIN ');
+	const [activatedCollections, deactivatedCollections] = _.partition(sourceCollections, 'isActivated');
+	if (_.isEmpty(activatedCollections)) {
+		return 'FROM ' + sourceCollections.map(({ name }) => name).join(' INNER JOIN ');
+	}
+
+	const deactivatedJoins = deactivatedCollections.map(({ name }) => ` /* INNER JOIN ${name} */`).join('');
+
+	return 'FROM ' + activatedCollections.map(({ name }) => name).join(' INNER JOIN ') + deactivatedJoins;
 };
 
 const retrievePropertyFromConfig = (config, tab, propertyName, defaultValue = '') =>
@@ -122,14 +160,13 @@ function getDefaultColumnList(properties) {
 		}, [])
 		.map(({ name, comment, isActivated }) => {
 			return commentDeactivatedStatement(`${name} ${getCommentStatement(comment)}`, isActivated);
-		})
-		.join(',\n');
+		});
 
-	return list ? `\n(${list}\n)` : '';
+	return list.length ? `\n(${joinColumnNames(list)}\n)` : '';
 }
 
-function getTableSelectStatement({ collectionRefsDefinitionsMap, columns }) {
-	const fromStatement = getFromStatement(collectionRefsDefinitionsMap, columns);
+function getTableSelectStatement({ collectionRefsDefinitionsMap, columns, isParentActivated = true }) {
+	const fromStatement = getFromStatement(collectionRefsDefinitionsMap, columns, isParentActivated);
 	const columnsNames = getColumnNames(collectionRefsDefinitionsMap, columns);
 
 	if (fromStatement && columnsNames?.length) {
@@ -200,4 +237,5 @@ module.exports = {
 	getDefaultColumnList,
 	getCommentStatement,
 	getCompositeKeyClauses,
+	getViewColumnsWithActivation,
 };

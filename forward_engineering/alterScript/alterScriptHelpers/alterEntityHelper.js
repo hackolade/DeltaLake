@@ -61,7 +61,10 @@ const hydrateCollection = (entity, definitions) => {
 	const compMod = _.get(entity, 'role.compMod', {});
 	const entityData = _.get(entity, 'role', {});
 	const properties = getEntityProperties(entity);
-	const containerData = { name: getContainerName(compMod) };
+	const containerData = {
+		name: getContainerName(compMod),
+		isActivated: compMod?.bucketProperties?.isActivated,
+	};
 	return [[containerData], [entityData], { ...entityData, properties }, definitions];
 };
 
@@ -385,14 +388,14 @@ const getModifyColumnsScriptsForOlderRuntime = (app, definitions, ddlProvider, d
 	].filter(Boolean);
 };
 
-const getUseSchemaScriptDto = ({ schemaName, ddlProvider }) => {
+const getUseSchemaScriptDto = ({ schemaName, ddlProvider, isActivated = true }) => {
 	if (!schemaName) {
 		return null;
 	}
 
 	const script = ddlProvider.useSchema({ schemaName });
 
-	return AlterScriptDto.getInstance([script], true, false);
+	return AlterScriptDto.getInstance([script], isActivated !== false, false);
 };
 
 module.exports = {

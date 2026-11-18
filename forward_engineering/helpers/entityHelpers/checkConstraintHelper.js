@@ -1,4 +1,5 @@
 const { wrapInTicks } = require('../../../shared/general');
+const { commentDeactivatedStatements } = require('../../utils/general');
 
 /**
  * @typedef GetStatementsFunction
@@ -38,8 +39,9 @@ const getCheckConstraintsScriptsOnColumnLevel = app => (columns, tableName) => {
 		.filter(column => column.constraints?.check)
 		.map(column => {
 			const constraintName = getCheckConstraintName(column.constraints.checkConstraintName, tableName);
+			const script = ddlProvider.setCheckConstraint(tableName, constraintName, column.constraints.check);
 
-			return ddlProvider.setCheckConstraint(tableName, constraintName, column.constraints.check);
+			return commentDeactivatedStatements(script, column.isActivated !== false);
 		});
 };
 
