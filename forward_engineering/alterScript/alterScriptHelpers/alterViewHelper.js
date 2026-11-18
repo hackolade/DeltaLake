@@ -156,8 +156,8 @@ const getModifyViewsScripts = (provider, dbVersion) => view => {
 	const dropViewScript = provider.dropView(viewName);
 	const hydratedView = hydrateView(view);
 	const addViewScript = provider.createView(hydratedView);
-	const dropViewScriptDto = AlterScriptDto.getInstance(['dropViewScript'], true, true);
-	const addViewScriptDto = AlterScriptDto.getInstance(['addViewScript'], true, false);
+	const dropViewScriptDto = AlterScriptDto.getInstance([dropViewScript], true, true);
+	const addViewScriptDto = AlterScriptDto.getInstance([addViewScript], true, false);
 
 	return [dropViewScriptDto, addViewScriptDto].filter(Boolean);
 };
