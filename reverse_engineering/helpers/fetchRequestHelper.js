@@ -164,7 +164,7 @@ const sendSampleBatches = async ({ connectionInfo, logger }) => {
 const fetchApplyToInstance = async (connectionInfo, logger) => {
 	const progress = message => {
 		logger.log('info', message, 'Applying to instance');
-		logger.progress({ message });
+		logger.progress(message);
 	};
 
 	progress({ message: `Applying script: \n ${connectionInfo.script}` });
