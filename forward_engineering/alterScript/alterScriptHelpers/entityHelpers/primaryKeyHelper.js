@@ -1,5 +1,9 @@
 const _ = require('lodash');
-const { generateFullEntityName, getEntityNameFromCollection } = require('../../../utils/general');
+const {
+	generateFullEntityName,
+	getEntityNameFromCollection,
+	isCollectionInDeltaModelActivated,
+} = require('../../../utils/general');
 const { prepareName } = require('../../../../shared/general');
 
 /**
@@ -90,6 +94,7 @@ const getAddCompositePkScripts =
 			})
 			.filter(Boolean)
 			.map(scriptLine => ({
+				isActivated: isCollectionInDeltaModelActivated(collection),
 				scripts: [
 					{
 						isDropScript: false,
@@ -115,6 +120,7 @@ const getDropCompositePkScripts =
 		return oldPrimaryKeys
 			.map(oldPk => ddlProvider.dropPkConstraint(fullTableName))
 			.map(scriptLine => ({
+				isActivated: isCollectionInDeltaModelActivated(collection),
 				scripts: [
 					{
 						isDropScript: true,
@@ -162,6 +168,7 @@ const getAddPkScripts =
 				return ddlProvider.addPkConstraint(fullTableName, constraintName, columnNamesForDDL, constraintOptions);
 			})
 			.map(scriptLine => ({
+				isActivated: isCollectionInDeltaModelActivated(collection),
 				scripts: [
 					{
 						isDropScript: false,
@@ -192,6 +199,7 @@ const getDropPkScripts =
 				return ddlProvider.dropPkConstraint(fullTableName);
 			})
 			.map(scriptLine => ({
+				isActivated: isCollectionInDeltaModelActivated(collection),
 				scripts: [
 					{
 						isDropScript: true,

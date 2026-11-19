@@ -2,6 +2,7 @@
 
 const {
 	buildStatement,
+	commentDeactivatedStatements,
 	getName,
 	getTab,
 	replaceSpaceWithUnderscore,
@@ -87,7 +88,7 @@ const getDatabaseStatement = (containerData, isUnityCatalogSupports, dbVersion) 
 		location: tab.location,
 		managedLocation: tab.managedLocation,
 		dbProperties: tab.dbProperties,
-		isActivated: tab.isActivated,
+		isActivated: tab.isActivated !== false,
 		isUnityCatalogSupports,
 		dbVersion,
 	});
@@ -97,7 +98,13 @@ const getDatabaseStatement = (containerData, isUnityCatalogSupports, dbVersion) 
 		unitySchemaTags = getSchemaTagsStatement(tab, name);
 	}
 
-	return [createStatement, unityCatalogTags, unitySchemaTags].filter(Boolean).join('\n\n');
+	return [
+		createStatement,
+		commentDeactivatedStatements(unityCatalogTags, tab.isActivated !== false),
+		commentDeactivatedStatements(unitySchemaTags, tab.isActivated !== false),
+	]
+		.filter(Boolean)
+		.join('\n\n');
 };
 
 const getDatabaseAlterStatement = (containerData, dbVersion) => {

@@ -5,6 +5,7 @@ const {
 	getEntityNameWithTemporaryFlag,
 	replaceSpaceWithUnderscore,
 	wrapInBrackets,
+	commentDeactivatedStatements,
 } = require('../utils/general');
 const { getViewTagsStatement } = require('../helpers/unityTagsHelper');
 const { getTablePropertiesClause, checkTablePropertiesDefined } = require('../helpers/tableHelper');
@@ -20,14 +21,23 @@ module.exports = app => {
 		},
 
 		createView(data) {
-			const { schema, viewData, containerData, collectionRefsDefinitionsMap } = data;
+			const { schema, viewData, containerData, collectionRefsDefinitionsMap = {} } = data;
 
-			const columns = schema.properties || {};
 			const view = _.first(viewData) || {};
-
-			if (!view.isActivated) {
-				return;
-			}
+			const isViewActivated = view.isActivated !== false && _.first(containerData)?.isActivated !== false;
+			const viewColumns = viewHelper.getViewColumnsWithActivation({
+				columns: schema.properties || {},
+				collectionRefsDefinitionsMap,
+				isParentActivated: isViewActivated,
+			});
+			const hasActivatedColumns =
+				_.isEmpty(viewColumns) || Object.values(viewColumns).some(column => column.isActivated);
+			const isActivated = isViewActivated && (Boolean(schema.selectStatement) || hasActivatedColumns);
+			const columns = viewHelper.getViewColumnsWithActivation({
+				columns: schema.properties || {},
+				collectionRefsDefinitionsMap,
+				isParentActivated: isActivated,
+			});
 
 			const bucketName = replaceSpaceWithUnderscore(prepareName(viewHelper.retrieveContainerName(containerData)));
 			const viewName = replaceSpaceWithUnderscore(prepareName(view.code || view.name));
@@ -48,12 +58,12 @@ module.exports = app => {
 			const viewUnityTagsStatements =
 				schema.unityViewTags && getViewTagsStatement({ viewSchema: schema, viewName: name });
 			const keyClauses = viewHelper.getCompositeKeyClauses({
-				viewData: view,
-				jsonSchema: schema,
+				viewData: { ...view, isActivated },
+				jsonSchema: { ...schema, properties: columns },
 				collectionRefsDefinitionsMap,
 			});
 
-			return assignTemplates(templates.createView, {
+			const script = assignTemplates(templates.createView, {
 				orReplace: orReplace ? ' OR REPLACE' : '',
 				global: isGlobal ? ' GLOBAL' : '',
 				temporary: isTemporary ? ' TEMPORARY' : '',
@@ -73,12 +83,15 @@ module.exports = app => {
 					: viewHelper.getTableSelectStatement({
 							collectionRefsDefinitionsMap,
 							columns,
+							isParentActivated: isActivated,
 						}),
 				viewUnityTagsStatements: viewUnityTagsStatements ? `${viewUnityTagsStatements};` : '',
 				scheduleClause: isMaterialized && view.scheduleClause ? `${view.scheduleClause}\n` : '',
 				partitioningKeyClause: keyClauses.partitioningKeyClause,
 				clusteringKeyClause: keyClauses.clusteringKeyClause,
 			});
+
+			return commentDeactivatedStatements(script, isActivated);
 		},
 
 		dropTableIndex(name) {

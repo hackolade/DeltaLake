@@ -13,6 +13,8 @@ const {
 	generateFullEntityName,
 	executeUnlessStreaming,
 	cleanQuery,
+	commentDeactivatedStatements,
+	joinStatementsWithCommas,
 } = require('../utils/general');
 const { getColumnsStatement, getColumns } = require('./columnHelper');
 const keyHelper = require('./keyHelper');
@@ -189,14 +191,11 @@ const getCreateUsingStatement = ({
 	storedAsStatement,
 	foreignKeyStatement,
 }) => {
-	const isPkOrFkStatement = primaryKeyStatement || foreignKeyStatement;
+	const tableBodyStatement = joinStatementsWithCommas([columnStatement, primaryKeyStatement, foreignKeyStatement]);
 
 	return buildStatement(`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} (`, isActivated)(
-		columnStatement,
-		columnStatement + (isPkOrFkStatement ? ',' : ''),
-	)(primaryKeyStatement, primaryKeyStatement + (foreignKeyStatement ? ',' : ''))(
-		foreignKeyStatement,
-		foreignKeyStatement,
+		tableBodyStatement,
+		tableBodyStatement,
 	)(true, ')')(using, `${getUsing(using)}`)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(
 		storedAsStatement,
 		storedAsStatement,
@@ -235,31 +234,28 @@ const getCreateHiveStatement = ({
 	tableOptions,
 	isNotExistsStatement,
 }) => {
-	const isAddBrackets = columnStatement || primaryKeyStatement || foreignKeyStatement;
-	const isPkOrFkStatement = primaryKeyStatement || foreignKeyStatement;
+	const tableBodyStatement = joinStatementsWithCommas([columnStatement, primaryKeyStatement, foreignKeyStatement]);
+	const isAddBrackets = Boolean(tableBodyStatement);
 
 	return buildStatement(`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} `, isActivated)(
 		isAddBrackets,
 		'(',
-	)(columnStatement, columnStatement + (isPkOrFkStatement ? ',' : ''))(
-		primaryKeyStatement,
-		primaryKeyStatement + (foreignKeyStatement ? ',' : ''),
-	)(foreignKeyStatement, foreignKeyStatement)(isAddBrackets, ')')(
-		comment,
-		`COMMENT '${encodeStringLiteral(comment)}'`,
-	)(partitionedByKeys, `PARTITIONED BY (${partitionedByKeys})`)(
-		!numBuckets && clusteredKeys,
-		`CLUSTER BY (${clusteredKeys})`,
-	)(numBuckets && clusteredKeys, `CLUSTERED BY (${clusteredKeys})`)(
-		numBuckets && sortedKeys && clusteredKeys,
-		`SORTED BY (${sortedKeys})`,
-	)(numBuckets && clusteredKeys, `INTO ${numBuckets} BUCKETS`)(
-		rowFormatStatement,
-		`ROW FORMAT ${rowFormatStatement}`,
-	)(storedAsStatement, storedAsStatement)(location, `LOCATION '${location}'`)(
-		checkTablePropertiesDefined(tableProperties),
-		`TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`,
-	)(tableOptions, `OPTIONS ${tableOptions}`)(selectStatement, `AS ${selectStatement}`)(true, ';')();
+	)(tableBodyStatement, tableBodyStatement)(isAddBrackets, ')')(comment, `COMMENT '${encodeStringLiteral(comment)}'`)(
+		partitionedByKeys,
+		`PARTITIONED BY (${partitionedByKeys})`,
+	)(!numBuckets && clusteredKeys, `CLUSTER BY (${clusteredKeys})`)(
+		numBuckets && clusteredKeys,
+		`CLUSTERED BY (${clusteredKeys})`,
+	)(numBuckets && sortedKeys && clusteredKeys, `SORTED BY (${sortedKeys})`)(
+		numBuckets && clusteredKeys,
+		`INTO ${numBuckets} BUCKETS`,
+	)(rowFormatStatement, `ROW FORMAT ${rowFormatStatement}`)(storedAsStatement, storedAsStatement)(
+		location,
+		`LOCATION '${location}'`,
+	)(checkTablePropertiesDefined(tableProperties), `TBLPROPERTIES (${getTablePropertiesClause(tableProperties)})`)(
+		tableOptions,
+		`OPTIONS ${tableOptions}`,
+	)(selectStatement, `AS ${selectStatement}`)(true, ';')();
 };
 
 const getCreateLikeStatement = ({
@@ -278,15 +274,12 @@ const getCreateLikeStatement = ({
 	tableOptions,
 	likeStatement,
 }) => {
-	const isPkOrFkStatement = primaryKeyStatement || foreignKeyStatement;
+	const tableBodyStatement = joinStatementsWithCommas([columnStatement, primaryKeyStatement, foreignKeyStatement]);
 
 	return buildStatement(
 		`CREATE${modifiersStatement}TABLE${isNotExistsStatement} ${fullTableName} ${likeStatement} (`,
 		isActivated,
-	)(columnStatement, columnStatement + (isPkOrFkStatement ? ',' : ''))(
-		primaryKeyStatement,
-		primaryKeyStatement + (foreignKeyStatement ? ',' : ''),
-	)(foreignKeyStatement, foreignKeyStatement)(true, ')')(using, `${getUsing(using)}`)(
+	)(tableBodyStatement, tableBodyStatement)(true, ')')(using, `${getUsing(using)}`)(
 		rowFormatStatement,
 		`ROW FORMAT ${rowFormatStatement}`,
 	)(storedAsStatement, storedAsStatement)(
@@ -476,8 +469,7 @@ const getTableStatement =
 		const dbName = replaceSpaceWithUnderscore(prepareName(getName(getTab(0, containerData))));
 		const tableData = getTab(0, entityData);
 		const container = getTab(0, containerData);
-		const isTableActivated =
-			tableData.isActivated && (typeof container.isActivated === 'boolean' ? container.isActivated : true);
+		const isTableActivated = tableData.isActivated !== false && container.isActivated !== false;
 		const tableName = replaceSpaceWithUnderscore(prepareName(getName(tableData)));
 		const fullTableName = isCalledFromAlterScript
 			? generateFullEntityName({ entity: { role: tableData }, dbVersion })
@@ -555,7 +547,7 @@ const getTableStatement =
 
 		if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
 			const entityUnityTags = getEntityTagsStatement(entityJsonSchema, fullTableName, tableData.streamingTable);
-			tableStatement = tableStatement + entityUnityTags;
+			tableStatement = tableStatement + commentDeactivatedStatements(entityUnityTags, isTableActivated);
 		}
 
 		const constraintsStatements = executeUnlessStreaming(
@@ -576,7 +568,11 @@ const getTableStatement =
 		);
 
 		if (!_.isEmpty(constraintsStatements)) {
-			tableStatement = tableStatement + `USE ${dbName};\n\n` + constraintsStatements;
+			tableStatement =
+				tableStatement +
+				commentDeactivatedStatements(`USE ${dbName};`, isTableActivated) +
+				'\n\n' +
+				commentDeactivatedStatements(constraintsStatements, isTableActivated);
 		}
 
 		if (getDBVersionNumber(dbVersion) >= Runtime.MINIMUM_UNITY_TAGS_SUPPORT_VERSION) {
@@ -584,6 +580,7 @@ const getTableStatement =
 				entityJsonSchema.properties,
 				fullTableName,
 				tableData.streamingTable,
+				isTableActivated,
 			);
 			tableStatement = [tableStatement, ...columnsUnityTags].join('\n');
 		}
@@ -803,7 +800,7 @@ const getCreateStreamingStatement = ({
 		tableStructureLines.push(foreignKeyStatement);
 	}
 
-	const tableStructure = tableStructureLines.filter(Boolean).join(',\n\t');
+	const tableStructure = joinStatementsWithCommas(tableStructureLines);
 
 	const commentClause = comment ? `COMMENT '${encodeStringLiteral(comment)}'` : '';
 	const clusterClause = clusteredKeys ? `CLUSTER BY (${clusteredKeys})` : '';

@@ -62,7 +62,11 @@ const getIndexes = (containerData, entityData, jsonSchema, definitions) => {
 				tableName: tableName,
 				columns,
 				options: indexData.options,
-				isActivated: isIndexActivated && tableData.isActivated && (_.isEmpty(dbData) || dbData.isActivated),
+				isActivated:
+					isIndexActivated &&
+					indexData.isActivated !== false &&
+					tableData.isActivated !== false &&
+					dbData.isActivated !== false,
 			});
 		})
 		.join('\n\n');

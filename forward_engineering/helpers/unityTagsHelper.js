@@ -9,7 +9,7 @@ const _ = require('lodash');
  * @property {string} unityTagValue
  */
 
-const { wrapInSingleQuotes } = require('../utils/general');
+const { wrapInSingleQuotes, commentDeactivatedStatements } = require('../utils/general');
 
 /**
  * @param {Array<UnityTag>} tags
@@ -74,7 +74,7 @@ const getEntityTagsStatement = (entity, fullTableName, isStreaming) => {
 	return `ALTER ${streamingClause}TABLE ${fullTableName} SET TAGS (${tags});`;
 };
 
-const getColumnTagsStatement = (columns, fullTableName, isStreaming) => {
+const getColumnTagsStatement = (columns, fullTableName, isStreaming, isParentActivated = true) => {
 	return _.toPairs(columns)
 		.map(([colName, schema]) => {
 			if (!schema.unityColumnTags?.length) {
@@ -85,7 +85,10 @@ const getColumnTagsStatement = (columns, fullTableName, isStreaming) => {
 
 			const streamingClause = isStreaming ? 'STREAMING ' : '';
 
-			return `ALTER ${streamingClause}TABLE ${fullTableName} ALTER COLUMN ${colName} SET TAGS (${tags});`;
+			return commentDeactivatedStatements(
+				`ALTER ${streamingClause}TABLE ${fullTableName} ALTER COLUMN ${colName} SET TAGS (${tags});`,
+				isParentActivated && schema.isActivated !== false,
+			);
 		})
 		.filter(Boolean);
 };

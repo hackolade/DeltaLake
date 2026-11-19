@@ -1,5 +1,9 @@
 const { EntitiesThatSupportComments } = require('../../../enums/entityType');
-const { replaceSpaceWithUnderscore, wrapInSingleQuotes } = require('../../../utils/general');
+const {
+	replaceSpaceWithUnderscore,
+	wrapInSingleQuotes,
+	isObjectInDeltaModelActivated,
+} = require('../../../utils/general');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 const { prepareName } = require('../../../../shared/general');
 
@@ -26,6 +30,7 @@ const getUpsertCommentsScriptDto = ddlProvider => container => {
 			comment: wrapInSingleQuotes(description.new),
 		});
 		return {
+			isActivated: isObjectInDeltaModelActivated(container),
 			scripts: [
 				{
 					isDropScript: false,
@@ -49,6 +54,7 @@ const getDropCommentsScriptDto = ddlProvider => container => {
 			entityName: replaceSpaceWithUnderscore(schemaName),
 		});
 		return {
+			isActivated: isObjectInDeltaModelActivated(container),
 			scripts: [
 				{
 					isDropScript: true,
