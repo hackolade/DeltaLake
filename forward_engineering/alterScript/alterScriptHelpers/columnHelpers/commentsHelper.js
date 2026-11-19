@@ -12,7 +12,7 @@ const getUpdatedCommentOnColumnScriptDtos =
 		return _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
 				const newComment = jsonSchema.description;
-				const oldName = jsonSchema.compMod.oldField.name;
+				const oldName = jsonSchema.compMod?.oldField?.name || name;
 				const oldComment = collection.role.properties[oldName]?.description;
 				return newComment && (!oldComment || newComment !== oldComment);
 			})
@@ -42,7 +42,7 @@ const getDeletedCommentOnColumnScripts =
 		return _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
 				const newComment = jsonSchema.description;
-				const oldName = jsonSchema.compMod.oldField.name;
+				const oldName = jsonSchema.compMod?.oldField?.name || name;
 				const oldComment = collection.role.properties[oldName]?.description;
 				return oldComment && !newComment;
 			})

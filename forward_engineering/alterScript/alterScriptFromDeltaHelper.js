@@ -20,7 +20,7 @@ const {
 	getAddViewsScripts,
 	getDeleteViewsScripts,
 	getModifyViewsScripts,
-} = require('./alterScriptHelpers/alterViewHelper');
+} = require('./alterScriptHelpers/viewHelpers/alterViewHelper');
 const {
 	commentDeactivatedStatements,
 	buildScript,
@@ -294,8 +294,7 @@ const getAlterViewsScriptDtos = (schema, provider, dbVersion) => {
 		'deleted',
 		getDeleteViewsScripts(provider, dbVersion),
 	);
-	const modifiedViewScriptDtos = getColumnScripts(
-		getItems(schema, 'views', 'modified'),
+	const modifiedViewScriptDtos = getItems(schema, 'views', 'modified').flatMap(
 		getModifyViewsScripts(provider, dbVersion),
 	);
 
