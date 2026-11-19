@@ -276,14 +276,6 @@ const getAlterViewsScriptDtos = (schema, provider, dbVersion) => {
 			.filter(view => view.compMod?.[compMode])
 			.map(getScript);
 
-	/**
-	 * @return Array<AlterScriptDto>
-	 * */
-	const getColumnScripts = (items, getScript) =>
-		items
-			.map(view => ({ ...view, ...(view.role || {}) }))
-			.filter(view => !view.compMod?.created && !view.compMod?.deleted)
-			.flatMap(getScript);
 	const addedViewScriptDtos = getViewScripts(
 		getItems(schema, 'views', 'added'),
 		'created',
