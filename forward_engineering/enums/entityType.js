@@ -3,6 +3,7 @@ const EntitiesThatSupportComments = Object.freeze({
 	SCHEMA: 'SCHEMA',
 	DATABASE: 'DATABASE',
 	TABLE: 'TABLE',
+	COLUMN: 'COLUMN',
 	SHARE: 'SHARE',
 	RECIPIENT: 'RECIPIENT',
 	PROVIDER: 'PROVIDER',

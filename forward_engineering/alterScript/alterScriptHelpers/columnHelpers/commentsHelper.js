@@ -2,13 +2,31 @@ const _ = require('lodash');
 const { generateFullEntityName, wrapInSingleQuotes } = require('../../../utils/general');
 const { AlterScriptDto } = require('../../types/AlterScriptDto');
 const { prepareName } = require('../../../../shared/general');
+const { EntitiesThatSupportComments } = require('../../../enums/entityType');
+
+const getColumnCommentScript = ({ ddlProvider, fullTableName, columnName, comment, isView }) => {
+	if (!isView) {
+		return comment
+			? ddlProvider.updateCommentOnColumn({ fullTableName, columnName, comment })
+			: ddlProvider.dropCommentOnColumn({ fullTableName, columnName });
+	}
+
+	const scriptGenerationConfig = {
+		entityType: EntitiesThatSupportComments.COLUMN,
+		entityName: `${fullTableName}.${columnName}`,
+	};
+
+	return comment
+		? ddlProvider.updateComment({ ...scriptGenerationConfig, comment })
+		: ddlProvider.dropComment(scriptGenerationConfig);
+};
 
 /**
- * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
+ * @return {({ collection, dbVersion, isView }: { collection: Object, dbVersion: string, isView?: boolean }) => Array<AlterScriptDto>}
  * */
 const getUpdatedCommentOnColumnScriptDtos =
 	ddlProvider =>
-	({ collection, dbVersion }) => {
+	({ collection, dbVersion, isView = false }) => {
 		return _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
 				const newComment = jsonSchema.description;
@@ -18,14 +36,19 @@ const getUpdatedCommentOnColumnScriptDtos =
 			})
 			.map(([name, jsonSchema]) => {
 				const newComment = jsonSchema.description;
-				const scriptGenerationConfig = {
-					fullTableName: generateFullEntityName({ entity: collection, dbVersion }),
-					columnName: prepareName(name),
-					comment: wrapInSingleQuotes(newComment),
-				};
+				const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
+				const columnName = prepareName(name);
 				const isActivated = collection.role?.isActivated !== false && jsonSchema.isActivated !== false;
 				return AlterScriptDto.getInstance(
-					[ddlProvider.updateCommentOnColumn(scriptGenerationConfig)],
+					[
+						getColumnCommentScript({
+							ddlProvider,
+							fullTableName,
+							columnName,
+							comment: wrapInSingleQuotes(newComment),
+							isView,
+						}),
+					],
 					isActivated,
 					false,
 				);
@@ -34,11 +57,11 @@ const getUpdatedCommentOnColumnScriptDtos =
 	};
 
 /**
- * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
+ * @return {({ collection, dbVersion, isView }: { collection: Object, dbVersion: string, isView?: boolean }) => Array<AlterScriptDto>}
  * */
 const getDeletedCommentOnColumnScripts =
 	ddlProvider =>
-	({ collection, dbVersion }) => {
+	({ collection, dbVersion, isView = false }) => {
 		return _.toPairs(collection.properties)
 			.filter(([name, jsonSchema]) => {
 				const newComment = jsonSchema.description;
@@ -47,13 +70,18 @@ const getDeletedCommentOnColumnScripts =
 				return oldComment && !newComment;
 			})
 			.map(([name, jsonSchema]) => {
-				const scriptGenerationConfig = {
-					fullTableName: generateFullEntityName({ entity: collection, dbVersion }),
-					columnName: prepareName(name),
-				};
+				const fullTableName = generateFullEntityName({ entity: collection, dbVersion });
+				const columnName = prepareName(name);
 				const isActivated = collection.role?.isActivated !== false && jsonSchema.isActivated !== false;
 				return AlterScriptDto.getInstance(
-					[ddlProvider.dropCommentOnColumn(scriptGenerationConfig)],
+					[
+						getColumnCommentScript({
+							ddlProvider,
+							fullTableName,
+							columnName,
+							isView,
+						}),
+					],
 					isActivated,
 					true,
 				);
@@ -62,13 +90,17 @@ const getDeletedCommentOnColumnScripts =
 	};
 
 /**
- * @return {({ collection, dbVersion }: { collection: Object, dbVersion: string }) => Array<AlterScriptDto>}
+ * @return {({ collection, dbVersion, isView }: { collection: Object, dbVersion: string, isView?: boolean }) => Array<AlterScriptDto>}
  * */
 const getModifiedCommentOnColumnScriptDtos =
 	ddlProvider =>
-	({ collection, dbVersion }) => {
-		const updatedCommentScripts = getUpdatedCommentOnColumnScriptDtos(ddlProvider)({ collection, dbVersion });
-		const deletedCommentScripts = getDeletedCommentOnColumnScripts(ddlProvider)({ collection, dbVersion });
+	({ collection, dbVersion, isView = false }) => {
+		const updatedCommentScripts = getUpdatedCommentOnColumnScriptDtos(ddlProvider)({
+			collection,
+			dbVersion,
+			isView,
+		});
+		const deletedCommentScripts = getDeletedCommentOnColumnScripts(ddlProvider)({ collection, dbVersion, isView });
 		return [...updatedCommentScripts, ...deletedCommentScripts];
 	};
 

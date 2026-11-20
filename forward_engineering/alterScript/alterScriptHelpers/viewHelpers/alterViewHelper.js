@@ -165,6 +165,7 @@ const getModifyViewsScripts = (ddlProvider, dbVersion) => view => {
 	const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(ddlProvider)({
 		collection: { ...view, properties },
 		dbVersion,
+		isView: true,
 	});
 
 	scripts.push(...modifiedCommentOnColumnsScriptDtos);
