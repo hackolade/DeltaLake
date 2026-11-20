@@ -1,5 +1,6 @@
 const _ = require('lodash');
-const { hydrateTableProperties } = require('../../helpers/tableHelper');
+const { hydrateTableProperties } = require('../../../helpers/tableHelper');
+const { getViewColumnsWithActivation } = require('../../../helpers/viewHelper');
 const {
 	getEntityData,
 	getEntityProperties,
@@ -9,9 +10,11 @@ const {
 	prepareScript,
 	getFullEntityName,
 	isCollectionInDeltaModelActivated,
-} = require('../../utils/general');
-const { AlterScriptDto } = require('../types/AlterScriptDto');
-const { getModifyUnityViewTagsScriptDtos } = require('./entityHelpers/alterUnityTagsHelper');
+	getName,
+} = require('../../../utils/general');
+const { AlterScriptDto } = require('../../types/AlterScriptDto');
+const { getModifyUnityViewTagsScriptDtos } = require('../entityHelpers/alterUnityTagsHelper');
+const { getModifiedCommentOnColumnScriptDtos } = require('../columnHelpers/commentsHelper');
 
 const viewProperties = ['code', 'name', 'tableProperties', 'selectStatement', 'unityViewTags'];
 const otherViewProperties = ['viewTemporary', 'viewOrReplace', 'isGlobal', 'description'];
@@ -129,37 +132,44 @@ const getDeleteViewsScripts = (provider, dbVersion) => view => {
 /**
  * @return {(view: Object) => Array<AlterScriptDto>}
  * */
-const getModifyViewsScripts = (provider, dbVersion) => view => {
+const getModifyViewsScripts = (ddlProvider, dbVersion) => view => {
+	const scripts = [];
 	const isViewActivated = isCollectionInDeltaModelActivated(view);
-
-	if (!isViewActivated) {
-		const hydratedView = hydrateView(view);
-		hydratedView.viewData[0].isActivated = false;
-		const addViewScript = provider.createView(hydratedView);
-
-		return addViewScript ? [AlterScriptDto.getInstance([addViewScript], true, false)] : [];
-	}
+	const viewName = generateFullEntityName({ entity: view, dbVersion });
 
 	const comparedProperties = compareProperties(view, viewProperties);
-	const viewName = generateFullEntityName({ entity: view, dbVersion });
+
 	if (comparedProperties) {
 		const hydratedAlterView = hydrateAlterView(view);
-		const alterViewScript = prepareScript(...provider.alterView(hydratedAlterView));
-		const alterUnityViewTagsScriptDtos = getModifyUnityViewTagsScriptDtos({ ddlProvider: provider })({
+		const alterViewScript = prepareScript(...ddlProvider.alterView(hydratedAlterView));
+		const alterUnityViewTagsScriptDtos = getModifyUnityViewTagsScriptDtos({ ddlProvider })({
 			viewData: view,
 			viewName,
 		});
-		const alterViewScriptDtos = alterViewScript.map(script => AlterScriptDto.getInstance([script], true, false));
+		const alterViewScriptDtos = alterViewScript.map(script =>
+			AlterScriptDto.getInstance([script], isViewActivated, false),
+		);
 
-		return [...alterViewScriptDtos, ...alterUnityViewTagsScriptDtos];
+		scripts.push(...alterViewScriptDtos, ...alterUnityViewTagsScriptDtos);
 	}
-	const dropViewScript = provider.dropView(viewName);
-	const hydratedView = hydrateView(view);
-	const addViewScript = provider.createView(hydratedView);
-	const dropViewScriptDto = AlterScriptDto.getInstance([dropViewScript], true, true);
-	const addViewScriptDto = AlterScriptDto.getInstance([addViewScript], true, false);
 
-	return [dropViewScriptDto, addViewScriptDto].filter(Boolean);
+	const collectionRefsDefinitionsMap =
+		view.role?.compMod?.collectionData?.collectionRefsDefinitionsMap ||
+		view.compMod?.collectionData?.collectionRefsDefinitionsMap ||
+		{};
+	const properties = getViewColumnsWithActivation({
+		columns: view.properties || {},
+		collectionRefsDefinitionsMap,
+		isParentActivated: true,
+	});
+	const modifiedCommentOnColumnsScriptDtos = getModifiedCommentOnColumnScriptDtos(ddlProvider)({
+		collection: { ...view, properties },
+		dbVersion,
+	});
+
+	scripts.push(...modifiedCommentOnColumnsScriptDtos);
+
+	return scripts.filter(Boolean);
 };
 
 module.exports = {
