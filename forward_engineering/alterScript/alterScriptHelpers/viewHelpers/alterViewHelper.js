@@ -142,7 +142,7 @@ const getModifyViewsScripts = (ddlProvider, dbVersion) => view => {
 	if (comparedProperties) {
 		const hydratedAlterView = hydrateAlterView(view);
 		const alterViewScript = prepareScript(...ddlProvider.alterView(hydratedAlterView));
-		const alterUnityViewTagsScriptDtos = getModifyUnityViewTagsScriptDtos({ ddlProvider: ddlProvider })({
+		const alterUnityViewTagsScriptDtos = getModifyUnityViewTagsScriptDtos({ ddlProvider })({
 			viewData: view,
 			viewName,
 		});
