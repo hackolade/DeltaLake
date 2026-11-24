@@ -1,7 +1,6 @@
 const async = require('async');
 const _ = require('lodash');
-const nodeFetch = require('node-fetch');
-const AbortController = require('abort-controller');
+const { hckFetch } = require('@hackolade/fetch');
 const { backOff } = require('exponential-backoff');
 
 const {
@@ -36,7 +35,7 @@ const fetch = (query, options, attempts = 10) => {
 		signal: controller.signal,
 	};
 
-	return nodeFetch(query, fetchOptions)
+	return hckFetch(query, fetchOptions)
 		.then(response => {
 			controller.clear();
 
@@ -57,7 +56,7 @@ const fetch = (query, options, attempts = 10) => {
 						fetch(query, options, attempts - 1).then(resolve, reject);
 					}, 1000);
 				});
-			} else if (error.type === 'aborted') {
+			} else if (error.type === 'aborted' || error.name === 'AbortError') {
 				throw new Error(REQUEST_TIMEOUT_MESSAGE);
 			} else {
 				throw error;
